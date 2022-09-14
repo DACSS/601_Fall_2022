@@ -1,0 +1,93 @@
+---
+title: "Challenge 1"
+author: "Aleacia Messiah"
+desription: "Reading in data and creating a post"
+date: "09/13/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - Aleacia Messiah
+  - tidyverse
+  - birds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+# read in the birds.csv dataset
+birds <- read_csv("/Users/TroubleATM/Documents/601_Fall_2022/posts/_data/birds.csv")
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+# get dimensions of birds
+dim(birds)
+# get column names of birds
+colnames(birds)
+# view first 6 rows of birds
+head(birds)
+# reorder rows by value from greatest to least
+birds_new <- arrange(birds, desc("Value"))
+# get the type of each column
+spec(birds_new)
+# separate columns into their own tibbles
+# Note: some columns were omitted due to redundancy
+Domain <- select(birds_new, "Domain")
+Area <- select(birds_new, "Area")
+Element <- select(birds_new, "Element")
+Item <- select(birds_new, "Item")
+Year <- select(birds_new, "Year")
+Unit <- select(birds_new, "Unit")
+Value <- select(birds_new, "Value")
+Flag_Description <- select(birds_new, "Flag Description")
+# illustrate the distribution of the values within each column
+table(Domain)
+table(Area)
+table(Element)
+table(Item)
+table(Year)
+table(Unit)
+table(Value)
+table(Flag_Description)
+```
+
+This data was most likely taken from farmers or those raising livestock for sale. The data was possibly gathered by farmers keeping track of their inventory of livestock (on paper or electronically in the more recent years). There are 30,977 observations with 14 characteristics such as Domain (all are live animals), Area (country), Element (all are considered stock), Item (kind of animal), the year the data was gathered, the unit of measurement, how much the animal was worth, and Flag Description (additional details about the data such as whether the data was not available, an FAO estimate, or official data). The item that was captured the most in the data was chicken with 13,074 observations along with ducks at 6,909 observations, turkeys at 5,693 observations, geese and guinea fowls at 4,136 observations, and pigeons and other birds at 1,165 observations. This data was collected from 1961 to 2018 and the number of data observations gathered each year increased steadily from 493 in 1961 to 577 in 2018, most likely due to the advancement and availability of technology to keep track of livestock. According to the table for the Flag Description, the majority of the data is considered official (10,773 observations) while 1,002 observations did not have data available. 
