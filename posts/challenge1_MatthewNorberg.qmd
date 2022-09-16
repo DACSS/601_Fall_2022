@@ -1,0 +1,105 @@
+---
+title: "Challenge 1 Instructions"
+author: "Matthew Norberg"
+desription: "Reading in data and creating a post"
+date: "09/14/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+# Get the data from the StateCounty2012 file into a data frame
+# Upon inspection of the file, we see that the relevant data is in columns B, D, and F 
+# Furthermore, the relevant data starts at row 4 and ends at row 2986
+# Since columns are non adjacent, we read each column separately and then combine
+states <- readxl::read_xls('./_data/StateCounty2012.xls', range = readxl::cell_limits(c(4, 2), c(2986, 2)))
+county <- readxl::read_xls('./_data/StateCounty2012.xls', range = readxl::cell_limits(c(4, 4), c(2986, 4)))
+total <- readxl::read_xls('./_data/StateCounty2012.xls', range = readxl::cell_limits(c(4, 6), c(2986, 6)))
+df <- bind_cols(states, county, total)
+
+# Remove rows that are missing a county
+df <- na.omit(df)
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+# Get the number of counties in each state
+stateCount <- group_by(df, STATE) %>% summarize(CountyCount = n())
+
+# Sort in descending order
+arrange(stateCount, desc(CountyCount))
+
+# Display the summary statistics for state county count
+summary(stateCount)
+```
+
+From the code chunks above, we can see that Texas has the most counties out of every state.  The other interesting thing about the data set is the length.  There are 53 different states listed in the data set, not 50.  This indicates that the data set must also include some data entries that are not States.  One guess is that they could be territories.  Additionally, we can see that the average number of counties per state is 55.28. 
+
+```{r}
+# Get the total population in each state
+stateEmployment <- group_by(df, STATE) %>% summarize(TotalEmployment = sum(TOTAL))
+
+# Sort in descending order
+arrange(stateEmployment, desc(TotalEmployment))
+
+# Display the summary statistics for state populalation
+summary(stateEmployment)
+```
+
+The two previous chunks of code calculates the total railroad employment of each state in the data set.  The data set shows that Texas has the largest employment numbers with 19,839 and the average population per state is 4,819.
+
+```{r}
+# Calculate average population per county in each state
+totalInfo <- mutate(stateEmployment, select(stateCount, CountyCount))
+totalInfo <- mutate(totalInfo, AverageEmploymentPerCounty = TotalEmployment / CountyCount)
+arrange(totalInfo, desc(AverageEmploymentPerCounty))
+```
+
+The code chunk above is used to calculate the average employment per county in each state.  This shows that Delaware has the most railroad employees per counties.  
+
+The data set indicates that the data was collected in 2012.  My best guess is that the data was collected in the census.
