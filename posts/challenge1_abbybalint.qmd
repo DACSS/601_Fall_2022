@@ -1,0 +1,83 @@
+---
+title: "Challenge 1 Abby Balint"
+author: "Abby Balint"
+desription: "Reading in data and creating a post"
+date: "09/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+library(tidyverse)
+read_csv("_data/railroad_2012_clean_county.csv")
+railroad <- read_csv("_data/railroad_2012_clean_county.csv")
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Description
+This data set includes the number of railroad employees in 2012 by both state and county.This data is relatively limited because it only has three columns: state, county, and total employees, that we can use in conjunction with each other to analyze. The data contains 2930 rows. The range of employee numbers by county is quite wide so it could be useful to compare ranges and average counts. 
+
+```{r}
+#| label: summary
+colnames(railroad)
+dim(railroad)
+
+```
+
+## Filtering
+If I filter the data by a single state, it makes it easier to look at the number of employees and the county breakdown by that state. (Kentucky example) I can now see there is 119 counties (rows) reported.
+
+```{r}
+#| label: summary 2
+library(dplyr)
+filter(railroad, `state` == "KY")
+railroadKY <- filter(railroad, `state` == "KY")
+```
+## Average
+And here I found the average number of railroad employees in Kentucky. 
+
+```{r}
+#| label: summary 3
+mean(railroadKY$`total_employees`)
+filter(railroadKY, `total_employees` >=200)
+```
