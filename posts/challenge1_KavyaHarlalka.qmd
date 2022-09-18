@@ -30,6 +30,9 @@ library(readxl)
 # Needed to get function ggplot
 library(ggplot2)
 
+# Needed to get function str_detect
+library(stringr)
+
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
@@ -52,7 +55,7 @@ The data shown in the graph is State to the Total Railroad Employment for that S
 ```{r SummarizeData, fig.width=25, fig.height=11}
 # Using filter, fetch only the rows that have the word "Total" in STATE column values and ignore the one having "Grand" This helps us to get total employment for each state. Then using mutate, create new column StateCode from the STATE column by taking the word before space using regex.
 dataFromExcel <- dataFromExcel %>%
-  filter(grepl('Total', STATE) & !grepl('Grand', STATE)) %>%
+  filter(str_detect(STATE, 'Total') & !str_detect(STATE, 'Grand')) %>%
   mutate('StateCode' = str_extract(STATE, "[^ ]+"))
 
 # Plot the column graph of StateCode to Total Employment
