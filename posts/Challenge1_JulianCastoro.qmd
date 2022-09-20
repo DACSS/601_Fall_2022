@@ -1,0 +1,107 @@
+---
+title: "Homework 1"
+author: "Julian Castoro"
+desription: "Challenge 1 submission on wild bird data"
+date: "08/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - challenge1
+  - Julian Castoro
+  - wild_bird_data
+  - 
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+options(scipen=999)
+knitr::opts_chunk$set(echo = TRUE)
+
+old<-options(pillar.sigfig = 2)
+
+```
+
+
+### With only skipping the first line here is what wild_bird_data.xlsx looks like
+```{r}
+birdsData <- read_excel("_data/wild_bird_data.xlsx",skip=1)
+birdsData%>%
+  head()%>%
+  arrange(`Wet body weight [g]`)
+```
+
+While this data source is lacking the names of each bird, it appears the 
+wet body weight in grams was collected for a variety of birds(146). This weight is
+then tied to an estimated population size, I say estimated because the numbers 
+are not integers.
+
+Wet body weight[g] reflects the weight of a particular bird while alive as well
+as that birds (est?) population size.
+
+```{r}
+count(birdsData)
+```
+## Body weight stats
+Smallest bird:
+```{r}
+smallestBird<-birdsData%>%
+  slice(1)
+
+smallestBird
+```
+
+Largest bird:
+```{r}
+birdsData%>%
+  tail(n=1)
+```
+To give some perspective: 
+
+  Robin average weight: 70g.\n
+
+  Pelican average weight: 11,000g
+
+### Average
+```{r}
+birdsData%>%
+  summarise('average weight'=mean(`Wet body weight [g]`))
+```
+
+## population size vs body weight plot
+Here I wanted to show how body weight correlates with population size. The
+raw chart had some outliers which led me to focus in on birds with a 
+body weight of less than 2.5kgs
+
+### raw graph
+```{r}
+#| message: false
+graph<-
+  birdsData%>%
+  ggplot(aes(`Wet body weight [g]`,`Population size`)) + geom_point() + geom_smooth(method="lm")
+
+graph
+```
+### With constraints
+We see once we focus in on smaller birds, weight< 500g, a bit more of a clear
+trend in pop size vs weight
+```{r}
+#| warning: false
+#| message: false
+graph + xlim(c(0, 500)) 
+```
+
+# Conclusions
+
+This data could be used to draw conclusions about the populations of birds based
+on their wet body mass. 
+
