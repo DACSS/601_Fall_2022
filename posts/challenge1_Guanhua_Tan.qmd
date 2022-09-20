@@ -1,0 +1,90 @@
+---
+title: "Challenge 1"
+author: "Guanhua Tan"
+desription: "Reading in data and creating a post"
+date: "09/17/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+## Railroad
+
+```{r}
+railroad <- read_csv("_data/railroad_2012_clean_county.csv")
+railroad
+```
+
+```{r}
+railroad %>%
+  summary(railroad)
+```
+
+The dataset of railroad across the United States includes three columns--state, county and total employees in each county -- and 2930 counties.Each county at least maintains one employees while the maximum number is 8207. The average of total employees each county hires is 81.18. However, the median of it is 27.00, which reflects that most counties maintain a small station. The numbers of 1st Qu. and 3rd Qu. further confirms the finding.
+
+```{r}
+# top 10 largest sizes of total employees
+max_railroad = railroad %>%
+  arrange(desc(`total_employees`)) %>%
+  slice(1:10)
+max_railroad
+```
+
+Cook county, IL, hires the largest size of employees and reaches to 8207 while Tarrant, TX, is second to it with 4235 employees.
+
+```{r}
+# the total employees of each state and arrange them in the descending order
+railroad %>% group_by(state) %>% summarise(total=sum(total_employees)) %>% arrange(desc(total)) %>% slice(1:10)
+```
+
+Although Cook county hires the largest size of employees, Illinois is not the NO.1 in terms of total employees. Texas outnumbers it by several hundreds employees.
+
+
