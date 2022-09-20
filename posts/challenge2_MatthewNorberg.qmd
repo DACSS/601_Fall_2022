@@ -1,0 +1,198 @@
+---
+title: "Challenge 2 Instructions"
+author: "Matthew Norberg"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/17/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+# Read in the hotel bookings data set
+df <- read_csv('./_data/hotel_bookings.csv')
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+First, let's look at the columns in the data set and the first few entries to get an idea of what each instance of the data is describing.
+
+```{r}
+spec(df)
+head(df)
+```
+
+The output above shows that each row in the data set is describing an instance of a hotel booking.  For each booking, we are recording 32 data parameters as described by the columns.  Additionally, we can see that some of the entries have a value of "NULL".  For instance, the first row of the data set has an agent and company listed as "NULL".  This is probably used to describe instances in which an travel agent or travel company was not used.  The following code creates a data frame containing all the rows that have a "NULL" value.
+
+```{r}
+NULLS <- df %>% filter_all(any_vars(. %in% c('NULL')))
+head(NULLS)
+```
+
+The original dataframe had 119,390 rows while the new dataframe called 'NULLS' created above has 119,173 rows.  This shows that the vast majority of the rows in the dataset have at least one "NULL" value (99.8%).
+
+Let's find out if there are any missing values in the data set.  The code chunk below finds the columns that contain NA.
+
+```{r}
+# Identify columns containing NA
+colnames(df)[apply(df, 2, anyNA)]
+```
+
+The 'children' column of the data set contains values that are not available.  We can use the filter function to identify the rows of the data set that contain NA.
+
+```{r}
+# Find the rows in the data set containing NA
+filter(df, is.na(children))
+```
+
+The data set has 119,390 rows.  The code above shows that 4 of those rows contain entries that are not available.  Since only a small proportion of rows contain entries that are not available, it is likely safe to remove them.  Running the code cell below will remove the rows listed above and generate a clean data set. 
+
+```{r}
+df <- na.omit(df)
+```
+
+An analysis of the 'arrival_data_year' column reveals that the data was collected over the course of three years from 2015 to 2017.  This can be shown with the following R command: `summary(df$arrival_date_year)`.  Additionally, we can see that the tibble contains information about hotel bookings from all over the world, as evident by the 'country' column.  The code chunk below reveals that there are 167 unique countries in the data set.  Note that although the tibble generated below has 168 rows, one of those rows is for those data entries whose country is not known.  In these cases, the country is listed as "NULL".  
+
+```{r}
+countries <- select(df, country) %>%
+  group_by(country) %>%
+  summarise(TotalBookings = n()) %>%
+  arrange(desc(TotalBookings))
+
+countries
+
+summary(countries$TotalBookings)
+
+countryHist <- ggplot(countries, aes(x=TotalBookings)) + geom_histogram(colour = "black", fill = "white", bins = 40)
+print(countryHist + ggtitle("Hotel Booking Frequency per Country vs Number of Countries") + 
+        labs(x = "Number of hotel bookings", y = "Number of countries"))
+```
+
+An analysis on the tibble shows that Portugal has the most hotel bookings in the data set.  Additionally, the summary command below reveals that the average number of bookings is 670.71 and the median number of bookings is 12.5.  The histogram derived from the count of each country further reveals that the number of bookings per country is skewed. 
+
+The categorical nature of the 'hotel', 'meal', 'reserved_room_type', and 'customer_type' columns of the data set lead me to believe that the data was collected by a singular Hotel Company that has locations all over the world.  They have categorized their hotels as being in one of two possible categories, "Resort Hotel" and "City Hotel".  It seems unlikely that multiple hotel companies would use the same categorization.  Additionally, this particular hotel company has a set of meal categories, room type categories, and customer categories.  I would argue that these categorization are not a standard that is being used by multiple hotels which furthers my theory that this data was collected by a singular hotel company.  The code chunk below lists the possible categories for each of the aforementioned columns.  
+
+```{r}
+unique(df$hotel)
+unique(df$reserved_room_type)
+unique(df$is_repeated_guest)
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+Let's look at the set of hotel bookings that took place in the United States.  I was interested in determining how many bookings were made in which the customer got the type of room that they requested.  The code chunk below answers this question.  
+
+```{r}
+# Get the rows that contain hotel booking information in the United States
+us <- filter(df, country == "USA")
+
+# Find the proportion of bookings where the customer got the correct room type
+correctType <- us %>%
+  filter(reserved_room_type == assigned_room_type) %>%
+  summarise(Count = n()) / dim(us)[1]
+
+# Display the answer
+cat("The proportion of bookings where the customer got the correct room type in the United States:", correctType[[1]])
+```
+
+The data shows that most people were able to get the room type that they requested in the United States. However, I was in interested in figuring out how the United States compares to other countries in terms of accuracy of hotel bookings.  The following code chunk computes the booking accuracy of all countries listed in the table and sorts them based on accuracy.
+
+```{r}
+# Compute the booking accuracy of each country
+r <- df %>%
+  group_by(country) %>%
+  filter(reserved_room_type == assigned_room_type) %>%
+  summarise(CorrectRoom = n()) %>%
+  left_join(countries, by = "country") %>%
+  mutate(PercentCorrect = CorrectRoom / TotalBookings) %>%
+  arrange(desc(PercentCorrect))
+
+# Display the results
+head(r)
+summary(r)
+```
+
+The results from the code chunk above show that there are many countries with perfect booking accuracy.  Furthermore, the average accuracy was 91%.  Therefore, the United States is below average in terms of hotel booking accuracy.  
+
+In addition to hotel booking accuracy, I was also interested in the total number of nights stayed that each booking incurred in the United States.  The data set has two columns for the number of nights stayed: 'stays_in_weekend_nights' and 'stays_in_week_nights'.  Here, I am defining the total number of nights to be the sum of those two children.  Specifically, I wanted to know if the total number of nights stayed in the hotel is influenced by whether or not the booking included children and babies.  The code chunk below computes the average number of nights and the median number of nights for each (children, babies) pairing in the data set for hotel bookings in the US.    
+
+```{r}
+# Compute central tendency and dispersion for total number of nights in the united states grouped by children and babies
+# Total number of nights = weekend nights + week nights
+temp <- us %>%
+  mutate(total_nights = stays_in_weekend_nights + stays_in_week_nights) %>%
+  group_by(children, babies) %>%
+  summarise(AverageNights = mean(total_nights), NumOccurences = n(), MedianNights = median(total_nights))
+
+# Display the information
+temp
+
+```
+
+The results in the table above show that offspring status of a hotel booking does not seem to have an impact on the average number of nights stayed in the hotel.
+
+Lastly, I was interested in the lead time attribute for bookings in the United States.  I wanted to determine if some months are more popular than others and therefore have a larger lead time.  The following code chunk computes averaged lead time grouped by 'arrival_date_month' to determine which months are the most popular. 
+
+```{r}
+# Lets look at lead time statistics grouped by month to see if some months are more popular
+leadTime <- us %>%
+  group_by(arrival_date_month) %>%
+  summarise(AverageLeadTime = mean(lead_time), 
+            sdLeadTime = sd(lead_time), 
+            maxLeadTime = max(lead_time), 
+            minLeadTime = min(lead_time))
+
+leadTime
+```
+
+The results above show that the summer months seem to have the highest average lead time while some of the winter months have the fewest lead times.  This may indicate that the summer months are the most popular times to go on vacation.  
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+I choose to look at hotel bookings in the United States to do my analysis.  The first portion of my analysis looked at hotel booking accuracy in the United States versus the other countries in the data set.  I was surprised that the United States is below the average accuracy in the data set. 
+
+I also looked at the total number of nights for each booking the United States.  I wanted to know if having children or babies included in the hotel booking impacted how long people stay.  The idea was interesting, but the results indicated that having children and babies included in the booking did not seem to impact total stay.
+
+Lastly, I looked at the amount of lead time in hotel bookings for the United States in order to see which months were the most popular.  Unsurprisingly, the summer months were among the most popular and the least popular were winter months. 
+
