@@ -1,0 +1,102 @@
+---
+title: "Challenge 1 Solution"
+author: "Ryan O'Donnell"
+desription: "Reading in data and creating a post"
+date: "09/15/22"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+  - ryan_odonnell
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+#| load necessary libraries
+library(tidyverse)
+library(readxl)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+#| label: load_in
+# load in data and select relevant objects for analysis
+
+railroads <- read_csv("_data/railroad_2012_clean_county.csv")
+state <- select(railroads, 'state')
+county <- select(railroads, 'county')
+wild_birds <- read_xlsx("_data/wild_bird_data.xlsx", skip=1)
+state_county <- read_xls("_data/StateCounty2012.xls", skip=3)
+state_county_trimmed <- select(state_county, 'STATE', 'COUNTY', 'TOTAL')
+
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+# Railroads
+
+```{r}
+#| label: railroads
+head(railroads)
+summary(railroads)
+unique(state, print = 53)
+unique (county, print = 1709)
+```
+"railroad_2012_county.csv" is a comma separated value file containing information about the number of railroad employees in 2012 in each county in each state. There are 2930 unique cases but only 1709 unique county names, so further analysis would always have to include the state-county combination in order to accruately portray the data.
+
+# Wild Birds
+
+```{r}
+#| label: wild birds
+head(wild_birds)
+summary(wild_birds)
+
+```
+"wild_bird_data.xlsx" is an Excel file with 146 observations of 2 variables about the weight and population size of wild birds. Something not included is how these observations are differentiated (species, geography, or both). The first line does include a reference to a paper, so locating the paper would help provide more context if further analysis was needed.
+
+# Railroad Data 2
+```{r}
+#| label: railroads 2
+head(state_county_trimmed)
+summary(state_county_trimmed)
+
+```
+
+"StateCounty2012.xls" is an Excel file with the same data as the first csv file reviewed for this exercise before it has been cleaned. There was an extraneous title row and lots of white space surrounding the data. There are also total rows embedded in the data that would need to be removed before analysis. I'm not quite confident enough yet to do that, but I'm sure I will be soon.
