@@ -1,0 +1,194 @@
+---
+title: "Challenge 1"
+author: "Theresa Szczepanski"
+desription: "Reading in Railroad data and creating a post"
+date: "09/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - birds
+  - Theresa_Szczepanski
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Read in the Railroad Data
+
+
+-   railroad_2012_clean_county.csv ⭐
+
+
+
+```{r}
+  Railroad <- read_csv("_data/railroad_2012_clean_county.csv")
+  summary(Railroad)
+  Railroad
+  States <-select(Railroad, state)
+  Num_States <-unique(States)
+  dim(Num_States)
+  
+  
+#| label: railroad wrangling and finding the number of unique states
+```
+
+## Describe the data
+The `Railroad` data set consists of 2930 observations of three variables: `state`, `county`, and `total_employees` of type
+`character`, `character`, and `double` respectively. The minimum number of employees is 1, at several counties and the maximum is 8207 in Cook county Illinois.
+```{r}
+  #Overview of Railroad
+  arrange(Railroad, desc(total_employees))
+  arrange(Railroad, total_employees)
+  
+  
+
+
+
+
+
+#| label: Railroad summary
+```
+
+There are 53 distinct entries in the `state` column. The 50 United states' codes are represented as well as
+
+  - **DC**, for Washington D.C.
+  - *AE, APO*, unknown State/Territory, but AE, APO is possibly an Armed Forces Europe post office box.
+  - *AP, APO*, unknown State/Territory, but AP, APO is possibly an Armed Forces Pacific post office box.
+
+```{r}
+  #Finding the number of unique states
+  States <-select(Railroad, state)
+  Num_States <-unique(States)
+  summary(Num_States)
+  Num_States
+
+
+
+
+
+
+#| label: Num States
+```
+The cases of this data set represent a unique State and Country pairing. The number of employees, possibly represents the number of Railroad employees
+for a given State and County pairing.
+
+## Read in the Birds Data
+
+
+```{r}
+  Birds <- read_csv("_data/birds.csv")
+  summary(Birds)
+  head(Birds)
+
+  
+#| label: birds wrangling
+```
+## Describe the Data
+
+The `birds` data consists of 8 variables of character type and 6 variables of double type. The data seem to describe the population of `stock` or domesticated fowl in regions of the world for given years. 
+
+`Domain`: For this data set all of the cases have the same `Domain` and `Domain Code` representing "live animals".
+ 
+```{r}
+  Domains <-select(Birds, "Domain Code", Domain)
+  Num_Domains <-unique(Domains)
+  Num_Domains
+  
+  
+#| label: Domains info
+``` 
+`Area` consists of 248 entries. Notably, the entries with values less than 5000 represent Countries of the world. The numeric codes correspond with the the Alphabetical order of the country names. When the area code has a value of 5000, it represents the entire world and when the code is greater than 5000, it then corresponds to regions of the world rather than a specific country. In these cases, regions with numbers closer in value have closer geographic proximity. It should be noted that there is a value for Europe as well as a value for Easter Europe and Western Europe, so there are regions that are represented in multiple cases of these entries.
+
+```{r}
+  Areas <-select(Birds, "Area Code", Area)
+  Num_Areas <-unique(Areas)
+  Num_Areas
+  arrange(Num_Areas, `Area Code`)
+  arrange(Num_Areas, desc(`Area Code`))
+  World_Region <- filter(Num_Areas, `Area Code` >= 5000)
+  arrange(World_Region, `Area Code`)
+  
+#| label: Area info
+``` 
+
+`Element`: For this data set all of the cases have the same `Element` and `Element Code` representing "stocks".
+ 
+```{r}
+  Elements <-select(Birds, "Element Code", Element)
+  Num_Elements <-unique(Elements)
+  Num_Elements
+  
+  
+#| label: Elements info
+``` 
+`Item`: For this data set, all of the observations are of items of type chicken, duck, geese and guinea fowls, turkeys, or pigeons/other birds.
+ 
+```{r}
+  Items <-select(Birds, "Item Code", Item)
+  Num_Items <-unique(Items)
+  Num_Items
+  table(Items)
+  
+  
+#| label: Items info
+``` 
+
+`Year`, 'Unit', 'Value': For a given observation, there is the year the observation was made (between 1961 and 2018), and the number of livestock counted
+as a `value` with `units` of 1000 head. 4700 represents, 4,700,000 heads of the bird observed.
+```{r}
+  Years_Values <-select(Birds, Year, Unit, Value)
+  Units <-select(Birds, Unit)
+  Num_Units <-unique(Units)
+  Num_Units
+  summary(Years_Values)
+  Years_Values
+  
+#| label: Years info
+``` 
+
+`Unit`
+
+
+`Flag` consists of 6 values describing the methodology by which the data was collected.
+
+```{r}
+  Flag_Descriptions <-select(Birds, Flag, `Flag Description`)
+  Num_Flag_Descriptions <-unique(Flag_Descriptions)
+  Num_Flag_Descriptions
+  Flags <-select(Birds, Flag)
+  table(Flags)
+  
+  
+#| label: Flags info
+```
+`Element`: All observations are of Stocks.
+```{r}
+  
+ 
+  Elements <-select(Birds, "Element Code", Element)
+  Num_Elements <-unique(Elements)
+  dim(Elements)
+  Num_Elements
+  
+  
+#| label: Flags info
+```
+  
+## Further Challenges to come back to
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
