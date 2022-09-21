@@ -1,0 +1,96 @@
+---
+title: "Challenge 2 - Sarah McAlpine"
+author: "Sarah McAlpine"
+desription: "Reading in Data and Summarizing Its Groups"
+date: "09/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - challenge2
+  - sarahmcalpine
+  - cattle
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(tidyr)
+library(summarytools)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Challenge Overview
+
+Today's challenge is to read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc.) Next, provide summary statistics for different interesting groups within the data, and interpret those statistics.
+
+## Reading in the Data
+I will read in the FAO cattle data for my first attempt and may return to this to do another.
+
+
+```{r}
+#read in the data
+cattle<- read.csv("_data/FAOSTAT_cattle_dairy.csv")
+colnames(cattle)
+
+#preview data without the 100% values
+head(select(cattle, Area, Element, Year, Unit, Value))%>%
+  group_by(Area) %>%
+slice(1:10)
+
+# sort out the 3 different Elements into their own columns?
+
+```
+## Refining Distinct Values
+Next I will print a summary with only the columns that have multiple distinct values.
+```{r}
+cattle.sm <- select(cattle, Area, Element, Year, Unit, Value)
+
+# preview with data frame summary
+print (dfSummary (cattle.sm, varnumbers = FALSE,
+                plain.ascii = FALSE,
+                style = "grid" ),
+      method = 'render', 
+      table.classes = 'table-condensed')
+```
+
+## Rearranging the Data
+I see that there are 3 "Elements": Milk Animals, Production, and Yield; and 3 "Units" and I suspect these are aligned where each element is measured in its own unit. In order to get a better view of this data and ensure that each column contains only one factor, I will move those into their own columns with `pivot_wider'. See my attempt below.
+```{r}
+# Move the units into their own columns, pulling their values along. 
+
+pivot_wider(cattle.sm, names_from = Unit, values_from = Value)%>%
+  # Rename columns to describe the moved variables
+  rename(Head_Cattle = Head, Animal_hg = "hg/An", Tonnes_Milk = tonnes)%>%
+ #Stop showing the elements, now that they are tied to the units in the new column names
+   select(Area, Year, Head_Cattle, Animal_hg, Tonnes_Milk) %>%
+  #attempt to remove the NAs and collapse the rows together. Didn't work--need to try again next time.
+group_by(Year) %>%
+  head()
+ #would I use case_when for collapsing the rows together? 
+#How do I assign a new name to this format of the data? Where can I put that command, near the beginning?
+
+
+```
+## Where I'm Stuck
+Now I want to collapse the rows together so that one case is one Area-Year combination. How?
+Then I want to look at these "areas" and how to define them--some are countries and others are continents. I wonder what additional tables of information would be helpful or interesting to connect here--like land mass area or population, or population density?
+```{r}
+#Trying group_by Area and group_by (Year) did not work.
+#Trying case_when
+#cattle.sm %>%
+ # case_when()%>%
+  #head()
+
+# Probably delete this later: combines "heads of cattle" but leaves all the values in the same row, even though they are of different units.
+#unite(cattle.sm,"Unit_of_Element", c(Unit,Element), sep = "_", remove = TRUE, na.rm = FALSE)
+```
+
