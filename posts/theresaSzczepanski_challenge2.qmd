@@ -1,0 +1,187 @@
+---
+title: "Challenge 2"
+author: "Theresa Szczepanski"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/19/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - birds
+  - Theresa_Szczepanski
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data Birds
+
+Data Source
+
+-   birds.csv ⭐⭐⭐
+
+```{r}
+  Birds <- read_csv("_data/birds.csv")
+  head(Birds)
+  summary(Birds)
+ 
+  
+#| label: birds read in/summary
+```
+
+## Describe the data
+
+The `birds` data consists of 8 variables of character type and 6 variables of double type. The data seem to describe the population of `stock` or domesticated fowl in regions of the world for given years between 1961 and 2018. The character variables have an associated numeric code variable.
+
+`Domain`, `Element`: For this data set all of the cases have the same `Domain` and `Domain Code` representing "live animals" and the same `Element` and `Element Code` representing `stocks`. The term `stock` seems to indicate that the animals represent domesticated stock rather than wild fowl.
+ 
+```{r}
+  Domains <-select(Birds, "Domain Code", Domain)
+  Num_Domains <-unique(Domains)
+  Num_Domains
+  Elements <-select(Birds, "Element Code", Element)
+  Num_Elements <-unique(Elements)
+  Num_Elements
+  
+  
+#| label: Domains /Elements info
+``` 
+
+`Item`: For this data set, all of the observations are of items of type chicken, duck, geese and guinea fowls, turkeys, or pigeons/other birds.
+ 
+```{r}
+  Items <-select(Birds, "Item Code", Item)
+  Num_Items <-unique(Items)
+  Num_Items
+  
+  
+  
+#| label: Items info
+``` 
+
+
+`Area` consists of 248 entries. Notably, the entries with values less than 5000 represent countries of the world. The numeric codes correspond with the the alphabetical order of the country names. The remaining codes greater than 5000, correspond to regions of the world rather than a specific country. In these cases, regions with numbers closer in value seem to have closer geographic proximity. It should be noted that there is a value for Europe as well as a value for Eastern Europe and Western Europe, so there are regions that are represented in multiple cases of these entries.
+```{r}
+  Areas <-select(Birds, "Area Code", Area)
+  Num_Areas <-unique(Areas)
+  Num_Areas
+  arrange(Num_Areas, `Area Code`)
+  arrange(Num_Areas, desc(`Area Code`))
+  World_Region <- filter(Num_Areas, `Area Code` >= 5000)
+  arrange(World_Region, `Area Code`)
+  
+#| label: Area info
+``` 
+
+ `Unit`, `Value`: For a given observation, there is the year the observation was made (between 1961 and 2018), and the number of `stock` counted as a `value` with `units` of `1000 head`. 4700 represents, 4,700,000 heads of the given type of bird observed.
+```{r}
+  Birds_Values <-select(Birds, Unit, Value)
+  Units <-select(Birds, Unit)
+  Num_Units <-unique(Units)
+  Num_Units
+  summary(Birds_Values)
+  Birds_Values
+  
+#| label: Years info
+``` 
+
+
+
+`Flag` consists of 6 values describing the methodology by which the data was collected.
+
+```{r}
+  Flag_Descriptions <-select(Birds, Flag, `Flag Description`)
+  Num_Flag_Descriptions <-unique(Flag_Descriptions)
+  Num_Flag_Descriptions
+  Flags <-select(Birds, Flag)
+  table(Flags)
+  
+  
+#| label: Flags info
+```
+
+
+
+For the `Birds` data set, each case provides an estimate for the population of domesticated fowl for a given type of bird, in a given region of the world, for a given year.
+
+## Provide Grouped Summary Statistics
+
+When considering the data filtered by cases with `Area` = `World`, there is global aggregate data for each type of bird per year. Considering the measures of central tendency by item shows that chickens are the dominant domesticated fowl globally. The measures of dispersion, indicate that the rise of the domesticated Chicken population since 1961 is much more extreme than that of the other domesticated fowl.
+
+```{r}
+World_Data <-filter(Birds, `Area Code` == 5000)
+# summary(World_Data)
+
+# World_Flags <-select(World_Data, `Flag Description`)
+#vNum_World_Flags <- unique(World_Flags)
+# Num_World_Flags
+World_Item <- World_Data %>% group_by(Item)
+# World_Item
+World_Item %>% summarise(mean = mean(Value, na.rm = TRUE), median = median(Value, na.rm =TRUE), sd = sd(Value, na.rm = TRUE), max = max(Value), min = min(Value), range = max-min, var = var(Value))
+
+
+
+
+World_Data <- select(World_Data, Item, Year, Value )
+
+World_Data_by_Item <-select(World_Data, Item, Value)
+World_Data_by_Item <- pivot_wider(World_Data, names_from = `Item`, values_from = `Value`)
+World_Data_by_Item
+
+
+
+
+
+  #global summary statistics by item.
+```
+
+
+
+When considering the change in value of each item over time (this would best be visualized with line plots of item values on the y-axis and year on the x-axis):
+
+- The world Turkey population seems to have steadily increased from 1961-1990. From 1990-2018 the population of Turkey is consistently larger than the previous 30 years but has not grown incrementally grown year to year. 
+- The world chicken population seems to have consistently increased year to year from 1961-2018. 
+- The world duck population seems to have consistently increased year-to-year until 2004.
+- The world geese and guinea fowl population seems to have consistently increased year-to-year until 1993.
+- The world pigeon and other bird population has much more variation in the year to year population changes. This suggests that trends in global production, domestication, and consumption/use of chickens, ducks, turkeys, and geese over the last 60 years is much different than that of pigeons and other birds.
+
+```{r}
+
+arrange(World_Data_by_Item, `Year`)
+#arrange(World_Data_by_Item, `Turkeys`)
+#arrange(World_Data_by_Item, `Chickens`)
+#arrange(World_Data_by_Item, `Ducks`)
+#arrange(World_Data_by_Item, `Geese and guinea fowls`)
+#arrange(World_Data_by_Item, `Pigeons, other birds`)
+
+
+
+
+  #perform global analysis by item of value over time 
+```
+
+### Explain and Interpret
+
+Global domesticated production and consumption of chickens, turkeys, ducks, and geese has steadily increased from 1961-1990; however pigeons and other birds do not see this same pattern. Perhaps there was technological innovation during this period that allowed for a large scale increase in the capacity of farms to support this growth. Perhaps the increase was also necessitated by general population growth and the globalization of farming in this time period. Global production of chickens has seen the most extreme growth in this period. It would be worthwhile to explore the preference of items and growth of the value fields by regions of the world. 
+
+##Further Challenge to attempt later
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
