@@ -37,8 +37,8 @@ I will read in the FAO cattle data for my first attempt and may return to this t
 
 
 ```{r}
-#read in the data
-cattle<- read.csv("_data/FAOSTAT_cattle_dairy.csv")
+#read in the data. Use read_csv over read.csv
+cattle<- read_csv("_data/FAOSTAT_cattle_dairy.csv")
 colnames(cattle)
 
 #preview data without the 100% values
@@ -67,30 +67,97 @@ I see that there are 3 "Elements": Milk Animals, Production, and Yield; and 3 "U
 ```{r}
 # Move the units into their own columns, pulling their values along. 
 
-pivot_wider(cattle.sm, names_from = Unit, values_from = Value)%>%
+#use read_csv over read.csv
+pivot_wider(cattle.sm, id_cols = c(Area, Year), 
+            names_from = Unit, 
+            values_from = Value)%>%
   # Rename columns to describe the moved variables
   rename(Head_Cattle = Head, Animal_hg = "hg/An", Tonnes_Milk = tonnes)%>%
  #Stop showing the elements, now that they are tied to the units in the new column names
    select(Area, Year, Head_Cattle, Animal_hg, Tonnes_Milk) %>%
   #attempt to remove the NAs and collapse the rows together. Didn't work--need to try again next time.
-group_by(Year) %>%
   head()
  #would I use case_when for collapsing the rows together? 
 #How do I assign a new name to this format of the data? Where can I put that command, near the beginning?
 
+```
+## Reading and Tidying Together
+Now that I have explored the data, I'm ready to set up my read-in with all the tidying all at once so that I can work with a single data set for my analysis. Below is my script to do so. Since all the steps are piped in one script, the assignment of "clean.dairy" applies to the new, tidy data set. 
+```{r}
+library(tidyverse)
+clean.dairy <- read_csv("_data/FAOSTAT_cattle_dairy.csv") %>%
+  filter(Flag!="A")%>%
+
+  select(Area, Year, Unit, Value) %>%
+
+  pivot_wider(names_from = Unit, 
+            values_from = Value) %>%
+  # Rename columns to describe the moved variables
+  rename(Head_Cattle = Head, hg_Animal = "hg/An", Tonnes_Milk = tonnes)
+#preview to confirm
+head(clean.dairy)
+```
+## Summary Statistics
+As shown below, average (mean) values of these three variables ??what do I observe??
+
+```{r}
+
+  
+  #the following works for a table of min, max, avg for Head_Cattle, hg_Animal, and Tonnes_Milk.
+clean.dairy %>%
+  select(clean.dairy, Area = China)
+   summarize(avg_Head_Cattle = mean (Head_Cattle, na.rm=TRUE),
+          med_Head_Cattle = median (Head_Cattle, na.rm=TRUE), 
+          max_Head_Cattle = max (Head_Cattle, na.rm=TRUE),
+          min_Head_Cattle = min(Head_Cattle, na.rm=TRUE))
+          
+ clean.dairy %>%
+  summarize(avg_hg_Animal = mean (hg_Animal, na.rm=TRUE),
+          med_hg_Animal = median (hg_Animal, na.rm=TRUE), 
+          max_hg_Animal = max (hg_Animal, na.rm=TRUE),
+          min_hg_Animal = min(hg_Animal, na.rm=TRUE))   
+ 
+ clean.dairy %>%
+
+  summarize(avg_Tonnes_Milk = mean (Tonnes_Milk, na.rm=TRUE),
+          med_Tonnes_Milk = median (Tonnes_Milk, na.rm=TRUE), 
+          max_Tonnes_Milk = max (Tonnes_Milk, na.rm=TRUE),
+          min_Tonnes_Milk = min(Tonnes_Milk, na.rm=TRUE))  
+
+ #Counts of unique occurences
+ distinct(clean.dairy, Year)
+
+  distinct(clean.dairy, Area)
 
 ```
-## Where I'm Stuck
-Now I want to collapse the rows together so that one case is one Area-Year combination. How?
-Then I want to look at these "areas" and how to define them--some are countries and others are continents. I wonder what additional tables of information would be helpful or interesting to connect here--like land mass area or population, or population density?
-```{r}
-#Trying group_by Area and group_by (Year) did not work.
-#Trying case_when
-#cattle.sm %>%
- # case_when()%>%
-  #head()
+## Summary
+The FAOSTAT data on cattle contains 58 years of data from 1961 to 2018 on cattle meat and milk production for 204 countries (232 minus 28 "aggregate" regions). 
 
-# Probably delete this later: combines "heads of cattle" but leaves all the values in the same row, even though they are of different units.
-#unite(cattle.sm,"Unit_of_Element", c(Unit,Element), sep = "_", remove = TRUE, na.rm = FALSE)
+For my analysis, I am interested in the top producers of meat and milk. I have relocated the "Items" of production to their own columns for a tidy set of data. From there, I can observe the max, min, and averages of heads of cattle, meat production, and milk production. The top 10 producers of Meat in hectograms is shown below, and of milk in tonnes below that. Interestingly, Canada is the only country that appears in both lists. 
+
+As a side note, I am not sure why Northern America appears in the top beef producers table, since I removed aggregate values when I read in the data. Perhaps there was an error there.
+
+In the future, it may be interesting to compare rates of meat and milk production in proportion to the head of cattle. Another question to investigate could be comparing countries' production vs consumption of cattle products.
+
+```{r}
+# Top 10 Beef Producers in a single year
+clean.dairy %>%
+select(Area, hg_Animal)%>%
+   group_by(Area) %>%
+  arrange(desc(hg_Animal)) %>%
+            slice(1)%>%
+  ungroup()%>%
+  arrange(desc(hg_Animal)) %>%
+  slice(1:10)
+
+# Top 10 Milk Producers in a single year
+clean.dairy %>%
+select(Area, Tonnes_Milk)%>%
+   group_by(Area) %>%
+  arrange(desc(Tonnes_Milk)) %>%
+            slice(1)%>%
+  ungroup()%>%
+  arrange(desc(Tonnes_Milk)) %>%
+  slice(1:10)
 ```
 
