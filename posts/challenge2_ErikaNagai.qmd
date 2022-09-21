@@ -1,0 +1,133 @@
+---
+title: "Challenge 2 Erika Nagai"
+author: "Erika Nagai"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+First of all, let's install all the packages convenient for this challenge.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(summarytools)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+I will use hotel_booking.csv data.
+
+```{r}
+# read the data as a tibble
+data <- read_csv("_data/hotel_bookings.csv")
+data
+```
+
+
+## Describe the data
+
+Let's explore the data.
+
+```{r}
+view(dfSummary(data))
+```
+
+From this summary, we can see that this data is about reservations made for two types of hotel (City Hotel, Resort Hotel) from 2015 until 2017. 
+The data includes 1. Status of reservation (cancelled, checkout, no-show) 2. The length of stay (arrival date, days in total, days during weekdays and weekend), 3. Guest information (# of adults, children, babies, repeater or not, previous cancellation history) 4. Reserved service type (room type, meal, car parking, special request) 5. Others (used agency, distribution channel etc)
+ 
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+Let's explore the differences in reservation trends by the type of hotel (City Hotel vs. Resort Hotel)
+
+!! Questions: The below code shows the statistic data of only Resort Hotel.
+```{r}
+data_hotel <- data %>% 
+  group_by(hotel) %>%
+  descr(stats = c("mean", "sd", "min", "med", "max"))
+
+view(data_hotel)
+```
+
+Make a column of total nights of stay 
+```{r}
+data <- data %>% 
+  mutate(total_nights = stays_in_week_nights + stays_in_weekend_nights)
+
+```
+
+
+Customer and Stay Trends by Hotel Type
+```{r}
+data %>%
+  group_by(hotel) %>%
+  summarise(
+    ave_adults = mean(adults, na.rm = TRUE),
+    ave_children = mean(children, na.rm = TRUE),
+    ave_babies = mean(babies, na.rm = TRUE),
+    avg_total_nights = mean(total_nights, nr.rm = TRUE))
+
+
+```
+Guest who stay at Resort hotel tend to stay longer than those who stay at Resort hotel.
+Guests at both hotels are less likely to be accompanied by children, but resort hotels have more people with children and babies than city hotels!
+
+### Explain and Interpret
+
+I will compare the group with children (at least one child or baby) staying at a resort hotel to the group without children.
+I chose this group because I thought that the presence of children on a trip significantly impacts the stay trend and that hotel companies would want to know what the groups with children want.
+
+```{r}
+# First classify if the group is with at least one kid/baby.
+
+data <- data %>% 
+  mutate(Kids_total = children + babies) %>%
+  mutate(Kids = case_when(
+    Kids_total == 0 ~ "No Kid",
+    Kids_total >= 1 ~ "With Kid"
+  ))
+
+data
+```
+Now, let's find out the differences in trends between groups with and without children.
+
+```{r}
+data %>%
+  group_by(Kids) %>%
+  summarise(
+    avg_total_nights = mean(total_nights, nr.rm = TRUE),
+    repeated_guest = mean(is_repeated_guest, nr.rm = TRUE)
+  )
+```
+
