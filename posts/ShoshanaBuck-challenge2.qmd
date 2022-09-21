@@ -1,0 +1,90 @@
+---
+title: "Challenge 2 Instructions"
+author: "Shoshana Buck"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/21/2022"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in the Data
+
+```{r}
+hotel_bookings <- read_csv("_data/hotel_bookings.csv")
+hotel_bookings
+```
+
+The '***Hotel_bookings'*** data set is comparing two types of hotels, *City Hotel* and *Resort Hotel*. The data has 119,390 observations with 32 variables, identifying important information when booking like arrival, length of stay, location of hotel and assigned room type. Data for ***'Hotel_bookings'*** was collected data starting in August of 2015 and ending in April of 2017. The data is originally from Hotel booking demand data set by Nuno Antonio, Ana de Almeida, and Luis Nunes.
+
+## Describe the data
+
+In order to get a great breakdown and visualization of the data set I used the R package, *summary tools***.** *Summary tools* gives the variable, stats within that variable, the frequency, and a graph of each variable. From the summary it shows that the average year to stay in either a resort or city hotel was in 2016. Additionally, the top month to arrive/stay at the hotel was August and the two least popular month to stay in a hotel was December and January.
+
+```{r}
+#| label: summary
+colnames(hotel_bookings)
+
+print(summarytools::dfSummary(hotel_bookings,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+
+```
+
+## Provide Grouped Summary Statistics
+
+```{r}
+hotel_bookings %>% 
+  summarise(across(c(country,arrival_date_year,adr, stays_in_week_nights, stays_in_weekend_nights), n_distinct))
+```
+
+I used the function summarize() to look the variables across the data set. From the table we can see that there were 178 unique countries that came from the data. Additionally, on average a room was booked for 35 week nights and 17 weekend nights. Showing that people normally stayed in a hotel on week days rather than weekends.
+
+I Know that the 3 for arrival year makes sense because the data was taken from 2015-2017. However, I am a little confused about the numerical value for the average daily rate. I don't see 8879 reflected in the original data set when I put it in descending order.
+
+```{r}
+hotel_bookings %>% 
+  group_by(hotel,country,adr, stays_in_week_nights, stays_in_weekend_nights,arrival_date_year) %>% 
+  summarize(total_adults = sum(adults)) %>% 
+  arrange(desc(adr))
+```
+
+For the second code chunk I used the function **group_by()** to focus in on variables that I thought were interesting. I think piped and used the function **summarize()** to find '*total_adults*.' I then piped again to arrange my date set in descending order based off of the *'average daily rate.*' I thought it was crazy that the most expensive city hotel was in Portugal in 2016 that had 2 adults staying for one week night at a rate of $5400.
+
+Since the chart is arranged in descending order based off the average daily rate, Portugal has seven out of the ten most expensive hotels with five being a resort style hotel. Other countries within the top ten are Italy, Spain, and Morocco.
+
+```{r}
+bookings<- hotel_bookings %>% 
+  group_by(hotel,reserved_room_type) %>% 
+  summarize(price = mean(adr),
+            adults = mean(adults),
+            children = mean(children),
+            babies = mean(babies), na.rm = TRUE) %>% 
+  arrange(reserved_room_type)
+bookings
+```
+
+### Explain and Interpret
+
+For the third code chunk I thought it would be interesting to use the group_by() function of hotel and room_type to see if there was a correlation between reserved_room_types and the type of hotel. Though I do not know what the reserved_room_types mean it can be seen that a resort hotel is cheaper to stay in than a city hotel.
