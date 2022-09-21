@@ -1,0 +1,196 @@
+---
+title: "Challenge 2"
+author: "Julian Castoro"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - birds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(ggplot2)
+
+options(scipen=999)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+! Question: 
+How would i find the difference between first and last years Value cols for each
+category in each region?
+!
+
+
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+- birds.csv ⭐⭐⭐
+
+
+```{r}
+birdsData <- read_csv("_data/birds.csv")
+birdsData
+```
+
+## testing different groupings
+
+
+Grouping by item and tallying we see the below counts of rows of information 
+on each of the types of birds in this dataset.
+
+```{r}
+by_item <- birdsData %>% group_by(Item)
+by_item %>% tally()
+```
+
+Summarizing by count shows us the total amount of birds in each category.
+(NA's removed)
+
+```{r}
+summarize(by_item, count=sum(Value,na.rm = TRUE))
+```
+
+
+Summarizing the Grouping by area and Item gives us the mean number of each
+item type from 1961-2018 (Where a value exists)
+
+```{r}
+by_area <- birdsData %>% group_by(Area,Item)
+by_area
+
+summarise(by_area, birds = round(mean(Value, na.rm = TRUE)))
+
+```
+
+
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+
+This data appears to be about the amounts of different varieties of bird category 
+by area/region over time. Based on the variety of different collection methods
+seen below, we can assume this info is a conglomeration from a few sources.
+
+
+FAO stands for the food and agriculture association
+
+```{r}
+unique(birdsData$`Flag Description`)
+```
+
+
+
+An interesting area I wanted to filter on was the flag for how the data was
+collected.
+
+Due to using the "na.rm = true" modifier in my earlier code, we never
+included any rows where the data was not available however we may want
+to see only official data.
+
+
+Below we see a snapshot of the most recent and official data
+```{r}
+by_area_year <- birdsData %>% group_by(Area,Year,Item)
+by_area_year
+
+by_area_year %>%
+filter(`Flag Description` == "Official data",Year == 2018) %>%
+  summarise(NumberOfBirds = Value)
+```
+
+Next I add a calculated field to see how the populations have changed over the years. As a test I will be exploring Belgium.
+
+
+```{r}
+by_area_year%>%
+  filter(Area == "Belgium")%>%
+  ggplot(aes(Year,Value)) + geom_line(aes(color=Item)) +geom_point()
+```
+
+
+After making this chart I wanted to know what the entire pool of sampled areas chicken populations might have looked like.
+```{r}
+
+Chickens_by_area_year <- birdsData %>% filter(Item == "Chickens", Area != "World")%>%group_by(Area,Year)
+Chickens_by_area_year %>%
+  ggplot(aes(Year,Value)) + geom_line(aes(color=Area)) +geom_point() + theme(legend.position = "none")
+
+```
+We see in this graph that there was a sharp decline in the global population of chickens from 1997-1998. After some research I believe this was due to the avian flu which gained traction
+during this time period. 
+
+https://www.nytimes.com/1997/12/29/world/chickens-killed-in-hong-kong-to-combat-flu.html
+
+
+ 
+
+
+
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, min/max/quantile) for different subgroups within the data set.
+
+According to official data the average amount of chickens in 2018 per country was:
+(Note: if 1000 Head means this value is a grouping of a thousand then we would multiply by 1000 as done below)
+
+```{r}
+birdsData %>%
+filter(`Flag Description` == "Official data",Year == 2018,Area!= "World") %>%
+  group_by(Item)%>%
+  summarise(MeanNumBirds = (mean(Value,na.rm= TRUE)*1000),sd=sd(Value,na.rm= TRUE))
+
+```
+
+An interesting comment here is how across each region the mean number of ducks and turkeys are relatively the same however the Standard deviation for the number of Turkeys is almost double that of ducks. I would think this is because in more of the developed world Turkeys are farmed over Ducks. With only a portion of the world farming turkeys and ducks naturally existing globally, this difference would make sense.
+
+
+
+
+Minimum chickens, Aruba had no officially documented chickens in 1991 and 1992
+
+```{r}
+birdsData %>%
+  filter(Item=="Chickens",Value == 0)
+```
+
+
+The maximum number of chickens in one area was Asia in 2018 with 13630958 1000 Heads of chickens
+
+```{r}
+birdsData %>%
+  filter(Item=="Chickens", Area != "World")%>%
+  slice_max(order_by = Value)
+
+```
+
+
+### Explain and Interpret
+
+Included throughout.
