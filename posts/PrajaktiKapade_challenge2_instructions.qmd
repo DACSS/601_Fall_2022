@@ -1,0 +1,131 @@
+---
+title: "Challenge 2 Instructions"
+author: "Meredith Rolfe"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+data <- read_csv('_data/railroad_2012_clean_county.csv')
+data
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+The dataset chosen by me is Railroad, it describes the information about total number of employees for a given combination of state and county. It has been collected for n number of state and county within them.
+
+
+```{r}
+data %>% group_by(county,state) %>%
+  summarize_at(c('total_employees'),mean)
+```
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),mean)
+```
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),mean)
+```
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),median)
+```
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),median)
+```
+```{r}
+library(dplyr)
+target <- c("AR")
+ar <- filter(data, state %in% target) 
+ar %>% summarize_at(c('total_employees'),mean)
+```
+### Explain and Interpret
+```{r}
+library(dplyr)
+target <- c("AK")
+ak <- filter(data, state %in% target) 
+ak  %>% summarize_at(c('total_employees'),mean)
+```
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),sd)
+```
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),sd)
+```
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),sd)
+```
+```{r}
+library(dplyr)
+target <- c("CA")
+ak <- filter(data, state %in% target) 
+ak  %>% summarize_at(c('total_employees'),mean)
+```
+
+```{r}
+library(dplyr)
+target <- c("CT")
+ak <- filter(data, state %in% target) 
+ak  %>% summarize_at(c('total_employees'),mean)
+```
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+I looked into different central tendencies for the dataset - mean, median and also looked into standard deviation for the states. We can see that for AE, DC and AP the standard deviation is NA stating that the dispersion is 0 and it has similar values for all counties. The two groups i.e. states AK and AR where compared to see the difference in mean of the total_employees present. There is a difference of almost 35 employees, as AR has a mean of 53 while AK stands at 17. It is interesting to see that employees vary a lot per state. I also looked into the employees from the states with highest SD, to check what mean value stands at. According to the dispersion criteria, CA and CT had the most SD, but while checking means CT has a mean of 324 while CA stands at 238. We can see that the difference between them is as high as 100.
