@@ -1,0 +1,115 @@
+---
+title: "Challenge 2"
+author: "Aleacia Messiah"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - Aleacia Messiah
+  - faostat
+  - tidyverse
+  - readr
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+# read in the data from FAOSTAT_cattle_dairy.csv
+cattle <- read_csv("_data/FAOSTAT_cattle_dairy.csv")
+cattle
+```
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+# get the dimensions of cattle
+dim(cattle)
+# view the first several rows of cattle 
+head(cattle)
+# compute a summary of the columns in cattle
+summary(cattle)
+# create new dataset omitting the least meaningful columns due to redundancy
+cattle_new <- select(cattle, !ends_with("Code") & !("Flag"))
+cattle_new
+# get the distribution of values for each column
+table(cattle_new$Domain)
+table(cattle_new$Area)
+n_distinct(cattle_new$Area)
+table(cattle_new$Element)
+table(cattle_new$Item)
+table(cattle_new$Year)
+n_distinct(cattle_new$Year)
+table(cattle_new$Unit)
+n_distinct(cattle_new$Unit)
+table(cattle_new$Value)
+table(cattle_new$`Flag Description`)
+n_distinct(cattle_new$`Flag Description`)
+```
+
+There are 36,449 observations (cattle) with 14 different variables (Domain Code, Domain, Area Code, Area, Element Code, Element, Item Code, Item, Year Code, Year, Unit, Value, Flag, Flag Description) in the cattle dataset. This data was most likely gathered in farms around the world focusing on cattle milk production and the value of each cow. There are about 232 different countries where the data was gathered from, 3 different types of measurement (milk production, meat, and value of the cow) for each cow in Head, hg/An, and tonnes, 7 different descriptions of whether the data was official or not, all over 58 years from 1961 to 2018. The number of observations collected each year increased steadily from 594 in 1961 to 672 in 2018. Official data accounts for 10,044 of the observations while unofficial figures and non-available data account for 810 and 74 observations respectively.
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+# compute number of missing values
+sum(is.na(cattle_new$Value))
+# compute the mean, median, and mode for Value based on the Area, Year, and Element, and Year and Element
+Year_Element_Area <- group_by(cattle_new, Year, Element, Area)
+summarize(Year_Element_Area, mean_value = mean(Value, na.rm = TRUE))
+summarize(Year_Element_Area, median_value = median(Value, na.rm = TRUE))
+summarize(Year_Element_Area, mode = sum(n()))
+Year_Element <- group_by(cattle_new, Year, Element)
+summarize(Year_Element, mean_value = mean(Value, na.rm = TRUE))
+summarize(Year_Element, median_value = median(Value, na.rm = TRUE))
+summarize(Year_Element, mode = n())
+# compute the mininum, maximum, quantiles, and standard deviation for Value based on Area, Year, and Element, and Year and Element
+summarize(Year_Element_Area, min_value = min(Value, na.rm = TRUE))
+summarize(Year_Element_Area, max_value = max(Value, na.rm = TRUE))
+summarize(Year_Element_Area, quantile_value = quantile(Value, na.rm = TRUE))
+summarize(Year_Element_Area, sd_value = sd(Value, na.rm = TRUE))
+summarize(Year_Element, min_value = min(Value, na.rm = TRUE))
+summarize(Year_Element, max_value = max(Value, na.rm = TRUE))
+summarize(Year_Element, quantile_value = quantile(Value, na.rm = TRUE))
+summarize(Year_Element, sd_value = sd(Value, na.rm = TRUE))
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+I chose to group by Year, Element, and then Area because I wanted to analyze the years of data based on the Element (Milk Animals, Yield, Production) and then the country or region to view the myriad of values associated with it. I also grouped by Year and then Element to see if there is a significant difference in the results of the mean, median, etc., of the variable Value compared to Area and Element. There are 74 missing values in this dataset so they were excluded in this analysis. Viewing the first several observations in the grouping Year_Element_Area, the mean value for Afghanistan for milk animals in 1961 is 700,000, while the mean value for the grouping Year_Element is 3,582,516.30 for milk animals in 1961, meaning looking at the mean value for Year_Element alone illustrates the average value for all countries combined but the mean value for Year_Element_Area is less because it is only a small part of the mean value for Year_Element. The median value for the same observation is also 700,000 for Year_Element_Area so the distribution of values for this particular observation is evenly distributed. However, 200,550 is the median value for Year_Element for 1961 milk animals so the mean and median are far apart and the distribution of the values for this observation is most likely very skewed. 
