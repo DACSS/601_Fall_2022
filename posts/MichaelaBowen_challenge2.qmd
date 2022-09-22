@@ -22,6 +22,7 @@ categories:
 #| message: false
 
 library(tidyverse)
+library(readxl)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
@@ -41,18 +42,37 @@ Read in one (or more) of the following data sets, available in the `posts/_data`
 -   FAOstat\*.csv or birds.csv ⭐⭐⭐
 -   hotel_bookings.csv ⭐⭐⭐⭐
 
+Here I have read in the RailRoads Excel File Sheet. Extraneous and empty data has been removed, and Canada had its county named "Canada". 
+
+
 ```{r}
+railroads <-read_excel("_data/StateCounty2012.xls",
+                     skip = 4,
+                     n_max = 2987,
+                     col_names= c("state", "delete",  "county",
+                                  "delete", "employees"))%>%
+  select(!contains("delete"))%>%
+  filter(!str_detect(state, "Total"))%>%
+  mutate(county = ifelse(state=="CANADA", "CANADA", county))
+
+railroads
 
 ```
 
-Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
-
 ## Describe the data
 
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+The variables are named *State*, *County*, and *Employees*. This is likely the data of railroad employees working at counties within the United States. There are 54 distinct "States" which include the District of Columbia and Canada, the other two are likely oversea or military. 
 
 ```{r}
 #| label: summary
+railroads%>%
+  select(state)%>%
+  n_distinct(.)
+
+
+railroads%>%
+  select(state)%>%
+  unique()
 
 ```
 
