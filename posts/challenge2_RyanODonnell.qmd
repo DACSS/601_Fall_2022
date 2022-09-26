@@ -1,0 +1,114 @@
+---
+title: "Challenge 2 Solution"
+author: "Ryan O'Donnell"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+  - ryan_odonnell
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+#| label: load_in
+# read in data and set up initial objects
+
+bookings <- read_csv("_data/hotel_bookings.csv")
+
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+str(bookings)
+
+```
+
+"hotel_bookings.csv" contains 119,390 observations of 32 variables. The data appears to be tracking the details of reservations at some hotels. There is a lot of information recorded for each reservation. The arrival date is stored across 3 columns, 4 if you count the week number. Some of the columns have codes in them but there is not a key to fully understand these codes.
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+#| label: explore 1
+# filter out cancelation and create object that is grouped by hotel
+
+by_hotel_no_cancel <- bookings %>% filter(`is_canceled` == 0) %>% group_by(`hotel`)
+
+# summarize adults, children, and babies for each hotel
+summarize(by_hotel_no_cancel, "Avg Adults"=mean(adults), "Med Adults"=median(adults), "Avg Children"=mean(children), "Med Children"=median(children), "Avg Babies"=mean(babies), "Med Babies"=median(babies))
+
+summarize(by_hotel_no_cancel, Adults=quantile(adults), Children=quantile(children), Babies=quantile(babies))
+
+# create columns that includes the total stay length, % of stay that is weekend, and % of stay that is weeknight, remove stays that are 0 days
+
+stays_expanded_by_hotel <- by_hotel_no_cancel %>% select(hotel, stays_in_weekend_nights, stays_in_week_nights) %>%
+  mutate("Total Stay" = `stays_in_weekend_nights` + `stays_in_week_nights`,
+         "% Weekend" = `stays_in_weekend_nights` / (`stays_in_weekend_nights` + `stays_in_week_nights`),
+         "% Weeknight" = `stays_in_week_nights` / (`stays_in_weekend_nights` + `stays_in_week_nights`)
+         ) %>%
+  filter(`Total Stay` > 0)
+
+# look at the central tendencies of stays 
+
+summarize(stays_expanded_by_hotel, "Avg Stay"=mean(`Total Stay`), "Med Stay"=median(`Total Stay`), "Avg % Wknd"=mean(`% Weekend`), "Med % Wknd"=median(`% Weekend`), "Avg % Wknt"=mean(`% Weeknight`), "Med % Wknt"=median(`% Weeknight`))
+
+```
+
+First, I wondered a bit about differences between who stayed at the City Hotel and who stayed at the Resort Hotel. I filtered out canceld bookings since they didn't end up staying. At both hotels, most groups are two adults with no children or babies. Slightly more children and babies stay at the Resort Hotel over the City Hotel. It looks like sometimes bookings include no people, but at this time I don't think I have enough information about this data to understand why.
+
+I also looked at how long customers tended to stay at either hotel and whether more of their stay tends to be weekends or weeknights, but the central tendencies were pretty close for both!
+
+```{r}
+
+#| label: explore 2
+# group by cancelation, removing customers who are not repeat customers
+
+by_canceled <- bookings %>% filter(`is_repeated_guest` > 0) %>% group_by(`is_canceled`)
+
+# See if the statistics show if people who have canceled before are more likely to have canceled their current reservation
+
+summarize(by_canceled, "Avg Previous Cancelations"=mean(`previous_cancellations`), "Avg Repeat Booking Not Canceled"=mean(`previous_bookings_not_canceled`))
+
+```
+One other thing I noticed they were tracking is whether or not the customer had previous cancelations so I wanted to see if whether or not those who had canceled their reservation were more likely to have canceled previous bookings. The customers who had canceled their booking had a higher average number of previous cancelations than those who kept their reservation. I also looked at the average repeated booking not canceled to see if people who had canceled a lot of bookings were just making more bookings, but that doesn't seem to be the case.
