@@ -1,0 +1,94 @@
+---
+title: "Challenge 2 - Abby Balint"
+author: "Abby Balint "
+desription: "Data wrangling: using group() and summarise()"
+date: "09/21/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+  - abby_balint
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+read_csv("_data/hotel_bookings.csv")
+hoteldata <- read_csv("_data/hotel_bookings.csv")
+```
+
+
+## Describe the data
+
+This data set contains information about hotel stays in various countries from 2015-2017. There is a lot of different types of data contained here, 32 variables and 119390 rows of data. This is likely from an international hotel chain with many locations and hotel types based on the variables that this dataset contains. Because of the large number of variables, I think it would be best to look at the variables in sets as they relate to each other. For example, we could look at data about time of year, length of stay, and lead time for booking, which would tell us about behaviors around advanced booking practices. Or, we could look at the room types, number of adults/children, meals, and parking spaces used to build a profile about the demographics of customers and their habits. There is even data around marketing strategies that could help show how marketing impacts the customer experience. Really, there is an endless amount of combinations of variables that could be used here to tell various different stories.
+
+For this challenge, I am choosing to focus on the demographics of guests and the types of stays they are most interested in given things like family structure, location, and customer type (repeat vs not).
+
+```{r}
+#| label: summary
+summary (hoteldata)
+dim(hoteldata)
+```
+```{r}
+#| label: summary2
+select(hoteldata, "stays_in_weekend_nights", "stays_in_week_nights", "adults", "children", "babies", "country", "total_of_special_requests")
+hotelcut <- select(hoteldata, "stays_in_weekend_nights", "stays_in_week_nights", "adults", "children", "babies", "country", "total_of_special_requests")
+```
+```{r}
+#| label: summary3
+summary(hotelcut)
+```
+
+## Provide Grouped Summary Statistics
+
+
+Above, I made a smaller version of my dataset using only some of the columns that apply to the demographics of customers, their country, and their length of stay.
+Below, I filtered by stays with two adults and more than one child in country PRT to see only the data from Portugal. I descended this data by the total number of special requests. I can see that the maximum number of special requests from families with 2 adults and at least one child was five.
+I also sliced the data for the top 10 most special request rows and can now easily see that 9 out of the 10 rows correspond with a stay 3 nights or longer, drawing the conclusion that the longer the stay the more likely families may be to submit special requests.
+
+```{r}
+#| label: summary4
+filter(hotelcut, `adults` == 2 & `children` >= 1 & `country`== "PRT" & `stays_in_weekend_nights` >= 1) %>%
+  arrange(desc(`total_of_special_requests`)) %>%
+  slice(1:10)
+
+```
+```{r}
+#| label: summary5
+filter(hotelcut, `babies` >= 2 & `country`== "PRT") %>%
+  arrange(desc(`stays_in_weekend_nights`)) %>%
+  slice(1:10)
+```
+```{r}
+#| label: summary6
+filter(hotelcut, `babies` >= 2 & `country`== "PRT") %>%
+  summary()
+```
+
+
+### Explain and Interpret
+
+Above I switched my filtering to show that customers with two or more babies stayed up to eight days max. Customers with two or more babies stayed an average of 1-2 weekend nights, and 2-3 weeknights.
