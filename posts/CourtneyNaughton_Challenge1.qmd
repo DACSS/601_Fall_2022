@@ -1,0 +1,86 @@
+---
+title: "Naughton Challenge 1"
+author: "Courtney Naughton"
+desription: "Reading in data and creating a post"
+date: "09/21/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(knitr)
+library(readxl)
+library(gtable)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge 1, Reading in Data and Creating a Post
+
+## Part 1: Railroads
+```{r}
+railroads <- read_csv("/Users/143660/Documents/GitHub/601_Fall_2022/posts/_data/railroad_2012_clean_county.csv")
+railroads
+```
+
+
+### Describe the data - Railroads
+
+This data has 3 columns and 2930 rows. The column names are STATE, COUNTY, and TOTAL EMPLOYEES. This data shows the number of railroad employees in each county and is organized by state. There were some abbreviations I did not recognize, so I did more research. AE and AP are Armed Forces Europe and Armed Forces Pacific. Texas had the largest number of employees with 19839 employees.
+
+```{r}
+#| label: summary1
+as_tibble(railroads)
+
+#groups the data by state in descending order of employees
+railroads%>%
+  group_by(state)%>%
+  summarise(total=sum(total_employees))%>%
+  arrange(desc(total)) %>%
+slice(1:10)
+
+#groups the data by state name alphabetically
+railroads %>%
+  select(state)%>%
+  group_by(state) %>%
+  arrange(state)%>%
+ slice(1)
+
+
+```
+
+## Part 2: Birds Data
+
+```{r}
+birds <- read_csv("/Users/143660/Documents/GitHub/601_Fall_2022/posts/_data/birds.csv")
+```
+
+### Describe the Data - Birds
+
+This dataset is a bit larger - there are 14 columns and 30977 rows. The columns are Domain.Code, Domain, Area.Code, Area, Element.Code, Element, item.code, item, year.code, year, unit, value, flag,flag.Description. The 5 item categories are chickens, Ducks, Geese and guinea fowls, turkeys, and pigeons and other birds. There are 248 areas and the data is tracked from 1961 to 2018. Flag description must be how the birds were counted. The data was organized into these categories: Aggregate, may include official, semi-official, estimated or calculated data, Data not available, FAO data based on imputation methodology FAO estimare, Official Data, and unofficial figure. Based on this information, this dataset counts the number of birds in the world from 1961 - 2018 using flagging techniques. 
+```{r}
+#| label: summaryBirds
+head(birds)
+table(select(birds, Item))
+
+table(select(birds, Year))
+table(select(birds, "Flag Description"))
+
+
+```
+
