@@ -1,0 +1,82 @@
+---
+title: "Challenge 2"
+author: "Kavya Harlalka"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/24/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r Libraries}
+#| label: setup
+#| warning: false
+#| message: false
+
+# Import important libraries needed for functions
+library(tidyverse)
+library(rmarkdown)
+library(summarytools)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in the Data
+
+
+```{r Read In Data}
+# Read data from the csv file
+data <- read.csv('_data/hotel_bookings.csv')
+
+# Printing the read data as a paged table
+paged_table(data)
+```
+
+This dataset represents records of hotel bookings across different countries with details like booking data, booking status, no of adults/children/babies, etc.
+
+## Describe the data
+
+```{r Summary of Data}
+# Get and print summary of the dataset to help us analyze it.
+print(dfSummary(data))
+```
+
+As can be seen in the above summary, hotel has only two values - Resort and City. The dataset has data from the year 2015 to the year 2017. It can be observed that about 37% of the bookings are canceled from the is_canceled column summary. We can see a large number of columns with categorical values like country, market_segment, distribution_channel, customer_type, etc. and how the percentage of these categorical values are distributed in the data set. This gives us insight on what analysis can be done on the data.
+
+
+## Provide Grouped Summary Statistics
+
+I chose the market_segment column to group the data. The market segment would give us insight into the behavior of each segment. This can be further understood by looking at the tables below :-
+
+```{r Analysis of Data}
+# Group dataset by Market Segment
+dataGroupedByMS <- data %>%
+  group_by(market_segment)
+
+# Analyze the grouped segment's stays in weekdays and weekends using mean of the number of nights.
+dataGroupedByMS %>%
+  summarise(
+    avg_stays_in_week_nights = mean(stays_in_week_nights, nr.rm = TRUE),
+    avg_stays_in_weekend_nights = mean(stays_in_weekend_nights, nr.rm = TRUE)
+  )
+
+# Analyze the grouped segment's booking status using percentage of distribution for each categorical value in reservation_status.
+prop.table(table(select(dataGroupedByMS, reservation_status))) %>% 
+  `*`(100) %>% 
+  round(2)
+
+```
+
+### Explain and Interpret
+The first table gives insight into which market segment bookings come for weekdays and which ones come during weekends. This could help the hotels decide which events to organize or how to plan activities targeted to a certain segment during those days.
+
+The second table gives percentage of bookings of each type of segment that were cancelled, no-shows or checked-out. This could help the hotels analyze which market segments gets the most cancellations and which ones get the least, and find ways to reduce the number of cancellations by targeted schemes or penalties towards certain segments.
