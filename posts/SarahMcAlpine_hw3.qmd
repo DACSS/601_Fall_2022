@@ -1,0 +1,72 @@
+---
+title: "Sarah McAlpine Challenge 3"
+author: "Sarah McAlpine"
+desription: "Homework Challenge #3"
+date: "09/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge3
+  - sarahmcalpine
+  - eggs
+  - pivot_longer()
+  - rename()
+  - mutate()
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pivoting "Tidy" Egg Data
+
+For this challenge, I will read in and pivot the eggs_tidy.csv data to prepare it for analysis.
+
+After looking at the rendered data frame summary, I know that there are 6 columns of data and 120 rows, containing all 12 months of the year, and the years 2004-2013. The remaining 4 columns are large_half_dozen, large_dozen, extra_large_half_dozen, and extra_large_dozen, all with their values ranging from 126-290. By researching the source of this data, I know that the values correspond to the price in cents, meaning that egg prices range from $1.26 to $2.90 for large and extra large half-dozens and dozens of eggs. While I read in the data, I will also rename the columns to separate the size and quantity variables for my next step. This will not change the dimensions of the data.
+
+```{r}
+# read in egg data and assign a name
+eggs <- read_csv("_data/eggs_tidy.csv") %>%
+  rename("xlarge_halfdozen" = "extra_large_half_dozen", 
+         "xlarge_dozen" = "extra_large_dozen", 
+         "large_halfdozen" = "large_half_dozen") 
+print(dfSummary(eggs))
+# quickly find mins, maxes, and ranges of data
+summary(eggs)
+# preview first several rows
+head(eggs)
+
+```
+
+## Predict Dimensions of Tidy Data 
+In considering this data set, I can expect one observation to include a month, a year, an egg size, and a quantity of eggs. Arranging the data in this way will allow analysis of price changes throughout the year and over time for both large and extra large eggs, as well as whether they are sold in dozens or half dozens. 
+
+I expect the resulting data set to be four times as long since each size-quantity pairing will appear in its own row (rather than the initial 4 columns after month and year). I expect the total number of columns to reduce by one, since  I will remove the 4 size-quantity columns names and replace them with a column each for size, quantity, and average price. See below for this newly rearranged data.
+```{r}
+eggs_longer <- eggs %>%
+   pivot_longer(cols = contains("large"),
+               names_to = c("size", "quantity"),
+               names_sep = "_",
+               values_to = "avg_price")
+
+eggs_longer
+```
+## Conclusion
+As I predicted, I now have four times as many rows (120 became 480), and one column fewer (6 became 5). Now I have a single observation per row and am ready to begin analysis. I may wish to `mutate` the cents into dollars depending on the nature of my analysis or if there are other tables to bring in at some point. The preview tibble below rounds to whole cents, but the data retains the precise decimals.
+```{r}
+eggs_USD <- mutate(eggs_longer, 
+       avg_USD = avg_price / 100
+       )%>%
+  select(!contains ("price"))
+eggs_USD
+```
