@@ -1,0 +1,208 @@
+---
+title: "Challenge 2"
+author: "Emma Narkewicz"
+description: "In this challenge I completed data wrangling on the Birds FAO data set using group() and summarise() and summary statistic functions."
+date: "09/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - emma_narkewicz
+  - birds
+  - fao stat
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+I selected thebirds.csv for this Challenge set to push myself.
+
+```{r Reading in Data}
+#Making sure I have the right library open
+library(tidyverse)
+#Reading in my selected data set and remove codes, element, and domain columns
+Birds <- read_csv("_data/birds.csv") %>%
+  select(-c(contains("Code"), Element, Domain, Flag))
+
+Birds
+
+#Replace value and unit columns with Number_of_Birds columns, creating Birds_Clean data set
+Birds_Clean = transmute(Birds,
+  Area = Area,
+  Item = Item,
+  Year = Year,
+  Number_of_Birds = Value*1000,
+  `Flag Description` = `Flag Description`
+)  
+
+
+Birds_Clean
+
+```
+
+The original "Birds" data frame had 30977 rows and 14 columns. A clean "Birds_Clean" data frame was created for analysis by removing the redundant or extraneous code, Element, Domain, and Flag columns. Additionally, the Unit and Value columns were replaced with the Number_of_Birds column , created by converting values in units of 1000 Head to the total number of birds in the easy to work with units of birds.
+
+## Describe the data
+
+```{r}
+
+#calculating min, median, mean, and max Number_of_Birds column, removing na from dataset
+summarise(Birds_Clean, min_birds = min(Number_of_Birds, na.rm = TRUE), median_birds = median(Number_of_Birds, na.rm = TRUE), mean_birds = mean(Number_of_Birds, na.rm = TRUE), max_birds = max(Number_of_Birds, na.rm = TRUE))
+
+#Creating a bar chart of Values to identify the mode, using the xlim() function to graph from min-max of data
+ggplot(Birds_Clean, aes(Number_of_Birds)) + geom_bar() + xlim(0, 1800000) + labs(title = "Graphical Determination of Mode Number of Birds Pt.1, xlim = 0 - 1.8 milion" )
+  
+#narrowing in to identify mode
+ggplot(Birds_Clean, aes(Number_of_Birds))+ geom_bar() + xlim(0,8000) + labs(title = "Graphical Determination of Mode Number of Birds Pt.2, xlim = 0 - 8,000" )
+
+#Highest number of birds
+Birds_Clean%>%
+  arrange(desc(Number_of_Birds)) %>%
+  select(Area, Item, Number_of_Birds, Year, `Flag Description`) %>%
+  slice(1:100)
+
+#Fewest number of birds
+Birds_Clean %>%
+  arrange(Number_of_Birds)%>%
+  select(Area, Item, Number_of_Birds, Year, `Flag Description`) %>%
+  slice(1:100)
+  
+
+```
+
+The bird data set was put together by the \[United Nation's Food and Agricultural Organization\] (https://www.fao.org/about/en) as part of their larger statistical data base created for the purposes of tracking and defeating hunger internationally. The clean "Birds_Clean" data frame has 5 columns: Area, Item, Year, Number_of_Birds, and Flag Description.
+
+The Area column contains the location of the bird-stock, ranging from estimates of the total bird-stock world-wide, for entire continents, or for individual countries. There are 248 unique areas in the data frame. By using the arrange(), select(), and slice() functions it was determined that the with "World" having the most number of birds of any area followed by Asia, while the areas with the fewest total number of birds tended to be islands.
+
+The Item column refers to which of the 5 types of bird-stocks is being measured in each row: chickens, ducks, geese or fowl, pigeons/other birds, or turkeys. Chickens were the most common item type (42.7% of all items) and pigeons, other birds was the least common item type (3.8% of all items).
+
+The Year column is self explanatory and spans 58 years ranging from 1961 through 2018. Year seemed to contribute to the size of number of birds, with the top 10 most number of birds all occurring between the 10 year of 2009 through 2018. This suggests the size of bird stocks is likely increasing over time.
+
+The "Number_of_Birds" column describes the number of birds for each item type in the specified location and year. The minimum number of birds was 0, the median number of birds was 1.8 million, the mean number of birds was 99.4 million, and the maximum number of birds is 23.7 billion. The mode number of birds was 2,000, which was determined graphically. 1036 rows had N/A for Number_of_Birds meaning that value was missing from the data set.
+
+Lastly, the Flag Description column refers to the origin of each data and can be used to gauge the data_quality with 6 different flag descriptions: Aggregate data, Data not available, FAO data based on imputation, FAO estimate, Official data, and Unofficial data. Using the FAO flag descriptions from the table of top 50 number of birds, the data for largest total number of birds were determined using aggregate data.
+
+## Provide Grouped Summary Statistics, Explain, & Interpret
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+**Area and Total Number of Birds**
+
+After reading in, previewing, and describing the Birds_Clean data set, I decided it would be interesting to look at the relationship between Area and Number of Birds. When looking at tables of the largest and smallest bird-stocks, area seemed to significantly factor into size of bird stocks, so decided to look more closely at this.
+
+```{r}
+#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of mean and median total number of birds descending by the median value
+Birds_Clean %>%
+  group_by(Area)%>%
+  select(Area, Number_of_Birds) %>%
+  summarise( mean_birds= mean(Number_of_Birds, na.rm=TRUE), median_birds = median(Number_of_Birds, na.rm = TRUE)) %>%
+  arrange(desc(median_birds))
+
+```
+
+Using the piping, group_by(), select(),summarize(), and arrange() functions, I created a table of the mean and median values per area, descending by median. I arranged the data-set by median as it is less likely to be skewed by outliers than the mean. The mean number of birds for the Area of the world was 2.57 billion, which is almost 8 times larger than the median number of birds for the world, which was 328 million. The areas with highest median total number of birds, starting with the highest are: World, "China, mainland, USSR, United States of America, Nigeria, Asia, Eastern Asia, India, Americas, and Indonesia. It made sense that the World has the highest median value of all areas, but I was surprised that the China (mainland), USSR, the USA, and Nigeria all had a higher area median value than Asia, when considering that the highest 50 total number of birds were all based in the area of World or Asia. A confusing finding is that the median Value for the USA is higher than the median value for"the Americas" which the USA is a part of, so I'd be curious to know if something brought the median down for the Americas. Along those lines, it would be interesting to know what feature of Nigeria make it have a higher median number of birds than its continent of Africa.
+
+Descending, the 10 lowest median values by area were Liechtenstein, Papua New Guinea, Saint Helena, Ascension and Tristan da Cunha, Jordan, Cayman Islands, Saint Pierre and Miquelon, Nauru, Tokelau, Falkland Islands (Malvinas), and Aruba. It follows earlier patterns observed from the lowest 50 values that islands comprised the majority of area with low values, as the climate of small islands is likely not conducive for poultry-stock. Liechtenstein and Jordan do not follow this pattern, as a small German town and a West-African country, and it would be interesting to learn why they are on this list. These ten areas with the lowest median values ranged from 0-12,000 birds which means these areas likely need to rely heavily on poultry imports or other protein sources.
+
+```{r}
+#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of min, max, sd, IQR, and range of number of birds,  descending by range/
+
+Birds_Clean %>%
+  group_by(Area)%>%
+  select(Area, Number_of_Birds)%>%
+  summarise(min_birds = min(Number_of_Birds, na.rm = TRUE), max_birds = max(Number_of_Birds, na.rm =TRUE), range_birds = max_birds-min_birds, sd_birds= sd(Number_of_Birds, na.rm=TRUE), IQR_birds = IQR(Number_of_Birds, na.rm = TRUE)) %>%
+   arrange(desc(range_birds))
+
+#Creating a boxplot of Number of Birds by Area
+ggplot(Birds_Clean, aes(Area, Number_of_Birds)) + geom_boxplot() + theme_minimal() + labs(title = "Boxplot of FAO Total Number of Birds by Area")
+
+```
+
+Once again using the piping, group_by(), select(),summarize(), and arrange(), I created a table of the minimum, maximum, range, standard deviation, IQR of number birds for each area, sorted in descending order by range, to look at the dispersion of the data. I also created a boxplot graphing the Number_of_Birds vs. Area to better visualize the data.
+
+
+Looking at this table, the Americas has the 4th largest range of number of birds for all areas in the data frame, at \~5.8 billion. The USA had the 12th largest range of number birds for all areas at \~2 billion. The Americas has a minimum number of birds of 553,000, whereas the USA had a 6 times higher minimum number of birds of 3.4 million. While the Americas have a higher maximum number of birds at \~ 5.8 billion vs USA's maximum number of birds of \~2 billion, the differences in minimum numbers of birds and range helps explains why the USA has a higher median number of birds than the USA.
+
+Looking at the world -- which had the largest range and IQR for number of birds -- we can see that despite area contributing to the number of birds, there is still a large range in number of birds for each area. This means that area alone cannot explain all of the variation in number_of_birds. Therefore, I decided to look at the relationship between time (as measured by Year) and the number of birds.
+
+**Year and Total Number of Birds**
+
+Using the piping, group_by(), and summarise() functions, I created a table of the mean and median of the total number of birds grouped by year. I sorted the table descending by mean number of birds to get average data for each year.
+
+
+```{r}
+
+#Create table of number of birds by year
+
+Birds_Clean %>%
+  group_by(Year)%>%
+  summarise(avg_birds = mean(Number_of_Birds, na.rm = TRUE), med_birds = median(Number_of_Birds, na.rm = TRUE))%>%
+   arrange(desc(avg_birds))
+
+
+
+
+```
+
+Looking at this table, the data follows the expected trend almost perfectly - with time the average total number of birds in a stock increases. The top 10 higher average number of birds in a stock is from the 10 most recent year 2009-2018. In fact, the top 10 average number of birds in a stock is in perfect chronological data, with the exception of more avg_birds in 2011 than 2010. It is clear from this table that over time the average number of birds increases. So while the world will have the largest bird_stock, the world in 2018 will likely have a larger bird stock than the world in 2000.
+
+```{r}
+#Graph of Birds by year FAO STAT data
+ggplot(Birds_Clean, aes(Year, Number_of_Birds)) + geom_point() + theme_minimal() + labs(title = "Total Number of Birds by Year")
+
+#Graph of Birds by year FAO STAT data 0-1billion
+ggplot(Birds_Clean, aes(Year, Number_of_Birds)) + geom_point() + theme_minimal() + ylim(0, 1000000000) + labs(title = "Total Number of Birds by Year, ylim = 0-1billion")
+
+```
+
+Looking at the above graph of Number_of_Birds vs. Years, it is once again clear that the number of bird stocks increase by time. With this scale appears to be 3 distinct trend-lines, with most data concentrated near the bottom of the y-axis. Viewing the second graph zoomed in on the y axis from 0-1billion using ylim(), while its its crowded at the bottom of the y-axis but at the top of the graph you can see the trend of number of birds increasing with time (Year).
+
+
+**Item, Year, and Number of Birds**
+
+So far, I have examined the impact of area and year on number of birds, but not examined the item. To do so I created a table using the pivot_wider() function to examine the average number of birds for each of the 5 types of Item at 2 points of time 50 years apart, 1968 and 2018. I used kable() to rename the column headings and add commas to the data in the table.
+
+
+```{r}
+#creating a table using the pivot_wider solution modeling the example pivot_wider solution we reviewed in class and using knitr::kable() to add commas and rename the column headings.
+t1<-Birds_Clean %>%
+  filter(Year %in% c(1968, 2018))%>%
+  group_by(Year, Item)%>%
+  summarise(avg_birds = mean(Number_of_Birds, na.rm=TRUE))%>%
+  pivot_wider(names_from = Year, values_from = c(avg_birds))
+
+knitr::kable(t1,
+             digits=0,format.args = list(big.mark = ","),
+             col.names = c("Bird Type", "Average Birds in 1968", "Average Birds in 2018"))
+             
+
+```
+
+Looking at the table, for every bird type, the average number of birds increased from 1968 to 2018. In this time span, the average number of chickens increased by 4.36 times, the average number of ducks increased by 4.16 times, the average number of geese and guinea fowls increased by 6.77 times, the average number of pigeons and other birds increased by 1.93 times, and the average number of turkeys increased by 2.17 times. The average number of chickens remains much higher than the other bird types over the 50 years, almost reaching 400 million in 2018. The average number of pigeons and other birds remains relatively low compared to the other bird types, not even reaching 5.5 million birds in 2018. Even when factoring in Item  (Bird Type), the trend of total number of birds increasing over time for a bird stock remains.
+
+
+## Conclusion
+
+By wrangling the FAO STAT bird data in R using dply functions I observed that larger areas generally had larger bird-stocks. Additionally, I observed that bird-stocks increased over time -- even when accounting for different bird types (Item).
+
+
