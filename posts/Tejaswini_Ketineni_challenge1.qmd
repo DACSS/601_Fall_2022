@@ -1,8 +1,8 @@
 ---
 title: "Challenge 1 Instructions"
-author: "Meredith Rolfe"
+author: "Tejaswini_Ketineni"
 desription: "Reading in data and creating a post"
-date: "08/15/2022"
+date: "08/21/2022"
 format:
   html:
     toc: true
@@ -22,41 +22,68 @@ categories:
 #| message: false
 
 library(tidyverse)
-
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
 ## Challenge Overview
 
-Today's challenge is to
+I am going to work with one data set: 
+1. railroad_2012_clean_county.csv
 
-1)  read in a dataset, and
 
-2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+## Reading the Data
 
-## Read in the Data
-
-Read in one (or more) of the following data sets, using the correct R package and command.
-
--   railroad_2012_clean_county.csv ⭐
--   birds.csv ⭐⭐
--   FAOstat\*.csv ⭐⭐
--   wild_bird_data.xlsx ⭐⭐⭐
--   StateCounty2012.xls ⭐⭐⭐⭐
-
-Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+Initially the data set-1(railroad_2012_clean_country) is read
 
 ```{r}
-
+library(readxl)
+railroad_2012_clean_county <- read_csv("_data/railroad_2012_clean_county.csv")
+View(railroad_2012_clean_county)
 ```
 
-Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
-
-## Describe the data
-
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+Head function is used to understand the population of data 
 
 ```{r}
-#| label: summary
-
+head(railroad_2012_clean_county)
 ```
+
+```{r}
+rows_and_columns_ds1 <- dim(railroad_2012_clean_county)
+rows_and_columns_ds1
+```
+There are about 2930 rows and about 3 columns present in the dataset.
+
+```{r}
+names_col <- colnames(railroad_2012_clean_county)
+names_col
+```
+There are three columns present in the data set namely : state,county and total_employees present
+
+
+```{r}
+sum(is.na(railroad_2012_clean_county))
+sum(is.null(railroad_2012_clean_county))
+```
+There are no nulls or missing values present in the data set
+
+```{r}
+summary(railroad_2012_clean_county)
+```
+
+```{r}
+library(data.table)
+data_railroad <- data.table(railroad_2012_clean_county)
+data_railroad[, .(distinct_states = length(unique(state)))]
+data_railroad[, .(distinct_county = length(unique(county)))]
+```
+
+There are 53 distinct states and 1709 distinct counties present.
+
+```{r}
+(table(railroad_2012_clean_county$state))
+```
+
+## Description of the data
+
+ The data set taken is analysed and the following observations are made.There are about 2930 rows and about 3 columns namely (state, county and the total_employees) present in the data set.The data set is checked for null and missing values.We observe that there are no such values present and the data set is clean.The summary statistics are checked.the count of unique states present in the data set is 53 and 1709 unique counties are present.Tabulating the states and the total_employees, we see that the highest number of employees are present in Texas(TX) and Georgia(GA) while the lowest employee count is observed in Armed forces(AE),Armed forces Pacific(AP).We also observe that the no.of states with employee count <10 is very less.
+
