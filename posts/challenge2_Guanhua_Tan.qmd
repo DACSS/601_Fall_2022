@@ -1,0 +1,136 @@
+---
+title: "Challenge 2 Guanua Tan"
+author: "Guanhua Tan"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/19/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+
+```{r}
+library(dplyr)
+railroad<-read_csv("_data/railroad_2012_clean_county.csv")
+railroad
+```
+
+
+
+```{r}
+#| label: summary
+railroad %>%
+  summary(railroad)
+```
+
+The dataset of railroad across the United States includes three columns--state, county and total employees in each county -- and 2930 counties.Each county at least maintains one employees while the maximum number is 8207. The average of total employees each county hires is 81.18. However, the median of it is 27.00, which reflects that most counties maintain a small station. The numbers of 1st Qu. and 3rd Qu. further confirms the finding.
+
+
+
+
+```{r}
+# top-ranking by county
+max_railroad = railroad %>%
+  arrange(desc(`total_employees`)) %>%
+  slice(1:20)
+max_railroad
+```
+Cook county, IL, hires the largest size of employees and reaches to 8207 while Tarrant, TX, is second to it with 4235 employees. The city of Chicago, the third largest city of the United State in terms of population, is located in Cook county, which interprets why Cook hires a large group of employees to manage the operation of railroad. I also propose that residents in IL may be more willing to take train for commuting. Tarrant county hires a large number of employees because it serves the Dallas-Fort Worth-Arlington metropolitan area. Interestingly, New York City's railroad is not in the top ten. I don't think it means the city relies less on railroad. In fact, New York City is heavy reliance on railroad for public transportation. But several different authorities run railroads connecting between the city and the suburban area such as New Jersey and Connecticut. I have noted that New Haven, CT hires 1561 employees while Suffolk in Long Island, NY hires 3685. New Haven was the terminal of the Metro-North Railroad connecting between New York City and CT. Long Island Rail Road connects with New York City. (source: Wikipedia)
+
+
+```{r}
+# each state's percentage in the US
+railroad %>% group_by(state) %>% summarise(total=sum(total_employees)) %>% arrange(desc(total)) %>% mutate(total_national=sum(total) , ratio=total/total_national)  %>% slice(1:10)
+```
+
+Although Cook county hires the largest size of employees, Illinois is not the NO.1 in terms of total employees. Texas outnumbers it by several hundreds employees.However, no state reaches 10 % of national total employees. Both Texas and Illinois are over 7% of national total employees. New York is even less 7% of them.
+
+```{r}
+# mean, median, and states of states
+railroad %>% group_by(state) %>% summarise(total=sum(total_employees)) %>%  summarise(temployee_mean=mean(total),
+            templyee_sd=sd(total, na.rm=TRUE),
+            tempyee_median=median(total, na.rm=TRUE))
+```
+The mean, median and standard deviation of states reflect that total_employees of some big states are overwhelming and some small states only maintain a tiny number of total employees.
+
+```{r}
+# state difference
+railroad %>% group_by(state) %>%
+  summarise(temployee_mean=mean(total_employees),
+            templyee_sd=sd(total_employees, na.rm=TRUE),
+            tempyee_median=median(total_employees, na.rm=TRUE))
+```
+  The big differences between mean, median and sd of each state reflect population distribution in he United State.
+
+
+```{r}
+#TX as a case study
+railroad %>% filter(state=='TX') %>% arrange(desc(total_employees)) %>% mutate(total_TX=sum(total_employees), ratio_TX=total_employees/total_TX) %>% filter(total_employees >100)
+```
+
+```{r}
+# TX as a case study
+railroad %>% filter(state=='TX') %>% summarise(total_mean=mean(total_employees), total_madian=median(total_employees))
+```
+  Cast study 1 TX
+  Taking TX as case study, I try to looking the distribution in a state. The combination of TARRANT and HARRIS reaches 34 % of total employees in TX, which reflects high population density in these two areas.
+  
+```{r}
+# case study IL
+railroad %>% filter(state=='IL') %>% arrange(desc(total_employees)) %>% mutate(total_IL=sum(total_employees), ratio_IL=total_employees/total_IL) %>% filter(total_employees >100)
+```
+  Case study of IL
+  Cook county hire 42% employees of railroad in IL demonstrates the overwhelming population density in the city of Chicago as well as reflects the population distribution in IL.
+
+
+
+
+
+
