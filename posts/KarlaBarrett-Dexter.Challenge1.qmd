@@ -1,0 +1,83 @@
+---
+title: "Challenge 1"
+author: "Karla Barrett-Dexter"
+description: "Bird Data Summary"
+date: "9/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+```{r}
+birds <- read_csv("_data/birds.csv")
+birds
+```
+
+
+
+## Describe the data
+It appears the data is showing the price per 1000 head of different types of birds.
+
+Basic information about the data is as follows:
+There are 5 different categories of birds represented in the data set. 
+There are 248 countries represented in the data set.
+The data was collected over 58 years, 1961-2018.
+
+
+
+```{r}
+#| label: summary
+
+birds %>% count(Item) #Used to find the summarize the categories of birds and total birds per category
+Countries<- birds%>%count(Area) #Practiced creating a variable
+count(Countries) #Used to find the total number of countries represented in the data
+Years <- birds %>% count(Year)#I used this code to create a cleaner list of the years represented in the data
+first(Years) #I used this code to order the years from earliest to latest
+
+
+```
+
+
+
+Using filters to drill down Armenia's data: 
+There are 2 different categories of birds, Chickens and Turkeys.
+Armenia data spans 27 years, 1992-2018.
+
+```{r}
+#| label: Armenia
+ArmeniaBirds <- filter(birds, Area == "Armenia")
+ArmeniaBirds
+ArmeniaBirds %>% count(Item)
+ArmeniaYears <- ArmeniaBirds %>% count(Year)
+first(ArmeniaYears)
+
+
+```
