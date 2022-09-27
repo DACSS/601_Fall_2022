@@ -1,0 +1,122 @@
+---
+title: "Challenge 1"
+author: "Said Arslan"
+desription: "Reading in data and creating a post"
+date: "09/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - birds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+I will analyze the `birds.csv` dataset in this challenge.
+
+## Read Data
+
+```{r read_data}
+
+birds <- read.csv("C:/Users/saida/Desktop/FALL 2022/DACSS 601/601_Fall_2022/posts/_data/birds.csv")
+
+```
+
+`birds` variable is created to internalize the dataset so I can analyze and manipulate it.
+
+## Describe the data
+
+
+```{r about-data-1}
+
+dim(birds)
+head(birds)
+tail(birds)
+
+```
+
+
+In the dataset, there are 14 variables (columns) and 30977 observations (rows). From head and tail tables, roughly speaking, each observation includes stock level of a specific type of animal in a country in a year.
+
+
+
+```{r about-data-2}
+
+sapply(birds, function(x) n_distinct(x)) # number of unique values under each column
+
+table(birds$Item) # types of birds
+
+table(birds$Flag) # flag types
+
+country.names <- unique(birds$Area) # countries included in the dataset
+country.names
+
+years.of.observations <- range(birds$Year) # range of data in terms of years
+years.of.observations
+
+```
+If we assess the number of unique values in each column with the names of variables, we can say that this dataset is extracted from a large stock dataset because it includes only live animals as `Domain` and only 5 types of domestic fowl is included under `Item` variable which are chicken, duck, geese, turkey and other types of birds. Besides that, only one type of element (stocks) is included in the data.
+
+Observations are from 248 different countries and regions. Observations are years from 1961 to 2018. The dataset covers almost every region and countries of the World.
+
+The core of each observation is given under `Value` variable, which should be number of stocks in thousands. All of other variables are basically contain characteristic information about observations.
+
+Data might be obtained from poultry farms in each country from 1961 to 2018. It includes aggregated data.
+
+
+## Missing Data
+
+```{r missing-data}
+
+sum(is.na(birds$Value))
+
+sum(is.null(birds$Value))
+
+```
+
+It looks 1036 value are missing/ not observed in the dataset.
+
+
+## Stock levels by country and by bird type
+
+```{r stock-levels-by-country-and-region}
+
+birds %>% 
+  select(Area, Value) %>% 
+  group_by(Area) %>% 
+  summarize_all(sum, na.rm = TRUE) %>% 
+  arrange(desc(Value))
+
+```
+
+Summarize table shows the total of stock levels in 58 years for each predefined region and country. Among countries, China had the largest stock of poultry over 58 years.
+
+
+```{r stock-levels-for-each-type-of-birds}
+
+stock.levels <-  birds %>% 
+  select(Item, Value) %>% 
+  group_by(Item) %>% 
+  summarize_all(sum, na.rm = TRUE) %>% 
+  arrange(desc(Value)) %>% 
+  mutate(Percentage = round(proportions(Value), digits=3))
+  
+
+stock.levels
+
+
+```
+
+In terms of bird types, more than 90% of poultry stocks consisted of chickens, 5% ducks and so on.
