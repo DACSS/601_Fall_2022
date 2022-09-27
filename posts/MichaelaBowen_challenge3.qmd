@@ -1,5 +1,5 @@
 ---
-title: "Challenge 3 Instructions"
+title: "Challenge 3"
 author: "Michaela Bowen"
 desription: "Tidy Data: Pivoting"
 date: "09/26/2022"
@@ -24,6 +24,8 @@ categories:
 #| message: false
 
 library(tidyverse)
+library(readxl)
+library(readr)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
@@ -47,30 +49,33 @@ Read in one (or more) of the following datasets, using the correct R package and
 -   USA Households\*.xlsx ⭐⭐⭐⭐
 -   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
 
-```{r}
-library(readxl)
+```{r, eval=FALSE}
 organiceggpoultry <- read_excel("_data/organiceggpoultry.xls",
                                 skip = 5,
                                 col_names = c("month/year", "XL dozen", "XL half dozen","L dozen", "L half dozen", "delete", "whole chicken", "boneless/skinless chicken breast", "bone-in breast", "whole leg", "thighs")
-                              )
-View(organiceggpoultry)
+                                )%>%
+  select(!contains("delete"))%>%
+  #split month/year variables
+  #change "too few" values in b/s chicken breast and thigh columns to NA
+  pivot_longer(cols = c("XL dozen", "XL half dozen","L dozen", "L half dozen", "whole chicken", "boneless/skinless chicken breast", "bone-in breast", "whole leg", "thighs"),
+               names_to = "size_and_quantity",
+               values_to = "value")
+#mutate new variable "poultry or eggs"
 
+organiceggpoultry
 ```
 
  
 ```{r}
 library(readr)
-eggs <- read_csv("_data/eggs_tidy.csv")%>%
-  pivot_longer(cols = c("large_half_dozen","large_dozen","extra_large_half_dozen","extra_large_dozen"),
-               names_to = "l/xl_half/whole_dozens",
-               values_to = "dozens_quantity"
-               )
-View(eggs)
+eggs <- read_csv("_data/eggs_tidy.csv")
+  
+eggs
 ```
 
 ### Briefly describe the data
 
-Below I have read in the *eggs_tidy* dataset. Upon observsation, I noticed there were 6 variables. We can see that the amount and size of eggs(L,XL, Dozen or Half Dozen) are determined by the independent variables month and year. The data ranges from January of 2004 to December of 2013. I plant to pivot the data set longer in order to group by month, year or type of product. This way I can get means, averages, standard deviations, etc on the amount produces based on a certain timeframe.
+Above I have read in the *eggs_tidy* dataset. Upon observsation, I noticed there were 6 variables. We can see that the amount and size of eggs(L,XL, Dozen or Half Dozen) are determined by the independent variables month and year. The data ranges from January of 2004 to December of 2013. I plant to pivot the data set longer in order to group by month, year or type of product. This way I can get means, averages, standard deviations, etc on the amount produces based on a certain timeframe.
 
 ## Anticipate the End Result
 
@@ -112,14 +117,14 @@ Or simple example has $n = 6$ rows and $k - 3 = 2$ variables being pivoted, so w
 
 ### Challenge: Describe the final dimensions
 
-In our simple example we have 5 variables to start with, to determine the dimensions of our new dataframe we must identify the dependent and independent variables. In this case *outgoing* and *ingoing* are dependent variables that depend on *country*, *year* and *trade*, the independent variables. 
+In our simple example we have 5 variables to start with, to determine the dimensions of our new dataframe we must identify the dependent and independent variables. In this case *outgoing* and *ingoing* are dependent variables that depend on *country*, *year* and *trade*, the independent variables. The final dimensions after pivoting our data will show 12 rows, with 5 columns, 12 instances of 5 variables.
 
 ```{r}
 dim(df)
 
 ```
 
-Any additional comments?
+Before pivoting the data, the cases were harder to identify, the dependent variables were listed as columns. Pivoting the data makes the cases clear, tidy and readable.
 
 ## Pivot the Data
 
@@ -142,8 +147,26 @@ Yes, once it is pivoted long, our resulting data are $12x5$ - exactly what we ex
 
 Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
 
-```{r}
+Below are the expected dimensions after pivoting the eggs_tidy data. The new variables *l/xl_half/whole_dozens*, and *dozens_quantity* are more helpful in determining information from this dataset. Each case is now determined by year and month, and the size and quantity of the produce depend on those specific variables. It is now easier to group by time, and type of product as well.
 
+```{r}
+#existing rows
+nrow(eggs)
+#existing columns
+ncol(eggs)
+#dataframe dimensions algorithm
+#expected rows
+nrow(eggs) * ((ncol(eggs)-2))
+#expected columns
+2+4
+#pivoting data
+pivot_longer(eggs, cols = c("large_half_dozen","large_dozen","extra_large_half_dozen","extra_large_dozen"),
+               names_to = "l/xl_half/whole_dozens",
+               values_to = "dozens_quantity"
+               )
+eggs
+#new dimensions of the eggs data
+dim(eggs)
 
 ```
 
