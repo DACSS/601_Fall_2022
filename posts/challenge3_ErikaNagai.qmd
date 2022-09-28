@@ -1,0 +1,166 @@
+---
+title: "Challenge 3 Instructions"
+author: "Erika Nagai"
+desription: "Tidy Data: Pivoting"
+date: "09/27/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+Installing useful packages
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+I'm using "USA households" dataset.
+
+```{r}
+
+library(readxl)
+original_data <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx", skip = 4)
+
+head(original_data)
+
+```
+
+This data is very dirty and hard to read. Before start analyzing it, let's clean the data!
+
+## Anticipate the End Result
+
+As 
+
+1. Let's clean column names first
+```{r}
+data <- data %>%
+  rename(
+    Year = ...1,
+    Total_Number = ...2,
+    Median_Income_Estimate = Estimate...13,
+    Median_Margin_Error = `Margin of error1 (±)...14`,
+    Mean_Income_Estimate = Estimate...15,
+    Mean_Margin_Error = `Margin of error1 (±)...16`)
+
+data
+
+
+#QUESTION: I manually renamed the column names instead of merging two rows ("Mean income (dollars)" + "Estimate") because I didn't find a way to do it. But this is not realistic if we have more columns. Any tips?
+```
+2. Let's look at the end of the data and clean if necessary.
+```{r}
+tail(data,35)
+```
+We can see that the last 31 rows are not part of data but notes, so we should drop them.
+```{r}
+data <- head(data, -31)
+tail(data)
+```
+
+3. Clean "Year" column
+* "Year" column includes the information of racial classification as well. Make a new column that can contains it.
+* Change the order of columns
+* Drop the rows that have only racial classification information
+* Some values in the "Year" column includes the number for footnotes. Remove this number. 
+
+```{r}
+data <- data %>%
+  mutate(race = str_extract(Year, "^(\\D)+")) %>% #extract only text data and create a new column that contains it
+  fill(race, .direction = 'down') %>% 
+  select(race, Year, everything()) 
+
+data <- data[!(is.na(data$Total_Number)),]
+data <- data[, colnames(data)!= "Total"]
+
+
+
+head(data)
+
+```
+
+
+
+### Briefly describe the data
+
+This data is about the annual income per U.S. household from 1967 to 2019 by the racial composition of that household.
+It shows (1) Distribution of the income and (2) Median income (3) Mean income.
+
+The name of columns 
+```{r}
+colnames(data)
+```
+Racial classifications include:
+```{r}
+unique(data$race)
+```
+### Challenge: Describe the final dimensions
+
+The current dataframe "data" includes several observations in the same row.
+Let's make this dataframe longer.
+
+```{r}
+# In order to use pivot_longer, the data type of the columns that will be combined need to be needs to be the same.
+data$Total_Number <- as.numeric(data$Total_Number)
+data$Mean_Income_Estimate <- as.numeric(data$Mean_Income_Estimate)
+data$Mean_Margin_Error <- as.numeric(data$Mean_Margin_Error)
+data$Median_Income_Estimate <- as.numeric(data$Median_Income_Estimate)
+data$Median_Margin_Error <- as.numeric(data$Median_Margin_Error)
+
+str(data$Total_Number)
+
+
+long_data <- pivot_longer(data, col = c(3:16),
+                         names_to = "measure",
+                         values_to = "value"
+                         ) 
+
+  
+long_data
+
+
+```
+The dataframe is now cleaner, however it can be improved by the below ideas.
+* Replace "'\r\nto\r\n'" with "to"
+* The values in the following columns are proportion, not absolute number. So it may be better to consider them as one observation (because the total of these values is always 100) rather than consider these values as several observations.
+"Under $15,000" "$15,000\r\nto\r\n$24,999"   "$25,000\r\nto\r\n$34,999"   "$35,000\r\nto\r\n$49,999"   "$50,000\r\nto\r\n$74,999"  
+"$75,000\r\nto\r\n$99,999"   "$100,000\r\nto\r\n$149,999" "$150,000\r\nto\r\n$199,999" "$200,000 and over" 
+
+
+
