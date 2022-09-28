@@ -55,18 +55,17 @@ rawData <- read_excel("_data/USA Households by Total Money Income, Race, and His
     skip = 2)
 View(rawData)
 
-#renaming cols
-columnNames <- c('Year', 'Count','totDistSum','Percentdist_under15','Percentdist15_25','Percentdist25_35','Percentdist35_50','Percentdist50_75','Percentdist75_100','Percentdist100_150','Percentdist150_200', 'Percentdist200andover','MedianIncome_est', 'MedianIncome_MOE', 'MeanIncome_est', 'MeanIncome_MOE')
-colnames(trimmedData)<- columnNames
-
-colnames(rawData)
-
 #Trimming top and bottom
 
 trimmedData <- rawData %>%
                 slice(3:354)
 
-trimmedData 
+#renaming cols
+columnNames <- c('Year', 'Count','totDistSum','Percentdist_under15','Percentdist15_25','Percentdist25_35','Percentdist35_50','Percentdist50_75','Percentdist75_100','Percentdist100_150','Percentdist150_200', 'Percentdist200andover','MedianIncome_est', 'MedianIncome_MOE', 'MeanIncome_est', 'MeanIncome_MOE')
+colnames(trimmedData)<- columnNames
+
+
+
 
 
 mutatedData <- trimmedData %>% 
@@ -101,12 +100,15 @@ mutatedData <- mutatedData %>%
 mutatedData[mutatedData == 'N']<- NA
 
 
-mutatedData %>%
+mutatedData <- mutatedData %>% 
   mutate(across(Count:MeanIncome_MOE, as.double))
+
+
 
 mutatedData <- mutatedData %>%
   mutate(Year =substr(Year,1,4))
 
+round(mutatedData$Percentdist15_25 ,2)
 
 
 #final tidy DF
@@ -200,6 +202,9 @@ df<-tibble(country = rep(c("Mexico", "USA", "France"),2),
                              scale = 400))
 df
 
+
+#updated with my expected values
+
 #existing rows/cases
 nrow(rawData)
 
@@ -223,6 +228,7 @@ Document your work here.
 ```{r}
 sampleDF
 
+
 ```
 
 Any additional comments?
@@ -232,11 +238,11 @@ Any additional comments?
 
 Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
 
+I could not think of any reason why I would pivot my data so I did the below to show it could be pivoted.
+
 ```{r}
-trimmedData
 
-
+mutatedData %>% pivot_longer(c(MedianIncome_est,MedianIncome_MOE), names_to = "Metric",values_to = "Values")
 
 ```
 
-Any additional comments?
