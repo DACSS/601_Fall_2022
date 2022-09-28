@@ -1,0 +1,165 @@
+---
+title: "Challenge 3 Naughton"
+author: "Courtney Naughton"
+desription: "Tidy Data: Pivoting"
+date: "09/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - Courtney Naughton
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Challenge #3
+
+::: panel-tabset
+## Animal Weights
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+
+```{r}
+
+animal_weights<-read_csv("_data/animal_weight.csv")
+animal_weights
+
+```
+
+### Briefly describe the data
+
+This dataset has 17 columns and only 9 rows. The columns are IPCC Area, Cattle - dairy, Cattle -non-dairy, Buffaloes, Swine - market, Swine- breeding, Chicken - broilers,Chicken layers, Ducks, Turkeys, Sheep, Goats, Horses, Asses, Mules, Camels, and Llamas. It would make more sense to have only 3 columns: Area, Animal Type, and Weight.
+
+### Anticipate the End Result
+
+Our original data set was 9 rows by 17 variables. Our new data will only have 3 variables so we expect 9*(17-1) = 144 rows by 3 columns.
+
+### Challenge: Describe the final dimensions
+
+We expect a new dataframe to have $9*16 = 144$ rows x $3$ columns.
+
+```{r}
+#| tbl-cap: Animal
+
+animal_weights<-tibble(animal_weights)
+animal_weights
+
+#existing rows/cases
+nrow(animal_weights)
+
+#existing columns/cases
+ncol(animal_weights)
+
+#expected rows/cases
+nrow(animal_weights) * (ncol(animal_weights)-1)
+
+# expected columns 
+144
+
+```
+
+### Challenge: Pivot the Chosen Data
+
+With the pivoted data, each case is an observation of the type of animal, the area it comes from, and its weight.
+
+```{r}
+#| tbl-cap: Pivoted Example
+
+animal_weights<-pivot_longer(animal_weights, col = c("Cattle - dairy", "Cattle - non-dairy",  "Buffaloes", "Swine - market","Swine - breeding","Chicken - Broilers", "Chicken - Layers","Ducks","Turkeys","Sheep","Goats", "Horses","Asses","Mules", "Camels","Llamas"),
+                 names_to="Animal_type",
+                 values_to = "Weight")
+animal_weights
+
+```
+## Eggs
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   eggs_tidy.csv ⭐⭐
+
+```{r}
+
+eggs<-read_csv("_data/eggs_tidy.csv")
+
+
+```
+
+### Briefly describe the data
+
+This dataset has 6 columns and 120 rows. The columns are Month, Year, Large_half_dozen, Large_dozen, Extra_Large_Half_Dozen, Extra_Large_Dozen. This data is taken from every month from 2004 to 2013. I believe that this is tracking the average monthly cost of egg quantity. For example, in May 2004, a large half dozen carton of eggs cost $1.31. Rather than showing the average cost for each quantity, it would make more sense for one entry to have the month, year, the cost and the egg quantity category. 
+
+### Anticipate the End Result
+
+Our original data set was 6 columns by 120 rows. Our new data will have 4 variables so we expect 120*(6-2) = 480 rows by 4 columns.
+
+### Challenge: Describe the final dimensions
+
+We expect a new dataframe to have $120*(6-2) = 480$ rows x $4$ columns.
+
+```{r}
+#| tbl-cap: Animal
+
+eggs<-tibble(eggs)
+eggs
+
+#existing rows/cases
+nrow(eggs)
+
+#existing columns/cases
+ncol(eggs)
+
+#expected rows/cases
+nrow(eggs) * (ncol(eggs)-2)
+
+# expected columns 
+480
+
+```
+
+### Challenge: Pivot the Chosen Data
+
+With the pivoted data, each case is an observation of the cost of eggs given a quantity category (Large Half Dozen, Large Dozen, Extra Large Half Dozen, Extra Large Dozen) in a specific month of a year from 2004 to 2013.
+
+```{r}
+#| tbl-cap: Pivoted Example2
+#Renaming the column names 
+eggs2<-rename(eggs,
+        "Large Half Dozen" = large_half_dozen, 
+       "Large Dozen" =  large_dozen,
+       "Extra Large Half Dozen"= extra_large_half_dozen, 
+      "Extra Large Dozen" =  extra_large_dozen )
+
+eggs2%>% 
+ pivot_longer(
+   cols = ends_with("Dozen"),
+   names_to = "Category",
+   values_to = "Cost100"
+  )
+#I am then trying to divide the Cost column by 100 to get the average cost of egg cartons.
+#eggs2<- mutate(eggs2,
+              # Cost = Cost100 / 100 )
+#eggs2
+
+```
+
+:::
