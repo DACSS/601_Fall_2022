@@ -45,14 +45,13 @@ Read in one (or more) of the following data sets, available in the `posts/_data`
 -   FAOstat\*.csv or birds.csv ⭐⭐⭐
 -   hotel_bookings.csv ⭐⭐⭐⭐
 
-I will use hotel_booking.csv data.
+I decided to analyze "hotel_booking.csv data".
 
 ```{r}
 # read the data as a tibble
 data <- read_csv("_data/hotel_bookings.csv")
 data
 ```
-
 
 ## Describe the data
 
@@ -62,9 +61,10 @@ Let's explore the data.
 view(dfSummary(data))
 ```
 
-From this summary, we can see that this data is about reservations made for two types of hotel (City Hotel, Resort Hotel) from 2015 until 2017. 
+From this summary, we can see that this data is about reservations made for two types of hotel (City Hotel, Resort Hotel) from 2015 until 2017.
+
 The data includes 1. Status of reservation (cancelled, checkout, no-show) 2. The length of stay (arrival date, days in total, days during weekdays and weekend), 3. Guest information (# of adults, children, babies, repeater or not, previous cancellation history) 4. Reserved service type (room type, meal, car parking, special request) 5. Others (used agency, distribution channel etc)
- 
+
 ## Provide Grouped Summary Statistics
 
 Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
@@ -72,23 +72,24 @@ Conduct some exploratory data analysis, using dplyr commands such as `group_by()
 Let's explore the differences in reservation trends by the type of hotel (City Hotel vs. Resort Hotel)
 
 !! Questions: The below code shows the statistic data of only Resort Hotel.
+
 ```{r}
-data_hotel <- data %>% 
+data %>% 
   group_by(hotel) %>%
   descr(stats = c("mean", "sd", "min", "med", "max"))
 
-view(data_hotel)
 ```
 
-Make a column of total nights of stay 
+Make a column of total nights of stay
+
 ```{r}
 data <- data %>% 
   mutate(total_nights = stays_in_week_nights + stays_in_weekend_nights)
 
 ```
 
-
 Customer and Stay Trends by Hotel Type
+
 ```{r}
 data %>%
   group_by(hotel) %>%
@@ -100,13 +101,12 @@ data %>%
 
 
 ```
-Guest who stay at Resort hotel tend to stay longer than those who stay at Resort hotel.
-Guests at both hotels are less likely to be accompanied by children, but resort hotels have more people with children and babies than city hotels!
+
+Guest who stay at Resort hotel tend to stay longer than those who stay at Resort hotel. Guests at both hotels are less likely to be accompanied by children, but resort hotels have more people with children and babies than city hotels!
 
 ### Explain and Interpret
 
-I will compare the group with children (at least one child or baby) staying at a resort hotel to the group without children.
-I chose this group because I thought that the presence of children on a trip significantly impacts the stay trend and that hotel companies would want to know what the groups with children want.
+I will compare **the group with children (at least one child or baby) to the group without children**. I chose this group because I thought that the presence of children on a trip significantly impacts the stay trend and that hotel companies would want to know what the groups with children want.
 
 ```{r}
 # First classify if the group is with at least one kid/baby.
@@ -120,6 +120,7 @@ data <- data %>%
 
 data
 ```
+
 Now, let's find out the differences in trends between groups with and without children.
 
 ```{r}
@@ -127,7 +128,13 @@ data %>%
   group_by(Kids) %>%
   summarise(
     avg_total_nights = mean(total_nights, nr.rm = TRUE),
-    repeated_guest = mean(is_repeated_guest, nr.rm = TRUE)
+    repeated_guest = mean(is_repeated_guest, nr.rm = TRUE),
+    lead_time = mean(lead_time, nr.rm = TRUE)
   )
 ```
 
+Here are some findings
+
+-   Groups with kids tend to stay a little longer than groups without kids.
+
+-   Groups without kids are likely to book much earlier than groups with kids.
