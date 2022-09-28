@@ -1,0 +1,83 @@
+---
+title: "Challenge 3 Abby Balint"
+author: "Abby Balint"
+desription: "Tidy Data: Pivoting"
+date: "09/27/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+  - abby_balint
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+I read in the "animal_weight" data set, and renamed it "weights" for easier coding. Then below that I found the summary to get a high level overview of the data (not that it is needed really here since there are only 9 rows originally)
+
+```{r}
+read_csv("_data/animal_weight.csv")
+weights <- read_csv("_data/animal_weight.csv")
+
+```
+
+```{r}
+summary(weights)
+```
+
+
+### Briefly describe the data
+
+
+This dataset contains 17 variables and 9 rows of data related to animal weights by animal as well as region of the world. The reason that pivoting will be helping in visualizing the data here is because in the current format, we cannot filter by animal because each animal is its own variable. Pivoting the data will allow us to filter the data set easily based on animal to find average weights and filter by both animal type and region of the world.
+
+
+### Challenge: Describe the final dimensions
+
+To find the below final dimensions, I used the same formula as the example but used the animal weights data. My original data set started with 9 rows and 17 variables. Only one of the original variables will remain a variable. The 16 variables I am pivoting will turn into two variables - animal (names), and weights (values). My row numbers will now be 144 because I will have the 9 rows times the 16 variables I am transforming. I should end up with 3 columns, my one original variable and my 2 new variables.
+```{r}
+#existing rows/cases
+nrow(weights)
+
+#existing columns/cases
+ncol(weights)
+
+#expected rows/cases
+nrow(weights) * (ncol(weights)-1)
+
+# expected columns 
+1+1
+
+```
+
+144 rows as expected :)
+
+
+### Challenge: Pivot the Chosen Data
+
+
+```{r}
+pivot_longer(weights, "Cattle - dairy":"Llamas",
+                 names_to="animal",
+                 values_to = "weights")
+```
+
+Final tibble has three columns and 144 rows as predicted.
