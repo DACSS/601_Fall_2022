@@ -1,0 +1,65 @@
+---
+title: "Challenge 1 Instructions"
+author: "Meredith Rolfe"
+desription: "Reading in data and creating a post"
+date: "08/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Read in the Data and Summarize
+
+
+```{r}
+#reading in wild_bird_data dataset with readxl
+
+wild_bird_data <- as_tibble(read_excel("~/GIT/601_Fall_2022/posts/_data/wild_bird_data.xlsx", skip = 1))
+```
+
+```{r}
+#previewing data
+
+head(wild_bird_data)
+```
+This data appears to be derived from that used to produce the first figure in a research paper authored by researcher(s) Nee et al. It could be interpreted as the average wet body weight, measured in grams, for different species of birds and the size of each species population. I suspect that this is likely derived from a project to gather data on wild bird populations that frequent (or outright inhabit) aquatic or semi-aquatic environments, such as marshes or similar wetland environments. I imagine this would be a port of a catch and release program to collect biological data and potentially biological samples (potentially tagging future data collection/generation). Wet body weight is an ambiguous measurement and may be directly a measurement of wet mass, or may be related to metabolism, fat retention (through various seasons), a catalog of museum wet specimens, etc., it is difficult to determine without additional information. 
+
+The first variable, 'wet body weight' is a collection of continuous numerical values, and the other variable, 'population size' is also a collection of continuous numerical values (not seen here due setting a digit limit for display purposes). They may represent average population sizes, and this data could be from a meta analysis of various wild bird population studies' data, as I imagine a single count would more likely produce a discrete count value (counting whole animals) than a continuous one, unless they were averaging multiple population counts together.
+
+```{r}
+#getting data dimensions and column names
+
+dim(wild_bird_data)
+colnames(wild_bird_data)
+```
+By taking the dimensions of the dataset, we can conclude some additional information. It that may be seen that the researchers took wet body weight and population size observations for 146 wild bird species populations. 
+
+```{r}
+#attempting to arrange data to get wet body weight values in ascending order
+
+wild_bird_data %>%
+  arrange('Wet body weight [g]')
+
+#attempt failed, reason unknown
+```
+```
