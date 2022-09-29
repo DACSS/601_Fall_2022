@@ -49,21 +49,6 @@ Read in one (or more) of the following datasets, using the correct R package and
 -   USA Households\*.xlsx ⭐⭐⭐⭐
 -   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
 
-```{r, eval=FALSE}
-organiceggpoultry <- read_excel("_data/organiceggpoultry.xls",
-                                skip = 5,
-                                col_names = c("month/year", "XL dozen", "XL half dozen","L dozen", "L half dozen", "delete", "whole chicken", "boneless/skinless chicken breast", "bone-in breast", "whole leg", "thighs")
-                                )%>%
-  select(!contains("delete"))%>%
-  #split month/year variables
-  #change "too few" values in b/s chicken breast and thigh columns to NA
-  pivot_longer(cols = c("XL dozen", "XL half dozen","L dozen", "L half dozen", "whole chicken", "boneless/skinless chicken breast", "bone-in breast", "whole leg", "thighs"),
-               names_to = "size_and_quantity",
-               values_to = "value")
-#mutate new variable "poultry or eggs"
-
-organiceggpoultry
-```
 
  
 ```{r}
@@ -128,8 +113,6 @@ Before pivoting the data, the cases were harder to identify, the dependent varia
 
 ## Pivot the Data
 
-Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
-
 ### Example
 
 ```{r}
@@ -147,7 +130,7 @@ Yes, once it is pivoted long, our resulting data are $12x5$ - exactly what we ex
 
 Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
 
-Below are the expected dimensions after pivoting the eggs_tidy data. The new variables *l/xl_half/whole_dozens*, and *dozens_quantity* are more helpful in determining information from this dataset. Each case is now determined by year and month, and the size and quantity of the produce depend on those specific variables. It is now easier to group by time, and type of product as well.
+Below are the expected dimensions after pivoting the eggs_tidy data. The new variables "l/xl_half/whole_dozens", and "dozens_quantity" are more helpful in determining information from this dataset. Each case is now determined by year and month, and the size and quantity of the produce depend on those specific variables. It is now easier to group by time, and type of product as well.
 
 ```{r}
 #existing rows
@@ -171,3 +154,22 @@ dim(eggs)
 ```
 
 Any additional comments?
+
+After reading in the tidy eggs data I attempted to read in the excel eggs data. Below I have renamed the columns, separated month and year into separate columns and pivoted the data longer to creat the new columns: size, quantity and price. 
+
+```{r}
+organiceggpoultry <- read_excel("_data/organiceggpoultry.xls",
+                                sheet = "Data",
+                                range = cell_limits(c(6,2),c(NA,6)),
+                                col_names = c("date", "extralarge_dozen", "extralarge_halfdozen","large_dozen", "large_halfdozen "))%>%
+  #split month/year variables
+  separate("date", into = c("month","year"))%>%
+  fill("year")%>%
+  pivot_longer(cols = contains("dozen"),
+              names_to = c("size","quantity"),
+              names_sep = "_",
+              values_to = "price")
+summary(organiceggpoultry)
+View(organiceggpoultry)
+
+```
