@@ -1,0 +1,205 @@
+---
+title: "Challenge 4"
+author: "Theresa Szczepanski"
+desription: "More data wrangling: pivoting"
+date: "9/30/2022"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Theresa_Szczepanski
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+
+::: panel-tabset
+##  abc_poll.csv ⭐
+### Read in data
+To read in the data, I first examined the summary (which I have now commented
+out) and then chose to filter:
+
+- `id`: this info won't be used in an analysis
+- `complete_status`: everyone was qualified
+- `ppeducat`: this categorizing of `ppeduc5` can be done in the data frame
+using a `case_when()`
+- `ABCAGE`: this qualitative age range variable can be replicated by using the
+data in the `ppage` variable and a `case_when`; one might want to examine 
+different ranges of ages.
+
+- `weights_pid` variable, since this is calculated using percentages of
+ respondents relative to their representation to the general population and can
+ be calculated using data within our data frame.
+ 
+ I also replaced the `pp_hhsize6` value of "6 or more" with 6, so that it could
+ be of double data type and I mutated the `pp_educ5` column to remove the
+ apostrophes from "Bachelor's" and "Master's" that were producing the "\\x92"'s 
+ in the values.
+
+
+```{r}
+#Read in the abc_poll data and use the summary to decide how to best set up
+# the our data frame
+
+# abc_poll<-read_csv("_data/abc_poll_2021.csv")
+# print(summarytools::dfSummary(abc_poll,
+#                         varnumbers = FALSE,
+#                         plain.ascii  = FALSE, 
+#                         style        = "grid", 
+#                         graph.magnif = 0.70, 
+#                         valid.col    = FALSE),
+#       method = 'render',
+#       table.classes = 'table-condensed')
+
+abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,  
+                   col_names= c("delete",  "pp_Language2",  "delete","pp_age", 
+                                "pp_educ5", "delete", "pp_gender2", 
+                                "pp_ethnicity", "pp_hhsize6", "pp_inc7", 
+                                "pp_marital5", "pp_metro_cat", "pp_region4",
+                                "pp_housing", "pp_state", 
+                                "pp_working_arrangement", 
+                                "pp_employment_status", "Q1_a", "Q1_b", "Q1_c", 
+                                "Q1_d","Q1_e", "Q1_f","Q2", "Q3", "Q4", "Q5", 
+                                "pp_political_id4", "delete", "pp_contact2",  
+                                  "delete"))%>%
+  select(!contains("delete"))%>%
+  
+  #replace "6 or more" in pp_hhsize6 to the value of 6 so that the column can be
+  # of double data type.
+     mutate(pp_hhsize6 = ifelse(pp_hhsize6 == "6 or more", "6", pp_hhsize6)) %>%
+    transform( pp_hhsize6 = as.numeric(pp_hhsize6))%>%
+    mutate(pp_educ5 = ifelse(str_starts(pp_educ5,"Bachelor"), 
+                           "Bachelor", pp_educ5))%>%
+    mutate(pp_educ5 = ifelse(str_starts(pp_educ5, "Master"), "Master", pp_educ5))
+  
+  
+abc_poll
+print(summarytools::dfSummary(abc_poll,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE,
+                        style        = "grid",
+                        graph.magnif = 0.70,
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+### Briefly describe the data
+From our `abc_poll` data frame summary, we can see that this data set
+contains polling results from 527 respondents to an abc poll. The results
+consist of information for two broad categories
+
+- demographic characteristics of 
+the respondents themselves (e.g., language of the poll given to the respondent
+(Spanish or English), age, educational attainment, ethnicity, household size,
+ethnic make up, gender, income range, Marital status, Metro category, 
+Geographic region, Rental status, State, Employment status, 
+Working characteristics, Willingness to have a follow up interview)
+
+- the responses that the individuals gave to 10
+questions (there are 5 broad questions Q1-Q5, but Q1 consists of 6 
+sub questions, a-f).
+
+### Tidy Data (as needed)
+
+Do I want to gather the parts of Q1 into a column as a variable or not?
+
+```{r}
+abc_poll<-abc_poll %>%
+    pivot_longer(c(contains("Q1")), names_to = "Q1_part", values_to = "Q1_response")
+abc_poll
+
+```
+
+Any additional comments?
+
+::: panel-tabset
+
+### Identify variables that need to be mutated
+
+
+
+```{r}
+# use factoring to put an ordering to all ordinal variables
+# use mutate and begins with or other string features to reduce the lengthy
+# responses
+# add header for the variables that desecribe the participant and header to 
+# variables that describe their responses
+
+```
+#### Key for Mutated Variable Values
+  `pp_educ5`
+  
+:::
+
+Any additional comments?
+
+##  hotel_bookings.csv⭐⭐⭐⭐
+### Read in data
+
+
+```{r}
+
+
+```
+
+### Briefly describe the data
+
+### Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+
+
+```
+
+Any additional comments?
+
+### Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+
+```
+
+Any additional comments?
+:::
