@@ -1,8 +1,8 @@
 ---
-title: "Challenge 2 Instructions"
-author: "Meredith Rolfe"
+title: "Challenge-2"
+author: "Said "
 desription: "Data wrangling: using group() and summarise()"
-date: "08/16/2022"
+date: "09/28/2022"
 format:
   html:
     toc: true
@@ -16,54 +16,184 @@ categories:
   - hotel_bookings
 ---
 
-```{r}
-#| label: setup
-#| warning: false
-#| message: false
+```{r setup}
 
 library(tidyverse)
+library(psych)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
 ```
 
-## Challenge Overview
-
-Today's challenge is to
-
-1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
-2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
 
 ## Read in the Data
 
-Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
 
--   railroad\*.csv or StateCounty2012.xls ⭐
--   FAOstat\*.csv or birds.csv ⭐⭐⭐
--   hotel_bookings.csv ⭐⭐⭐⭐
+```{r read_data}
 
-```{r}
+hotel.bookings <- read.csv("C:/Users/saida/Desktop/FALL 2022/DACSS 601/601_Fall_2022/posts/_data/hotel_bookings.csv")
 
 ```
-
-Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
 
 ## Describe the data
 
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
 
-```{r}
-#| label: summary
+```{r data_description_1}
+
+dim(hotel.bookings)
+colnames(hotel.bookings)
+colnames(hotel.bookings)[28] <- "average_daily_rate"
+
+head(hotel.bookings)
+tail(hotel.bookings)
+
+str(hotel.bookings)
+table(sapply(hotel.bookings, function(x) typeof(x)))
+
+sapply(
+  hotel.bookings, function(x) n_distinct(x)
+  )
+
+unique(hotel.bookings$hotel)
+unique(hotel.bookings$arrival_date_year)
+unique(hotel.bookings$reservation_status)
+unique(hotel.bookings$distribution_channel)
+unique(hotel.bookings$customer_type)
+       
+```
+
+
+In this dataset there are 32 variables(columns) and 119,390 observations(rows). By looking at the variable names, we can say that the it consists of reservation data of some hotels. 14 of the variables compose of character values, 18 of the variables store numerical values. That being said, some of the character variables and some of the numeric variables are actually indicate dates. 
+
+All of the variable names are descriptive enough except `adr`. After googling "adr", I found out that it means "average daily rate", which makes great sense for a dataset of hotel reservations. Therefore, I changed original column name `adr` with `average_daily_rate`.
+
+There are two types of hotels in the dataset: Resort Hotel and City Hotel. Reservations are made in 2015, 2016 and 2017. The data covers reservations from 178 countries. So the data should belong to a big worldwide hotels chain. Both canceled and completed reservations are stored in the dataset as well as no-shows. Thus, each observation includes information about a reservation such as what type of hotel and in which country the reservation is for, number of visitors, dates, daily rates, stay durations and some categorical info about customer and the channel of reservation.
+
+
+
+```{r data_description_2}
+
+hotel.bookings <- mutate(
+  hotel.bookings, 
+  number_of_guests = adults + children + babies,
+  total_stay = stays_in_weekend_nights + stays_in_week_nights) # adding two new variables
+
+describe(
+  hotel.bookings[, c(
+    "is_canceled", 
+    "lead_time", 
+    "arrival_date_year",
+    "arrival_date_week_number",
+    "arrival_date_day_of_month",
+    "stays_in_weekend_nights",
+    "stays_in_week_nights",
+    "total_stay",
+    "adults",
+    "children",
+    "babies",
+    "number_of_guests",
+    "is_repeated_guest",
+    "previous_cancellations",
+    "previous_bookings_not_canceled",
+    "booking_changes",
+    "days_in_waiting_list",
+    "average_daily_rate",
+    "required_car_parking_spaces",
+    "total_of_special_requests"
+    )
+    ])[,c("n", "mean", "sd", "median", "min","max")]
+
+```
+In this table, we can see some descriptive statistics for numeric variables in the data. For example, 37% of the reservations are actually canceled. On average, reservations are made 104 days before date of stay. On average, every reservation is made for 1.97 people. Approximately one out of 10 reservations involves a child or a baby. Average stay duration is 3.43 days. 22% of the booking is changed afterwards. Lastly, average daily rate of hotels is $101.
+
+
+
+```{r missing values}
+
+colSums(is.na(hotel.bookings))
+
+sapply(hotel.bookings, function(x) table(grepl("NULL", x)))
+
+round(100*prop.table(table(grepl("NULL", hotel.bookings$country))), 2)
+round(100*prop.table(table(grepl("NULL", hotel.bookings$agent))), 2)
+round(100*prop.table(table(grepl("NULL", hotel.bookings$company))), 2)
 
 ```
 
-## Provide Grouped Summary Statistics
+In terms of numerical variables, only 4 value is missing. However, 0.41% of country info, 13.89% of agent info and 94.31% of company info of reservations are missing.
 
-Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
 
-```{r}
+## Grouped Summary Statistics
+
+
+
+```{r group_analysis}
+
+hotel.bookings %>% 
+  select(hotel, average_daily_rate) %>% 
+  group_by(hotel) %>% 
+  summarise_if(is.numeric, list(min = min, max = max, mean = mean, std_dev = sd, median = median), na.rm = TRUE)
+
+
+hotel.bookings %>% 
+  select(country) %>% 
+  group_by(country) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  head(n=10)
+
+
+hotel.bookings %>% 
+  select(country, is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled)) %>% 
+  head(n=10)
+
+hotel.bookings %>% 
+  filter(country %in% c("PRT", "GBR", "ESP", "FRA", "ITA")) %>% 
+  select(country,is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled))
+
+hotel.bookings %>% 
+  filter(reservation_status == "Check-Out") %>% 
+  select(country, number_of_guests) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(number_of_guests)) %>% 
+  head(n=10)
+
+
+
+hotel.bookings %>% 
+  filter(reservation_status == "Check-Out") %>% 
+  select(country, number_of_guests) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(number_of_guests)) %>% 
+  head(n=10)
+
+
+hotel.bookings %>% 
+  select(country, average_daily_rate) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(average_daily_rate)) %>% 
+  head(n=10)
+
+table(hotel.bookings$arrival_date_month)
 
 ```
 
 ### Explain and Interpret
 
-Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+Average daily rate for City Hotels is $11 higher than Resort Hotels. Another interesting point is price range for City Hotels very large. Daily rate of a city hotel may go up to $5400 while it is only $508 for resort hotels.
+
+The most popular 10 countries in terms of total reservations are Portugal, Great Britain, France, Spain, Germany, Italy, Ireland, Belgium, Brasil and Netherlands. However, we can see that 56% reservations made for Portugal hotels are actually canceled. This ratio is 35% for Italy and 25% for Spain. 
+Nevertheless, among all of them, the country that hosts the highest number of guests is Portugal with total of 37,670 guests in 3 years.
+
+Interestingly, in terms of average daily rate, the most expensive hotels are in Djibouti, Anguilla, Andorra, United States Minor Outlying Islands, Laos and so on. It looks that hotels in small countries that host a small number of guests are much more expensive.
+
+August, July and May, respectively, are the months when hotels are the busiest throughout the year.
