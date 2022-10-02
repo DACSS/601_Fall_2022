@@ -1,0 +1,149 @@
+---
+title: "Challenge 4 Solution"
+author: "Ryan O'Donnell"
+desription: "More data wrangling: pivoting"
+date: "9/29/22"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - ryan_odonnell
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+#| label: read-in
+
+debt_orig <- read_xlsx("_data/debt_in_trillions.xlsx")
+
+debt_orig
+
+```
+
+### Briefly describe the data
+
+"debt_in_trillions" appears to be a table of different types of debt held by year and quarter. The types of debt include Mortgage, HE Revolving, Auto Loan, Credit Card, Student Loan, and Other. Year and quarter is stored in a single column and there is a total column as well.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+#| label: tidy-data
+
+# Get rid of total row and separate Year & Quarter
+
+debt <- debt_orig %>%
+  select(-`Total`) %>%
+  separate(`Year and Quarter`, into = c("Year", "Quarter"), convert = TRUE)
+
+# sanity check - expected number of rows
+
+nrow(debt) * (ncol(debt) - 2)
+
+# pivot data
+
+debt_pivoted <- debt %>%
+  pivot_longer(col = c(`Mortgage`, `HE Revolving`, `Auto Loan`, `Credit Card`, `Student Loan`, `Other`),
+               names_to = "Debt Type",
+               values_to = "Debt in Trillions")
+
+# Check Expected Number
+
+nrow(debt_pivoted)
+
+head(debt_pivoted)
+
+```
+
+## Identify variables that need to be mutated
+
+*Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?*
+
+
+```{r}
+#| title : mutate
+
+# Fix the year, create a column that is stored as a date
+  debt_tidy <- debt_pivoted %>% 
+  mutate(Year = Year + 2000, 
+  "Month" = str_replace_all(Quarter, c("Q1" = "1", "Q2" = "4", "Q3" = "6", "Q4" = "10")),
+  "Date" = make_date(`Year`, `Month`, "01"),
+  .before = `Debt Type`)
+
+debt_tidy
+  
+```
+
+I had to fix the year column type when I split it from the quarter. In this step, I used mutate to add 2000 to it to make it the correct year. When thinking about visualizing the data, I realized that we might want to convert the Quarter/Year combo into a date so that we could plot it on a timeline. I am assuming that these Quarters represent the calendar year and not a fiscal year so I set the quarters to January, April, July, and October. 
+
+### Categorize
+
+```{R}
+#| label: categorize
+
+ggplot(debt_tidy, aes(`Date`, `Debt in Trillions`, color = fct_reorder2(`Debt Type`, `Date`, `Debt in Trillions`))) + 
+  geom_line() + 
+  scale_x_date() +
+  scale_y_log10() + 
+  labs(y = "Debt in Trillions ($USD)", title = "Debt 2003-2021", color = "Debt Type")
+
+```
+
+I reordered the Debt Type so that the colors would match the order of the lines. I also set the y axis to logarithmic since there was such a big difference between Mortgage and the rest of the lines. With a logarithmic scale, you can see the variations in the lines that would otherwise be squished at the bottom.
+
+### Recategorizing again for practice
+
+```{R}
+
+#| label: plotting again
+
+# group by debt type and sum for the year
+debt_barplot <- debt_tidy %>%
+  group_by(`Year`, `Debt Type`) %>%
+  summarize("Debt" = sum(`Debt in Trillions`))
+
+# plot
+
+ggplot(debt_barplot, 
+       aes(`Year`, `Debt`, fill = fct_rev(
+         fct_reorder2(`Debt Type`, `Year`, `Debt`)))) + 
+  geom_col() + 
+  labs(y = "Debt in Trillions ($USD)", title = "Type of Debt by Year", fill = "Debt Type")
+```
+
+I thought I would try a different visualization type that involved some more factorizing to get the chart to look nice. I summed the debt type by year (using the existing year column, I did not challenge myself to regroup by year using the newly generated date column). I first factored the Debt Type like I did which orders highest to lowest on the final x,y value. This put the largest chunks on top, so I reversed the order since I believe it is generally good practice to put the largest at the bottom. 
