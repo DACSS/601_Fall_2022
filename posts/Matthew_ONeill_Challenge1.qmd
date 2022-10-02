@@ -1,0 +1,120 @@
+---
+title: "Challenge 1 Instructions"
+author: "Matt O'Neill"
+desription: "Reading in data and creating a post"
+date: "08/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+
+data <- read_csv("../posts/_data/FAOSTAT_cattle_dairy.csv")
+
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+
+head(data)
+
+dim(data)
+
+colnames(data)
+
+
+```
+
+To begin, I've output the top few rows of data from our dataset to help visualize what is going on. Based on the data we see in our header(along with the name of the file alluding to working with cattle and dairy products), we can assume this dataset includes data on dairy production from various countries over many years. Some rows have a "Flag Description" of "FAO estimate", which leads me to believe much of this data was collected by the Food and Agriculture Organization in the United States.
+
+The column names aren't very descriptive for this dataset, as columns such as "domain", "item", and "unit" are very vague. To get a better idea of what's going on, we can dive into each column a bit more.
+
+```{r}
+#| label: summary
+
+domain <- select(data, "Domain")
+table(domain)
+
+```
+
+First, we can see that there appears to only be one domain in this dataset, Livestock Primary. This column and it's code are likely mainly useful if the dataset is joined with another one which has the same column.
+
+```{r}
+#| label: summary
+
+item <- select(data, "Item")
+table(item)
+prop.table(table(item))
+
+```
+
+
+Once again, it appears all cows are being used for their milk production, which makes sense given the context of the table.
+
+```{r}
+#| label: summary
+
+unit <- select(data, "Unit")
+table(unit)
+prop.table(table(unit))
+
+```
+
+The "unit" column appears to be three different ways to weigh a given cow. While "tonnes" is obvious, there unfortunately isn't too much context as to what the other two are, but it could be that "head" would be a measure of how many cows a given farm has. 
+
+
+```{r}
+#| label: summary
+
+
+years <- select(data, "Year")
+table(years)
+
+```
+
+Overall, it appears that this dataset is a record of cattle/dairy data across many different countries over many different years. For each country/year combination, there are three entries for animal count, meat yield, and production weight.
