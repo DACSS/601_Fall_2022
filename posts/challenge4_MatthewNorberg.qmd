@@ -1,0 +1,189 @@
+---
+title: "Challenge 4 Instructions"
+author: "Matthew Norberg"
+desription: "More data wrangling: pivoting"
+date: "09/29/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+# Read in data set and display values
+df <- read_csv('./_data/hotel_bookings.csv')
+df
+# Print a summary of the data set to help describe it
+summarytools::dfSummary(df)
+```
+
+### Briefly describe the data
+
+Each row in the data set describes a hotel booking for a hotel chain.  We can see that from the 'hotel' column that each hotel in the chain is classified as either a 'City Hotel' or a 'Resort Hotel'.  Looking at the 'arrival_date_year' column, we can see that the data was collected between 2015 and 2017.  Additionally, we can see from the 'country' column that the data was collected from all over the world.  In total, we can see that there are 178 different values in the 'country' column.  However, one of those values is "NULL", so there are only 177 known countries included in the data set. 
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+There are four rows in the data set that contain values that are not available.  They are all in the 'children' column.  I believe it is safe to remove these values since it is only 4 cases out of 119,390.
+
+```{r}
+# Remove NA values
+df <- na.omit(df)
+```
+
+The data is tidy after removing the values which are not available.  Every row represents an observation, each column represents one variable, and each value has its own cell.
+
+Any additional comments?
+
+Looking at the summary of the data frame, we can see that the 'agent' and 'company' columns are of type character.  However, upon inspection, it appears as though they are all integers.  We can inspect the two values in the two columns with the following R commands:
+
+```{r}
+# List distinct values in agent and company
+distinct(df, agent)
+distinct(df, company)
+```
+
+By inspection, we can see that the columns are of character type because of string "NULL" in each column.  This was likely placed in the data set to indicate that an agent or company was not used.  However, it is a bit annoying that the columns are character types.  For instance, this prevents you from sorting the columns by value.  Here is an example:
+
+```{r}
+# Sort distinct values in agent column
+arrange(distinct(df, agent), agent)
+```
+
+We can see in the tibble above, that 107 comes before 11.  That isn't quite right and it is only happening because the column is of type character.  If we look at the column a bit further, we can see that none of the values are less than 0.  These queries confirm that this is the case.
+
+```{r}
+# Find agent and company values that have integer value less than 0
+distinct(df, agent) %>% filter(agent != "NULL") %>% filter(as.integer(agent) <= 0)
+distinct(df, company) %>% filter(company != "NULL") %>% filter(as.integer(company) <= 0)
+```
+
+To change the type of the column from character to double, I think we should replace all of the "NULL" strings with "-1".  Then we can convert the type of the column.  We will just use the convention that a value of -1 in either column indicates that an agent or company was not used.  
+
+```{r}
+# Convert agent and company columns to double type
+# Note: Replace "NULL" with "-1" first to do so
+df <- df %>%
+      mutate(agent = str_replace(agent, "NULL", "-1")) %>%
+      mutate(company = str_replace(company, "NULL", "-1")) %>%
+      type_convert()
+```
+
+Now, the 'agent' and 'company' columns have been converted to double.
+
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+First, I think that the 'arrival_date_week_number' is not useful.  We have the arrival month, year, and the day of the month.  I am not sure why we need the 'arrival_date_week_number' as well.  Also, certain dates do not always fall on the same date of the year.  For example, this year, January 1st was on a Friday and last year it was on a Saturday.  Consequently, the week of the year that someone arrives may not fall on the same date between years.  Lastly, I am not sure how they determine what the first week of the year is.  In the previous example, is the first week the span of Friday, Saturday, and Sunday because the first is on a Friday?  I don't know, but the first week could also be considered as the following week in the example because it is the first full week.  Due to these details, I think it's best to drop that column from the data set. 
+
+```{r}
+# Remove arrival_date_week_number
+df <- df %>% select(-(arrival_date_week_number))
+```
+
+The next observation I had is that the 'adr' column stands for average daily rate.  I think it would be good to rename this column to make the data more readable. 
+
+```{r}
+# Rename adr column
+df <- df %>% rename(average_daily_rate = adr)
+```
+
+Looking at the columns, it appears as though many of the columns represent categorical data.  These can all be converted to factors to make it easier to understand how many times each category appears in the data set.
+
+```{r}
+# Create factors for categorical data
+
+month_levels <- c(
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+)
+df$arrival_date_month <- factor(df$arrival_date_month, month_levels)
+
+df$meal <- factor(df$meal, c("BB", "HB", "FB", "SC", "Undefined"))
+
+df$hotel <- factor(df$hotel, c("City Hotel", "Resort Hotel"))
+
+df$market_segment <- factor(df$market_segment, c("Aviation", "Complementary", "Corporate", "Direct", "Groups",
+                                                 "Offline TA/TO", "Online TA"))
+
+df$distribution_channel <- factor(df$distribution_channel, c("Corporate", "Direct", "GDS", "TA/TO", "Undefined"))
+
+df$assigned_room_type <- factor(df$assigned_room_type, unique(df$assigned_room_type))
+
+df$reserved_room_type <- factor(df$reserved_room_type, unique(df$reserved_room_type))
+
+df$deposit_type <- factor(df$deposit_type, unique(df$deposit_type))
+
+df$customer_type <- factor(df$customer_type, unique(df$customer_type))
+
+df$reservation_status <- factor(df$reservation_status, unique(df$reservation_status))
+```
+
+The next observation is that we are recording the arrival date in three columns, instead of one.  We can use mutate to combine the information in these columns.  Afterwards, we can remove the old date columns to simplify the data set.
+
+```{r}
+# Convert arrival information into single column and remove old columns
+df <- df %>% mutate(date = make_date(arrival_date_year, arrival_date_month, arrival_date_day_of_month))
+df <- df %>% relocate(date, .after = hotel)
+df <- df %>% select(-c(arrival_date_year, arrival_date_month, arrival_date_day_of_month))
+```
+
+Next, we can see that the number of nights that the booking was scheduled for is recorded in two columns.  One records the weeknights and the other records the weekdays.  I think it would be a good idea to create  a new column called total nights using mutate.  This is done below.
+
+```{r}
+# Create a column to store total number of nights stayed
+df <- df %>% mutate(total_nights = stays_in_weekend_nights + stays_in_week_nights) %>%
+      relocate(total_nights, .after = stays_in_week_nights)
+```
+
+Now that we have tidied up the tibble, we need to present it in a way that is readable.  I think the best way to do that is to sort it by arrival date. 
+
+```{r}
+# Sort by date
+df <- df %>% arrange(date)
+```
+
+Any additional comments?
