@@ -1,0 +1,81 @@
+---
+title: "Challenge 4 Abby Balint"
+author: "Abby Balint"
+desription: "More data wrangling: pivoting"
+date: "10/03/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+  - abbybalint
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+I am reading in the FederalFunds Rate dataset, renaming it to "fed" to make it easy to work with.
+
+```{r}
+read.csv("_data/FedFundsRate.csv")
+fed <- read.csv("_data/FedFundsRate.csv")
+
+```
+
+### Briefly describe the data
+This data is likely government data for the federal funds rate which determines the rate that banks borrow money from each other at. This data set contains to variables ranging from date, target/upper target/lower target rates, actual rates, as well as GDP, unemployment, and inflation rates. The dataset contains 904 rows initially, beginning in July of 1954 and ending in March of 2017. The dataset is not complete as some years rates are reported only once a month, and some more than once a month. Also, many rows in several of the columns are missing data.
+```{r}
+summary(fed)
+nrow(fed)
+ncol(fed)
+```
+```{r}
+
+```
+
+## Tidy Data (as needed)
+
+This data is already pretty tidy, I think most of the work to be done here is in the possible mutations. All 10 of the variables make sense as column variables and I don't think anything needs to be pivoted wider or longer. The years and months respectively are already in ascending order.
+
+```{r}
+
+
+```
+
+
+## Identify variables that need to be mutated
+
+The first variable I mutated was the upper target minus the lower target to find the differences in the target rates. However, aftering doing this I quickly realized that only a portion of rows actually had data for the upper and lower target so this wasn't particularly helpful. But with the data I did have, I can see the biggest difference was only .25%.
+
+```{r}
+#mutating upper target minus lower into new variable
+fed <- fed %>%
+  mutate(Upper.Lower.Difference=(Federal.Funds.Upper.Target-Federal.Funds.Lower.Target)) %>%
+  arrange (fed, desc("Upper.Lower.Difference")) %>%
+  mutate(Percent.Difference.UnemploymentvInflation=(Unemployment.Rate-Inflation.Rate))
+summary(fed)
+```
+
+Next, I wanted to mutate the Month, Year, Day variables into a single date column. I used the paste function to combine the month, day, and year columns, separated by "/" to form a date.
+```{r}
+  fed$Date <- paste(fed$Month, fed$Day, fed$Year, sep="/")
+head(fed)
+```
+Now that I have a few additional columns, I am able to look at some new variables for analysis within my dataset. I can quickly filter by or identify the month/day/year as one column, or use the original columns to filter those things individually. I can also use the difference between the high and low of the target rates to determine when rates were variable vs not, as well as how the targets relate to the actual reported rate. If I were to visualize this data, I think it would be helpful to narrow down a specific period of time (decade, etc) and look at a fed rate variable such as effective rate compared to a variable like inflation or unemployment rates to see how they trend. 
