@@ -30,29 +30,55 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Challenge Overview
+## Challenge Approach
 
-Today's challenge is to:
+To address today's challenge I
 
 1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
-2)  tidy data (as needed, including sanity checks)
-3)  identify variables that need to be mutated
+2)  Used summary and examined the spreadsheet itself to describe the data
+3) tidied the data (as needed, including sanity checks)
+3)  identified variables to be mutated
 4)  mutate variables and sanity check all mutations
 
-Read in one (or more) of the following datasets, using the correct R package and command.
 
 
--   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
--   FedFundsRate.csv⭐⭐⭐
--   hotel_bookings.csv⭐⭐⭐⭐
--   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
 
+##  abc_poll.csv ⭐
 
 ::: panel-tabset
-##  abc_poll.csv ⭐
 ### Read in data
-To read in the data, I first examined the summary (which I have now commented
-out) and then chose to filter:
+To read in the data, I used the following process:
+
+- Examined the summary
+- Identify information to filter out on the read in
+- Identify variables to rename on the read in
+- Identify variable values to mutate on the read in to fix data type issues.
+
+::: panel-tabset
+### Examine the Summary
+
+```{r}
+#Read in the abc_poll data and use the summary to decide how to best set up
+# the our data frame
+
+ abc_poll<-read_csv("_data/abc_poll_2021.csv")
+ print(summarytools::dfSummary(abc_poll,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+
+### Filter, Rename, and Mutate on Read in
+
+
+After examining the summary, I chose to 
+
+**Filter**:
 
 - `id`: this info won't be used in an analysis
 - `complete_status`: everyone was qualified
@@ -66,49 +92,157 @@ different ranges of ages.
  respondents relative to their representation to the general population and can
  be calculated using data within our data frame.
  
- I also replaced the `pp_hhsize6` value of "6 or more" with 6, so that it could
- be of double data type and I mutated the `pp_educ5` column to remove the
+ 
+ 
+__Rename__
+
+- I renamed all of the variables corresponding to 
+_demographic characteristics of the poll participant_ 
+to begin with `pp_`.
+
+- I renamed all of the variables corresponding to _survey question responses_
+from the participants to begin with `Q`
+
+- If a variable had a fixed number of possible responses (which I could see from
+the summary), e.g., `pp_marital` had 5 possible responses, 
+I included the number of "categories" or possible responses
+in the variable name preceded by an underscore, `pp_marital_5`
+
+__Mutate__
+ 
+ - I replaced the `pp_hhsize_6` value of "6 or more" with 6, so that it could
+ be of double data type
+ 
+ - I mutated the `pp_educ5` column to remove the
  apostrophes from "Bachelor's" and "Master's" that were producing the "\\x92"'s 
- in the values.
+ in the values on read in.
+ 
+ - If a _nominal_ variable and lengthy values, I reduced them to the key info 
+ using substring
 
 
 ```{r}
-#Read in the abc_poll data and use the summary to decide how to best set up
-# the our data frame
-
-# abc_poll<-read_csv("_data/abc_poll_2021.csv")
-# print(summarytools::dfSummary(abc_poll,
-#                         varnumbers = FALSE,
-#                         plain.ascii  = FALSE, 
-#                         style        = "grid", 
-#                         graph.magnif = 0.70, 
-#                         valid.col    = FALSE),
-#       method = 'render',
-#       table.classes = 'table-condensed')
+#Filter, rename variables, and mutate values of variables on read-in
 
 abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,  
-                   col_names= c("delete",  "pp_Language2",  "delete","pp_age", 
-                                "pp_educ5", "delete", "pp_gender2", 
-                                "pp_ethnicity", "pp_hhsize6", "pp_inc7", 
-                                "pp_marital5", "pp_metro_cat", "pp_region4",
-                                "pp_housing", "pp_state", 
-                                "pp_working_arrangement", 
-                                "pp_employment_status", "Q1_a", "Q1_b", "Q1_c", 
-                                "Q1_d","Q1_e", "Q1_f","Q2", "Q3", "Q4", "Q5", 
-                                "pp_political_id4", "delete", "pp_contact2",  
+                   col_names= c("delete",  "pp_Language_2",  "delete","pp_age", 
+                                "pp_educ_5", "delete", "pp_gender_2", 
+                                "pp_ethnicity_5", "pp_hhsize_6", "pp_inc_7", 
+                                "pp_marital_5", "pp_metro_cat_2", "pp_region_4",
+                                "pp_housing_3", "pp_state", 
+                                "pp_working_arrangement_9", 
+                                "pp_employment_status_3", "Q1a_3", "Q1b_3", 
+                                "Q1c_3",  "Q1d_3","Q1e_3", "Q1f_3","Q2ConcernLevel_4",
+                                "Q3_3", "Q4_5",  "Q5Optimism_3", 
+                                "pp_political_id_5", "delete", "pp_contact_2",  
                                   "delete"))%>%
   select(!contains("delete"))%>%
   
-  #replace "6 or more" in pp_hhsize6 to the value of 6 so that the column can be
+  #replace "6 or more" in pp_hhsize_6 to the value of 6 so that the column can be
   # of double data type.
-     mutate(pp_hhsize6 = ifelse(pp_hhsize6 == "6 or more", "6", pp_hhsize6)) %>%
-    transform( pp_hhsize6 = as.numeric(pp_hhsize6))%>%
-    mutate(pp_educ5 = ifelse(str_starts(pp_educ5,"Bachelor"), 
-                           "Bachelor", pp_educ5))%>%
-    mutate(pp_educ5 = ifelse(str_starts(pp_educ5, "Master"), "Master", pp_educ5))
+     mutate(pp_hhsize_6 = ifelse(pp_hhsize_6 == "6 or more", "6", pp_hhsize_6)) %>%
+    transform( pp_hhsize_6 = as.numeric(pp_hhsize_6))%>%
+  
+  #fix the issue with apostrophes in pp_educ_5 values on read in
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5,"Bachelor"), 
+                           "Bachelor", pp_educ_5))%>%
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5, "Master"), "Master", pp_educ_5))
+
+  # reduce lengthy responses to necessary info in nominal variables
+
+  abc_poll$pp_Language_2 = substr(abc_poll$pp_Language_2,1,2)
+  #mutate(pp_Language_2 = (str_sub(abc_poll,pp_Language_2, 1, 2)))
+  abc_poll$pp_gender_2 = substr(abc_poll$pp_gender_2,1,1)
+  abc_poll$pp_contact_2 = substr(abc_poll$pp_contact_2,1,1)
+  
+  #reduce lengthy responses of nominal variables using Case When
+  #pp_ethnicity_5
+  abc_poll <-mutate(abc_poll, pp_ethnicity_5 = case_when(
+    pp_ethnicity_5 == "2+ Races, Non-Hispanic" ~ "2+NH",
+    pp_ethnicity_5 == "Black, Non-Hispanic" ~ "BlNH",
+    pp_ethnicity_5 == "Hispanic" ~ "H",
+    pp_ethnicity_5 == "Other, Non-Hispanic" ~ "OtNH",
+    pp_ethnicity_5 == "White, Non-Hispanic" ~ "WhNH"
+
+))
+  
+  #pp_metro_cat_2
+  abc_poll <-mutate(abc_poll, pp_metro_cat_2 = case_when(
+    pp_metro_cat_2 == "Metro area" ~ "M",
+    pp_metro_cat_2 == "Non-metro area" ~ "NM"
+))
+ 
+  #pp_political_id_5 
+ abc_poll <-mutate(abc_poll, pp_political_id_5  = case_when(
+    pp_political_id_5 == "A Democrat" ~ "Dem",
+    pp_political_id_5 == "A Republican" ~ "Rep",
+    pp_political_id_5 == "An Independent" ~ "Ind",
+    pp_political_id_5 == "Something else" ~ "Other",
+    pp_political_id_5 == "Skipped" ~ "DNR"
+))
+  #pp_region_4 
+ abc_poll <-mutate(abc_poll, pp_region_4  = case_when(
+    pp_region_4 == "MidWest" ~ "MW",
+    pp_region_4 == "NorthEast" ~ "NE",
+    pp_region_4 == "South" ~ "S",
+    pp_region_4 == "West" ~ "W",
+    
+))
+  #pp_marital_5 
+ abc_poll <-mutate(abc_poll, pp_marital_5 = case_when(
+   pp_marital_5 == "Never married" ~ "NM",
+   pp_marital_5 == "Now Married" ~ "M",
+   pp_marital_5 == "Separated" ~ "S",
+   pp_marital_5 == "Divorced" ~ "D",
+   pp_marital_5 == "Widowed" ~ "W"))
+  
   
   
 abc_poll
+```
+:::
+
+
+### Briefly describe the data
+
+
+
+:::panel-tabset
+### Broad Summary
+
+From our `abc_poll` data frame summary, we can see that this data set
+contains polling results from 527 respondents to an ABC news political poll. 
+The results consist of information for two broad categories
+
+
+- *Demographic characteristics* of 
+the respondents themselves (e.g., language of the poll given to the respondent
+(Spanish or English), age, educational attainment, ethnicity, household size,
+ethnic make up, gender, income range, Marital status, Metro category, 
+Geographic region, Rental status, State, Employment status, 
+Working characteristics, Willingness to have a follow up interview)
+
+- *The responses that the individuals gave* to 10
+questions (there are 5 broad questions Q1-Q5, but Q1 consists of 6 
+sub questions, a-f).
+
+
+ Now when we examine our summary, we can see that 
+ 
+- each categorical variable is of character data type with the number of 
+distinct categories included in the variable name
+
+- some of these categorical variables are _ordinal_ and will need the ordering 
+of their values coded in as `factor`s.
+
+- each variable has 527 observations partitioned among the possible values
+
+- each _discrete_ numerical variable is of `double` data type.
+
+### Post Read in Variable Summary
+
+
+```{r}
 print(summarytools::dfSummary(abc_poll,
                         varnumbers = FALSE,
                         plain.ascii  = FALSE,
@@ -119,87 +253,175 @@ print(summarytools::dfSummary(abc_poll,
       table.classes = 'table-condensed')
 ```
 
-### Briefly describe the data
-From our `abc_poll` data frame summary, we can see that this data set
-contains polling results from 527 respondents to an abc poll. The results
-consist of information for two broad categories
-
-- demographic characteristics of 
-the respondents themselves (e.g., language of the poll given to the respondent
-(Spanish or English), age, educational attainment, ethnicity, household size,
-ethnic make up, gender, income range, Marital status, Metro category, 
-Geographic region, Rental status, State, Employment status, 
-Working characteristics, Willingness to have a follow up interview)
-
-- the responses that the individuals gave to 10
-questions (there are 5 broad questions Q1-Q5, but Q1 consists of 6 
-sub questions, a-f).
+:::
 
 ### Tidy Data (as needed)
 
-Do I want to gather the parts of Q1 into a column as a variable or not?
+In order to have tidy data, each row should be a unique observation. Each row
+corresponds to the responses from a given individual that was polled. Since all
+ parts of Q1 (a-f) consisted of the same response values, `approve`, `disapprove`
+  and `skip`, one could `pivot` all of the `Q1` data into 2 columns. Once column 
+  whose values indicate which part of `Q1` was being answered (a-f) and the 
+  second column indicating the response given for that specific question.
 
 ```{r}
 abc_poll<-abc_poll %>%
-    pivot_longer(c(contains("Q1")), names_to = "Q1_part", values_to = "Q1_response")
+    pivot_longer(c(contains("Q1")), names_to = "Q1_part", values_to = "Q1_response_3")
 abc_poll
 
 ```
 
-Any additional comments?
+
+
+
+### Identify Desired Variable Mutations
+:::panel-tabset
+
+When examining our variables there are two issues to address
+
+
+
+- Some of the variable are `ordinal` and will need the ordering coded in
+
+- Some of the ordinal variable values are very long and fill up too much space 
+in our table making it unpleasant to read through
+
+
 
 ::: panel-tabset
 
-### Identify variables that need to be mutated
 
-
-
+### Factoring of Categorical Variables
+There are several _ordinal_ variables where we need to code in the ordering of
+ the categories.
 ```{r}
 # use factoring to put an ordering to all ordinal variables
-# use mutate and begins with or other string features to reduce the lengthy
-# responses
-# add header for the variables that desecribe the participant and header to 
-# variables that describe their responses
-
-```
-#### Key for Mutated Variable Values
-  `pp_educ5`
+# ,, 
+# " 
+#,Q2_4",
+#                                 "Q3_3", ",  "Q5_3"
+                               
+                  
+  #pp_inc_7                           
+             
+# Why couldn't I use a levels vector!                 
+ # pp_inc_7_levels <- c(
+ #    "Less than $10,000", "$10,000 to $24,999",  "$25,000 to $49,999",  
+ #    "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999",  
+ #    "150,000 or more")
+#abc_poll
   
+ abc_poll <-mutate(abc_poll, pp_inc_7 = recode_factor(pp_inc_7, 
+                                   "Less than $10,000" = 1, 
+                                   "$10,000 to $24,999" = 2,  
+                                   "$25,000 to $49,999" = 3, 
+                                   "$50,000 to $74,999"= 4, 
+                                   "$75,000 to $99,999"= 5, 
+                                   "$100,000 to $149,999" = 6,
+                                   "$150,000 or more" = 7,
+                                  .ordered = TRUE))
+ #pp_educ_5
+ 
+ abc_poll <-mutate(abc_poll, pp_educ_5 = recode_factor(pp_educ_5,
+                                     "No high school diploma or GED" = "E1",
+                                     "High school graduate (high school diploma or the equivalent GED)"
+                                     = "E2",
+                                     "Some college or Associate degree" = "E3",
+                                     "Bachelor"= "E4",
+                                     "Master"= "E5",
+                                     .ordered = TRUE))
+ 
+ #pp_housing_3
+abc_poll <-mutate(abc_poll, pp_housing_3 = recode_factor(pp_housing_3,
+                                     "Occupied without payment of cash rent" = "H1",
+                                     "Rented for cash"= "H2",
+                                     "Owned or being bought by you or someone in your household" = "H3",
+                                     .ordered = TRUE))
+#pp_employment_status_3
+ abc_poll <-mutate(abc_poll, pp_employment_status_3 = recode_factor(pp_employment_status_3,
+                                     "Not working" = "ES1",
+                                     "Working part-time"= "ES2",
+                                     "Working full-time" = "ES3",
+                                     .ordered = TRUE))
+ 
+ #pp_working_arrangement_9
+ abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = 
+                     recode_factor(pp_working_arrangement_9,
+                                     "Other" = "WA1",
+                                     "Retired" = "WA2",
+                                     "Homemaker" = "WA3",
+                                      "Student" = "WA4",
+                                     "Currently laid off" = "WA5",
+                                     "On furlough"= "WA6",
+                                     "Employed part-time (by someone else)" = "WA7",
+                                      "Self-employed" = "WA8",
+                                     "Employed full-time (by someone else)"= "WA9",
+                                     .ordered = TRUE))
+ 
+
+ #Q1_response_3
+ abc_poll <-mutate(abc_poll, Q1_response_3 = 
+                     recode_factor(Q1_response_3,
+                                     "Approve" = 1,
+                                     "Disapprove" = 0,
+                                     "Skipped" = -1,
+                                     .ordered = TRUE))
+ 
+ 
+ #Q2ConcernLevel_4
+ 
+ abc_poll <-mutate(abc_poll, Q2ConcernLevel_4 = 
+                     recode_factor(Q2ConcernLevel_4 ,
+                                     "Not concerned at all" = "C0",
+                                     "Not so concerned" = "C1",
+                                     "Somewhat concerned" = "C2",
+                                      "Very Concerned" = "C3",
+                                     .ordered = TRUE))
+ 
+ #Q3_3
+ abc_poll <-mutate(abc_poll, Q3_3 =
+                     recode_factor(Q3_3,
+                                     "Yes" = 1,
+                                     "No" = 0,
+                                     "Skipped" = -1,
+                                     .ordered = TRUE))
+
+#Q4_5
+abc_poll <-mutate(abc_poll, Q4_5 =
+                    recode_factor(Q4_5 ,
+                                    "Poor" = 0,
+                                    "Not so good" = 1,
+                                   "Good" = 2,
+                                  "Excellent" = 3,
+                                    "Skipped" = -1,
+                                    .ordered = TRUE))
+ 
+#Q5Optimism_3
+ abc_poll <-mutate(abc_poll, Q5Optimism_3 = 
+                     recode_factor(Q5Optimism_3 ,
+                                     "Pessimistic" = 0,
+                                     "Optimistic" = 1,
+                                     "Skipped" = -1,
+                                     .ordered = TRUE))
+ abc_poll
+
+
+
+```
+
+
+### Codebook for ABC Variables
+  
+| Categorical Variable    | Description |
+| ----------- | ----------- |
+| `pp_educ5`   | Title       |
+| Paragraph   | Text        |
+
 :::
 
-Any additional comments?
-
-##  hotel_bookings.csv⭐⭐⭐⭐
-### Read in data
-
-
-```{r}
-
-
-```
-
-### Briefly describe the data
-
-### Tidy Data (as needed)
-
-Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
-
-```{r}
-
-
-```
-
-Any additional comments?
-
-### Identify variables that need to be mutated
-
-Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
-
-Document your work here.
-
-```{r}
-
-```
-
-Any additional comments?
 :::
+
+:::
+
+
+
