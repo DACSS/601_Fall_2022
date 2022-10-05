@@ -1,0 +1,124 @@
+---
+title: "Challenge 4 Instructions"
+author: "Meredith Rolfe"
+desription: "More data wrangling: pivoting"
+date: "08/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+rawData<- read.csv("_data/FedFundsRate.csv")
+
+rawData
+
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+
+
+The data is already tidy from the sense of its dimensions. The data types need to be cleaned up as well as the column headers however.
+- something we could do is store the date as one column which I will do just as practice.
+
+
+
+
+```{r}
+
+
+##creating one column for date:
+
+rawData%>%
+  mutate(Date = make_datetime(`Year`,`Month`,`Day`,),.before = `Federal Funds Target Rate`)
+
+
+
+```
+
+Any additional comments?
+
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+New Column headers to be:
+
+Date(3 cols or 1)
+Federal Funds Target Rate
+Federal Funds Upper Target
+Federal Funds Lower Target
+Effective Federal Funds Rate
+Real GDP (Percent Change)
+Unemployment Rate
+Inflation Rate
+
+I dont think I would change any of these to be factors. If I was to add anything it would be a new col which described the effective fed funds rate against the targets however this wouldnt do much as most of the data does not have targets.
+
+
+
+Document your work here.
+
+```{r}
+curNames<- colnames(rawData)
+
+newNames<-str_replace_all(curNames, "[.]"," ")
+
+colnames(rawData) = newNames
+
+rawData %>%
+  filter(is.na(`Federal Funds Target Rate`)==FALSE)
+
+rawData %>%
+  filter(is.na(`Federal Funds Upper Target`)==FALSE)
+
+##if I were to add a factor it would be for hitting or missing targets but the target data is sporatic.
+
+```
+
+Any additional comments?
