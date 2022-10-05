@@ -1,0 +1,167 @@
+---
+title: "Challenge 4 Instructions"
+author: "Owen Tibby"
+desription: "More data wrangling: pivoting"
+date: "10/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - poultry_tidy
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+# Install pacman ("package manager") if needed
+if (!require("pacman")) install.packages("pacman")
+
+# Load  packages with pacman
+pacman::p_load(pacman, rio, tidyverse, dplyr, readxl, readr)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## [Challenge Overview]{.underline}
+
+[*Today's challenge is to:*]{.underline}
+
+1)  [*read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)*]{.underline}
+2)  [*tidy data (as needed, including sanity checks)*]{.underline}
+3)  [*identify variables that need to be mutated*]{.underline}
+4)  [*mutate variables and sanity check all mutations*]{.underline}
+
+## [*Read in data*]{.underline}
+
+[*Read in one (or more) of the following datasets, using the correct R package and command.*]{.underline}
+
+-   [*abc_poll.csv ⭐*]{.underline}
+-   [*poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐*]{.underline}
+-   [*FedFundsRate.csv⭐⭐⭐*]{.underline}
+-   [*hotel_bookings.csv⭐⭐⭐⭐*]{.underline}
+-   [*debt_in_trillions.xlsx ⭐⭐⭐⭐⭐ \###*]{.underline}
+
+------------------------------------------------------------------------
+
+**For my first attempt at this challenge, I'll be working with the poultry_tidy.csv data. 😎**
+
+**Read in data: Method A**
+
+```{r}
+#Reading in data (method A)
+poultry_tidy <- read_excel("_data/poultry_tidy.xlsx")
+
+ptidy <- poultry_tidy
+
+```
+
+**Read in data: Method B using import ()**
+
+This is very useful when importing other file formats like .xlsx
+
+```{r}
+#Reading in data (method B) using the import function in rio
+
+#(poultry_tidy <- import("_data/poultry_tidy.xlsx") %>% as_tibble())
+```
+
+### [*Briefly describe the data*]{.underline}
+
+**The data in poultry_tidy represents the wholesaling to first receivers of 5 types of poultry products from 2004 to 2013.**
+
+\## [*Tidy Data (as needed)*]{.underline}
+
+[*Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.*]{.underline}
+
+**First, I want to explore how the data is stored/formatted in each column (character, numeric, etc.). I want to ensure numeric fields are strictly numeric and character fields the same.**
+
+**From the summary() function I gather that only the *Price_Dollar* has NAs**.
+
+```{r}
+summary(poultry_tidy)
+
+#Finding the number of distinct products
+poultry_tidy %>% 
+  select(Product) %>% 
+distinct(Product, .keep_all = TRUE) %>% as.tibble()
+
+```
+
+**Finding the specific products/ years that had NAs (i'll keep this save in a variable just in case I want to see this later)**
+
+```{r}
+na_poultry <- poultry_tidy[is.na(poultry_tidy$Price_Dollar),]
+print(na_poultry)
+
+```
+
+**Removing the the NAs. 7 records were removed and the data set updated.**
+
+```{r}
+ poultry_tidy <- na.omit(poultry_tidy)
+summary(poultry_tidy)
+
+```
+
+**When and how has the price increased for each product?**
+
+```{r}
+#Explore the distinct records in each column}
+PriceHikes <-poultry_tidy %>%
+select(Year, Product, Month, Price_Dollar) %>%
+  group_by(Year) %>% 
+arrange(Product) %>%
+distinct(Price_Dollar, .keep_all = TRUE)
+
+
+
+
+```
+
+The table above will show how the price to First Receivers increased and when it increased.
+
+```{r}
+
+#Pivot the data wider 
+poultry_tidy <-poultry_tidy %>% 
+pivot_wider(names_from= Month,  values_from= Price_Dollar) %>% 
+  group_by(Year) %>% 
+  print()
+
+
+
+
+```
+
+Any additional comments?
+
+## [Identify variables that need to be mutated]{.underline}
+
+[Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?]{.underline}
+
+[Document your work here.]{.underline}
+
+**In my opinion, Price_Dollar could have been mutated in order to create a column free of NAs. However, I think there isn't much value in doing that in the poultry_tidy data set because of two main reasons:**
+
+1.  **Only 7 NA records out of 600**
+2.  **NA values were stored in a variable called na_poultry for access later on**
+
+**To do so, I would do as follows:**
+
+**I'll leave the mutation for more challenging data sets but the below code chunk would be how I go about it.**
+
+```{r}
+
+#poultry_tidy <- poultry_tidy %>% 
+#mutate(Price= Price_Dollar) %>% 
+#view(poultry_tidy)
+
+```
+
+Any additional comments?
