@@ -184,6 +184,13 @@ abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,
     pp_political_id_5 == "Something else" ~ "Other",
     pp_political_id_5 == "Skipped" ~ "DNR"
 ))
+ 
+ #pp_housing_3
+abc_poll <-mutate(abc_poll, pp_housing_3 = case_when(
+    pp_housing_3 == "Occupied without payment of cash rent" ~ "NonP_Occupied",
+    pp_housing_3 == "Rented for cash"~ "P_Rent",
+    pp_housing_3 == "Owned or being bought by you or someone in your household" ~ "P_Own"))
+
   #pp_region_4 
  abc_poll <-mutate(abc_poll, pp_region_4  = case_when(
     pp_region_4 == "MidWest" ~ "MW",
@@ -200,7 +207,20 @@ abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,
    pp_marital_5 == "Divorced" ~ "D",
    pp_marital_5 == "Widowed" ~ "W"))
  
-  #Q3_3
+# pp_working_arrangement_9
+ abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = case_when(
+                      pp_working_arrangement_9 == "Other" ~ "Other",
+                      pp_working_arrangement_9 =="Retired" ~ "Retired",
+                      pp_working_arrangement_9 == "Homemaker" ~ "Homemaker",
+                      pp_working_arrangement_9 == "Student" ~ "Student",
+                      pp_working_arrangement_9 == "Currently laid off" ~ "Laid Off",
+                      pp_working_arrangement_9 == "On furlough"~ "Furlough",
+                      pp_working_arrangement_9 == "Employed part-time (by someone else)" ~ "Emp_PT",
+                      pp_working_arrangement_9 =="Self-employed" ~ "Emp_Self",
+                      pp_working_arrangement_9 == "Employed full-time (by someone else)"~ "Emp_FT"))
+ 
+
+  #Q3_3 What is the best "coding for variables that are like "Booleans"?
  # abc_poll <-mutate(abc_poll, Q3_3 = case_when(
  #                                   Q3_3 ==  "Yes" ~ 1,
  #                                   Q3_3 ==  "No" ~ 0,
@@ -216,7 +236,7 @@ abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,
   
   
   
-abc_poll
+
 ```
 :::
 
@@ -275,17 +295,18 @@ print(summarytools::dfSummary(abc_poll,
 
 ### Tidy Data (as needed)
 
-In order to have tidy data, each row should be a unique observation. Each row
-corresponds to the responses from a given individual that was polled. Since all
- parts of Q1 (a-f) consisted of the same response values, `approve`, `disapprove`
-  and `skip`, one could `pivot` all of the `Q1` data into 2 columns. Once column 
-  whose values indicate which part of `Q1` was being answered (a-f) and the 
-  second column, `Q1_response_3` indicating the response given for that specific
-  question (Approve, Disapprove, or Skipped)
+In order to have tidy data, each row should be a unique observation. A unique 
+case therefore should consist of all of the demographic information about the 
+polled person and their response for one of the questions.
+
+- The demographic characteristics (our `pp_` variables) and the `Question`
+variable define a _case_.
+- The _value_ for each case is the poll participants `Response`.
+
 
 ```{r}
 abc_poll<-abc_poll %>%
-    pivot_longer(c(contains("Q1")), names_to = "Q1_part", values_to = "Q1_response_3")
+    pivot_longer(c(starts_with("Q")), names_to = "Question", values_to = "Response")
 abc_poll
 
 ```
@@ -325,7 +346,6 @@ There are several _ordinal_ variables where we need to code in the ordering of
  #    "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999",  
  #    "150,000 or more")
 
-#abc_poll
   
  abc_poll <-mutate(abc_poll, pp_inc_7 = recode_factor(pp_inc_7, 
                                    "Less than $10,000" = "I1", 
@@ -347,12 +367,7 @@ There are several _ordinal_ variables where we need to code in the ordering of
                                      "Master"= "E5",
                                      .ordered = TRUE))
  
- #pp_housing_3
-abc_poll <-mutate(abc_poll, pp_housing_3 = recode_factor(pp_housing_3,
-                                     "Occupied without payment of cash rent" = "H1",
-                                     "Rented for cash"= "H2",
-                                     "Owned or being bought by you or someone in your household" = "H3",
-                                     .ordered = TRUE))
+
 #pp_employment_status_3
  abc_poll <-mutate(abc_poll, pp_employment_status_3 = recode_factor(pp_employment_status_3,
                                      "Not working" = "ES1",
@@ -360,46 +375,39 @@ abc_poll <-mutate(abc_poll, pp_housing_3 = recode_factor(pp_housing_3,
                                      "Working full-time" = "ES3",
                                      .ordered = TRUE))
  
- #pp_working_arrangement_9
- # abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = 
- #                     recode_factor(pp_working_arrangement_9,
- #                                     "Other" = "WA1",
- #                                     "Retired" = "WA2",
- #                                     "Homemaker" = "WA3",
- #                                      "Student" = "WA4",
- #                                     "Currently laid off" = "WA5",
- #                                     "On furlough"= "WA6",
- #                                     "Employed part-time (by someone else)" = "WA7",
- #                                      "Self-employed" = "WA8",
- #                                     "Employed full-time (by someone else)"= "WA9",
- #                                     .ordered = TRUE))
+ 
  
 
  
  
- 
+ ######## I know that Q2 concern level Q4 have "ordinal" responses,
+ ###Can I order a subset of the "Response" column?
+ ### Should I order these variables before the pivot? (can a column be of mixed type?)
+ ###Would it be better to have Nominal Questions Separated from Ordinal Questions?
  #Q2ConcernLevel_4
+ ##I used the code below when I only pivoted the parts of Q1 under a Q1 column and
+ # left the other questions as individual columns
  
- abc_poll <-mutate(abc_poll, Q2ConcernLevel_4 = 
-                     recode_factor(Q2ConcernLevel_4 ,
-                                     "Not concerned at all" = "C0",
-                                     "Not so concerned" = "C1",
-                                     "Somewhat concerned" = "C2",
-                                      "Very Concerned" = "C3",
-                                     .ordered = TRUE))
- 
+ # abc_poll <-mutate(abc_poll, Q2ConcernLevel_4 = 
+ #                     recode_factor(Q2ConcernLevel_4 ,
+ #                                     "Not concerned at all" = "C0",
+ #                                     "Not so concerned" = "C1",
+ #                                     "Somewhat concerned" = "C2",
+ #                                      "Very Concerned" = "C3",
+ #                                     .ordered = TRUE))
+ # 
 
 
 #Q4_5
-abc_poll <-mutate(abc_poll, Q4_5 =
-                    recode_factor(Q4_5 ,
-                                    "Poor" = 0,
-                                    "Not so good" = 1,
-                                   "Good" = 2,
-                                  "Excellent" = 3,
-                                    "Skipped" = -1,
-                                    .ordered = TRUE))
- 
+# abc_poll <-mutate(abc_poll, Q4_5 =
+#                     recode_factor(Q4_5 ,
+#                                     "Poor" = 0,
+#                                     "Not so good" = 1,
+#                                    "Good" = 2,
+#                                   "Excellent" = 3,
+#                                     "Skipped" = -1,
+#                                     .ordered = TRUE))
+#  
 
  abc_poll
 
@@ -411,6 +419,8 @@ _nominal_ variables are of type `char`, and our _discrete_ variables are of type
 `double`.
 
 ### Codebook for ABC Variables
+Here I would complete a key for all of the variables that are included in my table.
+Is there a better template for this?
 
 
 `pp_educ_5`, _ordinal_
