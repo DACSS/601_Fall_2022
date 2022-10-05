@@ -1,0 +1,166 @@
+---
+title: "Sarah McAlpine - Challenge 4"
+author: "Sarah McAlpine"
+desription: "Mutating Variables"
+date: "09/30/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - sarahmcalpine
+  - abc_poll
+  - mutate
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Challenge Overview
+
+Read in and describe a data set, tidy it, identify variables to be mutated, and mutate them. 
+
+
+## ABC Poll Data Overview
+As a new R user, I will begin with the abc_poll.csv data and may return to do another. I discovered the source of this data is very likely to be the July 23-24, 2021 ABC News/Ipsos Poll given the total of 527 respondents and the alignment of answer types with the [annotated questionnaire](https://www.ipsos.com/sites/default/files/ct/news/documents/2021-07/Topline%20ABC_Ipsos%20Poll%20July%2024%202021%20V2.pdf). I will rename the numbered questions to clarify each topic. 
+
+I see the data is 527 rows by 31 columns, so I already anticipate needing to reduce columns if possible. Since this is poll data, one respondent defines a case, and I will consider the weighing methodology in reading the case notes. The data includes 5 administrative questions, 12 demographic/political groupings, 11 political questions, and 3 translated variables. Some of the administrative variables are not of analytical interest, so I will remove those upon read-in along with all 3 of the translated variables that IPSOS used to group categories of responses, such as age groups. 
+
+
+On a philosophical note, this poll was conducted with an online tool, and even with accommodations for those without their own devices and internet connections as noted in the annotated questionnaire, a disproportionate bias may be present for those with increased resources. Additionally, while weighting may attempt to give a better sense of the national population, I will want to ensure sufficient quantity of responses for particular groups so that the effects of any outliers can be minimized rather than magnified.
+
+ 
+```{r}
+#read in abc_poll.csv
+poll_orig <- read_csv("_data/abc_poll_2021.csv")
+print(dfSummary(poll_orig,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+  
+  # pp - seems to mean demog data, vs questions
+  
+  # 1 admin 527 distinct IDs - should be character vector
+
+  # 2 admin Language: Polled in English or Spanish 
+  # 3 admin DELETE 100% qualified - delete
+  # 4 demog age 18-91 (more specific than ABCAGE)
+  
+  # 5 demog MUTATE ppeduc5 (keep over ppeducat) to edu0, edu1, edu2, edu3, edu4?
+  # 6 trans DELETE ppeducat because code reveals the more granular data: distinct(poll_orig, ppeduc5,ppeducat)
+
+  # 7 demog gender
+  # 8 demog ethnic mix - 5 options
+  # 9 demog household size 1-6+
+  
+  # 10 demog MUTATE income levels 1-7
+  # 11 demog marriage status - 5 options
+  # 12 demog metro or non-metro
+  # 13 trans DELETE BC REDUNDANT? 4 regions, not the whole country
+  # 14 demog rent: unpaid, own, rent 
+  # 15 demog state, nearly all 50 states repped, plus DC, and unevenly
+  
+  # 16-17 demog COMPARE work status in ppemply and ppWORKA - possible mutate, wonder about any conflicting responses
+  # Q1 a-f: approve/disapprove/skip
+       # I wonder if skipped answers are better as NA or as skipped
+  # Q1 a rename: covid
+  # Q1 b rename: mexborder
+  # Q1 c rename: econrecovery
+  # Q1 d rename: guns
+  # Q1 e rename: crime
+  # Q1 f rename: troops
+  # Q2 rename: infection
+  # Q3 rename: vaxed
+  # Q4 rename: promises
+  # Q5 rename: nextyear
+  # 28 demog political ID: 5 options
+  
+  # 29 trans DELETE ABC Age groupings - delete and keep granular age
+  # 30 admin Contact: willing to be interviewed yes or no
+  # 31 admin weights_pid - weighting explained in link
+```
+## Identify Variables to Mutate
+
+I want to clean the data in the read-in chunk to prevent any later confusion. When I read in the data at first, I called it `poll_orig`, and below I assign it simply `poll`. In this step, I remove unecessary columns (administrative or redundant), change the "Skipped" values to `NA`, change the wording of columns and values, and reorder the factors for more sesible visualization. I decided to add "q_" to the beginning of each poll question in case I later want to treat those in a specific way. See the code itself for detailed notes on each change.
+
+
+
+```{r}
+#read in, while removing header column and renaming columns
+poll <- read_csv("_data/abc_poll_2021.csv",
+                 skip = 1,
+                 col_names = c("ID","delete", "delete", "age", "edu_lvl", "delete", "gender", "ethnicity", "hh_size", "income_lvl","marriage","metro","delete", "residence", "state", "work", "delete", "q_covid", "q_mexborder", "q_econrecovery","q_guns","q_crime", "q_troops", "q_infection", "q_vaxed","q_promises", "q_nextyear", "polparty", "delete", "delete", "weights"))%>%
+  # remove the "delete" columns
+                 select(!starts_with("Delete")) %>%
+  # change ID to character vector
+  mutate(across(("ID"), as.character)) %>%
+  # change Skipped to NA
+  na_if("Skipped")%>%
+  # clean up text of values for polpart and ethnicity
+  mutate(polparty = str_remove(polparty, "A[n]* ")) %>%
+  mutate(ethnicity = str_remove(ethnicity, ", Non-Hispanic")) %>%
+   # turn income levels into factors 
+  mutate(income_lvl = fct_recode(income_lvl,
+                                 "income1" = "Less than $10,000",
+                                 "income2" = "$10,000 to $24,999",
+                                 "income3" = "$25,000 to $49,999",
+                                 "income4" = "$50,000 to $74,999",
+                                 "income5" = "$75,000 to $99,999",
+                                 "income6" = "$100,000 to $149,999",
+                                 "income7" = "$150,000 or more"
+                                 )) %>%
+  # reorder the income levels lowest to highest
+  mutate(income_lvl = fct_relevel(income_lvl, "income1", "income2", "income3", "income4", "income5", "income6", "income7")) %>%
+  # remove apostrophe from edu_lvl values
+   mutate(edu_lvl = str_remove(edu_lvl, "\x92")) %>%
+  # rename edu levels
+   mutate(edu_lvl = fct_recode(edu_lvl,
+                              "no diploma" = "No high school diploma or GED",
+                              "diploma or ged" = "High school graduate (high school diploma or the equivalent GED)",
+                              "some college" = "Some college or Associate degree",
+                              "bachelors" = "Bachelors degree",
+                              "masters plus" = "Masters degree or above")) %>%
+  mutate(edu_lvl = fct_relevel(edu_lvl, "no diploma", "diploma or ged", "some college", "bachelors", "masters plus")) %>%
+  mutate(residence = fct_recode(residence,
+                                "bought" = "Owned or being bought by you or someone in your household",
+                                "rented" = "Rented for cash",
+                                "unpaid" = "Occupied without payment of cash rent"))%>%
+  mutate(marriage = fct_infreq(marriage), work = fct_infreq(work), residence = fct_infreq(residence))
+poll
+
+ 
+```
+
+## Resulting Data
+
+Below is the data frame summary showing my new data, which is 527 cases by 24 columns. The last thing I may do, if I plan to graph my analysis, would be to reorder the factors that indicate any increase or decrease in real-world implications, as I did with income and education levels; otherwise I may reorder based on frequency.
+
+I am not sure whether to retain the IDs--this is always key in my work in SQL, but I don't know if they are necessary here. I am also not sure how to resolve the issue of apostrophes in the education level data. I would love to discuss that in class, and I mention the question on Slack.
+```{r}
+# Look at the tidied data
+print(dfSummary(poll,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+
+  
+```
+
