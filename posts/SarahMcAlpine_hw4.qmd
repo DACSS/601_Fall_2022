@@ -5,6 +5,7 @@ desription: "Mutating Variables"
 date: "09/30/2022"
 format:
   html:
+    df-print: paged
     toc: true
     code-fold: true
     code-copy: true
@@ -19,11 +20,12 @@ categories:
 ```{r}
 #| label: setup
 #| warning: false
+#| message: false
 
 library(tidyverse)
 library(summarytools)
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ## Challenge Overview
@@ -31,7 +33,14 @@ knitr::opts_chunk$set(echo = TRUE)
 Read in and describe a data set, tidy it, identify variables to be mutated, and mutate them. 
 
 
-## ABC Poll Data Overview
+
+::: panel-tabset
+## ABC Poll
+
+
+I will begin with the ABC poll.
+
+### ABC Poll Data Overview
 As a new R user, I will begin with the abc_poll.csv data and may return to do another. I discovered the source of this data is very likely to be the July 23-24, 2021 ABC News/Ipsos Poll given the total of 527 respondents and the alignment of answer types with the [annotated questionnaire](https://www.ipsos.com/sites/default/files/ct/news/documents/2021-07/Topline%20ABC_Ipsos%20Poll%20July%2024%202021%20V2.pdf). I will rename the numbered questions to clarify each topic. 
 
 I see the data is 527 rows by 31 columns, so I already anticipate needing to reduce columns if possible. Since this is poll data, one respondent defines a case, and I will consider the weighing methodology in reading the case notes. The data includes 5 administrative questions, 12 demographic/political groupings, 11 political questions, and 3 translated variables. Some of the administrative variables are not of analytical interest, so I will remove those upon read-in along with all 3 of the translated variables that IPSOS used to group categories of responses, such as age groups. 
@@ -93,7 +102,7 @@ print(dfSummary(poll_orig,
   # 30 admin Contact: willing to be interviewed yes or no
   # 31 admin weights_pid - weighting explained in link
 ```
-## Identify Variables to Mutate
+### Identify Variables to Mutate
 
 I want to clean the data in the read-in chunk to prevent any later confusion. When I read in the data at first, I called it `poll_orig`, and below I assign it simply `poll`. In this step, I remove unecessary columns (administrative or redundant), change the "Skipped" values to `NA`, change the wording of columns and values, and reorder the factors for more sesible visualization. I decided to add "q_" to the beginning of each poll question in case I later want to treat those in a specific way. See the code itself for detailed notes on each change.
 
@@ -140,16 +149,12 @@ poll <- read_csv("_data/abc_poll_2021.csv",
                                 "rented" = "Rented for cash",
                                 "unpaid" = "Occupied without payment of cash rent"))%>%
   mutate(marriage = fct_infreq(marriage), work = fct_infreq(work), residence = fct_infreq(residence))
-poll
 
- 
 ```
 
-## Resulting Data
+### Resulting Data
 
-Below is the data frame summary showing my new data, which is 527 cases by 24 columns. The last thing I may do, if I plan to graph my analysis, would be to reorder the factors that indicate any increase or decrease in real-world implications, as I did with income and education levels; otherwise I may reorder based on frequency.
-
-I am not sure whether to retain the IDs--this is always key in my work in SQL, but I don't know if they are necessary here. I am also not sure how to resolve the issue of apostrophes in the education level data. I would love to discuss that in class, and I mention the question on Slack.
+Below is the data frame summary showing my new data, which is 527 cases by 24 columns. I also set the levels of sequential answers as logica would dictate (as in, education levels beginning with less and adding from there), and set the others to display in order of frequency if simply categorical. I was not sure whether to retain the IDs and weights, so I left them for now. 
 ```{r}
 # Look at the tidied data
 print(dfSummary(poll,
@@ -164,3 +169,64 @@ print(dfSummary(poll,
   
 ```
 
+## Fed Data
+
+
+### Learning Lubridate
+I wanted to try my hand at lubridate, so I am returning to read in ____ data. For this post, I will focus on ____.
+
+```{r}
+#read in FedFundsRate.csv
+fed_orig <- read_csv("_data/FedFundsRate.csv")
+
+#quick view of column names
+colnames(fed_orig)
+
+# find start and end years of data
+max(fed_orig$Year)
+min(fed_orig$Year)
+
+# previewed the data frame summary, but no need to include in post.
+# dfSummary(fed_orig)
+```
+### Summarize Data, Identify Variables to Mutate
+The FedFundsRate.csv file has 10 columns and 904 rows and includes dates from 1954-2017. Year, month, and day are the first three columns--I will want to change those to a single date field. Next columns are Federal Funds (FF) Target Rate, FF Upper Target, FF Lower Target, Effective FF Rate, Real GDP (Percent Change), Unemployment Rate, and Inflation Rate. These remaining columns seem for now to be pretty tidy as the variables all seem independent, but I will rename them for ease of analysis. 
+
+I will also need to handle high occurrence of NA values. Taking a look at the data file, I can see that the Target, Upper Target, and Lower Target rates only appear for some years. I can also see that the first 28 years (1954-1981) include only the first days of the month, and thereafter additional dates appear in a pattern that's not monthly or easily seen. Inflation rates appear in 1958 and later.
+
+### Defining an Observation
+The unevenness of data throughout the set makes defining a case somewhat complicated. Would I be better off with the tidiest, most complete data set, and therefore use only first days of the month? Or should I retain as much as possible and expect to do some smoothing around the missing data? On one hand, I prefer to retain as much information as possible, though without a research question in mind, I could elect to keep a broader view of the data, since it already covers 63 years and perhaps mid-month changes aren't as meaningful as the broader trends. **For the purposes of this exercise, I will keep things simple and retain only the first days of each month.** 
+
+### Cleaning Dates
+In order for this to work, I should confirm the first of each month is included in the data. As seen below, we expected and in fact do have 753 "firsts."
+
+```{r}
+# confirm first days of every month are in the data
+# 12 months * 64 years - (6 earliest months in 1954 and 9 latest months in 2017) = 753
+12*64 - 15
+
+# so I will expect to have 753 distinct dates once I remove the non-first-days
+ firsts <- count(fed_orig, (Day==1))
+ firsts
+
+```
+More on dates.
+select only the firsts and assign
+
+```{r}
+# read-in chunk with transformations
+fed_clean <- fed_orig %>%
+  # filter? select?
+filter(Day==1) %>%
+#lubridate
+# rename columns
+
+fed_clean
+
+```
+
+
+
+
+
+:::
