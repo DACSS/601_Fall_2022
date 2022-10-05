@@ -1,0 +1,141 @@
+---
+title: "Challenge 4 Erika Nagai"
+author: "Meredith Rolfe"
+desription: "More data wrangling: pivoting"
+date: "10/4/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+# install useful libraries
+library(tidyverse)
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(summarytools)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+This time, let's use the "hotel_booking.csv"
+
+```{r}
+library(readxl)
+data <- read_excel("_data/debt_in_trillions.xlsx")
+head(data)
+```
+
+### Briefly describe the data
+
+The excel workbook "debt_in_trillions" shows the amount of debt by category (mortgage, HE Revolving, Auto Loan, Credit Card, Student Loan, other, and total) for each quarter from 2003 until 2021 Q2.
+This workbook doesn't indicate but considering its huge amount we can guess that this data is information of debt amount of a country or some regions (definitely not individual or one organization).
+
+
+This dataset consists of 8 columns and 74 lines.
+The following is the name of the columns.
+
+Examining the excel worksheet exposes a number of important aspects of the data.
+* First column includes the last 2 digits of year and quarter
+* The value in eighth column is the sum of the values in second column through seventh column
+
+```{r}
+str(data)
+```
+
+This is the overview of the dataset.
+```{r}
+view(dfSummary(data))
+```
+
+
+## Make data tidy
+
+1. Let's create a column with information only for the year and the quarter each.
+The current "Year and Quarter" column has both year and quarter information. We will need to separate this column into two different columns.
+
+Also, the year values in "Year and Quarter" column are character and only the last two digits of the year so they should be converted to numeric values and then added 2000.
+
+```{r}
+data1 <- data %>%
+  separate(`Year and Quarter`, c("Year", "Quarter"), sep=":", remove = FALSE)
+
+data1$Year <- as.integer(data1$Year) + 2000
+```
+
+2. Make this dataset longer
+```{r}
+data_long <- data1 %>%
+  pivot_longer(
+    cols = Mortgage:Total,
+    names_to = "type of debt",
+    values_to = "amount"
+  )
+
+```
+
+
+## Data visualization
+
+In order to visualize the amount change every year, let's summarize the data by year.
+```{r}
+
+# Creating a data calculated by year
+data_year <- data1 %>%
+  group_by(Year)  %>%
+  summarise_at (vars(Mortgage:Other), list(sum)) 
+  
+head(data_year)
+
+
+
+```
+
+Any additional comments?
+```{r}
+ggplot(data_year, aes(Year)) + 
+  geom_line(aes(y=Mortgage, color="Mortgage")) +
+  geom_line(aes(y= `HE Revolving`, color="HE_Revolving")) +
+  geom_line(aes(y= `Auto Loan`, color="Auto_Loan")) +
+  geom_line(aes(y= `Credit Card`, color="Credit Card")) +
+  geom_line(aes(y= `Student Loan`, color="Student Loan"))
+```
+This graph tells that
+* Mortgage always accounts for the majority of debt.
+* All types of debt are on the rise except HE_Revolving.
+* Mortgage debt has decreased significantly in 2013.
+
+Please note that the data of 2021 includes only two quarters.
