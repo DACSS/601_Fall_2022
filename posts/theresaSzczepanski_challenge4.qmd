@@ -14,10 +14,9 @@ categories:
   - Theresa_Szczepanski
   - challenge_4
   - abc_poll
-  - eggs
-  - fed_rates
-  - hotel_bookings
-  - debt
+ # - fed_rates
+#  - hotel_bookings
+#  - debt
 ---
 
 ```{r}
@@ -32,13 +31,17 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 ## Challenge Approach
 
-To address today's challenge I
+To address today's challenge I tried to:
 
-1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
-2)  Used summary and examined the spreadsheet itself to describe the data
+1)  read in a data set, and describe the data set using both words and any 
+supporting information (e.g., tables, etc)
+2)  Used summary on my data frame and examined the spreadsheet itself to 
+describe the data
 3) tidied the data (as needed, including sanity checks)
-3)  identified variables to be mutated
-4)  mutate variables and sanity check all mutations
+3)  Identified variables to be mutated
+4)  Mutate all ordinal variables using `factor`
+5) Create a _Codebook_ key for all of my variables
+7) Make note of my questions about my process and inefficienct coding practices.
 
 
 
@@ -49,9 +52,10 @@ To address today's challenge I
 ### Read in data
 To read in the data, I used the following process:
 
-- Examined the summary
+- Examine the summary
 - Identify information to filter out on the read in
 - Identify variables to rename on the read in
+- Identify variables to mutate on the read in to simplify values
 - Identify variable values to mutate on the read in to fix data type issues.
 
 ::: panel-tabset
@@ -117,8 +121,8 @@ __Mutate__
  apostrophes from "Bachelor's" and "Master's" that were producing the "\\x92"'s 
  in the values on read in.
  
- - If a _nominal_ variable and lengthy values, I reduced them to the key info 
- using substring
+ - If a _nominal_ variable had lengthy values, I reduced them to the key info 
+ using `mutate`, `str_sub`, and `case_when`
 
 
 ```{r}
@@ -195,6 +199,20 @@ abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,
    pp_marital_5 == "Separated" ~ "S",
    pp_marital_5 == "Divorced" ~ "D",
    pp_marital_5 == "Widowed" ~ "W"))
+ 
+  #Q3_3
+ # abc_poll <-mutate(abc_poll, Q3_3 = case_when(
+ #                                   Q3_3 ==  "Yes" ~ 1,
+ #                                   Q3_3 ==  "No" ~ 0,
+ #                                     Q3_3 ==  "Skipped" ~ 1))
+ 
+ #Q5Optimism_3
+ # abc_poll <-mutate(abc_poll, Q5Optimism_3 = case_when(
+ #                                    Q5Optimism_3 == "Pessimistic"~ 0,
+ #                                    Q5Optimism_3 == "Optimistic" ~ 1,
+ #                                    Q5Optimism_3 == "Skipped" ~ -1))
+ 
+ 
   
   
   
@@ -262,7 +280,8 @@ corresponds to the responses from a given individual that was polled. Since all
  parts of Q1 (a-f) consisted of the same response values, `approve`, `disapprove`
   and `skip`, one could `pivot` all of the `Q1` data into 2 columns. Once column 
   whose values indicate which part of `Q1` was being answered (a-f) and the 
-  second column indicating the response given for that specific question.
+  second column, `Q1_response_3` indicating the response given for that specific
+  question (Approve, Disapprove, or Skipped)
 
 ```{r}
 abc_poll<-abc_poll %>%
@@ -281,7 +300,7 @@ When examining our variables there are two issues to address
 
 
 
-- Some of the variable are `ordinal` and will need the ordering coded in
+- Some of the variable are _ordinal_ and will need the ordering coded in
 
 - Some of the ordinal variable values are very long and fill up too much space 
 in our table making it unpleasant to read through
@@ -291,34 +310,31 @@ in our table making it unpleasant to read through
 ::: panel-tabset
 
 
-### Factoring of Categorical Variables
+### Factoring of Ordinal Variables
 There are several _ordinal_ variables where we need to code in the ordering of
  the categories.
 ```{r}
+
+
 # use factoring to put an ordering to all ordinal variables
-# ,, 
-# " 
-#,Q2_4",
-#                                 "Q3_3", ",  "Q5_3"
-                               
-                  
-  #pp_inc_7                           
+                         
              
 # Why couldn't I use a levels vector!                 
  # pp_inc_7_levels <- c(
  #    "Less than $10,000", "$10,000 to $24,999",  "$25,000 to $49,999",  
  #    "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999",  
  #    "150,000 or more")
+
 #abc_poll
   
  abc_poll <-mutate(abc_poll, pp_inc_7 = recode_factor(pp_inc_7, 
-                                   "Less than $10,000" = 1, 
-                                   "$10,000 to $24,999" = 2,  
-                                   "$25,000 to $49,999" = 3, 
-                                   "$50,000 to $74,999"= 4, 
-                                   "$75,000 to $99,999"= 5, 
-                                   "$100,000 to $149,999" = 6,
-                                   "$150,000 or more" = 7,
+                                   "Less than $10,000" = "I1", 
+                                   "$10,000 to $24,999" = "I2",  
+                                   "$25,000 to $49,999" = "I3", 
+                                   "$50,000 to $74,999"= "I4", 
+                                   "$75,000 to $99,999"= "I5", 
+                                   "$100,000 to $149,999" = "I6",
+                                   "$150,000 or more" = "I7",
                                   .ordered = TRUE))
  #pp_educ_5
  
@@ -345,27 +361,21 @@ abc_poll <-mutate(abc_poll, pp_housing_3 = recode_factor(pp_housing_3,
                                      .ordered = TRUE))
  
  #pp_working_arrangement_9
- abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = 
-                     recode_factor(pp_working_arrangement_9,
-                                     "Other" = "WA1",
-                                     "Retired" = "WA2",
-                                     "Homemaker" = "WA3",
-                                      "Student" = "WA4",
-                                     "Currently laid off" = "WA5",
-                                     "On furlough"= "WA6",
-                                     "Employed part-time (by someone else)" = "WA7",
-                                      "Self-employed" = "WA8",
-                                     "Employed full-time (by someone else)"= "WA9",
-                                     .ordered = TRUE))
+ # abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = 
+ #                     recode_factor(pp_working_arrangement_9,
+ #                                     "Other" = "WA1",
+ #                                     "Retired" = "WA2",
+ #                                     "Homemaker" = "WA3",
+ #                                      "Student" = "WA4",
+ #                                     "Currently laid off" = "WA5",
+ #                                     "On furlough"= "WA6",
+ #                                     "Employed part-time (by someone else)" = "WA7",
+ #                                      "Self-employed" = "WA8",
+ #                                     "Employed full-time (by someone else)"= "WA9",
+ #                                     .ordered = TRUE))
  
 
- #Q1_response_3
- abc_poll <-mutate(abc_poll, Q1_response_3 = 
-                     recode_factor(Q1_response_3,
-                                     "Approve" = 1,
-                                     "Disapprove" = 0,
-                                     "Skipped" = -1,
-                                     .ordered = TRUE))
+ 
  
  
  #Q2ConcernLevel_4
@@ -378,13 +388,7 @@ abc_poll <-mutate(abc_poll, pp_housing_3 = recode_factor(pp_housing_3,
                                       "Very Concerned" = "C3",
                                      .ordered = TRUE))
  
- #Q3_3
- abc_poll <-mutate(abc_poll, Q3_3 =
-                     recode_factor(Q3_3,
-                                     "Yes" = 1,
-                                     "No" = 0,
-                                     "Skipped" = -1,
-                                     .ordered = TRUE))
+
 
 #Q4_5
 abc_poll <-mutate(abc_poll, Q4_5 =
@@ -396,26 +400,45 @@ abc_poll <-mutate(abc_poll, Q4_5 =
                                     "Skipped" = -1,
                                     .ordered = TRUE))
  
-#Q5Optimism_3
- abc_poll <-mutate(abc_poll, Q5Optimism_3 = 
-                     recode_factor(Q5Optimism_3 ,
-                                     "Pessimistic" = 0,
-                                     "Optimistic" = 1,
-                                     "Skipped" = -1,
-                                     .ordered = TRUE))
+
  abc_poll
 
 
 
 ```
-
+We can see that all of our _ordinal_ variables now are of type `ord`, our 
+_nominal_ variables are of type `char`, and our _discrete_ variables are of type
+`double`.
 
 ### Codebook for ABC Variables
-  
-| Categorical Variable    | Description |
-| ----------- | ----------- |
-| `pp_educ5`   | Title       |
-| Paragraph   | Text        |
+
+
+`pp_educ_5`, _ordinal_
+
+
+| value | Key|
+| ----------- |--------|
+|No high school diploma or GED  | E1     | 
+|high school diploma or the equivalent GED | E2     | 
+| Some college or Associate degree   | E3     |
+|Bachelor | E4     | 
+|Masteror Higher | E5     | 
+
+`pp_inc_7`, _ordinal_
+
+
+| value | Key|
+| ----------- |--------|
+|Less than $10,000 | I1     | 
+|$10,000 to $24,999 | I2     | 
+|$25,000 to $49,999  | I3     |
+|$50,000 to $74,999 | I4     | 
+|$75,000 to $99,999 | I5     | 
+| $100,000 to $149,999 | I6     | 
+|$150,000 or more | I7     | 
+
+
+
 
 :::
 
