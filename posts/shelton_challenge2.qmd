@@ -1,0 +1,150 @@
+---
+title: "Challenge 2"
+author: "Dane Shelton"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/28/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - shelton
+  - hotel bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+### Tasks:
+
+1.) Read in dataset and describe the data, where did it come from? What could it be used for? What are the variables and for how many observations are complete with all values?
+
+2.) Use group_by() and other functions to find interesting statistics within groupings.
+
+## Task 1: Reading in Hotel Bookings Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+#| label: Reading in Hotel CSV file
+
+hotels <- read_csv("_data/hotel_bookings.csv")
+
+#Checking for missing values
+length(which(is.na(hotels)))
+
+#List the 4 Missing Values
+which(is.na(hotels))
+
+#Remove the observations with missing values
+hotels <- na.omit(hotels)
+```
+
+I used dplyr package `readr` to read in the .csv file via the `read_csv` function. I checked for missing values, and once realizing that only 4 of over 100,000 bookings had missing values, I simply omitted the observations with missing values. 
+
+## Task 2: Provide a Description of the Hotel Bookings Data
+
+### Describing the Data using summarytools
+```{r}
+#| label: Summary of hotel_bookings
+#| output: false
+
+# summarytools::dfSummary(hotels)
+
+# Finding Earlier and Latest Arrival Dates
+
+# distinct(hotels, arrival_date_year, arrival_date_month)
+
+```
+
+The data provides the entirety of a hotels booking records from October 2014 to September 2017. It documents arrivals from July 2015 to August 2017. After removing the 4 hotel bookings that were incomplete, we're left with 119386 observations with values for 32 variables both numeric and character in type. 
+
+Observations contain standard booking information that would be collected by a hotel from guests: Arrival/Departure dates, Hotel types, Room types, Guests (and children), Previous stays, Parking, Travel Agent, Meals. 
+
+More interestingly, the data further describes guests using their Origin country, Stay Type, Company, and Market sector (of booking). 
+
+In the next section, we'll use `group_by()`, `select()`, `filter()`, and `summarise()` to further explore the data .
+
+## Provide Grouped Summary Statistics
+
+
+```{r}
+#| label: Grouped Stats and Other 
+#| output: true
+# Variables of Interest: country, market_segment, children, hotel
+
+# Grouping
+hotels <- ungroup(hotels)
+
+# Grouping by Country
+country_data <-group_by(hotels, country) %>%
+  summarize(obs=n())%>%
+    arrange(desc(obs))
+
+# Viewing Average Children by Country for Countries with more than 1000 obs
+
+avg_children <- select(hotels, country, children)%>%
+                  group_by(country)%>%
+                    summarize(n=n(),children=sum(children))%>%
+                      filter(n > 1000)%>%
+                      mutate(prop = children/n)%>%
+                      arrange(desc(prop))
+
+
+# Failed attempt at determining whether countries had a preference for city hotel vs resort hotel
+
+ hotel_type <- select(hotels, country, hotel)%>%
+                  group_by(country, hotel)%>%
+                    summarize(count=n())%>%
+                      pivot_wider(names_from=hotel, values_from=count)
+                  
+ 
+ 
+
+
+#Grouping by Country and Market Segment (Where They Booked From)
+ 
+country_mkt <- hotels %>% 
+                  group_by(country, market_segment)%>%
+                    summarize(n=n(), country, market_segment)%>%
+                        distinct()%>%
+                          pivot_wider(names_from=market_segment, values_from=n)
+                            
+
+# filter(country_mkt, country == 'USA')
+
+# arrange(country_mkt, desc(Corporate))
+
+# arrange(country_mkt, desc(Groups))
+
+# arrange(country_mkt, desc("Online TA"))
+
+# arrange(country_mkt, desc(Complementary))
+
+
+
+
+
+
+
+```
+
+### Explain and Interpret
+
+Using the mentioned functions allowed to extract important details about guest demographics provided enough information for us to infer the hotel group is in Portugal. After viewing the relationship between country and children, we can see that for countries with over 1000 bookings, Portugal is not in the top ten of mean child guests; is our hotel group a business brand or a family friendly destination?
+
+After comparing bookings of city hotels and resort hotels, we conclude that the majority of our observations are for city hotels. We further investigated the booking counts of each market sector by country and can conclude that while the hotel wouldn't be described as a family destination, it's not a high-end "business" hotel either.
