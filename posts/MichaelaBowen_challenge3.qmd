@@ -51,7 +51,7 @@ Read in one (or more) of the following datasets, using the correct R package and
 
 
  
-```{r}
+```{r exclude=TRUE}
 library(readr)
 eggs <- read_csv("_data/eggs_tidy.csv")
   
@@ -101,13 +101,16 @@ dim(eggs)
 
 Any additional comments?
 
-After reading in the tidy eggs data I attempted to read in the excel eggs data. Below I have renamed the columns, separated month and year into separate columns and pivoted the data longer to creat the new columns: size, quantity and price. 
+After reading in the tidy eggs data I attempted to read in the excel eggs data. Below I have renamed the columns, separated month and year into separate columns and pivoted the data longer to create the new columns: size, quantity and price. After visually analyzing the data I noted there was a typo in the "date" column. I removed this typo and proceeded with pivoting the data.
 
 ```{r}
 organiceggpoultry <- read_excel("_data/organiceggpoultry.xls",
                                 sheet = "Data",
                                 range = cell_limits(c(6,2),c(NA,6)),
                                 col_names = c("date", "extralarge_dozen", "extralarge_halfdozen","large_dozen", "large_halfdozen "))%>%
+  mutate(
+    date = str_remove(date, "/1")
+  )%>%
   #split month/year variables
   separate("date", into = c("month","year"))%>%
   fill("year")%>%
