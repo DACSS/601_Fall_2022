@@ -1,0 +1,102 @@
+---
+title: "Challenge 2 Adam Maciaszek"
+author: "Adam Maciaszek"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - faostat
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(dplyr)
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Reading in Data and Providing Summary Statistics
+
+## Read in the Data
+
+The data set I have read in is FAOSTAT_livestock.csv⭐⭐⭐
+
+
+```{r}
+dataset <- data.frame()
+dataset <- read.csv(file = '_data/FAOSTAT_livestock.csv', header = TRUE)
+```
+## Describe the data
+
+This data is livestock counts collected from 1961 to 2018 on 253 different countries and regions. The different livestock counted are: asses, camels, cattle, goats, horses, mules, sheep, buffaloes, pigs. it includes extraneous information such as flags for how the data was collected as well as codes for each of the areas and animals which are already represented in their own column.
+
+```{r}
+dataset <- dataset %>% select(-Domain.Code,-Domain,-Area.Code,-Flag,-Flag.Description,-Year.Code,-Item.Code, -Element.Code,-Element,-Unit)
+print(dfSummary(dataset))
+#| label: summary
+
+```
+
+## Grouped Summary Statistics
+
+Here is the statistical data on each type of livestock in America and China giving their mean median standard deviation min and max as well as the year it occurred where applicable. There are also graphs over the years of each livestock in each country respectively. The stats and graphs were generalized to a single function inputting only the data set and country name.
+
+```{r}
+mean_median <- function(Set_data,vector,name) {
+    men <- as.integer(mean(vector))
+    men <- str_pad(as.character(men), 10, 'right', ' ')
+    med <- median(vector)
+    med_year <- Set_data$Year[which.min(abs(vector - median(vector)))]
+    min <- min(vector)
+    min_year <- Set_data$Year[which.min(vector)]
+    max <- max(vector)
+    max_year <- Set_data$Year[which.max(vector)]
+    std <- as.integer(sd(vector))
+    
+    cat(sprintf("For % s:\n The mean was % s \t\t\t The median was % s in % s \n The minimum was % s in % s \t\t The maximum was % s in % s \n the sd was % s \n\n",name,men,med,med_year,max,max_year,min,min_year,std))
+}
+
+All_animals <- function(Set_data,Place) {
+    less_tidy <- Set_data %>% group_by(Year,Area) %>% spread(Item, Value)
+    less_tidy <- subset(less_tidy, (Area == Place))
+    less_tidy[is.na(less_tidy)] <- 0
+
+    Set_data <- subset(Set_data, (Area == Place))
+    Set_data <- na.omit(Set_data)
+    type_animals <- unique(Set_data$Item)
+    
+    cat(paste("Statistical Data on Livestock Counts in ",Place,"\n"))
+    if ("Asses" %in% type_animals) {mean_median(less_tidy,less_tidy$Asses,"Asses")}
+    if ("Buffaloes" %in% type_animals) {mean_median(less_tidy,less_tidy$Buffaloes,"Buffaloes")}
+    if ("Camels" %in% type_animals) {mean_median(less_tidy,less_tidy$Camels,"Camels")}
+    if ("Cattle" %in% type_animals) {mean_median(less_tidy,less_tidy$Cattle,"Cattle")}
+    if ("Goats" %in% type_animals) {mean_median(less_tidy,less_tidy$Goats,"Goats")}
+    if ("Horses" %in% type_animals) {mean_median(less_tidy,less_tidy$Horses,"Horses")}
+    if ("Mules" %in% type_animals) {mean_median(less_tidy,less_tidy$Mules,"Mules")}
+    if ("Pigs" %in% type_animals) {mean_median(less_tidy,less_tidy$Pigs,"Pigs")}
+    if ("Sheep" %in% type_animals) {mean_median(less_tidy,less_tidy$Sheep,"Sheep")}
+    
+    ggplot(Set_data, aes(x=Year, y = Value, color=Item)) + 
+    geom_line() + geom_point() + ggtitle(paste(Place, " Livestock Count"))
+}
+
+All_animals(dataset,"United States of America")
+All_animals(dataset,"Canada")
+```
+
+### Explain and Interpret
+
+America and China have very different livestock counts a but both have one animal that is reared much more than the rest. For America the main livestock is cattle which counts peaked in 1975 and has been steadily declining since. The the second highest livestock reared in america is goats which has been raising year after year and was at its peak at the latest year with data available. In comparison the highest amount of pigs in america is approximately the same as the very minimum count of Pigs in China. The pig count has been exponentially been increasing until its peak in 2012. From this data it is apparent that pork is much more of a staple meat for people then it is for Americans whose staple meat is beef.  

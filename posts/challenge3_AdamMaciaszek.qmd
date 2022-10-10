@@ -1,0 +1,130 @@
+---
+title: "Challenge 3 Adam Maciaszek"
+author: "Adam"
+desription: "Tidy Data: Pivoting"
+date: "09/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Cleaning and Pivoting A Data Frame 
+
+## Read in data
+
+The data set I have read in is "USA Households\*.xlsx" ⭐⭐⭐⭐
+
+```{r}
+dataset <- data.frame()
+file_name <- "_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx"
+cnames <- read_excel(file_name, sheet = 1, skip = 4, n_max = 0) %>% names()
+cnames[2:9] <- gsub('[\r\nto\r\n]+', '-',cnames[2:9])
+cnames <- c("Year","Number_thousands","Total",cnames[2:10],"Median","Error_of_Median","Mean","Error_of_Mean")
+dataset <- read_excel(file_name, sheet = 1, skip = 5,col_names = cnames)
+print(dfSummary(dataset))
+```
+### Cleaning and adding missing data
+Each Demographic in the data set is sepereated in sections and lists all the years recorded for that demographic. This needs to be added as a column for each of the data points. These lines are blank aside from labeling the demographic in the first column so you can collect and mark which rows belong to which demographic. Another item to be cleaned is the aggregate data for "all races" as this is combination of other data points.The extra lines of information explaining the table at the need to be removed.
+```{r}
+race_name_rows <- which(is.na(dataset$Total))
+race_name_rows <- race_name_rows[1:13]
+
+race_names <- c()
+for (x in dataset[race_name_rows,1]){
+     x <- gsub('[0-9]+', '', x)
+    race_names <- c(race_names,x)
+}
+
+race_values=c(NA)
+index<-1
+num_rows<-0
+for (x in race_names){
+    if (index>12) {break}
+    num_rows<- race_name_rows[index+1]-race_name_rows[index]
+    for (y in 1:num_rows){
+        race_values <- c(race_values,x)}
+    index <- index + 1
+}
+
+dataset$"Mean" <- as.numeric(as.character(dataset$"Mean"))
+dataset$"Median"  <- as.numeric(as.character(dataset$"Median"))
+dataset$"Error_of_Median"  <- as.numeric(as.character(dataset$"Error_of_Median"))
+dataset$"Error_of_Mean"  <- as.numeric(as.character(dataset$"Error_of_Mean"))
+
+dataset <- dataset[-c(354:383),]
+
+dataset$Race <- race_values
+
+dataset <- dataset[-which(is.na(dataset$Total)),]
+dataset <- dataset %>% select(-"Total")
+
+dataset <- dataset[-which(dataset$Race=="ALL RACES"),]
+
+dataset <- dataset %>% separate(Year, c('Year', 'Year2'))
+dataset <- dataset %>% select(-Year2)
+```
+### Seperating Means and Medians
+For the data to be tidy  it needs to be separated into each observation and the mean and median would need to repeated for each observation of income level which is extraneous. This data is still useful so it is separated into its own table.
+```{r}
+medians_means <- dataset %>% select("Year","Race","Mean","Error_of_Mean","Median","Error_of_Median")
+dataset <- dataset %>% select(-"Mean",-"Error_of_Mean",-"Median",-"Error_of_Median")
+```
+### Why Pivot & Final Dimensions
+This data needs to be pivoted since it is hard to read and filter since there are multiple observations all in one row. This makes data maniopulation grouping filtering and sort much more inconvient. The final dimensions will have many more rows but only 4 columns. This is because there are a total of 9 different income levels that are going to be represented with one column containing a string which is that bracket of income level. Below is a calulation of how many new rows there will be considering each demographic the year taken and thier income level will have its own dedicated row.
+
+```{r}
+new_rows <- nrow(dataset) * (ncol(dataset)-3)
+new_col <- 3 + 1
+cat(sprintf("After pivoting the expected number of rows is %s and the number of columns is %s\nThe current number of rows is %s and the number of columns is %s\n",nrow(dataset),ncol(dataset),new_rows,new_col))
+```
+
+### Challenge: Pivot the Chosen Data
+```{r}
+dataset <- dataset %>% 
+  pivot_longer(
+    cols=cnames[4:12], 
+    names_to = "income_level", 
+    values_to = "percent", 
+    values_drop_na = TRUE
+  )
+dataset$Number_thousands  <- as.numeric(as.character(dataset$Number_thousands ))
+dataset$percent  <- as.numeric(as.character(dataset$percent))
+dataset$Number_thousands <- dataset$Number_thousands * dataset$percent/100
+dataset <- dataset %>% select(-percent)
+dataset$Number_thousands <- dataset$Number_thousands %>% replace_na(0)
+cat(sprintf("To confirm after pivoting the current number of rows is %s and the number of columns is %s\n",nrow(dataset),ncol(dataset)))
+```
+### Graphing the data
+```{r}
+only_race_income <- dataset %>% select(-Year)
+invisible(only_race_income %>% group_by(Race,income_level) %>% summarise(across(Number_thousands, sum)))
+only_race_income$income_level = factor(only_race_income$income_level, levels = rev(cnames[4:12]))
+ggplot(only_race_income, aes(fill=Race, y=income_level, x=Number_thousands)) + geom_bar(position="dodge", stat="identity")+ ggtitle("Total Number Of Demographic Per Income Bracket From (1967-2019)")
+```
+```{r}
+#options(repr.plot.width = 20, repr.plot.height =20)
+ggplot(medians_means, aes(x = Year, y = Mean,ymin = Mean-Error_of_Mean, ymax = Mean+Error_of_Mean, group=Race, color=Race)) + geom_errorbar(width = 0.2) + geom_line() + scale_x_discrete(guide = guide_axis(check.overlap = TRUE))+ggtitle("Mean Income Levels From (1967-2019)")
+ggplot(medians_means, aes(x = Year, y = Median,ymin = Median-Error_of_Median, ymax = Median+Error_of_Median, group=Race, color=Race)) + geom_errorbar(width = 0.2) + geom_line() + scale_x_discrete(guide = guide_axis(check.overlap = TRUE))+ggtitle("Mean Income Levels From (1967-2019)")
+```
