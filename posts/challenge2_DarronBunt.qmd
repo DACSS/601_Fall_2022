@@ -1,0 +1,131 @@
+---
+title: "Challenge 2"
+author: "Darron Bunt"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/09/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Step 1 - Read in the Data
+
+*Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.*
+
+-   -   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+hotels <- read_csv("C:/Users/Darron Bunt/OneDrive - Ascendium Education Group, Inc/Desktop/601_Fall_2022/posts/_data/hotel_bookings.csv")
+```
+
+*Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.*
+
+## Step 2 - Describe the data
+
+*Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).*
+
+The hotels dataset contains data relating to two types of hotels - city, and resort, from 178 countries. There are 32 total columns of data that provide a high degree of insight into each hotel stay. Some of these details include: 
+* The arrival year, month, week, and day
+* The number of week-end and weekday nights stayed
+* The number of adults, children, and babies in the booking
+* The ADR (Average Daily Rate) for each booking.
+
+Overall, this dataset affords the opportunity to extrapolate a wide variety of details regarding city and resort hotel stays between October 2014 and September 2017.
+
+
+```{r}
+#| label: summary
+
+```
+
+## Step 3 - Provide Grouped Summary Statistics
+
+*Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.*
+
+**group_by**
+
+Group_by is going to allow me to make some groupings between columns in the dataset. 
+
+Let's say I wanted to make a grouping of the hotel type and the arrival month. If I do this right, (and bookings of both types occurred in every month), I should get 24 groups.
+
+```{r}
+group_by(hotels, hotel, arrival_date_month)
+```
+**select()**
+
+Select is going to let me pull a subset of the entire data based on the names of the variables.
+
+So let's say of the 34 columns of hotel data that I have, I'm really only interested in a few of them. I can select those.
+
+I'm interested in the hotel type, the arrival month, and the average daily rate.
+
+```{r}
+select(hotels, hotel, arrival_date_month, adr)
+```
+**filter()**
+
+Filter is going to let me pull some specific data that I might be interested in. Maybe I really only care about bookings that had a lead time that was greater that 400 days. 
+
+```{r}
+filter(hotels, lead_time>400)
+```
+
+**summarize()**
+
+Summarize is going to come in handy if I want to collapse the large set of data down into something a little smaller. An example would be what the average ADR is across the full dataset
+
+```{r}
+summarize(hotels, adr = mean(adr))
+```
+Now we know that the average ADR is $101.83.
+
+**Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.**
+
+I can also start finding random and specific things, like the average lead time by hotel type for bookings with a lead time greater than 400 days.
+
+```{r}
+hotels %>% 
+  filter(lead_time>400) %>% 
+  group_by(hotel) %>% 
+  summarize(lead_time = mean(lead_time))
+```
+
+I could add some additional layers to the group_by, too. Maybe I want to figure out the average lead time for bookings with a 400+ day lead time, and break that down by the month of the year of the booking and the type of hotel. 
+
+```{r}
+hotels%>%
+  filter(lead_time>400)%>%
+  group_by(hotel, arrival_date_month)%>%
+  summarize(lead_time = mean(lead_time))
+```
+
+### Step 4 - Explain and Interpret
+
+*Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.*
+
+So I'm really interested in people who plan ahead by 400+ days, and how doing so might vary between people who book at city hotels vs. resort hotels. I'm also really curious about whether the lead time varies depending on the month of the booking. 
+
+Interestingly, the highest average 400+ day lead time can be found in resort hotel bookings for the month of February (709), while for city hotels, the highest average was in March (615). 
