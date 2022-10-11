@@ -1,0 +1,118 @@
+---
+title: "Homework 2 - Samplepalooza"
+author: "Ryan O'Donnell"
+desription: "Reading in the data set"
+date: "10/11/22"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - ryan_odonnell
+  - waterquality
+  - samplepalooza
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Reading in the Data & Narrative
+```{R}
+#| label: read-in
+
+splza_orig <- read_xlsx("14_21 Samplepalooza Results.xlsx",
+                        skip = 2,
+                        col_names = c("SiteName", "SiteID", "SiteType", "State", "EcoRegion", "2014-TN", "2015-TN", "2018-TN", "2019-TN", "2020-TN", "2021-TN", "2014-TP", "2015-TP", "2018-TP", "2019-TP", "2020-TP", "2021-TP", "2014-Cl", "2015-Cl", "2020-Cl", "2021-Cl", "2021Date","Lat", "Lon"))
+
+```
+
+This data is from my work in water quality monitoring. *Samplepalooza* is an annual-ish, one-day monitoring event where both volunteers and professionals collect water samples throughout the Connecticut River watershed, which encompasses parts of Vermont, New Hampshire, Massachusetts, and Connecticut, from the Canadian border down to Long Island Sound. It has occurred in 2014-2015 and 2018-2021. It is typically done on a single day, but in 2021, severe weather caused some sites to be sampled on one day and the rest on another day. Not all sites were sampled for all years. Sites were always sampled for two parameters: total nitrogen (TN) and total phosphorus (TP); some years they were also sampled for chloride (Cl). We did not have a *Samplepalooza* event this year in part because I am behind on analyzing the results. This project will help me get back on track.
+
+```{R}
+#| label: data head
+
+head(splza_orig)
+
+```
+
+This is how I had the data stored prior to my understanding of tidy data. I have recently have started uploading my water quality data into various external databases which has required me to manually tidy up my data in order to get it into the correct format for upload. Now that I know how to **pivot_longer**, I am a little annoyed at how much time I could have saved. This is the last of my more recent datasets that is in this untidy format. As is, this data is displayed in a cross-tab format with each year-parameter combination stored in its own column. Each row is for a site, which has a site name, site id, what ecoregion the site falls into (which affects what the standard is to compare it to) and a latitude/longitude pair. There are two types of sites, either on the tributaries to or the mainstem Connecticut River. 
+
+I will need to tidy the data in order to get it to a unique site-date-parameter case which will have an associated site name, site id, site type, ecoregion, and lat/lon pair. It's not stored in this dataset for years other than 2021, but I would like to add in the full date for the other years so that this can be paired with streamflow and weather data later on. I would also like to add the measurement unit since it is not the same for all three parameters. 
+
+**Expected Number of Rows:**
+```{R}
+#| label: sanity check
+nrow(splza_orig) * (ncol(splza_orig) - 8)
+
+```
+
+# Cleaning the data
+```{R}
+#| label: clean
+#| output: false
+#| warning: false
+
+# step 1 - recode chloride date
+# step 2 - convert column types
+# step 3 - pivot data and relocate new columns
+# step 4 - add sample date and result unit columns
+# step 5 - remove 2021Date column
+
+splza_tidy <- splza_orig %>%
+  mutate(`2014-Cl` = recode(`2014-Cl`, "<3" = "1.5", "< 3" = "1.5"),
+         `2015-Cl` = recode(`2015-Cl`, "<3" = "1.5", "< 3" = "1.5"),
+         `2021-Cl` = recode(`2021-Cl`, "<3" = "1.5", "< 3" = "1.5"),
+         .keep = "all") %>%
+  type_convert() %>%
+  pivot_longer(col = c(`2014-TN`, `2015-TN`, `2018-TN`, `2019-TN`, `2020-TN`, `2021-TN`, `2014-TP`, `2015-TP`, `2018-TP`, `2019-TP`, `2020-TP`, `2021-TP`, `2014-Cl`, `2015-Cl`, `2020-Cl`, `2021-Cl`),
+               names_to = c("Year", "Parameter"),
+               names_sep = "-",
+               values_to = "ResultValue",
+               values_drop_na = TRUE,
+               ) %>%
+  relocate(Year:ResultValue, .before = SiteType) %>%
+  mutate("SampleDate" = case_when(
+    Year == 2014 ~ ymd("2014-08-06"),
+    Year == 2015 ~ ymd("2015-09-10"),
+    Year == 2018 ~ ymd("2018-09-20"),
+    Year == 2019 ~ ymd("2019-09-12"),
+    Year == 2020 ~ ymd("2020-09-17"),
+    Year == 2021 ~ ymd(paste(`2021Date`))), 
+    .after = `Year`) %>%
+  mutate("ResultUnit" = case_when(
+    Parameter == "TN" ~ "mg-N/L",
+    Parameter == "TP" ~ "\U03BCg-P/L",
+    Parameter == "Cl" ~ "mg-Cl/L"),
+    .after = `ResultValue`) %>%
+  select(-`2021Date`)
+
+```
+
+Before I could pivot the data, I had to replace some of the chloride values that were stored as "< 3" or "<3" with 1.5 per standard practice for calculating with measurements below the detectable limit. I then used **pivot_longer** and added the Sample Date and Result Unit column. Each case now has 12 variables: Site Name, Site ID, Site Type, State, EcoRegion, Latitude, Longitude, Year, Parameter, Result Value, Sample Date, and Result Unit. I ended up removing the rows that would have had NA values because they were causing weird parsing errors with my other steps, so you'll have to trust that before I did that, there were 1024 rows as previously calculated.
+
+# Research Questions
+
+The goal of this project is to compare different locations in the same watershed across political boundaries during the same timeframe. I would like to rank tributaries based on concentration of each parameter, visualize how concentrations change along the mainstem, compare results to the standard for the appropriate ecoregion, and calculate the loading for each parameter to show the relative impact of each site. Loading is calculated by multiplying the concentration (the result value in this data set) by the flow. I actually have an R program that a volunteer put together for me in early 2020 to help calculate loading. However, he was unable to keep volunteering due to the pandemic and I was left with a program I didn't know how to update with the new information to calculate the loading for 2020 and 2021! That is part of my inspiration for taking this class.
+
+I have made reports using a previous iteration of this data set which included making lots of tedious charts in Excel and I am looking forward to learning how to put together similar visualizations and even some new ones using R.
+
+# Dataset
+
+```{R}
+#| label: the data
+
+splza_tidy
+
+```
