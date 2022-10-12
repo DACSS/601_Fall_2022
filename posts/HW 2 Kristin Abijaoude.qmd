@@ -1,0 +1,272 @@
+---
+tiitle: "HW 2 "
+author: "Kristin Abijaoude"
+desription: "More data wrangling: pivoting"
+date: "10/09/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - kristin_abijaoude
+  - voteridlaws
+---
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# What are we looking at today?
+
+Today, we are looking at Voter ID laws by country, as well as US States. I downloaded the dataset from Mr. Tom Barton PhD of the Department of Politics, International Relations, and Philosophy in the University of London, Royal Holloway, courtesy of archival website called Data is Plural. 
+
+To open the CSV dataset, we will use read_csv() command, as demonstrated below in the chunk.
+
+```{r}
+# Reading the Data
+Voter_ID <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/dataverse_files/cvil_22_09_08.csv")
+```
+
+Voter ID laws differ wherever you go; we analyize voting laws from around the globe, from our commonwealth to Afghanistan to Norway to Zimbabwe. We get a glimpse of the dimensions of the dataset, as well as the name of the columns, in which we will fix. We have 249 rows, with each row representing a country or a US state, and 16 columns representing each voter law, from compulsory ID laws to voter ID requirements.
+
+```{r}
+# Components of the Dataset
+
+# Number of Rows
+nrow(Voter_ID)
+
+# Number of Columns
+ncol(Voter_ID)
+
+#Dimensions
+dim(Voter_ID)
+
+#Names of Columns
+colnames(Voter_ID)
+```
+
+# Tidy the Data
+
+To begin the tidying process, we will rename the columns. When I downloaded the dataset as a ZIP file, it came with a PDF with a list of the columns and their respective labels. I will use that PDF as my guide as I tidy the data.
+
+```{r}
+#Let's get a summary, first
+summary(Voter_ID)
+```
+
+```{r}
+#Rename Variables
+Voter_ID <- Voter_ID %>%
+  rename("Country Name" = cntry,
+         "Country ID" = cntry_cd,
+         "Voter ID Law Type" = id_type,
+         "Number of Different IDs Allowed to Prove Identity" = num_id,
+         "Does the electoral law provide an exhaustive list of different IDs voters can present?" = exhaust,
+         "Minimum Number of IDs Required by Law" = min_id,
+         "Year of Current Law Enforced" = law_yr,
+         "Does the country have compulsory voting?" = cmp_vt,
+         "Does the country enforce compulsory voting?" = cmp_enf,
+         "Does the country have compulsory national ID cards?" = cmp_id,
+         "Registration Type Law" = reg_law,
+         "Continent" = continent)
+# sanity check
+view(Voter_ID)
+```
+
+Now, notice that I did not rename every variable because some are mere repeats of other variables. Therefore, I will remove them because they're unnecessary to keep. The command I will use is select(), with another command -c() inside the select() command, and type in the variables that I will remove.
+
+```{r}
+#Remove Unneeded Variables
+Voter_ID <- Voter_ID %>%
+  select(-c(id_type_lab, us_dum, reg_dev, reg_lab))
+
+#sanity check
+view(Voter_ID)
+```
+
+Next, we will recode the values in the dataset so we won't be confused by what those numbers mean. We will go through certain variables that need recoding using the mutate () and recode () commands. Let's start off with continents. 
+
+```{r}
+#Recode Continent
+Voter_ID <- Voter_ID %>%
+  mutate(Continent=recode(Continent, 
+                            `1` = "Africa",
+                            `2` = "Americas",
+                            `3` = "Asia",
+                            `4` = "Europe",
+                            `5` = "Oceania"))
+#sanity check
+view(Voter_ID)
+```
+
+Next, we will recode the values in compulsory voting laws.
+
+```{r}
+# Is voting compulsory in your country?
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Does the country have compulsory voting?` = recode(`Does the country have compulsory voting?`, `0` = "No", `1` = "Yes"))
+
+# Does your country enforce compulsory voting?
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Does the country enforce compulsory voting?` = recode(`Does the country enforce compulsory voting?`, `0` = "No", `1`="Yes"))
+  
+# Sanity check
+view(Voter_ID)
+```
+
+Here, we figure out what type of voting laws there are to prove one's identity. In this dataset, there are three categories: basic personal information, non-photo ID required or requested, and photo ID required.
+
+```{r}
+# Recode Voter ID Type laws
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Voter ID Law Type` 
+         = recode(`Voter ID Law Type`,
+                  `1` = "Basic Personal Details",
+                  `2` = "Non-Photo ID Required or Requested",
+                  `3` = "Photo ID Required"))
+
+# Sanity Check
+view(Voter_ID)
+```
+
+Another question regarding voting ID is whether a country provides an exhaustive, or a really comprehensive, list of types of ID to prove one's identity. In other words, can you use just about anything to prove your identity in order to vote?
+
+```{r}
+# Recode 
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Does the electoral law provide an exhaustive list of different IDs voters can present?`
+         = recode(`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+                  `0` = "No",
+                  `1` = "Yes"))
+
+# Sanity check
+view(Voter_ID)
+```
+
+Next, does the country have compulsory national ID laws? In countries where you must show some form of ID, some provide national ID cards that can be used when showing up at the booth.
+
+```{r}
+# Do you need a compulsory national ID card?
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Does the country have compulsory national ID cards?`
+         = recode(`Does the country have compulsory national ID cards?`,
+                  `0` = "No",
+                  `1` = "Yes",
+                  "#N/A" = "No Data"))
+
+#Sanity Check
+view(Voter_ID)
+```
+
+Lastly, let's recode voter registration, which is in three categories:
+
+1. Laissez-Faire: registering to vote is optional
+2. Assisted: you can register to vote through utilizing public services
+3. Automatic: you are automatically registered to vote once you've reached voting age
+
+```{r}
+# Types of voter registration
+Voter_ID <- Voter_ID %>%
+  mutate(Voter_ID, `Registration Type Law`
+         = recode(`Registration Type Law`,
+                  `1` = "Laissez-Faire Registration",
+                  `2` = "Assisted Registration",
+                  `3` = "Automatic Registration"))
+
+# Sanity Check
+view(Voter_ID)
+```
+
+I will replace NAs with the label "no data"
+
+```{r}
+# No Data
+no_data <- c("No Data")
+Voter_ID$`Voter ID Law Type`[is.na(Voter_ID$`Voter ID Law Type`)] <- no_data
+
+Voter_ID$`Number of Different IDs Allowed to Prove Identity`[is.na(Voter_ID$`Number of Different IDs Allowed to Prove Identity`)] <-no_data
+
+Voter_ID$`Does the electoral law provide an exhaustive list of different IDs voters can present?`[is.na(Voter_ID$`Does the electoral law provide an exhaustive list of different IDs voters can present?`)] <- no_data
+
+Voter_ID$`Minimum Number of IDs Required by Law`[is.na(Voter_ID$`Minimum Number of IDs Required by Law`)] <- no_data
+
+Voter_ID$`Year of Current Law Enforced`[is.na(Voter_ID$`Year of Current Law Enforced`)] <- no_data
+
+Voter_ID$`Registration Type Law`[is.na(Voter_ID$`Registration Type Law`)] <-no_data
+
+#Sanity check
+view(Voter_ID)
+```
+
+```{r}
+# Relocate Continent Column
+Voter_ID <- relocate(Voter_ID, "Continent", .after = "Country ID")
+  
+#Sanity check
+view(Voter_ID)
+```
+
+
+Finally, we have finished tidying up the data! 
+
+# Explain the Data
+
+Mr. Tom Barton PhD, a Politics postgraduate student at the University of London, Royal Holloway, compiled voter ID laws by country, as well as US states. Voter ID laws, in this sense, refer to laws regarding requirements for voters to prove their identity in order to vote. Some countries and states don't require any form of ID asides from basic personal information, such as Massachusetts, Dominica, and New Zealand, while others are relatively restrictive with required photo IDs, such as Wisconsin, Texas, and Yemen. Most of the columns presented are thankfully self-explanatory.
+
+In territories where IDs are required to vote, this dataset lists out those that offer more ways to show ID, hence the column "Number of Different IDs Allowed to Prove One's Identity". According to Barton, that was an open-ended question, as you can see that some answers are not rounded to the full amount. Also, in the same column, the territories that don't require IDs to vote are assigned to the value 0; in other words, a voter doesn't need to bring an ID to the polls. 
+
+Lastly, there are three categories of voter registrations. Laissez-Faire Registration states that registering to vote is optional; Assisted Registration states that one can register to vote through various means, such as utilizing public services (i.e. Massachusetts); and Automatic Registration states that when the voter reaches voting age (mostly 18), they are automatically registered to vote.
+
+# Questions to Ask Ourselves
+
+What do you think is the best way to prevent voter fraud?
+
+Do you think more voter ID laws would protect democracy and the integrity of elections?
+
+Do you think more voter ID laws would stifle civic participation and harm democracy?
+
+Do you think fewer voter ID laws would increase voter turnout?
+
+Do you think fewer voter ID laws would increase the chances of voter fraud?
+
+What do you think is the best way to increase voter turnout?
+
+# Visualize the Data
+
+
+```{r}
+# Registration Type Law
+library(dplyr)
+Voter_ID %>%
+  count(`Registration Type Law`)
+
+# Load ggplot2
+library(ggplot2)
+
+# Create data
+Voter_ID <- data.frame(
+  Voter.Registration.Law =factor(c("Lassiez Faire Registration","Automatic Registration","Assisted Registration")),  
+  Countries.And.Territories=c(87,123,30)
+  )
+Voter_ID
+
+# Barplot
+ggplot(data=Voter_ID, aes(x= Voter.Registration.Law, y=Countries.And.Territories)) +
+    geom_bar(stat="identity")
+```
+
+
