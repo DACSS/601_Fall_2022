@@ -1,0 +1,113 @@
+---
+title: "Sarah McAlpine HW 2"
+author: "Sarah McAlpine"
+desription: "Homework 2"
+date: "10/11/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - sarahmcalpine
+  - inaturalist data
+  - lubridate
+  - summarytools
+  - time zones
+  
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(lubridate)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Select a Data Set
+
+For this assignment, I chose to use a set of data from iNaturalist.org of citizen scientist observations of plant life using mobile apps. This particular data set is limited to those observations made in North America whose identifications have the most disagreements. The iNaturalist site allows for custom data queries, but since I am not familiar with each data field, I exported more than I needed. First I will read in this data and take a look at the column names and values present within each to decide what to keep. At the beginning, I have 27 columns and 25,266 rows.
+
+At the outset, possible research questions could be about patterns in family, order, genus, and/or species that are difficult for the general public to identify, and possibly certain areas of the continent that have the highest likelihood of identification disagreement. I would not, however, be able to compare which users are most likely to have disagreed idetntifications since my data doesn't include undisputed identifications as well.
+ 
+
+```{r}
+#read in data
+observations <- read_csv("_data/plant_observations.csv")
+
+# preview data and plan for cleaning
+ colnames(observations)
+ head(observations)
+ print(dfSummary(observations,
+     varnumbers = FALSE,
+     plain.ascii  = FALSE, 
+     style = "grid",
+     graph.magnif = 0.60, 
+     valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+
+
+#[1] "id"           DELETE              "observed_on"  1973 - today        "time_observed_at"       LUBRIDATE     
+#[4] "time_zone"     LUBRIDATE          "user_id"      DELETE              "user_login"             15.3k    
+#[7] "created_at"     LUBRIDATE         "updated_at"   LUBRIDATE           "quality_grade"          3 categories
+#10] "num_identification_agreements"    "num_identification_disagreements" "captive_cultivated"     T/F      
+#13] "place_guess"       MAP?           "latitude"               MAP?      "longitude"              MAP? 
+#16] "place_town_name"    MAP?          "place_state_name"      MAP?       "place_country_name"     MAP?     
+#19] "species_guess"                    "scientific_name"                  "common_name"                     
+#22] "iconic_taxon_name"                "taxon_id"              DELETE     "taxon_order_name"       GROUP    
+#25] "taxon_family_name"     GROUP      "taxon_genus_name"      GROUP      "taxon_species_name"  
+
+
+```
+
+## HELP! Issues with Time Zones
+I cannot figure out how to use the `time_zone` data with lubridate. There are 89 distinct values here, and I have been looking at the following resources but still cannot get anywhere. Help is welcome!
+
+I think I may need to change the data in `time_zone` to something that lubrudate will recognize, and then concatenate with each date variables and then run `ymd()` on those date fields. Alternatively, I could truncate `time_zone` to exclude "+0000" and then use the `time_zone` data independently, and then connect it with the resulting ymd dates.
+
+One other idea: could I use latitudes to calculate time zones?
+
+-[lubridate source sheet](https://lubridate.tidyverse.org/articles/lubridate.html) 
+
+-[lubridate cheat sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf) 
+
+-[tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+```{r}
+#clean up time zones
+select(observations, time_zone) %>%
+  distinct()
+
+
+#clean up dates
+dt <- ymd_hms(observations, "observed_on", "time_observed_at",
+      quiet = FALSE,
+      tz = 'time_zone',
+      truncated = 0
+      )
+head(observations)
+
+#look at valid time zone names
+#OlsonNames()
+
+#can I map what I have to these?
+
+
+```
+## Building a Clean Read-in
+
+```{r}
+obs_clean <- read_csv("_data/plant_observations.csv") %>%
+  select(!ends_with("id"))
+
+head(obs_clean)
+```
+
+
