@@ -111,13 +111,14 @@ __Mutate__
 ```{r}
 #Filter, rename variables, and mutate values of variables on read-in
 
-MCAS_2022<-read_csv("_data/Spring2022_MCAS_full_preliminary_results_04830305.csv")%>%
+MCAS_2022<-read_csv("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830305.csv",
+                    skip=1)%>%
   select(-c("sprp_dis", "sprp_sch", "sprp_dis_name", "sprp_sch_name", "sprp_orgtype",
-  "schtype", "testschoolname", "lastname", "firstname", "mi", "yrsindis", "conenr_dis"))%>%
+  "schtype", "testschoolname", "yrsindis", "conenr_dis"))%>%
 
 #Recode all nominal variables as characters
   mutate(testschoolcode = as.character(testschoolcode))%>%
-   mutate(sasid = as.character(sasid))%>%
+  # mutate(sasid = as.character(sasid))%>%
   mutate(highneeds = as.character(highneeds))%>%
   mutate(lowincome = as.character(lowincome))%>%
   mutate(title1 = as.character(title1))%>%
@@ -168,7 +169,7 @@ MCAS_2022<-read_csv("_data/Spring2022_MCAS_full_preliminary_results_04830305.csv
                                    "ABS" = "ABS",
                                   .ordered = TRUE))%>%
 
-  # The science variables contain a mixture of legacy performance levels and 
+  # The science variables contain a mixture of legacy performance levels and
   # next generation performance levels which needs to be addressed in the ordering
   # of these factors.
   mutate(sperf2 = recode_factor(sperf2,
@@ -186,16 +187,16 @@ MCAS_2022<-read_csv("_data/Spring2022_MCAS_full_preliminary_results_04830305.csv
                                    "ABS" = "ABS",
                                   .ordered = TRUE))%>%
   #recode DOB using lubridate
-  mutate(dob = mdy(dob, 
+  mutate(dob = mdy(dob,
   quiet = FALSE,
   tz = NULL,
   locale = Sys.getlocale("LC_TIME"),
   truncated = 0
-)) 
+))
 
 
-  
-  
+
+
 
 MCAS_2022
 
