@@ -1,8 +1,8 @@
 ---
-title: "Challenge 2 Instructions"
-author: "Meredith Rolfe"
+title: "Challenge 2"
+author: "Michaela Bowen"
 desription: "Data wrangling: using group() and summarise()"
-date: "08/16/2022"
+date: "10/11/2022"
 format:
   html:
     toc: true
@@ -12,7 +12,6 @@ format:
 categories:
   - challenge_2
   - railroads
-  - faostat
   - hotel_bookings
 ---
 
@@ -22,41 +21,34 @@ categories:
 #| message: false
 
 library(tidyverse)
-library(readxl)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Challenge Overview
-
-Today's challenge is to
-
-1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
-2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
 
 ## Read in the Data
 
-Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
-
 -   railroad\*.csv or StateCounty2012.xls ⭐
--   FAOstat\*.csv or birds.csv ⭐⭐⭐
 -   hotel_bookings.csv ⭐⭐⭐⭐
 
+:::panel-tabset
+# RailRoads
 Here I have read in the RailRoads Excel File Sheet. Extraneous and empty data has been removed, and Canada had its county named "Canada". 
 
 
 ```{r}
+library(readxl)
 railroads <-read_excel("_data/StateCounty2012.xls",
                      skip = 4,
-                     n_max = 2987,
                      col_names= c("state", "delete",  "county",
                                   "delete", "employees"))%>%
   select(!contains("delete"))%>%
-  filter(!str_detect(state, "Total"))%>%
+  filter(!str_detect(state, "Total"))
+
+railroads <-head(railroads, -2)%>%
   mutate(county = ifelse(state=="CANADA", "CANADA", county))
 
 railroads
-
 ```
 
 ## Describe the data
@@ -75,28 +67,66 @@ railroads%>%
 
 ```
 
-## Provide Grouped Summary Statistics
-
-Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
 
 Summarizing across both columns we can see there are 54 distinct "states" and 1710 "counties", this means that there are multiple instances of counties throughout the United States, with some states having the same county names as others.
 
-I was also able to determine the entire number of railroad employees across all stations. When grouping by state, we are able to determine how many employees worked at railroad stations by state when this data was collected. I have grouped the data by state, and made it so we can see the totat, mean, median, max and min employees by state. We can see in Texas, the state with the largest number of railroad employees, has only 1 employee at the least populated station and 4,235 employees at the most poulated. The average amount of employees at a texas railroad station is about 90 people. 
+I was also able to determine the entire number of railroad employees across all stations. When grouping by state, we are able to determine how many employees worked at railroad stations by state when this data was collected. I have grouped the data by state, and made it so we can see the total, mean, median, max and min employees by state. We can see in Texas, the state with the largest number of railroad employees, has only 1 employee at the least populated station and 4,235 employees at the most poulated. The average amount of employees at a texas railroad station is about 90 people. 
 
 ```{r}
+#giving the number of distinct counties and states
 railroads%>%
   summarise(across(c(state,county), n_distinct))
-
+#getting the total employees
 railroads%>%
   summarize(total_employees = sum(employees))
 
             
-
-railroad%>%
+#sum, mean, min, and max employess for each state
+railroads%>%
   group_by(state)%>%
   summarize(total_state_employees = sum(employees), mean_employees = mean(employees), min_employees = min(employees), max_employees= max(employees))%>%
   arrange(desc(total_state_employees))
 
 ```
+# Hotel Bookings
 
+Here I am attempting to read in and glean any information from this DataSet for Practice. Below I have Read in the data, and put it into a summary to better understand the data
+```{r}
+library(readxl)
+library(lubridate)
+hotel_bookings <- read_csv("_data/hotel_bookings.csv")
+print(summarytools::dfSummary(hotel_bookings,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+Initially after looking throught this data set I thought there was a lot of infomration, but because this is an earlier challenge I wanted to keep it preliminary here and work more with this data set in challenge 4 with the lubridate package
+
+I was able to determine that there are only two hotels in this data set the City Hotel and the Resort Hotel.
+Below I was able to determine the average lead time by month for each hotel
+```{r}
+library(lubridate)
+#Resort Hotel Average lead time by month
+hotel_bookings%>%
+  group_by(arrival_date_month)%>%
+  filter(is_canceled == 0, hotel == "Resort Hotel")%>%
+  mutate(avg_lead_time_by_month = mean(lead_time))%>%
+  select(hotel, arrival_date_month, avg_lead_time_by_month)%>%
+  distinct()
+
+#City Hotel Average lead time by month
+hotel_bookings%>%
+  group_by(arrival_date_month)%>%
+  filter(is_canceled == 0, hotel == "City Hotel")%>%
+  mutate(avg_lead_time_by_month = mean(lead_time))%>%
+  select(hotel, arrival_date_month, avg_lead_time_by_month)%>%
+  distinct()
+```
+
+
+:::
 
