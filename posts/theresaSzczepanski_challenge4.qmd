@@ -209,15 +209,15 @@ abc_poll <-mutate(abc_poll, pp_housing_3 = case_when(
  
 # pp_working_arrangement_9
  abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = case_when(
-                      pp_working_arrangement_9 == "Other" ~ "Other",
-                      pp_working_arrangement_9 =="Retired" ~ "Retired",
-                      pp_working_arrangement_9 == "Homemaker" ~ "Homemaker",
-                      pp_working_arrangement_9 == "Student" ~ "Student",
-                      pp_working_arrangement_9 == "Currently laid off" ~ "Laid Off",
-                      pp_working_arrangement_9 == "On furlough"~ "Furlough",
-                      pp_working_arrangement_9 == "Employed part-time (by someone else)" ~ "Emp_PT",
-                      pp_working_arrangement_9 =="Self-employed" ~ "Emp_Self",
-                      pp_working_arrangement_9 == "Employed full-time (by someone else)"~ "Emp_FT"))
+          pp_working_arrangement_9 == "Other" ~ "Other",
+          pp_working_arrangement_9 =="Retired" ~ "Retired",
+          pp_working_arrangement_9 == "Homemaker" ~ "Homemaker",
+          pp_working_arrangement_9 == "Student" ~ "Student",
+          pp_working_arrangement_9 == "Currently laid off" ~ "Laid Off",
+          pp_working_arrangement_9 == "On furlough"~ "Furlough",
+          pp_working_arrangement_9 == "Employed part-time (by someone else)" ~ "Emp_PT",
+          pp_working_arrangement_9 =="Self-employed" ~ "Emp_Self",
+          pp_working_arrangement_9 == "Employed full-time (by someone else)"~ "Emp_FT"))
  
 
   #Q3_3 What is the best "coding for variables that are like "Booleans"?
@@ -234,10 +234,15 @@ abc_poll <-mutate(abc_poll, pp_housing_3 = case_when(
  
  
   
-  
+  abc_poll
   
 
 ```
+## Question
+
+- Is there a way to not be writing a mutate line for each variable the way I did 
+on the read in?
+
 :::
 
 
@@ -299,18 +304,29 @@ In order to have tidy data, each row should be a unique observation. A unique
 case therefore should consist of all of the demographic information about the 
 polled person and their response for one of the questions.
 
-- The demographic characteristics (our `pp_` variables) and the `Question`
+- The demographic characteristics (our `pp_` variables) and the specific `Question`
 variable define a _case_.
 - The _value_ for each case is the poll participants `Response`.
 
 
 ```{r}
 abc_poll<-abc_poll %>%
-    pivot_longer(c(starts_with("Q")), names_to = "Question", values_to = "Response")
+    pivot_longer(c(starts_with("Q1")), names_to = "Question 1 part", values_to = "Q1 Response")
+
 abc_poll
-
 ```
+## Questions
 
+- When examining the data, I noticed nominal, ordinal, discrete, and continuous
+ variables. 
+ 
+ - Does `arrange` sort your `ordinal` data by the factors or use something else?
+
+- Should you ever pivot variables of different levels of measurement into the 
+same column? In the `abc_poll` case, I could imagine pivoting all of the questions 
+names into a column and all of the responses into a response column. But some of the 
+questions had response values that were clearly ordinal and others that were 
+not. Is there a "best practice" for this?
 
 
 
@@ -359,20 +375,20 @@ There are several _ordinal_ variables where we need to code in the ordering of
  #pp_educ_5
  
  abc_poll <-mutate(abc_poll, pp_educ_5 = recode_factor(pp_educ_5,
-                                     "No high school diploma or GED" = "E1",
-                                     "High school graduate (high school diploma or the equivalent GED)"
+        "No high school diploma or GED" = "E1",
+        "High school graduate (high school diploma or the equivalent GED)"
                                      = "E2",
-                                     "Some college or Associate degree" = "E3",
-                                     "Bachelor"= "E4",
-                                     "Master"= "E5",
-                                     .ordered = TRUE))
+  "Some college or Associate degree" = "E3",
+                          "Bachelor"= "E4",
+                            "Master"= "E5",
+                          .ordered = TRUE))
  
 
 #pp_employment_status_3
  abc_poll <-mutate(abc_poll, pp_employment_status_3 = recode_factor(pp_employment_status_3,
                                      "Not working" = "ES1",
-                                     "Working part-time"= "ES2",
-                                     "Working full-time" = "ES3",
+                                 "Working part-time"= "ES2",
+                               "Working full-time" = "ES3",
                                      .ordered = TRUE))
  
  
@@ -410,6 +426,10 @@ There are several _ordinal_ variables where we need to code in the ordering of
 #  
 
  abc_poll
+ 
+ ##Is the data frame arranged "alphabetically" or "ordinally?"
+ abc_poll%>%
+  arrange(desc(pp_educ_5))
 
 
 
@@ -418,12 +438,22 @@ We can see that all of our _ordinal_ variables now are of type `ord`, our
 _nominal_ variables are of type `char`, and our _discrete_ variables are of type
 `double`.
 
+## Questions
+
+- What other tips are there for making smart names for variables based on their 
+level of measurement?
+
+
+- What mutations should be done on the read in and what should be saved for post
+ read in?
+
+
 ### Codebook for ABC Variables
 Here I would complete a key for all of the variables that are included in my table.
 Is there a better template for this?
 
 
-`pp_educ_5`, _ordinal_
+`pp_educ_5`, _ordinal_: The reported educational attainment of the respondent.
 
 
 | value | Key|
@@ -434,7 +464,7 @@ Is there a better template for this?
 |Bachelor | E4     | 
 |Masteror Higher | E5     | 
 
-`pp_inc_7`, _ordinal_
+`pp_inc_7`, _ordinal_: the reported annual income level of the respondent.
 
 
 | value | Key|
@@ -447,12 +477,19 @@ Is there a better template for this?
 | $100,000 to $149,999 | I6     | 
 |$150,000 or more | I7     | 
 
+## Questions
 
+
+- Is this an ok template for a _codebook_?
 
 
 :::
 
 :::
+
+
+
+
 
 :::
 
