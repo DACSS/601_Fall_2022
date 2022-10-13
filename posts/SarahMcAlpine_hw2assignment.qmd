@@ -16,7 +16,6 @@ categories:
   - lubridate
   - summarytools
   - time zones
-  
 ---
 
 ```{r}
@@ -35,7 +34,6 @@ knitr::opts_chunk$set(echo = TRUE)
 For this assignment, I chose to use a set of data from iNaturalist.org of citizen scientist observations of plant life using mobile apps. This particular data set is limited to those observations made in North America whose identifications have the most disagreements. The iNaturalist site allows for custom data queries, but since I am not familiar with each data field, I exported more than I needed. First I will read in this data and take a look at the column names and values present within each to decide what to keep. At the beginning, I have 27 columns and 25,266 rows.
 
 At the outset, possible research questions could be about patterns in family, order, genus, and/or species that are difficult for the general public to identify, and possibly certain areas of the continent that have the highest likelihood of identification disagreement. I would not, however, be able to compare which users are most likely to have disagreed idetntifications since my data doesn't include undisputed identifications as well.
- 
 
 ```{r}
 #read in data
@@ -68,17 +66,18 @@ observations <- read_csv("_data/plant_observations.csv")
 ```
 
 ## HELP! Issues with Time Zones
+
 I cannot figure out how to use the `time_zone` data with lubridate. There are 89 distinct values here, and I have been looking at the following resources but still cannot get anywhere. Help is welcome!
 
 I think I may need to change the data in `time_zone` to something that lubridate will recognize, and then concatenate with each date variables and then run `ymd()` on those date fields. Alternatively, I could truncate `time_zone` to exclude "+0000" and then use the `time_zone` data independently, and then connect it with the resulting ymd dates.
 
 One other idea: could I use latitudes to calculate time zones?
 
--[lubridate source sheet](https://lubridate.tidyverse.org/articles/lubridate.html) 
+\-[lubridate source sheet](https://lubridate.tidyverse.org/articles/lubridate.html)
 
--[lubridate cheat sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf) 
+\-[lubridate cheat sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
 
--[tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+\-[tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
 ```{r}
 #clean up time zones
@@ -86,7 +85,7 @@ select(observations, time_zone) %>%
   distinct()
 
 
-#clean up dates
+#clean up dates 
 dt <- ymd_hms(observations, "observed_on", "time_observed_at",
       quiet = FALSE,
       tz = 'time_zone',
@@ -97,10 +96,11 @@ head(observations)
 #look at valid time zone names
 #OlsonNames()
 
-#can I map what I have to these?
+#can I map what I have to these? 
 
 
 ```
+
 ## Building a Clean Read-in
 
 ```{r}
@@ -109,5 +109,3 @@ obs_clean <- read_csv("_data/plant_observations.csv") %>%
 
 head(obs_clean)
 ```
-
-
