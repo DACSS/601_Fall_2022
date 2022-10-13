@@ -1,20 +1,8 @@
----
-title: "Challenge 2 Instructions"
-author: "Meredith Rolfe"
-desription: "Data wrangling: using group() and summarise()"
-date: "08/16/2022"
-format:
-  html:
-    toc: true
-    code-fold: true
-    code-copy: true
-    code-tools: true
-categories:
-  - challenge_2
-  - railroads
-  - faostat
-  - hotel_bookings
----
+
+##Challenge 2
+
+
+##importing necessary libraries
 
 ```{r}
 #| label: setup
@@ -26,44 +14,144 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Challenge Overview
+## Challenge 2 Overview
 
 Today's challenge is to
-
 1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
 2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
 
 ## Read in the Data
-
-Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
-
--   railroad\*.csv or StateCounty2012.xls ⭐
--   FAOstat\*.csv or birds.csv ⭐⭐⭐
--   hotel_bookings.csv ⭐⭐⭐⭐
+I am working with the hotel_bookings data set
 
 ```{r}
-
+library(readr)
+hotel_bookings <- read_csv("_data/hotel_bookings.csv")
 ```
-
-Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
 
 ## Describe the data
 
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+Initially viewing the first few records of the data
 
 ```{r}
-#| label: summary
+head(hotel_bookings)
+```
+
+identifying the column names in the hotel_bookings
+
+```{r}
+colnames(hotel_bookings)
+```
+
+Observing the size of hotel_bookings
+
+```{r}
+dim(hotel_bookings)
+```
+
+-It consists of 119390 rows and 32 columns
+
+The describe function gives information about the mean,standard deviation, median and many other metrics of each column in the data set 
+
+```{r}
+describe(hotel_bookings)
+```
+
+The summary of entire hotel_bookings
+
+```{r}
+summary(hotel_bookings)
+```
+
+different distinct data present in the columns
+
+```{r}
+distinct(hotel_bookings,hotel) 
+```
+Two different data is present in hotel - resort and city
+
+```{r}
+distinct(hotel_bookings,reservation_status) 
+distinct(hotel_bookings,is_canceled)
+distinct(hotel_bookings,arrival_date_year)
 
 ```
+reservation status consists of 3 types of data, namely : check-out,cancelled, No-show
+is cancelled has boolean data, and it has 0,1 where as arrival date_year has 3 columns
+
+```{r}
+table(hotel_bookings$arrival_date_month)
+```
+
+we see that there are highest number of bookings in the month of may- which gives an idea that summer is the season where there are maximum number of bookings
+
+```{r}
+table(hotel_bookings$arrival_date_year)
+```
+
+we see that there are maximum bookings in 2016 
 
 ## Provide Grouped Summary Statistics
 
 Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
 
 ```{r}
-
+hotel_bookings %>%
+  dplyr::group_by(hotel) %>%
+  summary()
 ```
 
-### Explain and Interpret
+```{r}
+a <- hotel_bookings%>%
+      group_by('reservation_status')
+summary(a)
+```
 
-Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+```{r}
+a <- hotel_bookings%>%
+      group_by('is_canceled')
+summary(a)
+```
+
+```{r}
+print(summarytools::dfSummary(hotel_bookings,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+a <- hotel_bookings%>%
+  group_by(hotel)%>%
+  count(reserved_room_type)%>%
+  pivot_wider(names_from= hotel, values_from = n)
+a
+```
+More number of reservations are made in city hotel for the room type of A and the same is observed in resort hotel aswell.
+
+Least number of reservations are made for the room type of P.
+
+We do not observe the types of H and L in room type of L
+
+we can say that there are no-missing values present in the data, yet there are duplicates.
+
+
+```{r}
+a <- hotel_bookings%>%
+  group_by(hotel)%>%
+  count(is_canceled)%>%
+  pivot_wider(names_from= hotel, values_from = n)
+a
+```
+For the hotel type here , we analyse the cancellations for resort and city hotel types once the booking is made.
+
+we see that the % people who cancelled the booking/ didn't show is more in city hotel is about 41.7% and resort hotel is about 27.7%
+
+
+
+
+
+
