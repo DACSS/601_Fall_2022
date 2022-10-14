@@ -1,0 +1,90 @@
+---
+title: "Challenge 1 Instructions"
+author: "Meredith Rolfe"
+desription: "Reading in data and creating a post"
+date: "08/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+#Read the clean_county data
+clean_county_data = read.csv('_data/railroad_2012_clean_county.csv')
+
+#Get dimensions
+dim(clean_county_data)
+
+#The dataset has 2930 rows and 3 columns
+
+#Get column names
+colnames(clean_county_data)
+
+#Displaying top 5 columns of dataframe
+head(clean_county_data, n=5)
+
+
+#Grouping dataframe by state and county, to get total employees employed per state per county
+#Displaying only county having highest number of employees
+clean_county_data %>%
+  group_by(state, county) %>%
+  summarise_each(funs(sum)) %>%
+  arrange(state, county, desc(total_employees)) %>%
+  slice(1)
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data). \\
+
+
+The clean_county_data dataset looks to maintain information about the number of individuals employed per county in the United States within the railroad department, for the year 2012. \\
+The dataset contains a total of 2930 rows, with 3 columns, namely 'state', 'county' and 'total_employees'. \\
+This data was perhaps gathered via a census carried out in the year 2012 of all employees in the railroad department throughout the United States, or could also be gathered via historical data maintained by the department, as a subspace of the particular year (i.e. 2012).
+```{r}
+#| label: summary
+
+
+
+```

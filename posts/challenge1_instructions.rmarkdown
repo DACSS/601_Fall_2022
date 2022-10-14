@@ -1,0 +1,133 @@
+---
+title: "Challenge 1 Instructions"
+author: "Meredith Rolfe"
+date: "08/15/2022"
+output: pdf_document
+format:
+  html:
+    toc: yes
+    code-fold: yes
+    code-copy: yes
+    code-tools: yes
+categories:
+- challenge_1
+- railroads
+- faostat
+- wildbirds
+desription: Reading in data and creating a post
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+library("readxl")
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+
+```{r}
+#Read the railroad_2012_clean_county csv file
+clean_county_data = read.csv('_data/railroad_2012_clean_county.csv')
+
+#Get dimensions
+dim(clean_county_data)
+
+#The dataset has 2930 rows and 3 columns
+
+#Get column names
+colnames(clean_county_data)
+
+#Displaying top 5 columns of dataframe
+head(clean_county_data, n=5)
+
+
+#Grouping dataframe by state and county, to get total employees employed per state per county
+#Displaying only county having highest number of employees
+suppressWarnings(
+clean_county_data %>%
+  group_by(state, county) %>%
+  summarise_each(funs(sum)) %>%
+  arrange(state, county, desc(total_employees)) %>%
+  slice(1))
+```
+
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data). \
+
+
+The clean_county_data dataset looks to maintain information about the number of individuals employed per county in the United States within the railroad department, for the year 2012. \
+The dataset contains a total of 2930 rows, with 3 columns, namely 'state', 'county' and 'total_employees'. \
+This data was perhaps gathered via a census carried out in the year 2012 of all employees in the railroad department throughout the United States, or could also be gathered via historical data maintained by the department, as a subspace of the particular year (i.e. 2012).
+
+```{r}
+#| label: summary
+#Read the wild_bird_data xlsx file
+wild_bird_data = read_excel('_data/wild_bird_data.xlsx', skip = 1)
+
+#Get dimensions
+dim(wild_bird_data)
+
+#Get column names
+colnames(wild_bird_data)
+
+#Displaying top 5 columns of dataframe
+head(wild_bird_data, n=5)
+
+#Plot weight vs population size to check relationship
+plot(wild_bird_data$`Wet body weight [g]`, wild_bird_data$`Population size`, log='xy', col='blue', main="Scatterplot", pch=16)
+
+```
+The wild_bird_data dataset seems to maintain information about body wieght of birds (when wet) alongwith the population size in a certain region. The dataset consists of 146 rows and 2 columns, namely 'wet body weight' and the 'population'. The body weight measures is maintained in grams. \
+This data was probably gathered as an effort to get the weight estimates of bird populations as a part of a biomass study.
+
+```{r}
+#Read the wild_bird_data xlsx file
+bird_data= read.csv('_data/birds.csv')
+
+#Get dimensions
+dim(bird_data)
+
+#Get column names
+colnames(bird_data)
+
+#Displaying top 5 columns of dataframe
+head(bird_data, n=5)
+
+#Distinct regions within the dataset
+unique(bird_data[c("Area")])
+
+#Distinct livestock information within the dataset
+unique(bird_data[c("Item")])
+```
+
+The birds dataset looks to maintain information about the livestock information (specifically different birds) between the years 1961 to 2018 (minimum and maximum year present in the dataset). The dataset contains 30977 rows and 14 columns. \
+The dataset records information about 248 regions across the world and different poultry such as chickens, ducks, geese, etc. It uniquely records information about 5 distinct poultry animals. \
+This data was probably gathered as a measure to get information about the livestock maintained by different regions of the world for the different poultry.
+
+
+
