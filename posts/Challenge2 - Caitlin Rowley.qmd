@@ -1,0 +1,193 @@
+---
+title: "Challenge 2 Instructions"
+author: "Meredith Rolfe"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+# download library
+
+library(tidyverse)
+
+# read in data
+# note that R does not recognize '\' --> needs to be '/' or '\\'
+
+birds <- ("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+read_csv(birds)
+
+birds<-read_csv("_data\\birds.csv")
+
+getwd()
+
+birds
+
+# try reading in using just file name
+# keep receiving error messages (no such file or directory), (object not found), (cannot open the connection)
+# will continue to read in using entire pathway
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+# This data set contains 30,977 rows and 14 columns.
+# The data includes information about different types of birds,
+# including their relative geographic location and their species.
+# Want to gather more information about column names and row-level data.
+
+# show column names
+
+colnames("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+colnames(birds)
+
+# NULL 
+# try 'names' to get character vector
+
+names("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+
+# NULL
+# identify missing values
+
+is.na("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+
+# FALSE
+# try summary
+
+summary(birds)
+
+# try colnames with 'test'
+
+colnames('test')
+
+# NULL
+
+colnames(birds)
+names(birds)
+
+# NULL
+
+data.frame(birds)
+colnames(birds)
+names(birds)
+colnames("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+
+# NULL
+
+# use 'spec()' to get full column specification
+
+spec(birds)
+
+# The columns in this data set are named: 'Domain Code,' 'Domain,' 'Area Code,' 'Area,' 'Element Code,' 'Element,' 'Item Code,' 'Item,' 'Year,' 'Unit,' 'Value,' 'Flag,' and 'Flag Description.'
+
+# re-ran 'spec(birds)', now it's not working
+# does 'nrow' or 'ncol' work?
+
+ncol(birds)
+
+# NULL
+
+nrow(birds)
+
+# NULL
+
+# needs to be a tibble created through 'readr'
+
+library(readr)
+class(birds)
+readr::spec(as_tibble(birds))
+
+# NULL
+
+spec(birds)
+
+# same error message: Error in spec(birds) : inherits(x, "tbl_df") 
+# is not TRUE
+
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+# remove columns containing 'code'
+
+library(dplyr)%>%
+select(birds, contains("Code"))
+
+# no applicable method for 'select' applied to an object of class "character"
+# need to create data frame or tibble
+
+# create a tibble
+
+tbl_df(birds)
+as_tibble(birds)
+
+# tibble is displaying as 1x1
+
+read_csv(birds)
+birds%>%select(contains("Code"))
+select(birds, -ends_with("Code"))
+
+# keep needing to reinstall library and packages?
+
+install.packages("dplyr")
+library(tidyverse)
+
+read_csv("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv")
+birds<-"C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\posts\\_data\\birds.csv"
+
+select(birds, -ends_with("Code"))
+dplyr::select(-ends_with("Code"))
+
+as_tibble(birds)
+dplyr::select(-ends_with("Code"))
+dplyr::select(contains("Code"))
+
+# no matter what I do, I keep getting the 'no applicable method for 'select' applied to an object of class "character"'
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
