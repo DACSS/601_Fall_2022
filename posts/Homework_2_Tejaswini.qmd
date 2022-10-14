@@ -1,0 +1,173 @@
+
+-----
+Homework 2 
+
+For this homework, your goal is to read in a more complicated dataset. Please use the category tag "hw2" as well as a tag for the dataset you choose to use.
+Read in a dataset from the _data folder in the course blog repository, or choose your own data. If you decide to use one of the datasets we have provided, please use a challenging dataset - check with us if you are not sure. 
+Clean the data as needed using dplyr and related tidyverse packages.
+Provide a narrative about the data set (look it up if you aren't sure what you have got) and the variables in your dataset, including what type of data each variable is. The goal of this step is to communicate in a visually appealing way to non-experts - not to replicate r-code.
+Identify potential research questions that your data set can help answer.
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+The dataset that I have chosen to work is FedFunds data set which gives insights about the economics, inflation etc.., 
+
+## Read in the Data
+
+we initially read the Fed funds data that is already present in the data folder 
+
+```{r}
+library(readr)
+FedFundsRate <- read_csv("_data/FedFundsRate.csv")
+View(FedFundsRate)
+```
+
+
+
+## Describe the data
+
+while we initially see the data, we see that there are a lot of NA' s in the data in the initial glance. But to understand more about the data, we need to further analyse it.
+
+Extracting the column names
+
+```{r}
+colnames(FedFundsRate)
+
+```
+
+Getting the size of the data
+
+```{r}
+dim(FedFundsRate)
+
+```
+
+We see that there about 904 rows and 10 columns in the dataset
+
+let's visualize the sample data 
+
+```{r}
+head(FedFundsRate)
+
+```
+## Cleaning the data
+
+let's get the summary of the data in the firstplace to clean the data.
+
+```{r}
+summary(FedFundsRate)
+
+```
+
+Looking at the summary we see that there are a lot of NA's present in the data in almost all the columns except for Year,Month,date.Inorder to clean the data, we must drop all the NA's present in the data.
+
+```{r}
+cleaned_fed_funds <- na.omit(FedFundsRate)
+cleaned_fed_funds
+```
+A new data frame with the name of cleaned_fed_funds is created after dropping all the NA's.
+
+if we drop all the NA's then we are getting no rows in the data set.Let's try an other way of dropping na's 
+
+```{r}
+cleaned_fed_funds1 <- FedFundsRate %>%
+  drop_na(Year,`Federal Funds Target Rate`,`Federal Funds Upper Target`,`Federal Funds Lower Target`,`Effective Federal Funds Rate`,`Unemployment Rate`,`Inflation Rate`)
+cleaned_fed_funds1
+```
+
+So inorder to retain the dataset, let's drop NA's from those of the columns that we would actually like to visualize or consider them important.
+
+```{r}
+cleaned_fed_funds1 <- FedFundsRate %>%
+  drop_na(`Effective Federal Funds Rate`,`Unemployment Rate`,`Inflation Rate`,`Real GDP (Percent Change)`)
+cleaned_fed_funds1
+```
+
+```{r}
+summary(cleaned_fed_funds1)
+```
+
+```{r}
+cleaned_fed_funds1 <-cleaned_fed_funds1%>%
+  mutate_at(vars(colnames(cleaned_fed_funds1)[0:10]), function(x)as.numeric(x))
+glimpse(cleaned_fed_funds1)
+```
+
+
+## Data Wrangling and summary statistics
+
+```{r}
+a <- cleaned_fed_funds1%>%
+  group_by(Year)
+a
+```
+```{r}
+table(cleaned_fed_funds1$Year)
+```  
+
+we see that there are a range of years, from 1958-2016
+
+```{r}
+print(summarytools::dfSummary(cleaned_fed_funds1,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+``` 
+
+Now we can look at the summary and get few insights from the data regarding the data type of the columns,statistical analysis, frequency of the data etc..,
+
+Understanding year-wise GDP metrics
+
+```{r}
+cleaned_fed_funds1$Year<-as.factor(cleaned_fed_funds1$Year)
+cleaned_fed_funds1 %>% 
+  group_by(Year) %>% 
+  summarise(GDP_min=min(`Real GDP (Percent Change)`),GDP_max=max(`Real GDP (Percent Change)`),GDP_mean=mean(`Real GDP (Percent Change)`), .groups = 'keep') %>% 
+  arrange(desc(Year)) %>%
+  print(n = 100)
+``` 
+
+## Data Visualization
+
+Lets see how un employement rate is being affected with year
+
+
+```{r}
+ggplot(cleaned_fed_funds1) +
+  aes(x = `Inflation Rate`, y = `Unemployment Rate`) +
+  geom_point(colour = "#69b3a2") +
+  theme_minimal()
+``` 
+
+```{r}
+a <- cleaned_fed_funds1 %>%
+  select(Year, `Real GDP (Percent Change)`, `Inflation Rate`) %>%
+  gather(key = "variable", value = "value", -Year)
+ggplot(a, aes(x =`Year`, y = value)) + 
+  geom_line(aes(color = variable, linetype = variable)) + 
+  scale_color_manual(values = c("darkred", "steelblue"))+labs(
+  title = "Inflation and gdp change by Year",
+  y = "Variable Rates", x = "Year")
+``` 
+
+The entire data set talks about the economic stability of a country.
+
+The data can answer questions about how the un employment and inflation rates are inter related, how the GDP change is changing year over year.
+
+we can also see the relation between inflation rates, GDP Change as well. various combinations of column data's can be considered and worked over.
+
+
