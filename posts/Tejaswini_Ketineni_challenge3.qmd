@@ -1,0 +1,106 @@
+
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+
+## Read in data
+
+The data that we consider for doing the current challenge is animal weight
+
+```{r}
+library(readr)
+animal_weight <- read_csv("_data/animal_weight.csv")
+```
+
+### Briefly describe the data
+
+```{r}
+colnames(animal_weight)
+```
+
+```{r}
+nrow(animal_weight)
+```
+It has 9 rows
+
+```{r}
+ncol(animal_weight)
+```
+
+It has 17 columns
+
+```{r}
+dim(animal_weight)
+```
+
+The dimensions of the table : 9,17
+
+```{r}
+summary(animal_weight)
+```
+
+while we observe the data set, we see that there are no missing values.
+
+```{r}
+head(animal_weight)
+```
+when we observe the data using head, we see that weight of the category of types of animals is distributed across the regions, performing pivot would help to avoid the reccurence of weights across the regions. All the types of animals can be named as the Animal type and it would have 3 columns : IPCC Area, weight, Animaltype.
+
+## Anticipate the End Result
+
+As we have already computed the no.of rows and columns, now we must compute the total expected rows in the pivoted data.
+
+```{r}
+nrow(animal_weight)*(ncol(animal_weight)-1)
+```
+
+As per the discussions above, there must be 144 rows and 3 columns
+
+## Pivot the Data
+
+Now we will pivot the data, 
+
+
+```{r}
+
+df<- pivot_longer(animal_weight,
+                         col = c('Cattle - dairy', 'Cattle - non-dairy', 'Buffaloes', 'Swine - market', 'Swine - breeding', 'Chicken - Broilers', 'Chicken - Layers', 'Ducks', 'Turkeys', 'Sheep', 'Goats', 'Horses', 'Asses', 'Mules', 'Camels', 'Llamas'), names_to = 'Animal Type', values_to = 'Weight')
+df
+
+```
+
+### cross checking if the pivoted data has met the expectations
+
+Computing the number of rows and columns for the pivoted data.
+
+```{r}
+nrow(df)
+
+```
+
+```{r}
+ncol(df)
+
+```
+
+```{r}
+dim(df)
+
+```
+
+```{r}
+summary(df)
+
+```
+
+performing summary function ensures that there are three columns and there are no missing values as well, which ensures that the quality of the data is ensured.
