@@ -1,0 +1,106 @@
+---
+title: "Homework 2"
+author: "Kavya Harlalka"
+desription: "Reading in Data"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - starwars1
+---
+
+```{r Libraries}
+#| label: setup
+#| warning: false
+#| message: false
+
+# Import important libraries needed for functions
+library(tidyverse)
+library(rmarkdown)
+library(summarytools)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in the Data
+
+```{r Read In Data}
+# Read data from the file
+load("_data/starwars1.RData")
+
+# Printing the read data as a paged table
+paged_table(starwars.1)
+```
+
+This dataset represents characters in the fictional world of Star Wars. It gives details like their names, species, origin, etc. It also gives the height and mass of each character and the number of films they appeared in.
+
+## Analysis of species wise data
+
+I chose the species column to group the data to provide certain analysis. The first analysis we do is look at the average height, the average mass and average no of films of each species as shown below :-
+
+```{r Aggregate analysis}
+# Group dataset by species, ignoring values that have species as NA
+dataGroupedBySpecies <- starwars.1 %>%
+  group_by(species) %>% 
+  filter(!is.na(species))
+
+# Analyze the grouped data by finding the average height mass and noOfFilms per species.
+dataSummary <- dataGroupedBySpecies %>%
+  summarise(
+    avg_height = mean(height.in, na.rm = TRUE),
+    avg_mass = mean(mass.lbs, na.rm = TRUE),
+    avg_number_of_films = mean(n.films, na.rm = TRUE)
+  ) %>%
+  arrange(species)
+paged_table(dataSummary)
+
+```
+
+This gives us an insight of how which species have highest appearances in the films as well as how the height and mass varies by the species.
+
+We can further look at the heights of different characters of certain species to get an insight on how it varies with species using the below graph :-
+
+```{r Species to Height graph}
+# Use group data to get species with more than 2 rows and plot a graph that shows relation between species and their height
+dataGroupedBySpecies %>%
+  filter(n() >= 2) %>%
+  ggplot(aes(x=species, 
+     y=height.in)) +
+     geom_point() +
+     theme_minimal() +
+     xlab("Species") +
+     ylab("Height")
+```
+
+We take only the species for which we have atleast 2 character data. As can be seen, Droids are usually smaller while Wookies are usually much bigger.
+
+We can analyze the origin of each species as well which species has more character origins in Original films as compared to prequels or sequels. This can be seen in the table below :-
+
+```{r Species origin}
+# Percentage of species origin
+prop.table(table(select(dataGroupedBySpecies, character.origin))) %>% 
+  `*`(100) %>% 
+  round(2)
+```
+
+## Possible research queries
+Though this is not scientific data (since the data is fictional) but just to give an example of possible research queries that can be answered, we could find the correlation between the height and weight in the star wars universe from the complete data set.
+
+```{r Height and weight correlation}
+# Find correlation between height and weight of characters in the star wars universe
+cor.test(starwars.1$height.in, starwars.1$mass.lbs, method=c("pearson", "kendall", "spearman"), use = "complete.obs")
+```
+The data seen above is explained using the following terms
+
+* t (1.02) is the t-test statistic value,
+* df (57) is the degrees of freedom,
+* p-value (0.312) is the significance level of the t-test.
+* The correlation coefficient is 0.134.
+
+The p-value of the test is 0.312, which is not less than the significance level alpha = 0.05. We can conclude that height and weight are not significantly correlated in the Star wars universe.

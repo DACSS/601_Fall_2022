@@ -1,0 +1,125 @@
+---
+title: "Challenge 2"
+author: "Hezzie Phillips"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/01/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+
+```{r}
+library(tidyverse)
+railroad<-read_csv("_data/railroad_2012_clean_county.csv")
+head(railroad)
+
+
+```
+
+
+## Describe the data
+
+As mentioned in challenge 1 we can see that there are three variables in this table: state, county and total employees.  
+
+The data seems to be tabulating the number of railroad employees in different counties.  
+
+  
+## Provide Grouped Summary Statistics 
+
+The total number of employees across all counties is:  255,432 
+
+```{r}
+#| label: total employees
+summarise(railroad, total_employees = sum(total_employees))
+
+
+```
+
+We can find the county with the largest number of employees: 8207 in Cook County Illinois  
+
+```{r}
+#| label: most employees
+summarise(railroad, most_employees=max(total_employees))
+
+```
+
+We can take a look and see how the largest number of employees might correlate to the largest states by area.  
+
+1st: Alaska, 665,400 square miles  
+
+2nd: Texas, 268,597 square miles  
+
+3rd: California, 163,696 square miles  
+
+4th: Montana, 147,040 square miles  
+
+
+
+```{r}
+#| label: employee number in largest area states
+filter(railroad, state=="AK")%>%
+  summarise(AK_total_employees=sum(total_employees))
+filter(railroad, state=="TX")%>%
+  summarise(TX_total_employees=sum(total_employees))
+filter(railroad, state=="CA")%>%
+  summarise(CA_total_employees=sum(total_employees))
+filter(railroad, state=="MT")%>%
+  summarise(MT_total_employees=sum(total_employees))
+
+```
+
+And also how the largest number of employees might correlate to the largest states by population*  
+
+1st: California, 37,253,956  
+2nd: Texas, 25,145,561  
+3rd: New York, 19,378,102  
+4th: Florida, 18,801,310  
+
+This time let's combine in one table:
+
+```{r}
+#| label: employee number in largest population states
+By_population<-railroad%>%
+  group_by(state)%>%
+  summarise(total_employees = sum(total_employees))
+By_population[By_population$state %in% c("CA","TX","NY","FL"),]
+
+
+```
+
+
+
+### Interpretation
+
+I looked at the four states with the largest amount of total employees, I ran the data to see if there was any correlation between either population or square miles of the state. Based on a cursory look at the initial data there doesn't seem to be a direct correlation between the number of railroad employees and populaton nor a correlation with the size of the state.
+

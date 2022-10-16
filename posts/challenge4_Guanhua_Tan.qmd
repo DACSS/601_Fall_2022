@@ -1,0 +1,87 @@
+---
+title: "Challenge 4"
+author: "Guanhua Tan"
+desription: "More data wrangling: pivoting"
+date: "10/1/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - eggs
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+library(dplyr)
+library(readxl) 
+poultry<-read_excel("_data/poultry_tidy.xlsx")
+poultry
+
+```
+### Briefly describe the data
+The dataset records the prices of Chicken and its different parts from Jan. 2004 to Jan 2013. The column names includes Product, Year, Month, Price_Dollar. There are a few values (price) missing.
+
+## Tidy Data (as needed)
+
+First, I want data have a clearer order so I move Year and Month column names to the first two columns. Additionally, I'd like to recreate column names as Chicken's different parts. So I use pivot_wider function to rearrange the data.
+
+```{r}
+# tidy data, use Chicken's different parts as column names
+df <-poultry %>% select(Year, Month, Product, Price_Dollar) %>% pivot_wider(names_from = Product, values_from = Price_Dollar)
+df
+```
+
+
+## Identify variables that need to be mutated
+
+I found I may mutate the average price of every part of Chicken per year.
+
+I grouped the data by year and mutate 5 columns to calculate the mean of every part of Chiken every year.
+
+
+
+```{r}
+# mutate data
+df %>% 
+  group_by(Year) %>% 
+  mutate(whole_ave = mean(Whole),
+         breast_ave= mean(`B/S Breast`),
+         bone_in_ave = mean (`Bone-in Breast`),
+         whole_legs_ave = mean (`Whole Legs`),
+         thighs_ave = mean(`Thighs`)
+         )%>%
+  select(Year, Month, Whole, whole_ave, `B/S Breast`, breast_ave, `Bone-in Breast`, bone_in_ave, `Whole Legs`, whole_legs_ave, Thighs, thighs_ave)
+```
+
+

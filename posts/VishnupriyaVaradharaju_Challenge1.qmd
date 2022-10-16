@@ -1,0 +1,86 @@
+---
+title: "Challenge 1 Solutions"
+author: "Vishnupriya Varadharaju"
+desription: "Reading in data and creating a post"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+### Working with the Wild Birds Dataset
+
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## 1. Read in the Data
+
+```{r}
+library("readxl")
+
+# Reading in the data set such that the first row is skipped and the columns
+# are renamed
+wild_bird <- read_excel("_data/wild_bird_data.xlsx", skip=2, col_names=c('body_weight','pop_size'))
+head(wild_bird)
+```
+```{r}
+# To show the columns and the dimensions of the data
+dim(wild_bird)
+colnames(wild_bird)
+```
+
+
+The data has been read from the excel file and is stored in a variable named wild_bird. It consists of 2 columns and 146 rows. Each observation seems to correspond to a particular species of bird. The first column corresponds to the body weight of the bird in grams and the second column corresponds to the size of the population of that particular species. 
+
+
+## 2. Describe the data
+
+```{r}
+#| label: summary
+
+# Arranging the data in ascending order of body_weights
+wild_bird <- arrange(wild_bird, body_weight)
+head(wild_bird)
+
+# Checking for Null values
+is.null(wild_bird)
+
+#Checking datatype of the two columns
+str(wild_bird)
+
+# As the two columns are numerical data, we can use summarize all to get a high 
+# descriptive statistics of the data
+summarize_all(wild_bird, list(mean=mean, median=median, min=min, max=max, sd=sd, var=var, IQR=IQR))
+```
+
+
+The wild birds data here consists of the body weight and the population size of different species. There is a good chance that this dataset was collected for research purposes by scientists. It could include bird species from different regions like marshlands, tropics, deserts etc. The population size can tell us if whether the species are endangered, vulnerable or threatened. Furthermore, from the body weight we can also know about the build of each specie and the quantity of food that it might need to survive.
+This all numerical data set does not have any null values. The descriptive stats with mean, median, min, max, standard deviation, variance and inter-quartile range for the dataset is seen above.
+
+
+
+

@@ -1,0 +1,93 @@
+---
+title: "Challenge 1 Solutions"
+author: "Vinitha Maheswaran"
+desription: "Reading in data and creating a post"
+date: "10/11/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+For this challenge I am reading the "wild_bird_data" data set. Since the wild_bird_data.xlsx data set is in Excel format, I am using the 'readxl' package for reading the data. After reading the data is stored in a dataframe "bird_data". The data in the first row of the dataframe seems like column names rather than numerical values as seen in the remaining rows. I resolve this issue by skipping the first row while reading the data set and storing in dataframe. Now, if I print the dataframe, I can see both the variables have only numerical values of double-precision floating-point format.
+
+```{r}
+#install.packages('readxl')
+library(readxl)
+
+# Reading the wild_bird_data.xlsx data set and storing in a data frame
+bird_data <- read_excel("_data/wild_bird_data.xlsx", skip=1)
+print(bird_data)
+```
+
+## Describe the data
+
+```{r}
+#Finding dimension of the data set
+dim(bird_data)
+```
+
+```{r}
+#Finding column names
+colnames(bird_data)
+```
+
+```{r}
+#Structure of bird_data
+str(bird_data)
+```
+
+```{r}
+#Summary of bird_data
+summary(bird_data)
+```
+
+
+```{r}
+#Check for missing/null data in the bird_data
+sum(is.na(bird_data))
+sum(is.null(bird_data))
+```
+
+```{r}
+#Arranging the bird_data in descending order of wet body weight
+arrange(bird_data,desc(`Wet body weight [g]`))
+```
+
+```{r}
+#Frequency tables for the variables in bird_data
+table(bird_data$`Wet body weight [g]`)
+```
+
+```{r}
+#Frequency tables for the variables in bird_data
+table(bird_data$`Population size`)
+```
+
+The "wild_bird_data".xlsx data set is likely gathered from the first figure in a research paper authored by Nee et al as mentioned in the first row of the Excel data before removing it. The "wild_bird_data".xlsx data set contains 146 observations (rows) and 2 variables (columns). The data set has 2 variables - Wet boday weight [g] and Population size. Both the variables have only numerical values of double-precision floating-point format. The data set represents the average wet body weight in grams and the size of the population for different species of wild birds. This data may be used to estimate the biomass of wild birds. The data set does not have any missing values or null values. The minimum, maximum, mean and median values for the Wet body weight variable are 5.459 [g], 9639.845 [g], 363.694 [g], and 69.232[g] respectively. The minimum, maximum, mean and median values for the Population size variable are 5, 5093378, 82874, and 24353 respectively.

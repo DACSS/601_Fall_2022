@@ -1,0 +1,134 @@
+---
+title: "Challenge 3 Guanhua Tan"
+author: "Guanhua Tan"
+desription: "Tidy Data: Pivoting"
+date: "09/24/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - eggs
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl) 
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+```{r}
+organic_egg<-read_excel("_data/organiceggpoultry.xls")
+view(organic_egg)
+nrow(organic_egg)
+ncol(organic_egg)
+nrow(organic_egg)*ncol(organic_egg)
+```
+
+### Briefly describe the data
+
+Describe the data, and be sure to comment on why you are planning to pivot it to make it "tidy"
+
+This dataset has two different parts of information with the same timeline covering from 2004 to 2012. One part is about the prices of one dozen and 1/2 dozen of large eggs and extra large eggs. The other part is about the prices of "whole", "B/S Breast", "Bone-in Breast", "Whole Legs", "Thighs"--different parts of a Chicken. In order to clean, I would like to divide it into two datesets. One just includes the information about the eggs and the other the data about the Chicken. Additionally, I'd like to separate "Year" and "Month" to make very cell have its own value.
+
+## Anticipate the End Result
+### Challenge: Describe the final dimensions
+
+I'll divide the existing dataset into two distinct dataset. Existing data has 124 rows, 11 columns and 1364 cases. Expected data 1 will have 118 rows, 6 columns and 708 cases. Expected data 2 will have 118 rows, 7 columns and 826 cases.
+
+```{r}
+#create a new dataset about the eggs
+column_names <-c("Date", "Extra_Large 12","Extra_Large 6","Large 12", "Large 6")
+eggs1  <- organic_egg[5:122, 1:5]
+colnames(eggs1) =column_names
+eggs1
+```
+
+
+
+```{r}
+# separate year and month and remove "/1"
+eggs2 <-eggs1  %>%
+  mutate(Date = str_remove(Date, " /1")) %>%
+  separate(Date, into=c("Month", "Year"), sep=" ") %>%
+  fill(Year) %>%
+  select(Year, Month, `Extra_Large 12`, `Extra_Large 6`, `Large 12`, `Large 6`)
+eggs2
+```
+
+### Challenge: Pivot the Chosen Data
+
+Through the function pivot_longer, I reorganized the dataset. I created three new columns--categorizes, quantiy, and prices. I separated original column names with the whitespace. I moved the type description under the column name "categories" and the numbers (12 or 6) under the column name "quantity." All values were moved to columns "prices." New column names reflect the characteristics of all values that makes the dataset clean and clear.
+
+
+```{r}
+# pivot_longer
+eggs2 %>%
+  pivot_longer(cols = contains("Large"), 
+               names_to = c("categroies", "quanity"),
+               names_sep=" ",
+               values_to= "prices")
+nrow(eggs2)
+ncol(eggs2)
+nrow(eggs2)*ncol(eggs2)
+```
+
+
+```{r}
+# create a new dataset about the Chicken and tidy data
+organic_egg<-read_excel("_data/organiceggpoultry.xls")
+column_names <-c("Date", "Extra_Large 12","Extra_Large 6","Large 12", "Large 6", "NA", "Whole", "B/S Breast",
+"Bone-in Breast", "Whole Legs", "Thighs")
+Chicken<-organic_egg[5:122, 1:11]
+colnames(Chicken) = column_names
+Chicken1 <- Chicken %>%
+  select(`Date`, `Whole`, `B/S Breast`, `Bone-in Breast`, `Whole Legs`, `Thighs`)
+Chicken1
+```
+
+```{r}
+#tidy data 2 Separate year and month, remove "/1"
+Chicken_tidy <- Chicken1 %>%
+  mutate(Date = str_remove(Date, "/1")) %>%
+  separate(Date, into=c("Month", "Year"), sep=" ") %>%
+  fill(Year)
+Chicken_tidy
+  
+
+```
+```{r}
+# find and replace "too few"
+Chicken_tidy[Chicken_tidy== "too few"] <- NA
+Chicken_tidy %>%
+  select(Year, Month, Whole, `B/S Breast`, `Bone-in Breast`, `Whole Legs`, Thighs)
+
+```
+
+Finally, I got two different datasets that clearly reflect two distinct datas.

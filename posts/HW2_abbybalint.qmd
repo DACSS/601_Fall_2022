@@ -1,0 +1,126 @@
+---
+title: "Homework 2 Abby Balint"
+author: "Abby Balint"
+desription: "HW2 - Read in/tidying"
+date: "10/11/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - abbybalint
+  - SharkAttackKaggle
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+### Homework 2 Intro
+
+
+For Homework 2 I found a dataset on Kaggle about Shark Attacks that I am reading in below using read_csv, renaming it to "shark" to make it easy to work with. I will then describe the dataset as well as what I am doing to tidy/mutate it to answer potential questions or points of analysis. The dataset I downloaded can be found here: [https://www.kaggle.com/datasets/mysarahmadbhat/shark-attacks](link)
+
+My end goal is to be able to describe some high level statistics about shark attacks in the USA since 2000.
+
+```{r}
+shark <- read_csv("_data/shark attacks_abbybalintHW2.csv")
+head(shark)
+```
+
+### Description of the data
+This dataset is from Kaggle and appears to likely be an aggregate of a few different data sources as it goes back to the late 1800's all the way to 2017, including over 6,000 individual shark attacks. The data spans several countries. There is a variable titled "source" that describes where each individual attack was originally cited from. There are 22 variables, however many of them are different ways of describing a date, so it makes sense to choose the best column representative of date and remove some of the others. The other columns describe each shark attack with variables like location, activity, demos about the victim, injury type, and shark species. 
+
+## Tidying the data
+
+1. I am selecting only the columns I want to work with, dropping some of the columns that reference source of data as I can reference those individually if needed in the original dataset, but they won't necessarily be useful for my analysis.
+
+
+```{r}
+sharknew <- shark %>%
+  select("Date":"Species", "original order")
+
+```
+
+```{r}
+head(sharknew)
+```
+2. Here I am filtering the data down to US only rows in or after the year 2000 to narrow down the scope of my analysis. I am also sorting by Case Number as upon reviewing the data, this is the variable that actually determines the chronological order of when these were reported. All other time and date rows are missing various data or in incomplete formats. I kept in the date column because for the rows that do have values, the formatting is pretty standardized.
+
+```{r}
+sharknew %>%
+  filter(`Country` == "USA", `Year` >= "2000") %>%
+  arrange(`original order`)
+```
+
+3. I saw that the Location column could be used to break out counties since all values listed a description of the beach, park, etc, followed by a county after the column. This is particularly useful because I am looking at US shark attacks only and all US locations have a county associated with them. I also renamed the "Area" variable to "State" because I am looking at US.
+
+```{r}
+sharknew %>%
+  filter(`Country` == "USA", `Year` >= "2000") %>%
+  arrange(`original order`) %>%
+  separate(col=`Location`, into=c("Description" , "County"), sep = ",") %>%
+  rename(State = `Area`)
+```
+
+4. Since there isn't too much in this dataset to mutate or pivot, I thought another thing that would be interesting to recode for analysis would be granular ages into Age groups.
+
+```{r}
+sharknew %>%
+  filter(`Country` == "USA", `Year` >= "2000") %>%
+  arrange(`original order`) %>%
+  separate(col=`Location`, into=c("Description" , "County"), sep = ",") %>%
+  rename(State = `Area`) %>%
+  mutate(`AgeRanges` = dplyr::case_when(
+    `Age` >= 18 & `Age` <= 24 ~ "18-24",
+    `Age` >= 25 & `Age` <= 34 ~ "25-34",
+    `Age` >= 35 & `Age` <= 44 ~ "18-44",
+    `Age` >= 45 & `Age` <= 54 ~ "18-54",
+    `Age` >= 55  ~ "55+" ))
+```
+```{r}
+sharkfinal <-  sharknew
+```
+
+5. Now I can plot a few things as examples of where I could start if looking to analyze patterns of shark attacks in US since 2000.
+
+```{r}
+sharknew %>%
+  filter(`Country` == "USA", `Year` >= "2000") %>%
+  arrange(`original order`) %>%
+  separate(col=`Location`, into=c("Description" , "County"), sep = ",") %>%
+  rename(State = `Area`) %>%
+  mutate(`AgeRanges` = dplyr::case_when(
+    `Age` >= 18 & `Age` <= 24 ~ "18-24",
+    `Age` >= 25 & `Age` <= 34 ~ "25-34",
+    `Age` >= 35 & `Age` <= 44 ~ "18-44",
+    `Age` >= 45 & `Age` <= 54 ~ "18-54",
+    `Age` >= 55  ~ "55+" )) %>% 
+  ggplot(aes(`Type`)) + geom_bar()
+
+```
+```{r}
+
+sharknew %>%
+  filter(`Country` == "USA", `Year` >= "2000") %>%
+  arrange(`original order`) %>%
+  separate(col=`Location`, into=c("Description" , "County"), sep = ",") %>%
+  rename(State = `Area`) %>%
+  mutate(`AgeRanges` = dplyr::case_when(
+    `Age` >= 18 & `Age` <= 24 ~ "18-24",
+    `Age` >= 25 & `Age` <= 34 ~ "25-34",
+    `Age` >= 35 & `Age` <= 44 ~ "18-44",
+    `Age` >= 45 & `Age` <= 54 ~ "18-54",
+    `Age` >= 55  ~ "55+" )) %>% 
+  ggplot(aes(`Fatal (Y/N)`)) + geom_bar()
+```
+
