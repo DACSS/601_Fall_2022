@@ -1,0 +1,113 @@
+---
+title: "Homework 2"
+author: "Aleacia Messiah"
+description: "Read, Clean, Describe, and Formulate Research Questions from Data"
+date: "10/13/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - Aleacia Messiah
+  - SIPRI_Milex
+  - tidyverse
+  - readxl
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read in Data
+
+```{r}
+# read in the Current USD sheet of the Milex dataset, skipping the first 6 rows and renaming the columns
+milex <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx", sheet = "Current USD", skip = 6, col_names = c("Country", "Notes", 1949:2021))
+# view milex data
+milex
+```
+
+## Clean Data
+
+```{r}
+milex_clean <- milex %>% 
+  # remove Notes column
+  select(!contains("Notes")) %>% 
+  # create a column with region names
+  mutate(Region = case_when(
+    str_ends(Country, "Africa") ~ "Africa",
+      str_detect(Country, "America") ~ "Americas",
+      str_detect(Country, "Asia & Oceania") ~ "Asia & Oceania",
+      str_ends(Country, "Europe") ~ "Europe",
+      str_ends(Country, "East") ~ "Middle East",
+    TRUE ~ NA_character_
+  )) %>% 
+  # replace NAs in Region column
+  fill(Region, .direction = "down") %>% 
+  # create a column with sub region names
+  mutate(Sub_Region = case_when(
+    str_detect(Country, "North Africa") ~ "North Africa",
+    str_detect(Country, "sub-Saharan Africa") ~ "sub-Saharan Africa",
+    str_detect(Country, "Central America and the Caribbean") ~ "Central America and the Caribbean",
+    str_detect(Country, "North America") ~ "North America",
+    str_detect(Country, "South America") ~ "South America",
+    str_detect(Country, "Oceania") ~ "Oceania",
+    str_detect(Country, "South Asia") ~ "South Asia",
+    str_detect(Country, "East Asia") ~ "East Asia",
+    str_detect(Country, "South East Asia") ~ "South East Asia",
+    str_detect(Country, "Central Asia") ~ "Central Asia",
+    str_detect(Country, "Central Europe") ~ "Central Europe",
+    str_detect(Country, "Eastern Europe") ~ "Eastern Europe",
+    str_detect(Country, "Western Europe") ~ "Western Europe",
+    str_ends(Country, "East") ~ "Middle East",
+    TRUE ~ NA_character_
+  )) %>% 
+  # replace NAs in Sub Region column
+  fill(Sub_Region, .direction = "down") %>% 
+  # remove rows with region and sub-region names
+  slice(-c(1:2, 7, 55:56, 70, 73, 85:86, 91, 98, 105, 117, 123:124, 145, 154, 175)) %>% 
+  # replace "xxx" and "..." with NAs
+  na_if("xxx") %>%
+  na_if("...") %>% 
+  # combine Region and Sub Region into one column
+  unite(Region:Sub_Region, col = "Region & Sub Region", sep = "/" ) %>% 
+  # combine year columns into one column
+  pivot_longer('1949':'2021', names_to = "Year", values_to = "Military Expenditure in Millions of US$")
+# view cleaned dataset
+milex_clean
+# number of distinct countries
+n_distinct(milex_clean$Country)
+# list distinct countries
+distinct(milex_clean[,1])
+# list distinct region and sub-region combinations
+distinct(milex_clean[,2])
+# number of years
+n_distinct(milex_clean$Year)
+# range of years
+range(milex_clean$Year)
+```
+
+## Narrative
+
+The Current USD data from the SIPRI Milex dataset details the military expenditures in millions of US dollars for 173 countries for the period 1949-2021. There are 191 observations (173 actual observations) and 75 variables (`Country`, `Notes`, and Years `1949` through `2021`). Observations (countries) were grouped by region and sub-region. There are 5 regions (Africa, Americas, Asia & Oceania, Europe, and Middle East) and 14 sub-regions (North Africa, Sub-Saharan Africa, Central America and the Caribbean, North America, South America, Oceania, South Asia, East Asia, South East Asia, Central Asia, Central Europe, Eastern Europe, Western Europe, and Middle East). Some of the data is missing for several countries in various years due to the data not being available or the country did not exist or was not independent at the time the data was collected, so those values are replaced with NAs.
+
+After cleaning the data, the new dataset has 12,629 observations and 4 variables (`Country`, `Region & Sub Region`, `Year`, `Military Expenditure in Millions of US$`). The regions and sub-regions were extracted from the `Country` column and combined together into one column to illustrate the various combinations of region and sub-region. The years were also condensed into one column.
+
+## Potential Research Questions
+
+Since this data was taken over a large period of time, I can research whether using time series methods would be appropriate to visualize and analyze the trends in the data.
+
+**1. What trends are present in the data (e.g. are there certain patterns of military spending over the years)?**
+
+**2. What are the top spending countries for each year?**
+
+**3. What is the predicted amount of military expenditures in dollars for year 2022 for each country?**
