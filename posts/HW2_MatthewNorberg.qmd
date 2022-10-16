@@ -1,0 +1,263 @@
+---
+title: "Olympic Analysis"
+author: "Matthew Norberg"
+date: "10/11/2022"
+format: 
+  html: 
+    toc: true
+    code-copy: true
+    code-tools: true
+    smooth-scroll: true
+    code-line-numbers: true
+    highlight-style: github
+    theme: zephyr
+    df-print: default
+categories:
+  - hw2
+  - Olympic_Data
+---
+
+```{r setUP}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Data Description
+
+I choose to investigate a dataset containing information about the [Olympic Games](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results?select=athlete_events.csv) between 1896 and 2016.  The data set is read in and displayed using the code below. 
+
+```{r ReadIn}
+# Read in the data set
+athletes <- read_csv('./Data/athlete_events.csv')
+noc <- read_csv('./Data/noc_regions.csv')
+
+# Display the athlete data set
+athletes
+# Display the noc data set
+noc
+```
+
+The dataset comes as a set of two csv files: 'athlete_events' and 'noc_regions' where each file represents a table in a relational database.  The 'athlete_events' table contains most of the information that I am interested in.  Each row in this table contains information about an athlete who competed in an Olympic event.  Note that athletes can occur in the table more than once if they competed in multiple events or games.  A good example of this is Michael Phelps who appears in the athletes table many times.
+
+```{r phelps}
+# Find all the rows containing information about Michael Phelps
+filter(athletes, str_detect(Name, "Michael") & str_detect(Name, "Phelps")) %>%
+  select(-c(ID, NOC, Sex, Height, Weight, Season))
+```
+
+Each row in the athletes table contains the National Olympic Committee that they are competing for which is stored as a three letter code in the 'NOC' column. The 'NOC' column serves as a foreign key to the 'noc_regions' table.  The 'noc_regions' table maps the National Olympic Committee code to its corresponding country and provides additional notes about the committee.  For example, consider this row in 'noc_regions': (HKG, China, Hong Kong).  This tells us that the code HKG corresponds Hong Kong Olympic Committee in China.  
+
+In the majority of the cases, the 'notes' column of the 'noc_regions' table is empty.  The case I gave in the previous example is an outlier case in which it is present.  In cases where it is present, it often provides another way besides the NOC code to distinguish between two committees from the same region.  The code chunk below display all the entries in the 'noc_regions' table that have notes associated with it.  Notice that many of the rows in the table have the same region.
+
+```{r regionAndNotes}
+# List the countries have non-null values in 'notes' column
+noc %>%
+  filter(!is.na(notes)) %>%
+  arrange(region)
+```
+
+## Cleaning The Data
+
+### Initial Transformations
+
+The data was collected in csv format, which made it easy to read into a tibble.  However, the data is not yet tidy.  We will need to perform cleaning operations to make the data neater for analysis. 
+
+We can start by dropping the 'Games' column.  We don't need the 'Games' column because each entry in the column is a combination of the 'Year' and 'Season' columns which are already present in the data set. 
+
+```{r Games}
+# Get rid of id & games column
+athletes <- select(athletes, -c(Games))
+```
+
+Next, we can add the region from the 'noc_region' file to the athletes tibble so that we only have one tibble to work with.  I choose to drop the 'notes' column in the noc file because most of the values are not available and the values which are available don't provide much useful information. 
+
+```{r joinTables}
+# Combine information from noc table
+athletes <- inner_join(athletes, noc) %>% select(-(notes))
+```
+
+We can clean up the 'Medal' column by replacing the values that are not available with the string "None".  Based on the context of the data set, we can assume that a NA in this column means that the athlete did not win a Medal in that event.  Therefore, replacing these values with "None" seems logical.  
+
+```{r cleanMedal}
+# Switch NA in Medal to None
+athletes <- athletes %>% replace_na(list(Medal = "None"))
+```
+
+### Handling Missing Values
+
+There are four columns in the data set which contain missing values: 'Region', 'Age', 'Height', and 'Weight'.  I started by handling the missing values in the 'region' column first because it is the simplist.  We can find the 'NOC' associated with unknown regions by querying the 'noc_regions' data set. 
+
+```{r NOC}
+# Display NA in region
+filter(noc, is.na(region))
+```
+
+We know that any row in athletes that has an 'NOC' value of 'ROT', 'TUV', or 'UNK' will have a value in the 'Region' column that is NA.   I think it would be sensible to replace the NA values according to the table below. 
+
+| NOC | Region | Notes                |
+| --- | ------ | -------------------- |
+| ROT | None   | Regugee Olympic Team |
+| TUV | Tuvala | Tuvala               |
+| UNK | Unkown | Unknown              |
+
+The Refugee Olympic Team does not have a region, so I think it is sensible to replace those missing values with "None".  I did a google search and learned that [Tuvala](https://en.wikipedia.org/wiki/Tuvalu) is a small indpenent island nation so it makes sense to replace those missing values with "Tuvala".  Lastly, I think it is fair to replace the missing values associated with the UNK NOC as "Unknown".  The code below changes the missing values according to the table above. 
+
+```{r cleanRegion}
+# Fill in missing values in Region column
+athletes <- athletes %>%
+            mutate(Temp = case_when(NOC == "ROT" ~ "None",
+                                      NOC == "TUV" ~ "Tuvala",
+                                      NOC == "UNK" ~ "Unknown")) %>%
+            mutate(Region = case_when(is.na(region) ~ Temp,
+                                      !is.na(region) ~ region)) %>%
+            select(-c(region, Temp))
+```
+
+Let's handle the missing values in the 'Age', 'Height', and 'Weight' columns next.  Suppose we find a missing value in the 'Age' column.  I think a reasonable idea would be to replace the missing value with the average age during the Olympic games that occurred in that year.  We know that 'Year' column of the data set does not contain any missing values.  Therefore, if we find a missing value in the 'Age' column, we can extract the value of the 'Year' column in that row and we know it will not be missing.  Then we can calculate the average age during that year and replace the missing value with the average value.  Using this approach, we can replace all the missing values in these columns.
+
+First, let's calculate the average age, height, and weight for each year in the data set.  This is calculated and stored in the tibble using the code chunk below. 
+
+```{r averageValues}
+# Compute average age, height, and weight by years
+AverageValues <- athletes %>%
+                 group_by(Year) %>%
+                 summarise(AverageAge = round(mean(Age, na.rm = TRUE), digits = 0),
+                           AverageHeight = round(mean(Height, na.rm = TRUE), digits = 0),
+                           AverageWeight = round(mean(Weight, na.rm = TRUE), digits = 1))
+# Display the results
+AverageValues
+```
+
+Now that we have computed the averages, it is time to replace the missing values.  The 'cleanColumn' function cleans all of the columns mentioned above.  
+
+```{r cleanAgeHeightWeight, eval = FALSE}
+# Function to clean age, height, and weight
+cleanColumn <- function(column, indx) {
+  # Iterate along the age column
+  for (i in seq_along(column)) {
+    # Extract the current age
+    cVal <- column[[i]]
+    # Check for NA value
+    if (is.na(cVal)) {
+      # Extract year from the row
+      cYear <- slice(athletes, i)$Year[[1]]
+      # Replace the NA value with the average age from year
+      column[[i]] <- filter(AverageValues, Year == cYear)[[indx]][[1]]
+    }
+  }
+  # Return cleaned column
+  return(column)
+}
+# Set age, height, and weight to cleaned version
+athletes$Age <- cleanColumn(athletes$Age, 2)
+athletes$Height <- cleanColumn(athletes$Height, 3)
+athletes$Weight <- cleanColumn(athletes$Weight, 4)
+```
+
+### Cleaning Sport & Event
+
+There is another transformation I would like to perform to make the data set a bit cleaner.  Take a look at the first few values in the 'Sport' and 'Event' column.  They are presented below.
+
+```{r sportEvent}
+# Display first few rows of Sport and Event columns
+athletes %>% 
+  select(Sport, Event) %>%
+  head()
+```
+
+Notice how the first word or set of words in the 'Event' column is the same exact string in the 'Sport' column.  The code chunk below confirms that this pattern is true throughout the entire data set.  Note, I did not evaluate this code to speed up the rendering process.  However, the output can be verified by running this qmd file. 
+
+```{r testSportEvent, eval = FALSE}
+testCols <- function() {
+  # Iterate along sport column
+  for (i in seq_along(athletes$Sport)) {
+    # Get the sport and event string at row i
+    # Split each string on space character
+    sport <- str_split(athletes$Sport[[i]], " ")[[1]]
+    event <- str_split(athletes$Event[[i]], " ")[[1]]
+    # Iterate over items in sport list
+    for (j in seq_along(sport)) {
+      # Check to see if each item in sport is equivalent to corresponding item in event
+      if (sport[[j]] != event[[j]]) {
+        # If it is not equivalent -> stop and display sport and event which breaks pattern
+        cat("BREAK\n", sport, " ", event, "\nPattern does not hold")
+        return(FALSE)
+      }
+    }
+  }
+  # If we get here, then the property holds for the entire data set
+  cat("Pattern holds for entire data set\n")
+  return(TRUE)
+}
+testCols()
+```
+
+I would like to remove the first few words that in the 'Event' column that are also present in the 'Sport' column.  This will clean up the data set even more.  Furthermore, we are not losing any information because we have confirmed that everything we are throwing away appears in the 'Sport' column.  The following chunk of code cleans the 'Event' column.
+
+```{r cleanSportEvent, eval = FALSE}
+# Function to clean event column
+cleanEvent <- function() {
+  # Iterate along and event columns
+  for (i in seq_along(athletes$Sport)) {
+    # Split sport and event string at row i on space character
+    sport <- str_split(athletes$Sport[[i]], " ")[[1]]
+    event <- str_split(athletes$Event[[i]], " ")[[1]]
+    # Empty string to store new event
+    newEvent <- ""
+
+    # Iterate along event list
+    for (j in seq_along(event)) {
+      # Once we get past the length of sport, start piecing together newEvent
+      if (j > length(sport)) {
+        newEvent = str_c(newEvent, event[[j]], " ")
+      }
+    }
+    
+    # Reset newEvent string at position i
+    athletes$Event[[i]] <- newEvent
+  }
+  
+  # Return cleaned column to save changes
+  return(athletes$Event)
+}
+athletes$Event <- cleanEvent()
+```
+
+### Reordering & Arranging
+
+Lastly, let's finish the cleaning process by reordering the columns and sorting them to make the data set easier to look at. 
+
+```{r tidyFrame}
+# Change column order and sort by year
+athletes <- athletes %>% 
+  relocate(Team, .after = Name) %>%
+  relocate(NOC, .after = Team) %>%
+  relocate(Region, .after = NOC) %>%
+  arrange(Year)
+```
+
+## Saving Cleaned Data
+
+Some of the operations that were required to clean the data set took some time to complete.  To save time later, let's save the clean data set in a new csv file so we don't have to repeat all of the cleaning operations.
+
+```{r save, eval = FALSE}
+# Save cleaned data set
+write_csv(athletes, './Data/athletes_clean.csv')
+```
+
+Finally, let's read in the new csv file and present the cleaned data. 
+
+```{r presentData}
+# Read in saved data set and display
+athletes <- read_csv('./Data/athletes_clean.csv')
+athletes
+```
+
+## Potential Research Questions
+
+I am interested if there are relationships between success in the Olympics (whether you got a medal or not) and variables such as height, weight, age, and country.  I believe we can use this data set to see what correlates with winning medals. 
