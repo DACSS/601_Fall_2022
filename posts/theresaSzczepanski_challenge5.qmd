@@ -9,16 +9,18 @@ format:
     toc: true
     code-copy: true
     code-tools: true
+    df-print: paged
+    code-fold: true
 categories:
   - Theresa_Szczepanski
   - challenge_5
-  - railroads
-  - cereal
-  - air_bnb
-  - pathogen_cost
-  - australian_marriage
+ # - railroads
+#  - cereal
+#  - air_bnb
+#  - pathogen_cost
+#  - australian_marriage
   - public_schools
-  - usa_households
+#  - usa_households
 ---
 
 ```{r}
@@ -48,28 +50,188 @@ Today's challenge is to:
 
 [R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
 
-(be sure to only include the category tags for the data you use!)
 
-## Read in data
+## Public School Characteristics ⭐⭐⭐⭐ 
 
-Read in one (or more) of the following datasets, using the correct R package and command.
+::: panel-tabset
+### Read in the Data
 
--   cereal.csv ⭐
--   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
--   Australian Marriage ⭐⭐ 
--   AB_NYC_2019.csv ⭐⭐⭐
--   StateCounty2012.xls ⭐⭐⭐
--   Public School Characteristics ⭐⭐⭐⭐ 
--   USA Households ⭐⭐⭐⭐⭐
+On the read in, I deleted:
 
+  - duplicates of the latitute/longitudinal coordinates `X`, `Y`
+  - aggregate information that could easily be replicated: `TOTFRL`, `TOTMENR` 
+  `TOTFENR`, `TOTAL`, `Member`
+  - `SURVYEAR` since we are only examining 2017-2018 survey
 ```{r}
+ PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+  select(-c("X", "Y","OBJECTID" ,"SURVYEAR", "TOTFRL", "TOTMENROL", "TOTFENROL",
+            "MEMBER", "TOTAL"))
+
+# Identify Levels for Factoring Ordinal Variables
+# #ULOCALE
+# PublicSchools_2017%>%
+#   select(ULOCALE)%>%
+#   unique()
+# #GSLO
+# PublicSchools_2017%>%
+#   select(GSLO)%>%
+#   unique()
+# #GSLHI
+# PublicSchools_2017%>%
+#   select(GSHI)%>%
+#   unique()
+# #SCHOOL_LEVEL
+# PublicSchools_2017%>%
+#   select(SCHOOL_LEVEL)%>%
+#   unique()
+
+#Recode all ordinal variable as factors
+
+  PublicSchools_2017 %>%
+    mutate(ULOCALE = recode_factor(ULOCALE,
+                                   "11-City: Large" = "11-City: Large",
+                                    "12-City: Mid-size" = "12-City: Mid-size",
+                                    "13-City: Small" = "13-City: Small",
+                                    "21-Suburb: Large"= "21-Suburb: Large",
+                                   "22-Suburb: Mid-size"= "22-Suburb: Mid-size",
+                                   "23-Suburb: Small" = "23-Suburb: Small",
+                                   "31-Town: Fringe" = "31-Town: Fringe",
+                                   "32-Town: Distant" = "32-Town: Distant",
+                                   "33-Town: Remote" = "33-Town: Remote",
+                                   "41-Rural: Fringe" = "41-Rural: Fringe",
+                                   "42-Rural: Distant" = "42-Rural: Distant",
+                                   "43-Rural: Remote" = "43-Rural: Remote",
+                                  .ordered = TRUE))%>%
+    mutate(SCHOOL_LEVEL = recode_factor(SCHOOL_LEVEL,
+                                   "Prekindergarten" = "Prekindergarten",
+                                    "Elementary" = "Elementary",
+                                    "Middle" = "Middle",
+                                    "Secondary"= "Secondary",
+                                   "High"= "High",
+                                   "Ungraded" = "Ungraded",
+                                   "Other" = "Other",
+                                   "Not Applicable" = "Not Applicable",
+                                   "Not Reported" = "Not Reported",
+                                  .ordered = TRUE))%>%
+    mutate(GSLO = recode_factor(GSLO,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))%>%
+    mutate(GSHI = recode_factor(GSHI,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "13" = "13",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))
+  
+  
+    
 ```
 
+::: panel-tabset
 ### Briefly describe the data
+The `PublicSchools_2017` data frame consists of data from selected questions 
+from the [2017-208 National Teachers and Principals Survey](https://nces.ed.gov/surveys/ntps/question1718.asp)
+conducted by the United States Census Board and is "a system of related 
+questionnaires that provide descriptive data on the context of public and 
+private elementary and secondary education in addition to giving local, state, 
+and national policymakers a variety of statistics on the condition of education 
+in the United States."
 
-## Tidy Data (as needed)
+Our data frame consists of a subset of the items surveyed from 100729 schools across 
+the United States. The 70 variables contain information from the following categories:
 
-Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+Geographic Location of the School
+- State, town, and address
+- Level of Urbanization (rural, town, city, etc.)
+
+
+Characteristics of the School design:
+- Charter, Magnet, Traditional Public, 
+- Virtual/non
+- Grade levels served and number of students per grade level.
+- Level of School
+- Type of School: Alternative, Regular school, Special education school, or
+ Vocational school
+ - Status of the school when surveyed (new, change of leadership, operational, etc.)
+- Student to Teacher Ratio
+- If the school has Title 1 status
+
+
+Demographic Characteristics of the student body:
+- Number of students of given ethnic backgrounds by gender (M/F only)
+
+Socioeconomic Characteristics of the student body:
+
+- Number of students qualifying for free or reduced lunch.
+
+## Questions for Further Review
+
+What are the following variables?
+  - `G13`
+  - `AS`
+  -`UG`: Ungraded (School level)
+  -`AE`: Adult Education (School level)
+  -`FTE`
+  - `STATUS`
+  
+Why did the original `Member` have 2944 distinct values while `total` had 2944?
+
+### Data Summary
+
+```{r}
+
+# examine the summary to decide how to best set up our data frame
+
+ print(summarytools::dfSummary(PublicSchools_2017,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+:::
+
+### Tidy Data (as needed)
+
+Because we have survey data, we will have a relatively wide data frame, and will 
+have to make use of `select` and `group by` when making summarizations or 
+visualizations.
+
 
 ```{r}
 
@@ -84,8 +246,21 @@ Document your work here.
 
 ```
 
-## Univariate Visualizations
+### Univariate Visualizations
+```{r}
+# Perhaps histogram of urban status
 
+```
 
-## Bivariate Visualization(s)
+### Bivariate Visualization(s)
+```{r}
+# what would make a good comparison?
+```
+### Fun Mapping Visualization
+```{r}
+
+PublicSchools_2017MAP<- st_as_sf(PublicSchools_2017, coords = c("LONCOD", "LATCOD"),  crs = 4326)
+
+```
 Any additional comments?
+:::
