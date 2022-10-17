@@ -63,9 +63,10 @@ On the read in, I deleted:
   `TOTFENR`, `TOTAL`, `Member`
   - `SURVYEAR` since we are only examining 2017-2018 survey
 ```{r}
- PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
-  select(-c("X", "Y","OBJECTID" ,"SURVYEAR", "TOTFRL", "TOTMENROL", "TOTFENROL",
-            "MEMBER", "TOTAL"))
+#Work done to determine what to filter/recode on read in
+ # PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+ #  select(-c("X", "Y","OBJECTID" ,"SURVYEAR", "TOTFRL", "TOTMENROL", "TOTFENROL",
+ #            "MEMBER", "TOTAL"))
 
 # Identify Levels for Factoring Ordinal Variables
 # #ULOCALE
@@ -87,20 +88,22 @@ On the read in, I deleted:
 
 #Recode all ordinal variable as factors
 
-  PublicSchools_2017 %>%
-    mutate(ULOCALE = recode_factor(ULOCALE,
-                                   "11-City: Large" = "11-City: Large",
-                                    "12-City: Mid-size" = "12-City: Mid-size",
-                                    "13-City: Small" = "13-City: Small",
-                                    "21-Suburb: Large"= "21-Suburb: Large",
-                                   "22-Suburb: Mid-size"= "22-Suburb: Mid-size",
-                                   "23-Suburb: Small" = "23-Suburb: Small",
-                                   "31-Town: Fringe" = "31-Town: Fringe",
-                                   "32-Town: Distant" = "32-Town: Distant",
-                                   "33-Town: Remote" = "33-Town: Remote",
-                                   "41-Rural: Fringe" = "41-Rural: Fringe",
-                                   "42-Rural: Distant" = "42-Rural: Distant",
-                                   "43-Rural: Remote" = "43-Rural: Remote",
+PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+  select(-c("X", "Y","OBJECTID" ,"SURVYEAR", "TOTFRL", "TOTMENROL", "TOTFENROL",
+            "MEMBER", "TOTAL")) %>%
+  mutate(ULOCALE = recode_factor(ULOCALE,
+                                   "11-City: Large" = "City: Large",
+                                    "12-City: Mid-size" = "City: Mid-size",
+                                    "13-City: Small" = "City: Small",
+                                    "21-Suburb: Large"= "Suburb: Large",
+                                   "22-Suburb: Mid-size"= "Suburb: Mid-size",
+                                   "23-Suburb: Small" = "Suburb: Small",
+                                   "31-Town: Fringe" = "Town: Fringe",
+                                   "32-Town: Distant" = "Town: Distant",
+                                   "33-Town: Remote" = "Town: Remote",
+                                   "41-Rural: Fringe" = "Rural: Fringe",
+                                   "42-Rural: Distant" = "Rural: Distant",
+                                   "43-Rural: Remote" = "Rural: Remote",
                                   .ordered = TRUE))%>%
     mutate(SCHOOL_LEVEL = recode_factor(SCHOOL_LEVEL,
                                    "Prekindergarten" = "Prekindergarten",
@@ -156,6 +159,9 @@ On the read in, I deleted:
                                 .ordered = TRUE))
   
   
+  PublicSchools_2017
+  
+  
     
 ```
 
@@ -199,11 +205,12 @@ Socioeconomic Characteristics of the student body:
 ## Questions for Further Review
 
 What are the following variables?
+
   - `G13`
   - `AS`
-  -`UG`: Ungraded (School level)
-  -`AE`: Adult Education (School level)
-  -`FTE`
+  - `UG`: Ungraded (School level)
+  - `AE`: Adult Education (School level)
+  - `FTE`
   - `STATUS`
   
 Why did the original `Member` have 2944 distinct values while `total` had 2944?
@@ -229,38 +236,222 @@ Why did the original `Member` have 2944 distinct values while `total` had 2944?
 ### Tidy Data (as needed)
 
 Because we have survey data, we will have a relatively wide data frame, and will 
-have to make use of `select` and `group by` when making summarizations or 
+have to make use of `select` and `group by` when making summaries or 
 visualizations.
 
 
-```{r}
-
-
-```
-
 Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
 
-Document your work here.
+
+The `ULOCALE` variable needed to be recoded as an ordinal variable with levels 
+in order to have the bars appear in the appropriate order for our visualization.
+
+Upon closer inspections, it turns out that there are several numeric variables with
+data mis-entered:
+
+- The number of students with Free or Reduced lunch cannot be negative
+- Student to Teacher Ratio cannot exceed 100 (yet there entries in 600 and even 2350)
+- How should these values be recoded, so we can still use the information for a given 
+school but not throw off our summary statistics or visual representations?
+
+- I used the code below to remove the most extreme cases from our calculations based 
+on the logical bounds of a ratio and count of students.
 
 ```{r}
+PublicSchools_2017<-PublicSchools_2017%>%
+  mutate(FRELCH = replace(FRELCH, which(FRELCH<0), NA))%>%
+  mutate(REDLCH = replace(REDLCH, which(REDLCH<0), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO>100), NA))
+
+  
 
 ```
-
 ### Univariate Visualizations
+
+I chose to visualize the `ULOCALE` using a `geom_bar` since it was an ordinal 
+variable. Before, creating the bar chart, I factored and ordered the values 
+for each of the urbanization classifications from the survey. Because the variable
+names were rather long, I "flipped" the orientation of the chart to horizontal in 
+order to make the names easier to read.
+
+It is striking to see how many more __Large Suburban Schools__ are in our country.
+
+
 ```{r}
+
+
+# Bar Chart School Level
+
+ggplot(PublicSchools_2017, aes(ULOCALE)) + 
+  geom_bar(fill="#404080", color="#e8ecef", alpha=0.9) +
+  #geom_bar(stat="identity", width=2) + 
+  scale_fill_manual("legend", values = c("City: Large" = "blue", 
+                                         "City: Mid-Size" = "blue", 
+                                         "City: Small" = "blue")) +
+  theme_minimal() +
+  labs(title = "Urbanization Level US Teacher and Principals Survey SY2017-2018", 
+       y = "Number of Schools", x = "Urbanization Level") +
+  coord_flip()
 # Perhaps histogram of urban status
 
 ```
 
-### Bivariate Visualization(s)
+Are most schools classified as suburban? To answer this question, I collapsed the 
+Rural, City, Town, and Suburban categories and created a second chart. While, there
+are still the most suburban schools represented, one can see that the majority of 
+US public schools are either located in Suburban, City, or Rural regions.
+
 ```{r}
-# what would make a good comparison?
+
+Urbanization <-PublicSchools_2017%>%
+  select(ULOCALE)%>%
+   mutate(UrbBroad = ifelse(str_detect(ULOCALE,"Rural"), 
+                           "Rural", 
+                      ifelse(str_detect(ULOCALE, "Town"),"Town", 
+                      ifelse(str_detect(ULOCALE, "Suburb"),"Suburb",       
+                      ifelse(str_detect(ULOCALE, "City"),"City",     
+                             ULOCALE)))))
+  
+   
+   
+ Urbanization
+
+# Bar Broader Urbanization Level
+
+ggplot(Urbanization, aes(UrbBroad)) + 
+  geom_bar(fill="#404080", color="#e8ecef", alpha=0.9) +
+  #geom_bar(stat="identity", width=2) + 
+  theme_minimal() +
+  labs(title = "Urbanization Level US Teacher and Principals Survey SY2017-2018", 
+       y = "Number of Schools", x = "Urbanization Level") 
+  #coord_flip()
 ```
+I decided to use a histogram to to visualize the student to teacher ratio. Here we 
+can have an idea of the distribution of class sizes across the United States. We
+ see a symmetric distribution with most frequent ratio being between 14-16 students
+ per teacher.
+ 
+ 
+ 
+
+```{r}
+
+# Using the Median and Standard deviation to adjust for data misentries
+STUTTERRATIO_adj<-median(PublicSchools_2017$STUTERATIO, na=TRUE)+
+  3*sd(PublicSchools_2017$STUTERATIO, na=TRUE)
+           
+
+STUTTERRATIO_adj
+
+STUTERATIO_Adj<-PublicSchools_2017%>%
+  select(STUTERATIO)%>%
+  filter(STUTERATIO < STUTTERRATIO_adj)
+
+ggplot(STUTERATIO_Adj, aes(x = STUTERATIO)) +
+  geom_histogram(fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+  theme_minimal() +
+
+  labs(title = "Student to Teacher Ratio US Teacher and Principals Survey SY2017-2018",
+       y = "Number of Schools", x = "Student to Teacher Ratio")
+
+
+```
+ I would like to produce a more advanced plot, where I see 4 histograms side by
+  side where I group this data by Rural/Town/Suburban/City Urban level.
+```{r}
+STUTTERRATIO_adj<-median(PublicSchools_2017$STUTERATIO, na=TRUE)+
+  3*sd(PublicSchools_2017$STUTERATIO, na=TRUE)
+Urban_Ratio <-PublicSchools_2017%>%
+  select(ULOCALE, STUTERATIO)%>%
+   mutate(UrbBroad = ifelse(str_detect(ULOCALE,"Rural"), 
+                           "Rural", 
+                      ifelse(str_detect(ULOCALE, "Town"),"Town", 
+                      ifelse(str_detect(ULOCALE, "Suburb"),"Suburb",       
+                      ifelse(str_detect(ULOCALE, "City"),"City",     
+                             ULOCALE)))))%>%
+  filter(STUTERATIO < STUTTERRATIO_adj)
+  
+   
+   
+ Urban_Ratio
+
+ggplot(Urban_Ratio, aes(x = STUTERATIO)) + 
+  geom_histogram( fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+  labs(title = "Student to Teacher Ratio by Urbanization Level", y = "Number of Schools",
+       x = "Student to Teacher Ratio") + 
+  theme_minimal() +
+  facet_wrap(vars(UrbBroad))
+
+```
+## Questions
+
+How do I change the colors of the bars so that all of the "City Bars" were one
+color, "Suburban Bars" another, and "Rural Bars" another.
+
+When I originally tried to create this histogram, I noticed that the bin-sizes 
+ were off. It turns out that there are some mis-entries in the `STUTERATIO` column.
+ Notably: a school with a STUTERATIO of 677.36 and another with a ratio of 22350.
+ These are clearly misentries. What would be the best way to recode these?
+ 
+ In the comments of my code, you can see that I "hard-coded" bin size at first 
+ before realizing that there was a data entry error causing the bizarre bin sizes 
+ and scaling on my x-axis.
+
+
+### Bivariate Visualization(s)
+
+Attempt at Bivariate representation that we know, should show a strong correlation
+```{r}
+# Comparing Number of Hispanic Male Students to Hispanic Female Students
+
+ggplot(PublicSchools_2017, aes(x=HPALM, y=HPALF)) + 
+     geom_point(size=.75, color="#69b3a2" )+
+  labs(title = "Number of Hispanic Males vs. Num Hispanic Females US Public Schools", y = "Hispanic Female Students",
+       x = "Hispanic Male Students") +
+  theme_minimal()
+
+#  ToDo Add regression line
+   
+```
+
+
+```{r}
+# testing cross tabs
+#xtabs(~ GSLO + GSHI, PublicSchools_2017)
+
+```
+
+```{r}
+# Comparing Student Teacher Ratio to Free Reduced Lunch Ratio
+STUTTERRATIO_adj<-median(PublicSchools_2017$STUTERATIO, na=TRUE)+
+  3*sd(PublicSchools_2017$STUTERATIO, na=TRUE)
+FRED_Lunch_Teach <-PublicSchools_2017%>%
+  select(FRELCH, STUTERATIO, REDLCH, AM,	HI,	BL,	WH,	HP,	TR )%>%
+  mutate(Ratio_FRED_LCH = (FRELCH + REDLCH)/(AM + HI + BL + WH + HP + TR)*100)%>%
+  mutate(Ratio_FRED_LCH = replace(Ratio_FRED_LCH, which(Ratio_FRED_LCH>75), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO>STUTTERRATIO_adj), NA))
+  
+FRED_Lunch_Teach
+ 
+
+ggplot(FRED_Lunch_Teach, aes(x=Ratio_FRED_LCH, y=STUTERATIO)) + 
+     geom_point(size = .05)+
+  theme_minimal()
+  
+# ToDo Add title and labels
+   
+   
+```
+
 ### Fun Mapping Visualization
 ```{r}
 
-PublicSchools_2017MAP<- st_as_sf(PublicSchools_2017, coords = c("LONCOD", "LATCOD"),  crs = 4326)
+#PublicSchools_2017MAP<- st_as_sf(PublicSchools_2017, coords = c("LONCOD", "LATCOD"),  crs = 4326)
 
 ```
-Any additional comments?
+## Questions
+
+How do I get the mapping visualization to work?
+
+
 :::
