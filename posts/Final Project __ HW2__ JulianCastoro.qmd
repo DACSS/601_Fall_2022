@@ -1,0 +1,314 @@
+---
+title: "Homework 2"
+description: "Homework 2 and wip Final Project"
+author: "Julian Castoro"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+# output: distill::distill_article
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(readxl)
+library(dplyr)
+library(purrr)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+### Data choice overview
+
+
+
+I initially chose this data set because recent events abroad have certainly escalated a global fear of war and I wanted to see how the tides of military spending ebbed and flowed 
+over the course of what we have been tracking. As I cleaned the data more and more questions bled from the raw information infront of me. I am excited to see what sort of trends come from analyzing this data set. 
+
+I plan to show how different countries value military spending and how that value changes over the course of time. Ideally I will be able to explain patterns in what I see with global or locally important historic events. How did the US spending change after 9/11 or more recently did we see anyone bolstering their defenses before news broke of the Russian invasion of Ukraine? How did spending change globally after the first and then second world war? While I am not a statistical expert and will not be able to refute a causation vs correlation argument, visualizations of these events and the corresponding spending patterns will still be interesting and hopefully provoking of conversation.
+
+
+
+
+
+
+
+
+## Data
+
+Below is a list of the available sheets in the SIPRI military spending data export. A few of the tabs are the same base information altered to reflect a specific currency or ratio. I am choosing to use the "Current USD" as my source of raw spending numbers as I believe it to be the easiest to understand and relate to. I will also be using "share of GDP" as well as "Share of Govt. spending" to provide context around a nations spending compared to their population they intend on defending as well as compared to overall spending.
+
+```{r}
+sheets <- excel_sheets("_data/SIPRI-Milex-data-1949-2021.xlsx")
+sheets
+
+```
+
+
+Here is a peek at what the raw information looks like.
+```{r}
+#| warning: false
+#| message: false
+rawrawData_ShareOfGovSpend <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[9])
+head(rawrawData_ShareOfGovSpend)
+
+```
+
+
+### Reading in Raw information
+
+Reading in raw information
+
+The data provided by the Stockholm International Peace Research Institute(sipri) was separated into multiple tabs in one excel .xlsx file. 
+
+In order to begin working I imported the tabs I planned to utilize, skipping over some of the notes and title rows at the start of each tab.
+
+
+
+```{r}
+rawData_CurrentUSD <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[6],skip=5)
+rawData_ShareOfGDP <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[7],skip=5)
+rawData_ShareOfGovSpend <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[9],skip=7)
+
+
+
+head(rawData_CurrentUSD)
+glimpse(rawData_CurrentUSD)
+#head(rawData_ShareOfGDP)
+#head(rawData_ShareOfGovSpend)
+
+```
+
+
+
+Next I delete the first row of NA as well as the Notes column for each tibble.
+
+```{r}
+## trying Purr here to be cleaner, we have not covered this yet so please let me know if this could be better.
+
+#tibleList <- lst(rawData_CurrentUSD, rawData_ShareOfGDP, rawData_ShareOfGovSpend)
+
+#modify(tibleList,select(-1))
+#map(tibleList,slice(-1))
+
+## not working ^^
+
+
+
+
+rawData_CurrentUSD <- rawData_CurrentUSD[-1,]  %>%
+  select(-Notes)
+
+
+rawData_ShareOfGDP <- rawData_ShareOfGDP[-1,] %>%
+  select(-Notes)
+
+
+rawData_ShareOfGovSpend <- rawData_ShareOfGovSpend[-1,] %>%
+  select(-2:-3)
+
+
+head(rawData_CurrentUSD)
+#head(rawData_ShareOfGDP)
+#head(rawData_ShareOfGovSpend)
+
+
+```
+
+### Tidying Data
+
+Before pivoting my data I wanted to add a column for region. I chose to do this with an algorithm as an exercise in iteration however it would have been more practical to just hard code this column.
+
+#### Before Pivoting I am adding a column for region
+
+
+The list of countries where there are NA's for every year:
+```{r}
+Regions <- rawData_CurrentUSD %>%
+  filter(is.na(`1949`))%>%
+  select(Country)
+
+Regions
+```
+You will notice that some of these are continents and sub-continents, I wanted to break these into a `Region` field. The pattern I saw and chose to exploit was the fact that the overarching category would always be followed with a more specific category such as the **Africa** followed by **North Africa** values (see earlier print outs to see raw information). 
+
+I then added an empty vector into the tibble and populated it according to the Country column using the pattern described above.
+
+Once I had left flags in the region column dictating where each region was starting I could use `fill(Region)` in order to populate the rest of the column.
+
+```{r}
+emptyRegionCol <- as.numeric(vector(mode = "character",length = length(rawData_CurrentUSD$`1949`)))## doing as numeric here as a hacky way to fill this with NA's, any better way?
+
+
+#adding col to tibble to be populated later
+mutated_CurrentUSD <- rawData_CurrentUSD %>%
+  mutate(Region =emptyRegionCol,.before=2)
+
+#mutated_CurrentUSD
+#head(mutated_CurrentUSD)
+
+
+
+# replacing the empty char in region with actual region if 2 NAs appear in a row
+  #iterates along the indices of the Country vector
+for(i in seq_along(mutated_CurrentUSD$Country) ){
+  
+   #if 2 nas in a row then do something
+  if(is.na(mutated_CurrentUSD$`1949`[i]) && is.na(mutated_CurrentUSD$`1949`[i+1]) ){
+    mutated_CurrentUSD$Region[i+1] <- mutated_CurrentUSD$Country[i+1] #this works because when referencing an index outside of the vector R will return NA - Great to know.
+  }
+  
+  
+  #if the row is a region
+  if(is.na(mutated_CurrentUSD$`1949`[i]) ){
+     mutated_CurrentUSD$Region[i+1] <- mutated_CurrentUSD$Country[i]
+  }
+
+  
+}
+
+mutated_CurrentUSD <- mutated_CurrentUSD %>%
+  fill(Region)
+
+mutated_CurrentUSD 
+```
+
+
+With my tibble in this state I can now remove the header rows.
+```{r}
+
+mutated_CurrentUSD <- mutated_CurrentUSD %>%
+  filter(!is.na(`1949`))
+mutated_CurrentUSD
+```
+
+
+
+
+## Pivoting years
+Next I pivot the years 
+
+Before:
+```{r}
+#cols to pivot
+head(mutated_CurrentUSD)
+```
+After:
+
+```{r}
+clean_currentUSD <- mutated_CurrentUSD %>%
+  pivot_longer(cols=3:ncol(mutated_CurrentUSD),names_to = "Year",values_drop_na = FALSE)
+  
+head(clean_currentUSD)
+
+```
+
+
+
+
+
+
+#### Converting notations
+
+Now I must handle the xxx and ... notations. From the information page of my data set I can see that the notation is described as follows:
+
+Raw Notation  | Meaning
+------------- | -------------
+...  | Data unavailable
+xxx  |  Country did not exist or was not independent during all or part of the year in question
+
+
+For now I think I will just keep both as NA but will save this form of the information for future use.
+
+```{r}
+cleanNA_currentUSD <-clean_currentUSD%>%
+  na_if("...") %>%
+  na_if("xxx")
+
+
+head(cleanNA_currentUSD)
+
+```
+### Converting column types
+Finally I will convert the column types to their correct representation.
+
+Before:
+```{r}
+glimpse(cleanNA_currentUSD)
+
+# Year to date
+cleanNA_currentUSD$Year<-as_date(cleanNA_currentUSD$Year, format = "%Y",tz=NULL)
+
+
+#i could get just year by adding this but then it is a double?
+#%>%
+ # year()
+
+
+
+# value to double
+cleanNA_currentUSD$value <- as.numeric(cleanNA_currentUSD$value)
+
+```
+After:
+```{r}
+glimpse(cleanNA_currentUSD)
+```
+
+### Briefly describe the data
+## Narative and variables in the dataset
+
+
+
+
+
+## Potential research questions
+
+
+1. Global events which may have led to increases of spending.
+2. Grouped view of allies
+3. Grouped view of regions
+4. Which countries are steady vs decrease/increase
+5. Could overlay US per capita spending with public opinion of military
+6. Share of govt spending 
+
+
+
+## Conclusion
+> “Every gun that is made, every warship launched, every rocket fired signifies in the final sense, a theft from those who hunger and are not fed, those who are cold and are not clothed. > > This world in arms is not spending money alone. It is spending the sweat of its laborers, the genius of its scientists, the hopes of its children. This is not a way of life at all in any > true sense. Under the clouds of war, it is humanity hanging on a cross of iron.”
+
+Dwight D. Eisenhower
+
+
+
+Citations:
+https://www.goodreads.com/quotes/tag/military-budget#:~:text=%E2%80%9CEvery%20gun%20that%20is%20made,is%20not%20spending%20money%20alone.
+
+
+Appendix:
+Full descriptions as provided by SIPRI:
+
+1. Introduction
+2. Estimates of world, regional and sub-regional totals in constant (2019) US$ (billions).
+3. Data for military expenditure by country in current price local currency, presented according to each country's financial year.
+4. Data for military expenditure by country in current price local currency, presented according to calendar year.
+5. Data for military expenditure by country in constant price (2019) US$ (millions), presented according to calendar year, and in current US$m. for 2020.
+6. Data for military expenditure by country in current US$ (millions), presented according to calendar year.
+7. Data for military expenditure by country as a share of GDP, presented according to calendar year.
+8. Data for military expenditure per capita, in current US$, presented according to calender year. (1988-2020 only)
+9. Data for military expenditure as a percentage of general government expenditure. (1988-2020 only)
+
+
+
+
