@@ -1,0 +1,149 @@
+---
+title: "Homework 2 - Exploratory Data Analysis"
+subtitle: "Florida Homelessness by County 2018-2020"
+author: "Dane Shelton"
+desription: "Research Question, Hypothesis, and Exploratory Data Analysis"
+date: "10/18/2022"
+format:
+  html:
+    callout-appearance: "simple"
+    callout-icon: FALSE
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - homework_2
+  - shelton
+  - homelessness
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE)
+```
+
+## Homelessness in Florida
+
+Homelessness is a complex living situation with several qualifying conditions; at its most simple state, the U.S Dept. of Housing and Urban Development defines it as lacking a fixed, regular nighttime residence (not a shelter) or having a nighttime residence not designed for human accommodation^1^.
+
+On a single night in 2020, over 500,000^2^ people experienced homelessness in the United States. Florida, with the third largest state population , had the fourth largest homeless population of 2020 with 27,487^2^.
+
+Florida counties represent a large age range and varying demographic profiles; the state is a hub to a variety of industries including tourism, defense, agriculture, and information technology. Investigating homelessness in Florida counties with robust data can lead to several conclusions about who is being impacted where, and how state policy is failing groups of a diverse population.
+
+::: panel-tabset
+## Research Question
+
+Carole Zugazaga's 2004 study of 54 single homeless men, 54 single homeless women, and 54 homeless women with children in the Central Florida area investigated stressful life events common among homeless people. The interviews revealed that women were more likely to have been sexually or physically assaulted, while men were more likely to have been incarcerated or abuse drugs/alcohol. Homeless women with children were more likely to be in foster care as a youth.
+
+Nearly a decade later,county-level data can be used to investigate the relationship between Zugazaga's reported stressful life events (incarceration, drug arrests, poverty, forcible sex...)^3^ and homelessness counts.
+
+::: callout-note
+## Research Question
+
+Do particular life stressors increase a population's vulnerability to homelessness?
+:::
+
+## Hypothesis
+
+Homelessness is not a new issue in the United States, yet homeless policy targets elimination via criminalization rather than prevention. Despite state and federal governments being aware of the circumstances that increase vulnerability to homelessness for decades, I anticipate all of the variables to remain significant in a model relating stressors to Florida homelessness counts 2018-2020.
+
+::: callout-note
+## Research Hypothesis
+
+**H~0~:** All stressors are insignificant in predicting homelessness counts **(** B~i~ = 0 for i=0,1,2,...n **)**
+
+**H~A~:** At least one stressor **B~i~** is significant in predicting homelessness counts
+:::
+
+## Introduction to Data
+
+```{r}
+#| label: loading florida_1820
+#| include: FALSE
+
+# This data was cleaned and formatted to a tidy .csv in another .qmd file, the manipulations were messy and probably inefficient (brute force); can upload if needed
+
+florida_og <- readr::read_csv('_data/florida_1820.csv', show_col_types = FALSE)
+
+```
+
+The data `florida_1820.csv`^4^ describes population, homelessness counts, poverty counts and several other demographic indicators^3^ at the county level for 2018-2020. All 67 Florida counties have observations for the 3 years giving us 201 observations of 15 variables. Each observation provides a count of each variables from a single county for a year within 2018-2020.
+
+The data were collected from the [Florida Department of Health](https://www.flhealthcharts.gov/charts/default.aspx). Variable names^3^ were used as search indicators to produce counts for Florida counties. Unfortunately, we cannot accurately analyze the effect of COVID-19 as data is incomplete for the majority of counties in 2021.
+
+::: {.callout-note collapse="true"}
+## Intro to Data
+
+```{r}
+#| label: EDA
+#| output: TRUE
+
+head(florida_og)
+
+summary(florida_og)
+
+florida_county <- florida_og %>%
+                      group_by(County)
+                        
+florida_county %>% 
+  summarize('Mean Population' = mean(Population), 
+            'Mean Homeless' = mean(`Homeless (Count)`),
+            'Avg Homeless Rate' = mean(`Homeless (Count)`)/mean(Population),
+            'Avg Median Income'= mean(`Median Inc`), 
+            'Mean Poverty' = mean(`Poverty (Count)`), 
+            'Avg Poverty Rate' = mean(`Poverty (Count)`)/mean(Population)) %>%
+                arrange( desc(`Mean Population`), desc(`Mean Homeless`), desc(`Avg Median Income`))%>%
+  mutate(across(c(2:3, 5:6), round, 0))
+                
+  
+
+```
+:::
+
+Expanding **Intro to Data** exposes summary statistics including mean, range, quantiles, and standard deviation for all 15 variables. The table below the summaries provides arranged figures for basic parameters of interest grouped by county.
+
+LATER: Plots, Isolate more variables of interest with grouping, group by year?
+
+## Improvements
+
+While the data is great illustration of homelessness in Florida by county, there are improvements that could be made to both data collection and the research question itself to further the study.
+
+**Data:**
+
+-   Unfortunately, [FL Health Charts](https://www.flhealthcharts.gov/charts/default.aspx) did not provide demographic breakdown for the homeless population (Age, Sex, Race), which would drastically widen the scope of the analysis, leading to far more interesting conclusions.
+
+-   There is only have data for a three year period; this is too small of a range to make a strong statement about the impact of homeless policy on Florida counties or how the relevance of certain stressors has changed over time. For a more in depth study I would begin with a 10 year range.
+
+**Research Question:**
+
+-   Demographic breakdown of stressors' impact (Age, Sex, Race)
+
+-   Extend the question to the entire country, providing a breakdown by state
+
+-   Compare to foreign countries to contrast governments' approaches to homelessness and leading causes of homelessness around the world.
+
+## Codebook
+
+LATER: Variable Definitions and Collection Methods here
+
+## References
+
+Later: Carol Zugazaga
+:::
+
+##### Footnotes
+
+~1.) [Homeless Definition](https://www.law.cornell.edu/uscode/text/42/11302)~
+
+~2.) [US Interagency Council on Homelessness](https://www.usich.gov/tools-for-action/2020-point-in-time-count/)~
+
+~3.) Explanation of variables and collection method in Codebook tab~
+
+~4.) This data was\ created\ from\ several\ .csv\ files.;\ it\ was\ cleaned and put in a tidy format in another script; manipulations were messy/ inefficient (brute force) so I did not include the cleaning file.~
