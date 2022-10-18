@@ -1,0 +1,238 @@
+---
+title: "Challenge 4 Solution"
+author: "Dane Shelton"
+desription: "More data wrangling: pivoting"
+date: "10/11/2022"
+format:
+  html:
+    toc: true
+    df-print: paged
+    callout-appearance: simple
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - shelton
+  - eggs
+  - fed_rates
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge 4 Tasks
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+~*Thanks\ to\ Theresa\ Szczepanski's\ great\ code\ providing\ an\ example\ on\ how\ to\ use\ tabs!*~
+
+::: panel-tabset
+## Poultry_Tidy
+
+### Read-In: Poultry_Tidy
+
+::: {.callout-note collapse=true}
+## Exploratory Data Analysis
+
+```{r}
+#| label: read-in
+#| echo: false
+#| output: true
+
+poultry_og <- read_excel("_data/poultry_tidy.xlsx")
+
+glimpse(poultry_og)
+
+poultry_og %>%
+  distinct(Month, Year)
+
+poultry_og%>%
+  distinct(Product)
+
+```
+:::
+
+### Briefly describe the data
+
+`poultry_tidy` documents price of chicken cuts in dollars for each month from January 2004 to December 2013. The five cuts we have prices for are Whole, B/S Breast, Bone-in Breast, Whole Legs, and Thighs. So, with each observation currently representing a price of a cut for one month of a year, we have 600 total rows (5 cuts x 12 months x 10 years) and 4 columns (month, year, cut, price). There are missing values for cut Bone-in-Breast for the first half of 2004, and Thigh for January 2004.
+
+### Tidy Data (as needed)
+
+A single case in `poultry_tidy` should be one month with 5 price values (one for each cut); we need to `pivot_wider` the `Product` column into 5 new columns, named by their cut, with values from the `Price_Dollar` column.
+
+Verifying the current dimensions.
+
+```{r}
+#| label: current dimensions
+#| echoi: false
+#| output: true
+
+# Dimensions
+dim(poultry_og)
+```
+
+We have 600 rows and four columns. We will be creating 5 new columns from `Product` with values from `Price_Dollar`, changing the shape of our data to 120 rows and 7 columns. Each observation should be a single month and year followed by five prices of various chicken cuts.
+
+```{r}
+#| label: pivoting
+#| echo: false
+#| output: true
+
+# Pivoting 
+
+poultry_2 <- poultry_og %>%
+              pivot_wider(names_from = Product, values_from = Price_Dollar)
+
+dim(poultry_2)
+
+head(poultry_2)
+```
+
+### Identify variables that need to be mutated
+
+We can `mutate` the `Year` and `Month` columns into the correct format to be parsed as a date using `make_date`. This will make the data appropriate for Time-Series analyses, if we wanted to examine or predict chicken prices over a certain time period.
+
+Document your work here.
+
+```{r}
+#| label: Mutating Varibales
+#| echo: true
+
+
+# Need to convert month column from chr to num in order to parse through make_date()
+
+poultry_date <- poultry_2 %>%
+                    mutate(num_month = case_when(Month == 'January' ~ 01,
+                                                 Month == 'February' ~ 02,
+                                                 Month == 'March' ~ 03,
+                                                 Month == 'April'  ~04,
+                                                 Month == 'May' ~ 05,
+                                                 Month == 'June' ~ 06,
+                                                 Month == 'July' ~ 07,
+                                                 Month == 'August' ~ 08,
+                                                 Month == 'September' ~ 09,
+                                                 Month == 'October' ~ 10,
+                                                 Month == 'November' ~ 11,
+                                                 Month == 'December' ~ 12),
+                           Date = make_date(year=Year, month = num_month))%>%
+                                                      
+                                                      rename(delete = Month)%>%   
+                                                               select(-delete)
+
+poultry_date <- poultry_date %>% 
+                  relocate(Date)%>% 
+                    rename(delete = num_month, delete1 = Year)%>%
+                      select(!contains('delete'))
+
+poultry_date
+
+```
+
+We have our data in a tidy format, with each observation providing chicken cit prices associated with a date.
+
+## Fed Rates
+
+### Read-In: Fed Rates
+
+::: {.callout-note collapse=true}
+## Exploratory Data Analysis
+
+```{r}
+#| label: fed rates readin
+#| output: true
+
+fed_og <-  read_csv('_data/FedFundsRate.csv', show_col_types = FALSE)
+
+head(fed_og)
+
+dim(fed_og)
+
+summary(fed_og)
+
+fed_og %>%
+  distinct(Year)
+
+fed_og%>%
+  count(Day)
+```
+:::
+
+Expanding **Exploratory Data Analysis** we can see`FedFundsRate` represents the effecttive interest rate set by the Federal Reserve and the economic data that was used to make the decision - inflation rate, target Fed rates, unemployment rate, and GDP percent change. The data covers the years between 1954 and 2017, but not all months in this range are accounted for.
+
+### Tidy Data
+
+Different measures are taken at different intervals, leading to many missing values. We can see this issue using the `Upper Target` and `Lower Target` variables. Using the .csv viewer in RStudio to arrange column values in descending (or ascending) order, we can see that the Upper and Lower target rates began being measured *instead of* `Target Federal Fund Rate` in 2009. Even further, Target Rates were not measured at all before 1982. That's 55 *years* of missing monthly observations! Emma Narkewicz had the brilliant idea of averaging the Upper and Lower Target rates to produce a Target Rate for the years 2009-2017 to improvise around this issue.
+
+```{r}
+#| label: mutating Target Fed Fund 2009-2017
+#| output: true
+
+# Averaging Upper and Lower Values for 2009-2017
+
+fed_avg0917  <- fed_og %>%
+                  mutate(`Federal Funds Target Rate` = ifelse(is.na(`Federal Funds Target Rate`), (`Federal Funds Upper Target`+ `Federal Funds Lower Target`)/2, `Federal Funds Target Rate`))
+ 
+```
+
+Next variables with several missing values to deal with: Inflation and Unemployment Rate. It appears that both of these variables are always measured on the first of the month. Referencing the Exploratory Data Analysis Tab above, we can see most (753/904) observations are recorded on the first anyways. Let's filter our data to only included cases recorded on the first day of a given month/year combination in our data `fed_avg0917`
+
+```{r}
+#| label: Filter first of the month
+#| output: true
+
+#First of the Month
+
+fed_01_mm_yy <- fed_avg0917 %>%
+                    filter(Day == 1)
+
+
+```
+
+Percent Change in GDP is measured quarterly, so we can filter the 1st, 4th, 7th, and 10th months to isolate those months.
+
+### Select Rows to Mutate
+
+After finishing our row and column manipulations, we can mutate the first three columns to a date format using `make_date`. This will allow us to make time series analyses on the Fed rate over time.
+
+```{r}
+#| label: quarterly isolation 
+#| output: true
+
+fed_01_quarters <- fed_01_mm_yy %>%
+                      filter(Month == 1 |
+                               Month == 4 |
+                               Month == 7 |
+                               Month == 10)
+
+fed_final <- fed_01_quarters %>%
+                mutate(Date = make_date(year=Year, month= Month, day=Day))%>%
+                  rename('delete'=Year,'delete1'=Month,'delete2'=Day)%>%
+                    relocate(Date)%>%
+                      select(-(contains('delete')))
+          
+```
+
+We have now tidied out data to the best possible format, with each observation representing a date followed by economic measures taken to determine the Effective Federal Funds Rate.
+
+::: {.callout-note collapse=true}
+## `Fed_Final`
+```{r}
+fed_final
+```
+:::
+:::

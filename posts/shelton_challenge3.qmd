@@ -1,0 +1,126 @@
+---
+title: "Challenge 3"
+author: "Dane Shelton"
+desription: "Tidy Data: Pivoting"
+date: "10/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - shelton
+  - eggs
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge 3 Tasks: 
+
+
+1.)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.)  identify what needs to be done to tidy the current data
+3.)  anticipate the shape of pivoted data
+4.) pivot the data into tidy format using `pivot_longer`
+
+## Task 1.) Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+
+-   eggs_tidy.csv ⭐⭐ organiceggpoultry.xls⭐⭐⭐
+
+```{r}
+#| label: Read In and Description
+#| echo: False
+#| output: include
+
+# Eggs Tidy
+ eggs_tidy<- readr:: read_csv("_data/eggs_tidy.csv")
+glimpse(eggs_tidy)
+
+# which(is.na(eggs_tidy))
+
+# eggs_tidy
+
+# not actually familiar with purr style formulas, saw technique on stackexchange
+ eggs_tidy <- eggs_tidy %>%
+              mutate(across(3:6, ~(./100)))
+
+eggs_tidy %>% 
+    distinct(month,year)
+ 
+```
+
+### Description of Eggs_Tidy
+
+We can see that `eggs_tidy` represents the price of various sizes and quantities of eggs each month for the 10 year period between January 2004 to December 2013. The prices were originally listed in cents, but we transformed the columns to show the prices in dollars.
+
+Unfortunately, our observations represent more that one case, so we'll need to use `pivot_longer` to tidy up our data so that one row represents a single observation. The variables that will be used in the final data set to identify a single observation are month, year, size (large or extra large), and quantity (half dozen or dozen)
+
+
+## Task 2.) Anticipate the End Result 
+
+### Pivoting Steps
+
+Currently, we only have $2$ of our $6$ varibales identifying a case - month and year. This means we will have to pivot longer $6 - 2 = 4$ columns total: `large_half_dozen`, `large dozen`, `extra_large_half_dozen`, and `extra_large_dozen`. We will split the descriptions by size and quantity using the `names_sep` argument, their values will go into a `price` column.
+
+
+
+## Task 3.) Calculate Final Dimensions
+
+First, let's take a look at the current dimensions of `eggs_tidy`:
+
+```{r}
+#| output: true
+#| label: Dimensions of Current
+
+dim(eggs_tidy)
+
+
+```
+
+
+Our current dimensions are 120 rows, by 6 columns. As mentioned, we are pivoting 4 of the 6 columns into 3 new columns, which should result in $120 * (6-2) = 480$ rows and $2 + 3 = 5$ columns: month, year, size, quantity, price.
+
+
+## Task 4.) Pivot the Data
+
+
+```{r}
+#| label: Pivoting
+#| output: true
+#| echo: false
+
+# eggstrial <- eggs_tidy %>%
+            # pivot_longer(col = c(large_half_dozen, extra_large_half_dozen, large_dozen, # extra_large_dozen), names_to= c("Size", "Quantity (Dozen)"), names_sep = '_', values_to= "price")
+
+# Need to change structure of variable names
+
+# eggs_tidy <- eggs_tidy %>%
+# rename(c(Large_Half=large_half_dozen, Large_Dozen =  large_dozen, 
+# XL_Dozen=extra_large_dozen, XL_Half=extra_large_half_dozen))
+
+#Attempt 2 
+# final_eggs <- eggs_tidy %>%
+#              pivot_longer(col = c(Large_Half, Large_Dozen, XL_Half, XL_Dozen), names_to= # c("Size", "Quantity (Dozen)"), names_sep = '_', values_to= "price")
+
+final_eggs
+
+dim(final_eggs)
+
+```
+### Description of Pivoted Data
+
+Now, after pivoting `eggs_tidy` into our final dataset `final_eggs`, we can see that the dimensions match our prediction (480 x 5), and an individual case containing date, size, quantity, and price information is identified by each row. Each column represents a variable, each row a case, and each cell is a value - our data is tidy!
+
