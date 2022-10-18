@@ -1,0 +1,79 @@
+---
+title: "Challenge 1 Instructions"
+author: "Kimberly Darkenwald"
+desription: "Reading in data and creating a post"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+
+```{r}
+railroad <- read_csv("_data/railroad_2012_clean_county.csv")
+railroad
+
+```
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+```{r}
+#| label: summary
+
+colnames(railroad)
+dim(railroad)
+
+```
+
+There are a total of 3 variables: state, county, and employees. There are a total 2930 cases. 
+
+*How do I find the duplicated states?
+
+
+
+```{r}
+#| label: summary 2
+arrange(railroad,desc(total_employees)) %>%
+  slice(1:10)
+
+
+filter(railroad, total_employees == 1)
+
+filter(railroad, total_employees == 1) %>%
+  group_by(state)
+
+
+``` 
+As indicated by the dataset, seven states in the country contain the top 10 counties with the highest amount of railroad employees. These states include Illinois, Texas, Nebrasaka, New York, Virginia, Florida, and California.  Cook county in Illinois contains the most employees totaling 8,207. There are 145 counties with only 1 railraod employee. Those employees are very lonely when they go to work.
+
+*How do I group the states?

@@ -1,0 +1,96 @@
+---
+title: "Challenge 2 Instructions"
+author: "Kim Darkenwald"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+## Data Read In
+
+```{r}
+birds <- read_csv("_data/birds.csv")
+birds
+view(birds)
+
+
+```
+
+
+
+```{r}
+#| label: summary
+
+dim(birds)
+colnames(birds)
+birds %>%
+  select("Area", "Item", "Year", "Unit", "Value", "Flag Description") %>%
+  filter(Area == "World", Item == "Chickens") %>%
+  arrange(desc("Year"))
+
+birds %>%
+  select("Area", "Item", "Year", "Unit", "Value", "Flag Description") %>%
+  filter(Area == "World", Item == "Turkeys") %>%
+  arrange(desc("Year"))
+
+
+
+```
+
+```{r}
+birds %>%
+   select("Area", "Item", "Year", "Unit", "Value", "Flag Description") %>%
+  filter(Area == "World") %>%
+  summarize(Item, Year, Value) 
+  
+ 
+```
+
+##Summary
+
+This dataset contains information regarded birds around the world and by region. Specifically, chickens, turkeys, and pigeons. Between 1961 and 2018, the total amount of chickens worldwide increaed from 3,906,690 units to 23,707,134 units. A unit consists of 1000.  From 1964 to 2018, the number of turkeys increased from 204241	units in 1961 to  466787 units. However, there was not steady increase every year, with some years descreasing in total.
+
+*Please note I tried getting the data for 1961 & 2018 only, but had trouble doing so. I also struggled to get a list of "Items" or birds. I would like to know how to do this.
+
+
+
+```{r}
+
+birds %>%
+   select("Area", "Item", "Year", "Unit", "Value", "Flag Description") %>%
+  filter(Area == "World") %>%
+  summarize(Item, Year, Value) %>%
+  summarize(mean, `1960:1969`, `1970:1979`, `1980:1989`, `1990:1999`, `2000:2009`, `2010;2018)
+    
+  
+   
+  
+
+```
+
+## Provide Grouped Summary Statistics
+
+I was trying to get the summary of total amounts of chickens for each decade, but struggled to do so.
