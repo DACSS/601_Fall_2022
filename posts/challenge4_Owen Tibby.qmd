@@ -12,7 +12,6 @@ format:
 categories:
   - challenge_4
   - poultry_tidy
-  - Owen Tibby
 ---
 
 ```{r}
@@ -50,16 +49,13 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 ------------------------------------------------------------------------
 
-For my first attempt at this challenge, I'll be working with the poultry_tidy.csv data. 😎
+**For my first attempt at this challenge, I'll be working with the poultry_tidy.csv data. 😎**
 
 **Read in data: Method A**
 
 ```{r}
 #Reading in data (method A)
-#poultry_tidy <- read_excel("_data/poultry_tidy.xlsx")
-poultry_tidy <- read_excel("_data/poultry_tidy.xlsx", 
-    col_types = c("text", "numeric", "text", 
-        "numeric"))
+poultry_tidy <- read_excel("_data/poultry_tidy.xlsx")
 
 ptidy <- poultry_tidy
 
@@ -77,13 +73,13 @@ This is very useful when importing other file formats like .xlsx
 
 ### [*Briefly describe the data*]{.underline}
 
-\*\*The data in poultry_tidy represents the wholesaling to first receivers of 5 types of poultry products from 2004 to 2013. My analysis will detail several observances for price increases, missing values as well as the year-by-year totals for each poultry product.
+**The data in poultry_tidy represents the wholesaling to first receivers of 5 types of poultry products from 2004 to 2013.**
 
 \## [*Tidy Data (as needed)*]{.underline}
 
 [*Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.*]{.underline}
 
-**First, I want to explore how the data is stored/formatted in each column (character, mumeric, etc.). I want to ensure numeric fields are strictly numeric and character fields the same.**
+**First, I want to explore how the data is stored/formatted in each column (character, numeric, etc.). I want to ensure numeric fields are strictly numeric and character fields the same.**
 
 **From the summary() function I gather that only the *Price_Dollar* has NAs**.
 
@@ -97,47 +93,18 @@ distinct(Product, .keep_all = TRUE) %>% as.tibble()
 
 ```
 
-**Finding the specific products/ years that had NAs (I'll keep this saved in a variable just in case I want to access it later)**
+**Finding the specific products/ years that had NAs (i'll keep this save in a variable just in case I want to see this later)**
 
 ```{r}
-#Saving data with NAs
-poultry_tidy_raw <- poultry_tidy
-
-#Showing NAs
 na_poultry <- poultry_tidy[is.na(poultry_tidy$Price_Dollar),]
 print(na_poultry)
 
 ```
 
-Any additional comments?
-
-## [Identify variables that need to be mutated]{.underline}
-
-[Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?]{.underline}
-
-[Document your work here.]{.underline}
-
-**Mutating Price_Dollar (so that I can remove the NAs without a problem)**
+**Removing the the NAs. 7 records were removed and the data set updated.**
 
 ```{r}
-#Mutating Price_Dollar
-poultry_tidy <- poultry_tidy %>%
-mutate(Price_withNA = Price_Dollar)
-
-
-#Replacing NAs with 0
-# poultry_tidy <- poultry_tidy %>%
-# mutate(across(Price_Dollar, ~replace_na(.x,0)))
-# poultry_tidy
-
-
-
-```
-
-**Removing the the NAs. 7 records were removed**
-
-```{r}
- poultry_tidy <- na.omit(poultry_tidy,Price_Dollar)
+ poultry_tidy <- na.omit(poultry_tidy)
 summary(poultry_tidy)
 
 ```
@@ -150,51 +117,51 @@ PriceHikes <-poultry_tidy %>%
 select(Year, Product, Month, Price_Dollar) %>%
   group_by(Year) %>% 
 arrange(Product) %>%
-distinct(Price_Dollar, .keep_all = TRUE) %>% 
+distinct(Price_Dollar, .keep_all = TRUE)
+
+
+
+
+```
+
+The table above will show how the price to First Receivers increased and when it increased.
+
+```{r}
+
+#Pivot the data wider 
+poultry_tidy <-poultry_tidy %>% 
+pivot_wider(names_from= Month,  values_from= Price_Dollar) %>% 
+  group_by(Year) %>% 
   print()
 
 
-summary(PriceHikes)
-
-```
-
-The table and summary above shows how the price to First Receivers increased, when it increased and how many price hikes took place within the period (76).
-
-Now it may be useful to explore how we can simply the visualisation.
-
-```{r}
-#Replacing NAs with 0
-poultry_tidy <- poultry_tidy %>%
-mutate(across(Price_Dollar, ~replace_na(.x,0))) %>% 
-
-#Pivot Wider
-select(`Product`, `Year`, `Month`, `Price_Dollar`) %>% 
-  pivot_wider(names_from = "Month", values_from = "Price_Dollar") %>% 
-  tail() %>% 
-  print()
-
-
-
-```
-
-```{r}
-
-
-#Adding a Total Column
-poultry_tidy <- poultry_tidy %>%
-rowwise() %>% 
-  mutate(Total = sum(c_across(`January`: `December`))) %>% 
-print()
-
-```
-
-```{r}
 
 
 ```
 
 Any additional comments?
 
-Although this data set was not particularly challenging, it showed me that I need to revisit how to replace NAs.
+## [Identify variables that need to be mutated]{.underline}
 
-I noticed that even after replacing the NAs as Zeros, the total column is not summing. I am assuming it may be a parsing error.
+[Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?]{.underline}
+
+[Document your work here.]{.underline}
+
+**In my opinion, Price_Dollar could have been mutated in order to create a column free of NAs. However, I think there isn't much value in doing that in the poultry_tidy data set because of two main reasons:**
+
+1.  **Only 7 NA records out of 600**
+2.  **NA values were stored in a variable called na_poultry for access later on**
+
+**To do so, I would do as follows:**
+
+**I'll leave the mutation for more challenging data sets but the below code chunk would be how I go about it.**
+
+```{r}
+
+#poultry_tidy <- poultry_tidy %>% 
+#mutate(Price= Price_Dollar) %>% 
+#view(poultry_tidy)
+
+```
+
+Any additional comments?
