@@ -1,0 +1,117 @@
+---
+title: "Challenge 4 Adam Macaiszek"
+author: "Adam Maciaszek"
+desription: "More data wrangling: pivoting"
+date: "10/08/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+dataset <- data.frame()
+file_name <- "_data/debt_in_trillions.xlsx"
+dataset <- read_excel(file_name, sheet = 1)
+
+```
+
+### Briefly describing the data
+This data set is of different categories of data and thier amounts each quarter from 2003 to the second quarter of 2021. We do not know the country that this is for. The categories of debt are mortgage, HE revolving, auto, credit card student loan loan and other. Each of these categories has its own colmn and the values in is the amount of debt in trillions, there is also a column for the total debt for that quarter that year.
+```{r}
+print(head(dataset))
+```
+
+## Identify variables that need to be mutated
+
+Each data point is labeled by the year and the quarter. Using that information as well as when quarters end at least the values in America the start and end date of each quarter were calculated and put into their own column of data. 
+
+```{r}
+quarter_set <- function(input) {
+    thing <- str_split(input, ":", n = Inf, simplify = FALSE)
+    year <- paste("20",thing[[1]][1], sep="")
+    quarter <- thing[[1]][2]
+    if (quarter=="Q1") {
+        start <- paste(year, "/1/1", sep="")
+        stop <- paste(year, "/3/31", sep="")
+        return(c(start,stop)) }
+    else if (quarter=="Q2") {
+        start <- paste(year, "/4/1", sep="")
+        stop <- paste(year, "/6/30", sep="")
+        return(c(start,stop)) }
+    else if (quarter=="Q3") {
+        start <- paste(year, "/7/1", sep="")
+        stop <- paste(year, "/9/30", sep="")
+        return(c(start,stop)) }
+    else {
+        start <- paste(year, "/10/1", sep="")
+        stop <- paste(year, "/12/31", sep="")
+        return(c(start,stop)) }
+}
+Start_Date <- c()
+End_Date <- c()
+for (x in dataset$"Year and Quarter"){
+    Start_Date <- c(Start_Date,quarter_set(x)[1])
+    End_Date <- c(End_Date,quarter_set(x)[2])
+}
+dataset$start_base <- Start_Date
+dataset$end_base <- End_Date
+dataset$Year <- format(as.Date(dataset$start_base, format="%Y/%m/%d"), "%Y")
+dataset$Start_Date <- as.Date(dataset$start_base, format="%Y/%m/%d")
+dataset$End_Date <- as.Date(dataset$end_base, format="%Y/%m/%d")    
+dataset <- dataset %>% select(-start_base,-end_base,-Total,-"Year and Quarter")
+```
+## Tidy Data (as needed)
+Each of the different columns of debt need to be pivoted to one variable and Type Debt. 
+
+```{r}
+dataset <- dataset %>% 
+  pivot_longer(
+    cols= Mortgage:Other, 
+    names_to = "Type_Debt", 
+    values_to = "Amount")
+
+```
+## Tidy Data (as needed)
+```{r}
+ggplot(dataset, aes(x = End_Date, y = Amount, group=Type_Debt, color=Type_Debt)) + geom_line() +ggtitle("Mean Income Levels From (1967-2019)")
+```
+The mortgage accounts for such a high percent of the debt that it makes any of the other datapoints hard to see so an additional graph excluding it is below
+
+```{r}
+ggplot(subset(dataset, Type_Debt!="Mortgage"), aes(x = End_Date, y = Amount, group=Type_Debt, color=Type_Debt)) + geom_line() +ggtitle("Mean Income Levels From (1967-2019)")
+```
