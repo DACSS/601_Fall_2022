@@ -9,16 +9,18 @@ format:
     toc: true
     code-copy: true
     code-tools: true
+    df-print: paged
+    code-fold: true
 categories:
   - Theresa_Szczepanski
   - challenge_5
-  - railroads
-  - cereal
-  - air_bnb
-  - pathogen_cost
-  - australian_marriage
+ # - railroads
+#  - cereal
+#  - air_bnb
+#  - pathogen_cost
+#  - australian_marriage
   - public_schools
-  - usa_households
+#  - usa_households
 ---
 
 ```{r}
@@ -31,61 +33,454 @@ library(ggplot2)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
+## Public School Characteristics ⭐⭐⭐⭐ 
 
-## Challenge Overview
+::: panel-tabset
+### Read in the Data
 
-Today's challenge is to:
+On the read in, I deleted:
 
-1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
-2)  tidy data (as needed, including sanity checks)
-3)  mutate variables as needed (including sanity checks)
-4)  create at least two univariate visualizations
-   - try to make them "publication" ready
-   - Explain why you choose the specific graph type
-5)  Create at least one bivariate visualization
-   - try to make them "publication" ready
-   - Explain why you choose the specific graph type
+  - duplicates of the latitute/longitudinal coordinates `X`, `Y`
+ 
+  - `SURVYEAR` since we are only examining 2017-2018 survey
+  
+   - __I thought I should delete__: aggregate information that could be 
+   replicated: `TOTFRL`, `TOTMENR` `TOTFENR`, `TOTAL`, `Member`; 
+   __HOWEVER__, inspection of the median, range, and distribution of numeric 
+   variables in the summary indicates there are several mis-entries, (for example:
+   student to teacher ratio: `STUTERATIO` has a min = 0, med = 15.3, and max=22350.
+- Some of the aggregate categories might help me check for mis-entries.
 
-[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+On the read in, I factored the ordinal variables:
 
-(be sure to only include the category tags for the data you use!)
-
-## Read in data
-
-Read in one (or more) of the following datasets, using the correct R package and command.
-
--   cereal.csv ⭐
--   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
--   Australian Marriage ⭐⭐ 
--   AB_NYC_2019.csv ⭐⭐⭐
--   StateCounty2012.xls ⭐⭐⭐
--   Public School Characteristics ⭐⭐⭐⭐ 
--   USA Households ⭐⭐⭐⭐⭐
-
+  - `GSHI`, `GSLO`, `SCHOOL_LEVEL`, and `ULOCALE`
+  
 ```{r}
+#Work done to determine what to filter/recode on read in
+ # PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+ #  select(-c("X", "Y","OBJECTID" ,"SURVYEAR"))
+
+#Aggregate variables I would have filtered if I wasn't concerned about mis-entries:
+#"TOTFRL", "TOTMENROL", "TOTFENROL", "MEMBER", "TOTAL"
+
+# Identify Levels for Factoring Ordinal Variables
+# #ULOCALE
+# PublicSchools_2017%>%
+#   select(ULOCALE)%>%
+#   unique()
+# #GSLO
+# PublicSchools_2017%>%
+#   select(GSLO)%>%
+#   unique()
+# #GSLHI
+# PublicSchools_2017%>%
+#   select(GSHI)%>%
+#   unique()
+# #SCHOOL_LEVEL
+# PublicSchools_2017%>%
+#   select(SCHOOL_LEVEL)%>%
+#   unique()
+
+#Recode all ordinal variable as factors
+
+PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+  select(-c("X", "Y","OBJECTID" ,"SURVYEAR")) %>%
+  mutate(ULOCALE = recode_factor(ULOCALE,
+                                   "11-City: Large" = "City: Large",
+                                    "12-City: Mid-size" = "City: Mid-size",
+                                    "13-City: Small" = "City: Small",
+                                    "21-Suburb: Large"= "Suburb: Large",
+                                   "22-Suburb: Mid-size"= "Suburb: Mid-size",
+                                   "23-Suburb: Small" = "Suburb: Small",
+                                   "31-Town: Fringe" = "Town: Fringe",
+                                   "32-Town: Distant" = "Town: Distant",
+                                   "33-Town: Remote" = "Town: Remote",
+                                   "41-Rural: Fringe" = "Rural: Fringe",
+                                   "42-Rural: Distant" = "Rural: Distant",
+                                   "43-Rural: Remote" = "Rural: Remote",
+                                  .ordered = TRUE))%>%
+    mutate(SCHOOL_LEVEL = recode_factor(SCHOOL_LEVEL,
+                                   "Prekindergarten" = "Prekindergarten",
+                                    "Elementary" = "Elementary",
+                                    "Middle" = "Middle",
+                                    "Secondary"= "Secondary",
+                                   "High"= "High",
+                                   "Ungraded" = "Ungraded",
+                                   "Other" = "Other",
+                                   "Not Applicable" = "Not Applicable",
+                                   "Not Reported" = "Not Reported",
+                                  .ordered = TRUE))%>%
+    mutate(GSLO = recode_factor(GSLO,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))%>%
+    mutate(GSHI = recode_factor(GSHI,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "13" = "13",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))
+  
+  
+  PublicSchools_2017
+  
+  
+    
 ```
 
+::: panel-tabset
 ### Briefly describe the data
+The `PublicSchools_2017` data frame consists of data from selected questions 
+from the [2017-208 National Teachers and Principals Survey](https://nces.ed.gov/surveys/ntps/question1718.asp)
+conducted by the United States Census Board and is "a system of related 
+questionnaires that provide descriptive data on the context of public and 
+private elementary and secondary education in addition to giving local, state, 
+and national policymakers a variety of statistics on the condition of education 
+in the United States."
 
-## Tidy Data (as needed)
+Our data frame consists of a subset of the items surveyed from 100729 schools across 
+the United States. The 75 variables contain information from the following categories:
 
-Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+Geographic Location of the School
+
+- State, town, and address
+- Level of Urbanization (rural, town, city, etc.)
+
+
+Characteristics of the School design:
+
+- Charter, Magnet, Traditional Public, 
+- Virtual/non
+- Highest and Lowest Grade levels served and number of students per grade level.
+- Level of School: Elementary, Middle, Secondary, Adult Ed., etc.
+- Type of School: Alternative, Regular school, Special education school, or
+ Vocational school
+ - Status of the school when surveyed (new, change of leadership, operational, etc.)
+- Student to Teacher Ratio
+- If the school has Title 1 status
+
+
+Demographic Characteristics of the student body:
+
+- Number of students of given ethnic backgrounds by gender (M/F only)
+
+Socioeconomic Characteristics of the student body:
+
+- Number of students qualifying for free or reduced lunch.
+
+## Questions for Further Review
+
+What are the following variables?
+
+  - `G13`
+  - `AS`
+  - `UG`: Ungraded (School level)
+  - `AE`: Adult Education (School level)
+  - `FTE`
+  - `STATUS`
+  
+Why did the original `Member` have 2944 distinct values while `total` had 2944?
+
+### Data Summary
+
+```{r}
+
+# examine the summary to decide how to best set up our data frame
+
+ print(summarytools::dfSummary(PublicSchools_2017,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+:::
+
+### Tidy Data (MUCH WORK LEFT HERE)
+
+Because we have survey data, we will have a relatively wide data frame, and will 
+have to make use of `select` and `group by` when making summaries or 
+visualizations.
+
+The `ULOCALE` variable needed to be recoded as an ordinal variable with levels 
+in order to have the bars appear in the appropriate order for our visualization.
+
+Upon closer inspection, it turns out that there are several numeric variables with
+data mis-entered:
+
+- The number of students with Free or Reduced lunch cannot be negative
+
+- Student to Teacher Ratio cannot exceed 100 (yet there entries in 600 and even 2350)
+
+- How should these values be recoded, so we can still use the information for a given 
+school but not throw off our summary statistics or visual representations?
+
+- The min, median, max values are suspicious for several of the numeric entries. 
+If I had more time, I would consider each variable, what I know about it in context, 
+and take advantage of mean/sd or median and IQR to replace likely mis-entries with N/A
+
+- I used the code below to remove the most extreme cases from our calculations based 
+on the logical bounds of a ratio and count of students as well as knowledge of 
+classroom sizes in the US.
+
+```{r}
+PublicSchools_2017<-PublicSchools_2017%>%
+  mutate(FRELCH = replace(FRELCH, which(FRELCH<0), NA))%>%
+  mutate(REDLCH = replace(REDLCH, which(REDLCH<0), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO>45), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO<1), NA))
+           
+
+  
+
+```
+### Univariate Visualizations
+
+I chose to visualize the `ULOCALE` using a `geom_bar` since it was an ordinal 
+variable. Before, creating the bar chart, I factored and ordered the values 
+for each of the urbanization classifications from the survey. Because the variable
+names were rather long, I "flipped" the orientation of the chart to horizontal in 
+order to make the names easier to read.
+
+It is striking to see how there are many more __Large Suburban Schools__
+in our country, relative to the other urbanization levels.
+
 
 ```{r}
 
 
+# Bar Chart School Level
+
+ggplot(PublicSchools_2017, aes(ULOCALE)) + 
+  geom_bar(fill="#404080", color="#e8ecef", alpha=0.9) +
+  #geom_bar(stat="identity", width=2) + 
+  scale_fill_manual("legend", values = c("City: Large" = "blue", 
+                                         "City: Mid-Size" = "blue", 
+                                         "City: Small" = "blue")) +
+  theme_minimal() +
+  labs(title = "Urbanization Level US Teacher and Principals Survey SY2017-2018", 
+       y = "Number of Schools", x = "Urbanization Level") +
+  coord_flip()
+# Perhaps histogram of urban status
+
 ```
 
-Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
-
-Document your work here.
+Are most schools classified as suburban? To answer this question, I collapsed the 
+Rural, City, Town, and Suburban categories and created a second chart. While, there
+are still the most suburban schools represented, one can see that the majority of 
+US public schools are either located in Suburban, City, or Rural regions.
 
 ```{r}
 
+Urbanization <-PublicSchools_2017%>%
+  select(ULOCALE)%>%
+   mutate(UrbBroad = ifelse(str_detect(ULOCALE,"Rural"), 
+                           "Rural", 
+                      ifelse(str_detect(ULOCALE, "Town"),"Town", 
+                      ifelse(str_detect(ULOCALE, "Suburb"),"Suburb",       
+                      ifelse(str_detect(ULOCALE, "City"),"City",     
+                             ULOCALE)))))%>%
+  mutate(UrbBroad = recode_factor(UrbBroad,
+                                  "Rural" = "Rural",
+                                  "Town" = "Town",
+                                  "Suburb" = "Suburb",
+                                  "City" = "City",
+                                  .ordered = TRUE))
+  
+   
+   
+ Urbanization
+
+# Bar Broader Urbanization Level
+
+ggplot(Urbanization, aes(UrbBroad)) + 
+  geom_bar(fill="#404080", color="#e8ecef", alpha=0.9) +
+  #geom_bar(stat="identity", width=2) + 
+  theme_minimal() +
+  labs(title = "Urbanization Level US Teacher and Principals Survey SY2017-2018", 
+       y = "Number of Schools", x = "Urbanization Level") 
+  #coord_flip()
 ```
 
-## Univariate Visualizations
+I decided to use a histogram to to visualize the distribution of the student to 
+teacher ratio in schools across the country. From this we 
+can have an idea of the distribution of class sizes across the United States. We
+ see a symmetric distribution with most frequent ratio being between 15-16 students
+ per teacher.
+ 
+ 
+ 
+
+```{r}
+
+ggplot(PublicSchools_2017, aes(x = STUTERATIO)) +
+  geom_histogram(fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+  theme_minimal() +
+
+  labs(title = "Student to Teacher Ratio US Teacher and Principals Survey SY2017-2018",
+       y = "Number of Schools", x = "Student to Teacher Ratio")
 
 
-## Bivariate Visualization(s)
-Any additional comments?
+```
+ One might consider if the distribution of the student to teacher ratio is different
+ based on the urbanization level of a school, i.e. "Are students in City Schools 
+ more likely to be in crowded classrooms?". I would like to produce a more advanced plot, where I see 4 histograms side by side where I group this data by Rural/Town/Suburban/City Urban level.
+ 
+ Here we can see that all urban levels seem to have the most schools with 
+ a student to teacher between 14-16 BUT urban and suburban schools show a left skew, 
+ and have a higher proportion of schools with a student to teacher ratio greater 
+ than 16.
+```{r}
+
+Urban_Ratio <-PublicSchools_2017%>%
+  select(ULOCALE, STUTERATIO)%>%
+   mutate(UrbBroad = ifelse(str_detect(ULOCALE,"Rural"), 
+                           "Rural", 
+                      ifelse(str_detect(ULOCALE, "Town"),"Town", 
+                      ifelse(str_detect(ULOCALE, "Suburb"),"Suburb",       
+                      ifelse(str_detect(ULOCALE, "City"),"City",     
+                             ULOCALE)))))%>%
+  mutate(UrbBroad = recode_factor(UrbBroad,
+                                  "Rural" = "Rural",
+                                  "Town" = "Town",
+                                  "Suburb" = "Suburb",
+                                  "City" = "City",
+                                  .ordered = TRUE))
+  
+  
+   
+   
+ Urban_Ratio
+
+ggplot(Urban_Ratio, aes(x = STUTERATIO)) + 
+  geom_histogram( fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+  labs(title = "Student to Teacher Ratio by Urbanization Level", y = "Number of Schools",
+       x = "Student to Teacher Ratio") + 
+  theme_minimal() +
+  facet_wrap(vars(UrbBroad))
+
+```
+## Questions
+
+How do I change the colors of individual bars in my first chart so that all of the 
+"City Bars" were one color, "Suburban Bars" another, and "Rural Bars" another.
+
+When I originally tried to create this histogram, I noticed that the bin-sizes 
+ were off. It turns out that there are some mis-entries in the `STUTERATIO` column.
+ Notably: a school with a STUTERATIO of 677.36 and another with a ratio of 22350.
+ These are clearly mis-entries. What would be the best way to re-code these? I used 
+ some knowledge of percents and classroom size to filter the values.
+ 
+ If I don't have background knowledge, should I use the Median/IQR, or iteratively 
+ use the Mean/3SD to remove outliers?
+ 
+
+(leaving this link here for future reference)
+[R Graph Gallery](https://r-graph-gallery.com/) 
+
+
+### Bivariate Visualization(s)
+
+I chose to visualize the percentage of students qualifying for either free or 
+reduced lunch at a school against the student to teacher ratio. I was curious to 
+see if there appears to be an association between socio-economic status of the 
+student body of a schoo and the student to teacher ratio. When examining the values
+of `FRELCH` and `REDLCH` in the summary, I realized there were several apparent 
+mis-entries. Before producing the scatter plot, I first attempted to filter out 
+data mis-entries.
+
+```{r}
+# Comparing Student Teacher Ratio to Free Reduced Lunch Ratio and removing 
+FRED_Lunch_Teach <-PublicSchools_2017%>%
+  select(FRELCH, STUTERATIO, REDLCH, TOTAL )%>%
+  mutate(Ratio_FRED_LCH = (FRELCH + REDLCH)/TOTAL*100)%>%
+  mutate(Ratio_FRED_LCH = replace(Ratio_FRED_LCH, which(Ratio_FRED_LCH>75), NA))%>%
+  mutate(Ratio_FRED_LCH = replace(Ratio_FRED_LCH, which(Ratio_FRED_LCH<0), NA))
+  
+FRED_Lunch_Teach
+ 
+
+ggplot(FRED_Lunch_Teach, aes(x=Ratio_FRED_LCH, y=STUTERATIO)) + 
+     geom_point(size = .05, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "Free or Reduced Lunch Ratio vs. Student Teacher Ratio US Public Schools 2017-2018", y = "Student Teacher Ratio",
+       x = "Free/Reduced Lunch Ratio") +
+  theme_minimal()
+  
+
+   
+```
+
+I also produced a scatter plot of Hispanic Male pop vs. Hispanic Female pop. in schools. This is not interesting from an analysis perspective; I performed this as a sanity check for myself to see if my graph showed a strong linear correlation.
+
+```{r}
+# Comparing Number of Hispanic Male Students to Hispanic Female Students
+
+ggplot(PublicSchools_2017, aes(x=HPALM, y=HPALF)) + 
+     geom_point(size=.65, color="#69b3a2" )+ 
+    geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "Hispanic Males vs. Hispanic Females Population US Public Schools 2017-2018", y = "Hispanic Female Students",
+       x = "Hispanic Male Students") +
+  theme_minimal()
+
+
+   
+```
+
+
+```{r}
+# testing cross tabs
+#xtabs(~ GSLO + GSHI, PublicSchools_2017)
+
+```
+
+
+
+### Fun Mapping Visualization
+Since this data set had latitude and longitudinal data for the geographic locations
+of the schools, it would be great to practice making a map with the info.
+```{r}
+
+#PublicSchools_2017MAP<- st_as_sf(PublicSchools_2017, coords = c("LONCOD", "LATCOD"),  crs = 4326)
+
+```
+## Questions
+
+How do I get the mapping visualization to work?
+
+
+:::
