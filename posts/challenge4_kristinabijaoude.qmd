@@ -1,0 +1,146 @@
+---
+title: "Challenge 4 Kristin Abijaoude"
+author: "Meredith Rolfe"
+desription: "More data wrangling: pivoting"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - kristin_abijaoude
+  - challenge4
+  - challenge_4
+  - fed_rates
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+```{r}
+fedfunds <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FedFundsRate.csv")
+```
+
+### Briefly describe the data
+
+Today, we are going to analyze the Federal Funds Rate dataset.
+
+Before I get into the dataset itself, let's first learn about what federal fund rates are. According to Investopedia and Business Insider, federal funds rates are rates that banks and credit unions charge each other before borrowing on an non-collateral basis (in other words, as an unsecured loan). The target rates are set by the Federal Open Market Committee, the policymaking body of the Federal Reserve System. This is essential to stabilize economic growth in the US.
+
+In other words, when there is too much growth, the FOMC raise interest rates, which discourages spending, borrowing, and investing; and therefore, reduce inflation and bring economic growth under control.
+
+On the other hand, the FOMC lowers interest rates to encourage spending, borrowing, and investing in order to expand economic power. However, when rates are too low, that opens the door to out-of-control inflation, which leads to reduce purchasing power and undermining economic growth.
+
+In addition to federal funds rates, this dataset also measures inflation rates, unemployment rates, and changes in real GDP in percentages as well.
+
+```{r}
+#First, let's dissect the dataset itself
+#dimentions
+dim(fedfunds)
+#[904 rows] x [8 columns]
+
+#number of columns
+ncol(fedfunds)
+#8 columns
+
+#number of rows
+nrow(fedfunds)
+#904 rows
+
+#names of columns
+colnames(fedfunds)
+
+#summary of fedfunds.csv
+summary(fedfunds)
+```
+
+## Tidy Data (as needed)
+
+### Create the date variable with unite () command
+
+```{r}
+#unite year, month, and day column to create a single column for date
+library(tidyr)
+fedfunds <- unite(fedfunds, `Year`, `Month`, `Day`, col = "Date YYYY/MM/DD", sep = "/")
+fedfunds
+```
+
+### Fill in NAs with is.na() command
+
+Here, I fill in the NAs with various values that I believe would make sense to the reader as well as myself. For example, I replace the NAs with the mean (average) in the following variables: federal funds target rate, unemployment rate, and inflation rate. Meanwhile, I replace the NAs with the highest or lowest value in upper and lower federal funds rate columns, as well as real GDP change. I specified the value replacing the NAs in the chunk below.
+
+```{r}
+#find the mean of federal funds target rate
+mean.fedtarget <- mean(fedfunds$`Federal Funds Target Rate`, na.rm = TRUE)
+
+#the mean
+mean.fedtarget
+#[1] 5.658415 %
+
+#replace NAs with the mean
+fedfunds$`Federal Funds Target Rate`[is.na(fedfunds$`Federal Funds Target Rate`)]<-mean.fedtarget
+
+#replace NAs in upper federal funds target rate with 1
+fedfunds$`Federal Funds Upper Target`[is.na(fedfunds$`Federal Funds Upper Target`)] <-1 
+
+#replace NAs in lower federal funds target rate with 0
+fedfunds$`Federal Funds Lower Target`[is.na(fedfunds$`Federal Funds Lower Target`)] <-0
+
+#replace NAs in real GDP change with 0
+fedfunds$`Real GDP (Percent Change)`[is.na(fedfunds$`Real GDP (Percent Change)`)] <-0
+
+#find the mean of unemployment rate
+mean.unemploy <- mean(fedfunds$`Unemployment Rate`, na.rm = TRUE)
+
+#the mean
+mean.unemploy
+#[1] 5.979122 %
+
+#replace NAs in unemployment rate with the mean
+fedfunds$`Unemployment Rate`[is.na(fedfunds$`Real GDP (Percent Change)`)] <- mean.unemploy
+
+#find the mean of inflation rate
+mean.inflation <- mean(fedfunds$`Inflation Rate`, na.rm = TRUE)
+
+#the mean
+mean.inflation
+#3.73338 %
+
+#replae NAs in inflation with mean
+fedfunds$`Inflation Rate`[is.na(fedfunds$`Inflation Rate`)] <- mean.inflation
+
+#sanity check!
+view(fedfunds)
+```
+
+```{r}
+fedfundrates <-fedfunds %>% pivot_longer(cols=c(`Effective Federal Funds Rate`, `Real GDP (Percent Change)`,`Inflation Rate`, `Unemployment Rate`),
+                    names_to='Factor',
+                    values_to='Rate in percentage')%>%
+  select(-c(`Federal Funds Target Rate`, `Federal Funds Upper Target`, `Federal Funds Lower Target`))
+
+view(fedfundrates)
+```
+
+When I pivot the columns, I end up with 3616 rows!
+
+```{r}
+nrow(fedfundrates)
+```
+
+Sources:
+
+https://www.investopedia.com/terms/f/federalfundsrate.asp
+
+https://www.businessinsider.com/personal-finance/what-is-the-federal-funds-rate
