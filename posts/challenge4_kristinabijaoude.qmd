@@ -1,8 +1,8 @@
 ---
-title: "Kristin Abijaoude Challenge 4"
-author: "Kristin Abijaoude"
+title: "Challenge 4 Kristin Abijaoude"
+author: "Meredith Rolfe"
 desription: "More data wrangling: pivoting"
-date: "10/04/2022"
+date: "10/12/2022"
 format:
   html:
     toc: true
@@ -10,12 +10,10 @@ format:
     code-copy: true
     code-tools: true
 categories:
+  - kristin_abijaoude
+  - challenge4
   - challenge_4
-  - abc_poll
-  - eggs
   - fed_rates
-  - hotel_bookings
-  - debt
 ---
 
 ```{r}
@@ -28,114 +26,130 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Challenge Overview
-
-Today's challenge is to:
-
-1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
-2)  tidy data (as needed, including sanity checks)
-3)  identify variables that need to be mutated
-4)  mutate variables and sanity check all mutations
-
 ## Read in data
 
-Read in one (or more) of the following datasets, using the correct R package and command.
-
--   abc_poll.csv ⭐
--   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
--   FedFundsRate.csv⭐⭐⭐
--   hotel_bookings.csv⭐⭐⭐⭐
--   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
-
 ```{r}
-#| label: Reading the Dataset
-fedfunds <-read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FedFundsRate.csv")
-
-  
+fedfunds <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FedFundsRate.csv")
 ```
 
-Today, we will be analyzing FedFundsRate.csv dataset, a dataset that lists the federal fund rates from 1955 to 2017. According to Investopedia and Business Insider, federal fund rates are interest rates banks and credit unions lend and borrow their excess reserves to each other overnight. They are very crucial in balancing the US economy; lower rates can stimulate economic growth, but can reduce purchasing power by increased inflation, while higher rates can stabilize growth but can discourage borrowers and investors. Data including GDP growth, inflation, and unemployment rates are also accounted in the dataset.
+### Briefly describe the data
 
-You can tell that there is a lot of missing data, or NAs, in this datset, so we must tidying it up as much as possible to create legible information.
+Today, we are going to analyze the Federal Funds Rate dataset.
+
+Before I get into the dataset itself, let's first learn about what federal fund rates are. According to Investopedia and Business Insider, federal funds rates are rates that banks and credit unions charge each other before borrowing on an non-collateral basis (in other words, as an unsecured loan). The target rates are set by the Federal Open Market Committee, the policymaking body of the Federal Reserve System. This is essential to stabilize economic growth in the US.
+
+In other words, when there is too much growth, the FOMC raise interest rates, which discourages spending, borrowing, and investing; and therefore, reduce inflation and bring economic growth under control.
+
+On the other hand, the FOMC lowers interest rates to encourage spending, borrowing, and investing in order to expand economic power. However, when rates are too low, that opens the door to out-of-control inflation, which leads to reduce purchasing power and undermining economic growth.
+
+In addition to federal funds rates, this dataset also measures inflation rates, unemployment rates, and changes in real GDP in percentages as well.
 
 ```{r}
-nrow(fedfunds)
+#First, let's dissect the dataset itself
+#dimentions
+dim(fedfunds)
+#[904 rows] x [8 columns]
 
+#number of columns
 ncol(fedfunds)
+#8 columns
 
+#number of rows
+nrow(fedfunds)
+#904 rows
+
+#names of columns
 colnames(fedfunds)
 
-dim(fedfunds)
-```
-
-
-```{r}
+#summary of fedfunds.csv
 summary(fedfunds)
 ```
 
-## Identify variables that need to be mutated
+## Tidy Data (as needed)
 
-I'm going to fix the date since they're all numerical. I am going to use the muttate command (), along with a lubridate command called date(), to combine multiple columns in one. The date format is YYYY/MM/DD. I replaced the Year, Month, and Day columns with the new date column with the select(-c()) command. Since the new date column was the last column, I moved it to the far left as the first column with relocate().
+### Create the date variable with unite () command
 
 ```{r}
-# mutate date
-library(lubridate)
-library(dplyr)
-fedfunds <- fedfunds%>%
-  mutate(date = str_c(Year, Month, Day, sep="-"),
-         date = ymd(date))%>%
-  select(-c(Year, Month, Day))
-fedfunds <- fedfunds %>% relocate(date, .before = "Federal Funds Target Rate")
-
-#sanity check
-view(fedfunds)
-
-#sanity check take two
-colnames(fedfunds)
+#unite year, month, and day column to create a single column for date
+library(tidyr)
+fedfunds <- unite(fedfunds, `Year`, `Month`, `Day`, col = "Date YYYY/MM/DD", sep = "/")
+fedfunds
 ```
 
-Second, I am going to fill in the missing data (NAs) by calculating the mean of each variable, then replacing the NAs with the respective final answers: 
+### Fill in NAs with is.na() command
 
-Average Unemployment Rate: 5.979122 %
-Average Inflation Rate: 3.73338 %
-Average Effective Federal Fund Rate: 4.910997 %
-
-I use view() to check my work.
+Here, I fill in the NAs with various values that I believe would make sense to the reader as well as myself. For example, I replace the NAs with the mean (average) in the following variables: federal funds target rate, unemployment rate, and inflation rate. Meanwhile, I replace the NAs with the highest or lowest value in upper and lower federal funds rate columns, as well as real GDP change. I specified the value replacing the NAs in the chunk below.
 
 ```{r}
-# Fill in missing data with the mean 
-mean_unemployment <- mean(fedfunds$`Unemployment Rate`, na.rm = TRUE)
-fedfunds$`Unemployment Rate`[is.na(fedfunds$`Unemployment Rate`)] <- mean_unemployment
+#find the mean of federal funds target rate
+mean.fedtarget <- mean(fedfunds$`Federal Funds Target Rate`, na.rm = TRUE)
 
-mean_inflation <- mean(fedfunds$`Inflation Rate`, na.rm = TRUE)
-fedfunds$`Inflation Rate`[is.na(fedfunds$`Inflation Rate`)] <-mean_inflation
+#the mean
+mean.fedtarget
+#[1] 5.658415 %
 
-mean_effective_rate <- mean(fedfunds$`Effective Federal Funds Rate`, na.rm = TRUE)
-fedfunds$`Effective Federal Funds Rate`[is.na(fedfunds$`Effective Federal Funds Rate`)] <-mean_effective_rate
+#replace NAs with the mean
+fedfunds$`Federal Funds Target Rate`[is.na(fedfunds$`Federal Funds Target Rate`)]<-mean.fedtarget
 
-# In these cases, I filled the change in certain columns with specific numbers 
-Target_Rate <- c(1)
-fedfunds$`Federal Funds Target Rate`[is.na(fedfunds$`Federal Funds Target Rate`)] <- Target_Rate
+#replace NAs in upper federal funds target rate with 1
+fedfunds$`Federal Funds Upper Target`[is.na(fedfunds$`Federal Funds Upper Target`)] <-1 
 
-# Use 0 to represent no change in GDP
-GDP_missing <- c(0)
-fedfunds$`Real GDP (Percent Change)`[is.na(fedfunds$`Real GDP (Percent Change)`)] <- GDP_missing 
- 
-# Use 0 to represent lowest lower target rate
-Lower_Rate <- c(1)
-fedfunds$`Federal Funds Lower Target`[is.na(fedfunds$`Federal Funds Lower Target`)] <-Lower_Rate
+#replace NAs in lower federal funds target rate with 0
+fedfunds$`Federal Funds Lower Target`[is.na(fedfunds$`Federal Funds Lower Target`)] <-0
 
-#Use 1 to represent the highest upper target rate
-Upper_Rate <- c(1)
-fedfunds$`Federal Funds Upper Target`[is.na(fedfunds$`Federal Funds Upper Target`)] <- Upper_Rate
+#replace NAs in real GDP change with 0
+fedfunds$`Real GDP (Percent Change)`[is.na(fedfunds$`Real GDP (Percent Change)`)] <-0
 
-# Sanity check
+#find the mean of unemployment rate
+mean.unemploy <- mean(fedfunds$`Unemployment Rate`, na.rm = TRUE)
+
+#the mean
+mean.unemploy
+#[1] 5.979122 %
+
+#replace NAs in unemployment rate with the mean
+fedfunds$`Unemployment Rate`[is.na(fedfunds$`Real GDP (Percent Change)`)] <- mean.unemploy
+
+#find the mean of inflation rate
+mean.inflation <- mean(fedfunds$`Inflation Rate`, na.rm = TRUE)
+
+#the mean
+mean.inflation
+#3.73338 %
+
+#replae NAs in inflation with mean
+fedfunds$`Inflation Rate`[is.na(fedfunds$`Inflation Rate`)] <- mean.inflation
+
+#sanity check!
 view(fedfunds)
 ```
 
+```{r}
+fedfundrates <-fedfunds %>% pivot_longer(cols=c(`Effective Federal Funds Rate`, `Real GDP (Percent Change)`,`Inflation Rate`, `Unemployment Rate`),
+                    names_to='Factor',
+                    values_to='Rate in percentage')%>%
+  select(-c(`Federal Funds Target Rate`, `Federal Funds Upper Target`, `Federal Funds Lower Target`))
+
+view(fedfundrates)
+```
+
+When I pivot the columns, I end up with 3616 rows!
 
 ```{r}
-# Libraries
+nrow(fedfundrates)
+```
+
+## Visualize the Data
+
+```{r}
 library(ggplot2)
+
+# make multiple line graph
 ```
 
+
+Sources:
+
+https://www.investopedia.com/terms/f/federalfundsrate.asp
+
+https://www.businessinsider.com/personal-finance/what-is-the-federal-funds-rate
