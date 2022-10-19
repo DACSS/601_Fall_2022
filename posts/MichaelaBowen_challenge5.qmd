@@ -1,0 +1,146 @@
+---
+title: "Challenge 5"
+author: "Michaela Bowen"
+description: "Introduction to Visualization"
+date: "10/19/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - Work Data
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+In today's Challenge I've attempted to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+
+::: {.panel-tabset}
+## Read in and tidy data
+
+Below I have ready in a two week transaction period of cannabis sales at the local dispensary. 
+
+On the Read in I have: 
+*Renamed several variables to "delete" as they will not be used in our analysis and thus ignored
+*selected only the columns with information 
+
+
+-   Inventory Transactions 9/22/22-10/5/22
+
+```{r}
+
+#Read in Excel Data
+transactions_9_22_2022_10_5_2022 <- read_excel("_data/Inventory Transactions 9_22_2022-10_5_2022.xlsx", 
+    skip = 5,
+    col_names = c("delete","product","delete","patient_name","transaction_date","qty_sold","daily_allottment_oz","weight_grams","cost","price","owner_name","owner_location","vendor","sold_by","receipt_no","delete","delete","delete","delete","delete"))%>%
+  select(!contains("delete"))
+
+
+
+```
+
+
+## Briefly describe the data
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+#mutating date field and formatting as a date
+transactions_9_22_2022_10_5_2022 <- transactions_9_22_2022_10_5_2022%>%
+  mutate(
+    date = as.Date(transaction_date),
+    hour = hour(transaction_date),
+    minute = minute(transaction_date),
+    second = second(transaction_date))%>%
+  mutate(
+    format_date = format(date, "%m/%d/%Y"),
+    format_hour = paste(hour, minute, second, sep = ":")
+  )%>%
+#pulling the category abbreviation to determine category and create a category column
+  mutate(
+    category = substr(product,1,3)
+  )%>%
+  mutate(
+    category_names = case_when(
+      category == "FLO" ~ "Flower",
+      category == "PRJ" ~ "Joint",
+      category == "EDI" ~ "Edible",
+      category == "MIP" ~ "Marijuana Infused Product",
+      category == "CON" ~ "Concentrate",
+      category == "VAP" ~ "Vaporizer",
+      category == "ACC" | category == "Pax" | category == "Hig" | category == "Bov" ~ "Accessories",
+      category == "CLO" | category == "Res" ~ "Clothing",
+      category == "HTC" ~ "HTCC Promotion",
+      category == "SAM" ~ "Samples",
+      category == "TOP" ~ "Topical"
+      
+    )
+  )
+```
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+#ensuring that the category, and category names columns contain no NA values and accurately 
+unique(transactions_9_22_2022_10_5_2022$category_names)
+unique(transactions_9_22_2022_10_5_2022$category)
+```
+
+## Univariate Visualizations
+```{r}
+
+#univariate visualization of the categories
+ggplot(data = transactions_9_22_2022_10_5_2022, mapping = aes(category_names), size = 1) +
+  geom_bar() +
+  ylim(0, NA) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+  ylab("Number") +
+  xlab("Categories")+
+  ggtitle("Sale Number by Category")
+```
+
+## Bivariate Visualization(s)
+```{r}
+ggplot(data = transactions_9_22_2022_10_5_2022, mapping = aes(x = date, y = category_names), size = 1) +
+  geom_violin() +
+  theme(legend.title=element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+  ylab("Cannabis Categories") +
+  scale_x_date(date_labels="%b %d", breaks = unique(transactions_9_22_2022_10_5_2022$date)) +
+  ggtitle("Categorical Volume Sales by date")
+```
+:::
