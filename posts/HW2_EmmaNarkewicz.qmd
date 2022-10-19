@@ -1,0 +1,174 @@
+---
+title: "Homework 2"
+author: "Emma Narkewicz"
+description: "Reading in, cleaning, tidying, and describing Medicaid Spending by Drug data set"
+date: "10/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - emma_narkewicz
+  - medicaid_spending_by_drug
+  - centers_for_medicare_and_medicaid_services
+  
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+::: panel-tabset
+
+## Read in Data
+
+I chose to read in the "Medicaid Spending by Drug" data set from the Center's for Medicare and Medicaid Services (CMS) website. I selected this data-set for several reasons. First, I'm passionate about health policy and the price of pharmaceuticals in the U.S. is exorbitant. Additionally, the data set is a reasonable size to work with, with 15,972 rows and 36 columns. Lastly, the data set is challenging to work with as it requires a thorough application of data wrangling techniques I've learned so far in this class. There are many columns that need to be removed or consolidated, dates that need to be separated from column headers, and summary rows and columns that must be dealt with.
+
+When reading in the data, I chose to remove the 12 columns containing averages, as those can be recalculated. Additionally, I chose to remove the 5 columns containing outlier flags for each of the 5 years between 2016 - 2020. These flags indicated when a drug's average spending per dosage unit were significantly impacted by an outlier. I will keep an eye out for outliers in future analysis, but will remove these columns to more easily view the data.
+
+Finally, I renamed several variables during the read in step to make future wrangling easier. I renamed "Tot_Mftr" to "Mfters_Count" to be able to sort for totals without selecting this column. I also renamed all the total spending, total claims, and total dosage unit column numbers so there was only 1 underscore before the date. This will be important for separating out years.
+
+```{r}
+#Read In the Data
+Medicaid_Drug_Data <- read_csv("/Users/Emma/Desktop/Koding is Kewl/Medicaid_Spending_by_Drug_2020.csv") %>%
+   select(!contains("Avg")) %>%
+   select(!contains("Flag")) %>%
+  rename("Mftrs_Count" = "Tot_Mftr", "TotSpndng_2016" = "Tot_Spndng_2016", "TotDsgUnts_2016" = "Tot_Dsg_Unts_2016", "TotClms_2016" = "Tot_Clms_2016", "TotSpndng_2017" = "Tot_Spndng_2017", "TotDsgUnts_2017" = "Tot_Dsg_Unts_2017", "TotClms_2017" = "Tot_Clms_2017", "TotSpndng_2018" = "Tot_Spndng_2018", "TotDsgUnts_2018" = "Tot_Dsg_Unts_2018", "TotClms_2018" = "Tot_Clms_2018", "TotSpndng_2019" = "Tot_Spndng_2019", "TotDsgUnts_2019" = "Tot_Dsg_Unts_2019", "TotClms_2019" = "Tot_Clms_2019", "TotSpndng_2020" = "Tot_Spndng_2020", "TotDsgUnts_2020" = "Tot_Dsg_Unts_2020", "TotClms_2020" = "Tot_Clms_2020") 
+  
+
+  Medicaid_Drug_Data
+
+```
+
+
+## Clean & Tidy the Data Set
+
+While the majority of the columns are totals, they represent annual total spending, dosage units, and claims for a specific drug manufactured by a specific manufacturer. Currently, there is a row for every manufacturer of a drug an an "Overall" row that provide per drug measures by combining the data from every manufacturer of the drug. In the  "Mftrs_count" column, the total number of manufacturers for any given drug is only contained in the "Overall row", with a Mftrs_count of 1 for every individual manufacturer row .
+
+Outside of the total number of manufacturers, these Overall rows can be recreated from the rest of the data. Before removing them, I created a new column called "Number_Mftrs" that contained manufacturer count whenever the manufacturer column contained "Overall". I then filled the number of manufacturers, so for every drug you can see the total number of manufacturers. I then removed the original Mftrs_Count column using select() and the Overall rows using filter().
+
+
+```{r}
+
+#Separate the Overall from Mftr to Its Own Column of Total Number of Manufacturers 
+Medicaid_Data <- Medicaid_Drug_Data%>%
+  mutate(Number_Mftrs = case_when(
+    str_detect(Mftr_Name, "Overall") ~ Mftrs_Count)) %>%
+    relocate(`Number_Mftrs`, .before= Mftrs_Count)
+  
+#Fill down total_mftrs
+Medicaid_Data <- Medicaid_Data %>%
+  fill(Number_Mftrs)
+  
+#Remove the Mftrs_Count Columns
+Medicaid_Data <- Medicaid_Data %>%
+  select(!ends_with("Count"))
+
+
+#Remove the overall rows 
+Medicaid_Data <- filter(Medicaid_Data, !str_detect(`Mftr_Name`,"Overall"))
+
+Medicaid_Data
+
+```
+
+The next step in cleaning and preparing the data was separating out the year in the column headers from measurements. To compare the change in values over time graphically, I need to create a column containing year. To do this, I pivoted longer and combined the 15 columns containing total spending, total dosage units, and total claims for the years 2016 - 2020 under a column named "Measurement_year" and the values under Value. I then separated out the year from the measurements to created a column of years.
+
+This new "Year" column is categorical, but dates are ordinal variables. I used as.factor() to convert the years to a factor, and then recoded the years to an ordinal variable using recode_factor().
+
+```{r}
+
+#Pivot longer to consolidate, Year, Values, and Manufacturing 
+Medicaid_Data_Longer<- Medicaid_Data %>%
+  pivot_longer(cols = contains("Tot"),
+               names_to = "Measurement_Year",
+               values_to = "Value")
+
+#Separate out year
+Medicaid_Data_tidy <- Medicaid_Data_Longer %>%
+  separate("Measurement_Year", c("Measurement", "Year"), sep = "_")
+
+#Convert Year from categorical to factor to ordinal
+Medicaid_Data_tidy <- Medicaid_Data_tidy %>%
+  mutate("Year" = as.factor(Year)) %>%
+  mutate("Year" = recode_factor(Year,
+                                "2016" = "2016",
+                                "2017" = "2017",
+                                "2018" = "2018",
+                                "2019" = "2019",
+                                "2020" = "2020",
+                                .ordered = TRUE))
+
+Medicaid_Data_tidy
+
+```
+
+Having total spending, claims, and dosage units all in one Measurement column limited future analysis and graphing. By pivoting wider, each measurement is in its own column, while years remains in its own column from the original pivot_longer().
+
+
+```{r}
+
+#Pivot wider 
+Medicaid_Drug_DF <- pivot_wider(Medicaid_Data_tidy, names_from = "Measurement", values_from = "Value")
+
+Medicaid_Drug_DF
+
+```
+
+## Data Narrative
+
+The Medicaid Spending by Drug data set was created from the Center's for Medicare and Medicaid Services (CMS) administrative data enrolled in Medicaid. It contains information on spending for outpatient pharmaceutical drugs covered by Medicaid that comes from state and federal Medicaid reimbursements. The data set was created to track the average spending of pharmaceutical drugs, in the form of total per drug spending per year, spending per drug dosage unit, spending per drug claim, and changes in drug spending over time.
+
+The data spans the from 2016 to 2020. After reading in, cleaning, and transforming the data it has 57,885 rows and 8 columns.
+
+The variable names and types are:
+
+- Brnd_Name is the Brand Name of each drug. This is the name given to a pharmaceutical drug by the manufacturer. This variable is a character.
+
+- Gnrc_Name is the Generic name of each drug. This is the the name of a pharmaceutical drug  containing the same active ingredients as the Brand Name drug, and created a time after the patent expires. This variable is a character.
+
+- Number_Mftrs is the number of total number of manufacturers that produce each drug. This variable is numeric, specifically of the integer class.
+
+- Mftr_Name is the name of each manufacturer that produces each drug. This variable is a character.
+
+- Year is the year each measurement such as spending, claim, and dosage was taken. This variable is ordinal.
+
+- TotSpnding is the combined Medicaid spending for each drug in the given year. This is a numeric variable, of the double class.
+
+- TotDsgUnits is the sum of all dosage units of a particular drug. Units very and can be in grams or milliliters, wuth a single unit being the lowest amount of a drug that can be given. This is a numeric variable, of the double class.
+
+- TotClaims is the total number of prescriptions filled for each drug, including refills of a drug. This is a numeric variable, of the double class.
+
+## Research Questions
+
+Potential research questions that this data set can answer are:
+
+- How has total spending on drugs changed over time?
+
+- Is there a relationship between the number of manufacturers of a drug and total spending on a drug in a year?
+
+- How has the number of total drug claims change over time?
+
+- Are differences in total spending by drug moderated by differences in the total number of drugs claims in that year (total spending per claim)?
+
+- Are differences in total spending by drug moderated by differences in the total number of dosage units in that year (total spending per claim)?
+
+- Do any manufacturers consistently charge more for drugs than other manufacturers across drugs?
+
+I look forward to answering these question in my HW3!
+
+## Citation
+
+Centers for Medicare and Medicaid Services. *Medicaid Spending By Drug*. (Data file and code book). Baltimore, MD: Data.CMS.gov, 2022. Web. 18 Oct 2022. https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-medicaid-spending-by-drug/medicaid-spending-by-drug
+
+Grolemund, Garrett, and Hadley Wickham. R for Data Science. O’Reilly Media, 2017.
+
+:::
