@@ -1,0 +1,124 @@
+---
+title: "Challenge 3 Instructions"
+author: "Kim Darkenwald"
+desription: "Tidy Data: Pivoting"
+date: "10/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+```{r}
+animalweights <- read_csv("_data/animal_weight.csv")
+animalweights
+
+dim(animalweights)
+
+colnames(animalweights)
+
+
+
+
+```
+
+### Briefly describe the data
+
+As indicated in our data,for the most part, animals share similar weights around regions of the globe. However, when it comes to buffalo, cattle, and swine, there are distinct differences in weight.  Animals of these categories in particular appear to be much larger in weight in the Northern American and European regions while the regions of the Middle East, Africa, and the Indian Subcontinent contain animals of significantly less weight. 
+
+
+Suppose you have a dataset with $n$ rows and $k$ variables. In our example, 3 of the variables are used to identify a case, so you will be pivoting $k-3$ variables into a longer format where the $k-3$ variable names will move into the `names_to` variable and the current values in each of those columns will move into the `values_to` variable. Therefore, we would expect $n * (k-3)$ rows in the pivoted dataframe!
+
+### Example: find current and future data dimensions
+
+Lets see if this works with a simple example.
+
+```{r}
+#| tbl-cap: Example
+
+
+#existing rows/cases
+nrow(df)  = 16
+
+#existing columns/cases
+ncol(df) = 9
+
+#expected rows/cases
+nrow(df) * (ncol(df)-3) = 17 * (9-3)
+= 16 * 8
+
+
+
+# expected columns 
+
+144
+
+
+```
+
+Or simple example has $n = 6$ rows and $k - 3 = 2$ variables being pivoted, so we expect a new dataframe to have $n * 2 = 12$ rows x $3 + 2 = 5$ columns.
+
+### Challenge: Describe the final dimensions
+
+The final dimensions will be 54 rows and 3 columns.
+
+### Challenge: Pivot the Chosen Data
+
+```{r}
+animal_weights_simplified <- pivot_longer(animalweights, col = -`IPCC Area`, names_to = "Livestock", values_to = "Weight")
+animal_weights_simplified
+
+```
+
+
+```{r}
+#| tbl-cap: Pivoted Example
+
+dim(animal_weights_simplified)
+```
+The new case will be "Livestock".
+
+
+
+
+
+
