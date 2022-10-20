@@ -1,0 +1,100 @@
+---
+title: "Challenge 5 Abby Balint"
+author: "Abby Balint"
+description: "Introduction to Visualization"
+date: "10/19/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - air_bnb
+  - abby_balint
+ 
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+Reading in AirBnb dataset -
+
+```{r}
+rentals <- read_csv("_data/AB_NYC_2019.csv")
+head(rentals)
+```
+
+### Description of data
+This data set describes AirBnB rental data for NYC. The dataset contains information about the location of the property (4 different variables), room type, price, minimum nights for a stay, reviews, and availability. It also includes personal data about the name and host ID of the person listing the property. There are a total of 16 variables and over 48,000 individual rows of data, indicating this dataset can tell us about more than 48,000 properties. Given that the reviews variable indicates records of reviews from 2019 all the way back to 2011, it is likely safe to assume that not all of these properties are currently listed on AirBnb today.
+
+```{r}
+
+```
+
+## Data tidying
+
+This data is actually relatively tidy already. The numerical values we would most be interested in looking at are already in a clean and consistent format, such as Date, Availability, and Minimum number of nights. There is also already a grouping variable that groups up the neighborhoods into the burrows which is a regrouping I would have done for graphing purposes if it didn't already exist. 
+
+The one thing I thought would be helpful to tidy would be to regroup the price column, as the prices vary greatly individually and wouldn't have much meaning on their own. This way I can use these groups when graphing.
+
+```{r}
+rentalsclean <- rentals %>%
+  mutate(`PriceRanges` = dplyr::case_when(
+    `price` >= 0 & `price` < 100 ~ "<$100",
+    `price` >= 100 & `price` < 250 ~ "$100-$250",
+    `price` >= 250 & `price` < 500 ~ "$250-$500",
+    `price` >= 500 & `price` < 1000 ~ "$500-$1000",
+    `price` >= 1000 ~ "$1000+" ))
+head(rentalsclean)
+```
+
+## Univariate Visualizations
+
+Here I generated a univariate visualization to show the counts of AirBnbs in NYC by both Borough and Price. I broke both of these down by Room Type as well so that I could visualize within the different boroughs and price ranges respectively what the most common room type would be.
+```{r}
+rentalsclean %>%
+  ggplot(aes(`neighbourhood_group`, fill = `room_type`)) + 
+  geom_bar() + 
+  labs(title = "AirBnb Counts by NYC Neighborhood", x="Borough", y="Number of Airbnbs") + 
+  theme_bw() +
+  scale_fill_discrete(name="Room Type")
+```
+
+```{r}
+rentalsclean %>%
+  ggplot(aes(`PriceRanges`, fill = `room_type`)) + 
+  geom_bar() + 
+  labs(title = "AirBnb Counts by NYC Neighborhood", x="Price", y="Number of Airbnbs") + 
+  theme_bw() +
+  scale_fill_discrete(name="Room Type")
+```
+
+## Bivariate Visualization(s)
+For this first bivariate visualization, I looked at the number of reviews a property got per month in comparison to how many days a year the property is available. I filtered by properties available 300 days a year or more to limit the business of the scatterplot and also to zoom in on properties that operate essentially year round. Surprisingly, I see that most properties still receive a few or less reviews per month.
+```{r}
+rentalsclean %>%
+  filter(`availability_365` >= 300) %>%
+  ggplot(aes(x=`reviews_per_month`, y=`availability_365`)) + 
+  geom_point() + 
+  labs(title = "AirBnb Reviews Gathered by Availability of Listing", x="Reviews Per Month", y="Number of Days Per Year Available") + 
+  facet_wrap (~`neighbourhood_group`, nrow=2) +
+  xlim(0,18)
+```
+For this  bivariate visualization, I looked at the number of reviews a property got per month in comparison to how many properties the property owner lists. I think this makes it clear that 1) the majority of people list a small number of airbnbs, and 2) the number of reviews received (and in turn the amount of business) maybe isn't impacted by the number of properties that lister holds.
+```{r}
+rentalsclean %>%
+  ggplot(aes(x=`calculated_host_listings_count`, y=`number_of_reviews`)) + 
+  geom_point() + 
+  labs(title = "Relationship Between Number of Reviews and Number of Host Listings ", x="Number of Listings Host Controls", y="Number of Reviews")
+```
+
