@@ -134,20 +134,22 @@ head(obs_clean)
 * What are some of the most disputed families, genuses of plants?
 * Do these vary by location or year?
 
-I realize now that since my data includes only the data where there are more disagreements than agreements of identification, I cannot compare this group to the larger control group. Consideration of my denominator is key when selecting my own data.
-
-STUCK HERE.
 ```{r}
-#calculate proportions of families by year
-#obs_clean %>%
- # mutate(obs_clean, year = year("time_observed_at")) %>%
-#group_by(year)
 # find top 10 families
-#obs_clean %>%
-#  select(obs_clean$time_observed_at, taxon_family_name) %>%
-#  group_by(year) %>%
-#  arrange(desc(taxon_family_name))
+ranked_families <-  obs_clean %>%
+  select(taxon_family_name) %>%
+  count(taxon_family_name) %>%
+  arrange(desc(n)) %>%
+mutate(prop_families = round(n/sum(n),3))
+
 
 # find proportions of top 10 families
+obs_clean %>%
+  select(taxon_family_name) %>%
+  count(taxon_family_name) %>%
+  arrange(desc(n)) %>%
+  slice(1:11) %>%
+  mutate(prop_families = round(n/sum(n),3))
+#top 10 included NA, so I changed to 11
 ```
 
