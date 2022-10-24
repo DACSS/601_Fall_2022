@@ -1,0 +1,114 @@
+---
+title: "Challenge 3"
+author: "Darron Bunt"
+desription: "Tidy Data: Pivoting"
+date: "10/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  -  eggs
+  - darron_bunt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Step 1 - Read in data
+
+**Read in one (or more) of the following datasets, using the correct R package and command.**
+
+-   eggs_tidy.csv ⭐⭐ 
+
+```{r}
+eggs <- read_csv("_data/eggs_tidy.csv")
+```
+
+### Step 2 - Briefly describe the data
+
+**Describe the data, and be sure to comment on why you are planning to pivot it to make it "tidy"**
+
+The dataset examines the monthly price (in cents) of large and extra large eggs, sold by either the half dozen or by the dozen, between 2004-2013.
+
+For data to be tidy, it must meet three criteria:
+1. each variable must have its own column.
+2. each observation must have its own row.
+3. each value must have its own cell.
+
+The month and the year are good to go - they are their own variable, and in their own columns. 
+
+In the remaining four columns, however, there are two egg size variables (large and extra large) two egg quantity variables (half dozen and dozen), as well as a price variable. 
+
+Accordingly, to tidy this data, I want to pivot the data such that I will have five columns instead of six. Two of these columns will be the same as the original dataset - month and year - while three will be new - egg size, egg quantity, and egg price.
+
+## Step 3 - Anticipate the End Result
+
+**The first step in pivoting the data is to try to come up with a concrete vision of what the end product *should* look like - that way you will know whether or not your pivoting was successful.**
+
+When we consider the full dataset, there are 480 potential egg values - 120 month/year combinations, multiplied by four variables (half/full dozen, large/extra large size).
+
+If I want to pivot to five variables - month/year, egg size, egg quantity, and price - there are four variables that are going to dictate the final size of the dataset (egg size (2) and egg quantity (2)). 120 multiplied by 4 is 480, so I'm expecting to have a pivoted dataset that is 480 rows long and has the five identified columns. 
+
+
+### Challenge: Describe the final dimensions
+
+Document your work here.
+
+There are two different variables contained within each of the four egg-related columns - the size (large/extra large) and the quantity (dozen/half dozen). I'm going to need to create TWO columns from the values in each of the original columns.
+
+I can use the names_sep option in pivot functions to help me do this. But if my sep is going to be _ I'm going to need some new column names first (because three of the four original columns actually contain two _ each).
+
+```{r}
+eggs_new <- eggs %>%
+  rename("Xlarge_halfdozen" = "extra_large_half_dozen",
+         "Xlarge_dozen" = "extra_large_dozen",
+         "large_halfdozen" = "large_half_dozen"
+         )
+eggs_new
+```
+Ok, now I have column names that I can use to pivot_longer and create the tibble I'm looking for.
+
+## Step 4- Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
+
+### Challenge: Pivot the Chosen Data
+
+Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
+
+```{r}
+eggs_by_type <- eggs_new %>%
+  pivot_longer(cols = contains("large"),
+               names_to = c("Size", "Quantity"),
+               names_sep= "_",
+               values_to = "AvgPrice"
+               )
+eggs_by_type
+
+```
+This meets the case for tidy data because:
+1. each variable has its own column (month, year, size, quantity, price)
+2. Each observation has its own row 
+3. Every value has its own cell
+
+Boom. Did the thing.

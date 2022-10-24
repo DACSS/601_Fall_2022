@@ -1,0 +1,100 @@
+---
+title: "Challenge 4 Instructions"
+author: "Darron Bunt"
+desription: "More data wrangling: pivoting"
+date: "10/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - fed_rates
+  - hotel_bookings
+  - darron_bunt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+
+## Datasets Used 
+::: panel-tabset
+
+### Fed Funds 
+
+
+```{r}
+FedFundsRate <- read_csv("_data/FedFundsRate.csv")
+
+```
+
+This dataset is 904 rows long and has 10 columns. It examines historical Federal Funds data across 67 years (broken up by a YYYY-MM-DD variable). The Federal Funds Rate is the target interest rate that's set by the Federal Open Market Committee (FOMC) and is the target rate at which commercial banks lend their excess reserves to each other overnight.
+
+The date-specific information in the dataset is broken down across seven different variables. Four are related to the Federal Funds Rate (the target rate, upper and lower target rates, and the effective rate), and three are related to economic indicators (% Change in Real GDP, the Unemployment Rate, and the Inflation Rate).
+
+Sadly, the data is not currently tidy. The date data, currently in three columns, can be combined into one YYYY-MM-DD column. 
+
+```{r}
+FedFundsRate2 <- FedFundsRate %>%
+  mutate(FullDate = make_date(Year, Month, Day)
+         )
+FedFundsRate2
+
+```
+
+Yay, better!
+
+### Hotel Bookings 
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   -   hotel_bookings.csv⭐⭐⭐⭐
+
+```{r}
+Hotels <- read_csv("_data/hotel_bookings.csv")
+```
+
+So first off, I'm going to combine the the arrival year, month and day into one single value. 
+
+```{r}
+Hotels2 <- Hotels %>%
+  mutate(FullArrDate = str_c(arrival_date_month,
+                          arrival_date_day_of_month,
+                          arrival_date_year, sep = "/"),
+         FullArrivalDate = mdy(FullArrDate)
+  )
+Hotels2
+```
+I also just want to know how many people stayed in the hotel room, total. So I'm going to combine adults, children and babies into one.
+
+```{r}
+Hotels3 <- Hotels2 %>%
+  mutate(TotalGuests = adults + children + babies)
+Hotels3
+```
+:::
