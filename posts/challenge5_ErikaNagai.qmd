@@ -1,0 +1,210 @@
+---
+title: "Challenge 5 Instructions"
+author: "Erika Nagai"
+description: "Introduction to Visualization"
+date: "10/18/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - air_bnb
+  - Erika_Nagai
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+
+## AB_NYC_2019.csv
+
+### Read in data
+
+Using "read_csv" function, I read in AB_NYC_2019.csv as "ab_df"
+```{r}
+ab_df = read_csv("_data/AB_NYC_2019.csv")
+
+```
+
+### Briefly describe the data
+
+I explored this dataset to understand how it is structured and what kind of data is included
+
+This dataset consists of 16 columns (variables) and 48895 rows.
+It includes the follwoing variables.
+```{r}
+str(ab_df)
+```
+
+```{r}
+print(summarytools::dfSummary(ab_df,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.80,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+```
+
+
+
+`AB_NYC_2019` documents the information on the accommodation in New York (as you can figure out from the name of the original csv file and the average longitude and latitude) that is registered on Air BnB as of sometime in 2019.
+The information includes 
+1) id and name of the accommodation 
+2) id and name of the host 
+3) geographic information of the accommodation (neighbourhood_group, latitude, longitude) 
+4) reservation-related information of the accommodation (room type, price, minimum night per stay) 
+5) information of the reviews (date of last review, total number of review, average number of review per month) 
+6) days available of the accommodation per year
+
+
+The accommodations without any review have NA (missing value) in `last_review` and `reviews_per_month` as we can see that the number of missing values in `last_review` and `reviews_per_month` (10052) matches the number of accommodations whose `number_of_review` is 0
+
+```{r}
+ab_df %>% filter(`number_of_reviews` == 0) %>%
+  count()
+```
+
+
+### Tidy Data 
+
+This dataset is quite tidy because one row means one observation (one accommodation), however it can be separated into `host_df` dataframe and `accommodation_df` dataframe to make this dataset cleaner and easier to use.
+
+I created `accommodation_df` as follows removing `host_name`, `calculated_host_listings_count` columns.
+(* We should NOT remove `host_id` because it will be necessary if we want to join `accomodation_df` and `host_df`)
+
+```{r}
+
+accommodation_df <- ab_df %>%
+  select(-c(host_name, calculated_host_listings_count))
+
+head(accommodation_df)
+
+```
+
+And here is `host_df`.
+```{r}
+host_df <- ab_df %>%
+  select(c(host_id, host_name, calculated_host_listings_count))
+
+head(host_df)
+```
+
+`host_df` needs to be cleaned because it has several duplicated information.
+For example, `host_id` should be unique however the same host_id appear multiple times as the below table shows.
+
+```{r}
+host_df %>% group_by(host_id) %>%
+  count() %>%
+  arrange(desc(n))
+```
+
+So I removed duplicated rows by using `distinct()` function.
+
+```{r}
+host_df <- host_df %>% distinct(host_id, .keep_all = TRUE) %>%
+  arrange(desc(calculated_host_listings_count))
+
+head(host_df)
+```
+
+Also, I renamed the column name `calculated_host_listings_count` to make it easier to understand
+```{r}
+colnames(host_df)[3] <- "total_accommodation_count"
+head(host_df)
+```
+```{r}
+print(summarytools::dfSummary(host_df,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.80,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+```
+
+
+
+### Univariate Visualizations
+
+First, I took a look at the price per night.
+Most accommodations are concentrated under $600 per night (though still expensive). 
+
+```{r}
+ggplot(ab_df, aes(price)) + 
+  geom_histogram(aes(y= ..density.., binwidth = 20, alpha = 0.5)) +
+  geom_density(alpha = 0.5, fill="red")
+                                  
+```
+A box-and-whisker diagram shows that there are several Outliers that cost more than USD 2500 per night.
+
+```{r}
+ggplot(accommodation_df, aes(price)) + geom_boxplot()
+```
+However, it is difficult to see the distribution of smaller values because of some extremely big values so we may need to filter out the accommodation whose price is high, so I decided to analyze only those accommodations whose rates fall between the first (69.0) and third quartiles (175.0)
+
+
+```{r}
+summary(accommodation_df$price)
+```
+
+### Bivariate Visualization
+
+Let's take a look at the difference in price by room types and neighborhood.
+(Please note that this data does NOT include accommodation that are extremely cheap (less than 69 USD or expensive (more than 175)
+
+
+
+```{r}
+# Room type 
+ggplot(accommodation_df %>% filter(price >= 69 & price<= 175), aes(price)) +
+  geom_histogram(binwidth = 10) +
+  labs(title = "Price per night by room types") +
+  theme_bw() +
+  facet_wrap(vars(room_type))
+
+```
+
+```{r}
+# Neighborhood
+ggplot(accommodation_df %>% filter(price >= 69 & price <= 175), aes(price)) +
+  geom_histogram() + 
+  labs(title = "price per night by neighborhood") + 
+  theme_bw() + 
+  facet_wrap(vars(neighbourhood_group))
+```
+## Question!
+Since this dataset had some outliers that had a huge value in price and it was hard to visualize the distribution and trend so I decided to use the data that fall within IQR.
+I don't know if it was good practice. What is your recommendation?
