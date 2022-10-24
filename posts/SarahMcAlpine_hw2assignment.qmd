@@ -62,14 +62,52 @@ observations <- read_csv("_data/plant_observations.csv")
 #22] "iconic_taxon_name"                "taxon_id"              DELETE     "taxon_order_name"       GROUP    
 #25] "taxon_family_name"     GROUP      "taxon_genus_name"      GROUP      "taxon_species_name"  
 
+#clean up time zones
 
 ```
 
-## HELP! Issues with Time Zones
+## Building a Clean Read-in
 
-I cannot figure out how to use the `time_zone` data with lubridate. There are 89 distinct values here, and I have been looking at the following resources but still cannot get anywhere. Help is welcome!
+```{r}
+#cleaning during read-in
+obs_clean <- read_csv("_data/plant_observations.csv",
+                      skip = 1,
+                      col_names = c("id", 
+                                   "delete",
+                                   "time_observed_at",
+                                   "delete",
+                                   "delete",
+                                   "user_login",
+                                   "delete",
+                                   "delete",
+                                   "quality_grade",
+                                   "num_identification_agreements",
+                                   "num_identification_disagreements",
+                                   "captive_cultivated",
+                                   "place_guess", 
+                                   "latitude",
+                                   "longitude",
+                                   "place_town_name",
+                                   "place_state_name",
+                                   "place_country_name", 
+                                   "species_guess",
+                                   "scientific_name",
+                                   "common_name",
+                                   "iconic_taxon_name",
+                                   "delete",
+                                   "taxon_order_name",
+                                   "taxon_family_name",
+                                   "taxon_genus_name",
+                                   "taxon_species_name")) %>%
+#exclude columns called delete
+select(!starts_with("delete"))
 
-I think I may need to change the data in `time_zone` to something that lubridate will recognize, and then concatenate with each date variables and then run `ymd()` on those date fields. Alternatively, I could truncate `time_zone` to exclude "+0000" and then use the `time_zone` data independently, and then connect it with the resulting ymd dates.
+
+```
+
+## Dealing with Time Zones
+
+After many hours, I was able to use `dplyr` to remove the time zone characters from the datetime strings, and then I was able to use `ymd_hms` to convert those to datetimes. Since I am not researching the times of day, I forced the UTC time zone for all these data. 
 
 One other idea: could I use latitudes to calculate time zones?
 
@@ -80,32 +118,38 @@ One other idea: could I use latitudes to calculate time zones?
 \-[tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
 ```{r}
-#clean up time zones
-select(observations, time_zone) %>%
-  distinct()
 
+#strip time zone info
+obs_clean$time_observed_at <- str_remove_all (obs_clean$time_observed_at, "\\W0000")
 
-#clean up dates 
-dt <- ymd_hms(observations, "observed_on", "time_observed_at",
-      quiet = FALSE,
-      tz = 'time_zone',
-      truncated = 0
-      )
-head(observations)
+  
+# turn into a date  
+obs_clean$time_observed_at <- ymd_hms(obs_clean$time_observed_at,
+          tz = "UTC")                                                             
 
-#look at valid time zone names
-#OlsonNames()
-
-#can I map what I have to these? 
-
-
-```
-
-## Building a Clean Read-in
-
-```{r}
-obs_clean <- read_csv("_data/plant_observations.csv") %>%
-  select(!ends_with("id"))
-
+#preview
 head(obs_clean)
 ```
+## Identify Research Questions
+* What are some of the most disputed families, genuses of plants?
+* Do these vary by location or year?
+
+```{r}
+# find top 10 families
+ranked_families <-  obs_clean %>%
+  select(taxon_family_name) %>%
+  count(taxon_family_name) %>%
+  arrange(desc(n)) %>%
+mutate(prop_families = round(n/sum(n),3))
+
+
+# find proportions of top 10 families
+obs_clean %>%
+  select(taxon_family_name) %>%
+  count(taxon_family_name) %>%
+  arrange(desc(n)) %>%
+  slice(1:11) %>%
+  mutate(prop_families = round(n/sum(n),3))
+#top 10 included NA, so I changed to 11
+```
+

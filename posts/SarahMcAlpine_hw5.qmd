@@ -1,0 +1,83 @@
+---
+title: "Sarah McAlpine HW 5"
+author: "Sarah McAlpine"
+desription: "Homework Challenge 5"
+date: "10/23/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge5
+  - sarahmcalpine
+  - pathogens
+  - ggplot
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reading in Pathogen data
+
+```{r}
+#initial read-in for summary
+pathogen_orig <- read_xlsx("_data/Total_cost_for_top_15_pathogens_2018.xlsx",
+                            col_names = c("Pathogen","est_cases","total_cost"),
+                           range = "A6:C20")
+                            
+head(pathogen_orig)
+#tail(pathogen_orig)
+```
+With this initial read-in, I can see that the data contain 15 pathogen groups, the estimated mean of cases in 2018, and the total cost of those cases, adjusted for inflation per the notes. From what I understand, these 15 groups are distinct, and so I expect I can trust the values without needing to disentangle them from one another (i.e. if all species of Campylobacter and a subspecies were both listed). I will want to mutate the data to find the average cost per case so that I can arrange them in the order of most expensive per case.
+
+```{r}
+pathogen <- read_xlsx("_data/Total_cost_for_top_15_pathogens_2018.xlsx",
+                            col_names = c("Pathogen","est_cases","total_cost"),
+                           range = "A6:C20") %>%
+  # add cost per case variable
+  mutate(cost_case = total_cost/est_cases) %>%
+  # arrange in descending order
+  arrange(desc(cost_case)) 
+  
+path_ranked <- print(pathogen)
+
+```
+## Univariate Visualization
+
+```{r}
+#plot as bar columns so names read horizontally
+ggplot(path_ranked)+
+geom_col(aes(cost_case,Pathogen),
+         fill = "blue", 
+         width = .9) +
+  scale_x_sqrt()
+
+  #how do I retain the ranked order from above?
+
+
+```
+This plot shows the average cost per case of the 15 pathogens in the data. I elected to display these as `scale_x_sqrt` so that the differences among the lower 13 were distinguishable. I am not sure how to preserve the ranked order I got from my clean read-in and mutate chunk.
+
+## Bivariate Visualization
+```{r}
+#try a dot plot
+ggplot(path_ranked, aes(x=cost_case, y=est_cases, label=Pathogen))+
+geom_point()+
+  scale_x_log10() +
+  geom_text()
+
+#try a violin plot
+ggplot(path_ranked, aes(x=cost_case, y=est_cases, label=Pathogen))+
+  geom_violin()+
+  geom_text()
+```
+
