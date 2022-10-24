@@ -1,0 +1,76 @@
+---
+title: "HW 2 World Cup Match Analysis"
+author: "Connor Skowyra"
+desription: "Analyzing World Cup Matches"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+
+## Initial Overview
+
+This data set is telling us about all matches played in the World Cup from 1930 to 2018. This information includes the teams played, level of competition and result. I will be finding the most successful World Cup team since 2000 using this data.
+
+## Read in the Data
+
+Below is the coding, I have done in order to change the data.
+
+## View Main Source
+
+library(readr)
+matches <- read_csv("matches.csv")
+View(matches)
+
+## Create and View World Cup Matches Since 2000 
+
+WorldCupMatchesSince2000 = filter(matches, tournament_name >= "2000 FIFA World Cup")
+View(WorldCupMatchesSince2000)
+
+## Cleaning the Data for Analysis
+
+> FilteredWorldCup <- WorldCupMatchesSince2000 %>% select(-ends_with('_stage'),-ends_with('_id'),-(home_team_win:draw),-(home_team_score_margin:penalty_shootout),-(home_team_score_penalties:away_team_score_penalties),-ends_with('code'),-contains('match_time'))
+> View(FilteredWorldCup)
+> RenamedWorldCup <- FilteredWorldCup %>% rename(host_city_name = city_name, host_country_name = country_name)
+> View(RenamedWorldCup)
+> UpdatedWC <- RenamedWorldCup %>% select(-(stadium_name:host_city_name))
+> View(UpdatedWC)
+> RemoveReplay <- UpdatedWC %>% select(-(group_name:replay))
+> View(RemoveReplay)
+> FinalWC <- filter(RemoveReplay,home_team_name == "Germany" | home_team_name == "France" | home_team_name == "Netherlands" | away_team_name == "Brazil" | away_team_name == "Argentina" | away_team_name == "France", stage_name != "group stage")
+> FranceGermanyFinal <- filter(RemoveReplay,home_team_name == "Germany" | home_team_name == "France" | away_team_name == "Germany" | away_team_name == "France", stage_name != "group stage")
+
+## Data Analysis
+
+The World Cup is one of the most prestigous sports events in the world, watched by 3.572 billion people in 2018. To put this number in prespective, this is half of the world's population over 4 years old. Soccer or Football is the most popular sport in the world and I want to see the most successful teams in this analysis. 
+
+Our first step in this project is to remove non-necessary data columns, I removed 25 columns containing duplicated or data not relevant. I renamed the host country name from country name to state where the event took place.
+
+The next step is to understand our variables that will help us find the answer to this question. The Tournament Name states the World Cup matches and the year of the tournament as we need to know when the World Cup took place and looking for a pattern.
+
+There are two types of variables, we will be using. Character variables are used for words like "Cheese" while Integer variables are used for "16".
+
+If you look into the data, you will realized that the World Cup takes place every four years since 2022, leaving us with five world cups in 2002, 2006, 2010, 2014, and 2018. This is a character variable.
+
+The next variable in our table is the match name telling us the teams playing in the particular game. This is a character variable.
+
+The stage name informs us on what stage is the tournament game was played. 
+The beginning of the tournament is the group stage with four teams in a group, each team plays against each other once with a total of three games per group, two teams will advance. The winners of the group stage will play in the round of 16 against another team who advanced in the tournament. After the round of 16, another game is played in the quarter final, the winner of this game will proceed to the semi final. If you lose in the semi final, you will play another losing team in a 3rd place game. If you win in the semi final, you will play the other winning team in the final for a total of 7 games if you make it into the third place game or final. These are all character variables.
+
+The match date tells us when the game is played and potential to spot any outliers on a particular date in World Cup history. This is a integer variable since there is no decimal in this data.
+
+The host country name is where the game was held and what countries hosted the game. This is a character variable.
+
+Home and Away Team name columns share which team was home or away in the game. This is a character variable.
+
+The score is after 90 minutes of the game, whichever number is bigger is the winner of the game. If the numbers are equal, the game is a draw in the group stage. If the game is a draw after 90 minutes in the other stages, the game will go to extra time. If one team is winning in extra time after 30 more minutes, the game is over. If the teams have an equal score, the game will go to penalties. This is a integer variable since there is no decimal in this data.
+
+Home and Away Team score columns inform us of the score for the home and away team. This is a integer variable since there is no decimal in this data.
+
+Score Penalties is the final score of the shootout, whichever team scores more penalties win the game. This is a integer variable since there is no decimal in this data.
+
+The result tells us if the away or home team won or if the result is a draw. This is a character variable.
+
+In our datasheet, we can realize two teams that have numerous finals appearances since 2002. Those two teams are France and Germany. Both teams have two Final's appearance and one win in the tournament. When we look at semi-final appearances, we can see that Germany has been to four semi-final appearances while France has been to two semi-final appearances. Therefore, it is concluded that Germany is the most successful soccer team in the 21st century.
