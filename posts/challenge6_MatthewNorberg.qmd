@@ -1,0 +1,243 @@
+---
+title: "Challenge 6 Instructions"
+author: "Matthew Norberg"
+description: "Visualizing Time and Relationships"
+date: "10/17/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+## Read in data
+
+```{r}
+df <- read_excel('./_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx', skip = 4)
+df <- select(df, -(Total)) %>%
+       rename(Number = ...2,
+              MedianEstimate = Estimate...13, 
+              MeanEstimate = Estimate...15,
+              MedianEstimateMOE = `Margin of error1 (±)...14`,
+              MeanEstimateMOE = `Margin of error1 (±)...16`) %>%
+       head(-31)
+head(df)
+```
+
+### Briefly describe the data
+
+The data set looks at total income by race and Hispanic origin of United States Households from 1967 to 2019.  The initial representation of the data is unorganized.  An arbitrary row describes total income distribution for a given race and Hispanic origin by year.  Note that a row represents a population of households, not just one.  
+
+It is hard to interpret the data while it is stored in the current format because the first column is not tidy.  The first column is describing not only the year variable but the race variable as well.  For instance, the second row is for the all race category in the year 2019.  This is readable in excel format, but confusing in a tibble. 
+
+## Tidy Data (as needed)
+
+First, note that the only columns in the data set which are missing are included in rows which currently describe the race and hispanic category.  This is confirmed with the query below.  This fact will become important later. 
+
+```{r}
+df %>% 
+  filter(if_any(.cols = everything(), ~ is.na(.x)))
+```
+
+To tidy the tibble, we need to clean up the left column.  The first loop cleans up footnotes and any excess information in the column.  After the first loop, the leftmost column is reset.  However, it is not clean yet.  The second loop creates a vector containing the race information for each row such that the ith item in the vector corresponded to the ith row of the tibble.  I added the new column to the data set and renamed the first and second column for clarity.  Then I removed any rows containing NA.  In doing so, I know that I am not losing any information because I verified earlier that the only missing values in the data set correspond to the rows describing the race and Hispanic origin information for the current group.  
+
+```{r}
+# Clean the leftmost column
+c1 <- df$...1
+for (i in seq_along(c1)) {
+  item <- c1[[i]]
+  # Case where item is a category containing a number -> "WHITE ALONE 24"
+  if (!(is.na(slice(df, i)$Number)) & str_detect(item, " ")) {
+    pieces <- str_split(item, " ")[[1]]
+    c1[i] = pieces[1]
+  }
+  # Case where item is has superscript -> "2017 2"
+  else if (is.na(slice(df, i)$Number)){
+    c1[i] = str_squish(gsub('[0-9]+', '', item))
+  }
+}
+
+# Reset leftmost column 
+df$...1 <- c1
+
+# Create a new column describing race information
+c2 <- df$...1
+category <- c2[[1]]
+for (i in seq_along(c2)) {
+  item <- c2[[i]]
+  if (!(str_detect(item, "[0-9][0-9][0-9][0-9]")))
+      category <- item
+  c2[i] = category
+}
+
+# Add new column to tibble, remove old column
+df <- mutate(df, `Race/Hispanic` = c2) %>% 
+      relocate(`Race/Hispanic`, .after = `...1`) %>%
+      rename(Year = `...1`)
+
+# Remove old rows
+df <- na.omit(df)
+head(df, n = 15)
+```
+
+The 'MeanEstimate' and 'MeanEstimateMOE' columns are character type, but it would be much more sensible if they were of type double.  They are of character type because a few of the rows contain "N" to indicate that the data is missing.  I am going to replace these values with NA so we can convert the type of the column.  This will make the visualizations easier. 
+
+```{r}
+# Remove "N" in MeanEstimate
+c1 = df$MeanEstimate
+for (i in seq_along(c1)) {
+  item <- c1[[i]]
+  if (item == "N")
+    c1[i] = NA
+}
+
+# Remove "N" in MeanEstimateMOE
+c2 = df$MeanEstimateMOE
+for (i in seq_along(c2)) {
+  item <- c2[[i]]
+  if (item == "N")
+    c2[i] = NA
+}
+
+# Reset columns to clean version
+df$MeanEstimate = c1
+df$MeanEstimateMOE = c2
+
+# Convert type of columns 
+df <- type_convert(df)
+```
+
+## Time Dependent Visualization
+
+First, let's look at the column names to get an idea about what we may want to visualize with the data set.  The column names are printed out using the code below. 
+
+```{r}
+colnames(df)
+```
+
+When I look at the column names, the one that sticks out in particular is "MeanEstimate".  I would like to know if the mean income estimate for each group of people in the data set has improved with time or not.  To figure out the answer to this question, we could make a scatter plot of the mean income estimate versus time.  Additionally, we can use ggplot to make one plot for each group of people in the data set.  The code below generates the plot. 
+
+```{r}
+ggplot(df, mapping = aes(x = Year, y = MeanEstimate, color = `Race/Hispanic`)) + 
+  geom_line(na.rm = TRUE) + 
+  geom_point(na.rm = TRUE) + 
+  labs(
+    x = "Year",
+    y = "Average Income Estimate",
+    title = "Average Income Estimate By Year And Hispanic Origin"
+  )
+```
+
+This plot is very interesting, but it is a little hard to interpret because there are so many categories.  It may be better visualized if we combine categories together.  For instance, we could consider the categories "ASIAN ALONE", "ASIAN ALONE OR IN COMBINATION", "ASIAN AND PACIFIC ISLANDER" all to be the category "ASIAN".  The code chunk below first reduces possible categories in the 'Race/Hispanic' column to the set ("ALL", "ASIAN", "BLACK", "HISPANIC", "WHITE").  Afterwards, the code generates a similar plot and adds a smoothed line to the data to better visualize the trends.
+
+```{r}
+mdf <- df %>% mutate(`Race/Hispanic` = case_when(str_detect(`Race/Hispanic`, 'ASIAN') ~ 'ASIAN',
+                                             str_detect(`Race/Hispanic`, 'BLACK') ~ 'BLACK',
+                                             str_detect(`Race/Hispanic`, 'WHITE') ~ 'WHITE',
+                                             str_detect(`Race/Hispanic`, 'HISPANIC') ~ 'HISPANIC',
+                                             str_detect(`Race/Hispanic`, 'ALL') ~ 'ALL'))
+
+ggplot(mdf, mapping = aes(x = Year, y = MeanEstimate, color = `Race/Hispanic`)) + 
+  geom_point(na.rm = TRUE) + 
+  geom_smooth(na.rm = TRUE, method = 'loess', formula = 'y ~ x') +
+  labs(
+    x = "Year",
+    y = "Average Income Estimate",
+    title = "Average Income Estimate By Year And Hispanic Origin",
+    color = "Race"
+  )
+```
+
+Personally, I think this view of the data is much easier to digest.  The interesting thing about this is that it shows that the "ASIAN" group has the highest average income and it seems to be much higher than the other groups.  I would not have expected this. 
+
+## Visualizing Part-Whole Relationships
+
+Let's try to figure out how much data we have on each race category.  We will generate two variations of this diagram.  The first one will contain all of the categories that were presented in the data.  The second will contain the modified categories just as we did in the previous section. 
+
+```{r}
+# Get the counts of each category
+dfVals <- df %>% 
+  group_by(`Race/Hispanic`) %>%
+  summarise(Count = n())
+```
+
+```{r}
+# Basic piechart
+ggplot(dfVals, aes(x="", y=Count, fill=`Race/Hispanic`)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +
+  theme_void() + 
+  labs(
+    title = "Proportion of Race/Hispanic Information"
+  )
+  
+```
+
+This chart is interesting, but I think the same chart with a reduced number of categories would be easier to look at.  This alternative view is generated below. 
+
+```{r}
+mdfVals <- mdf %>% 
+  group_by(`Race/Hispanic`) %>%
+  summarise(Count = n())
+
+# Basic piechart
+ggplot(mdfVals, aes(x="", y=Count, fill=`Race/Hispanic`)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +
+  theme_void() + 
+  labs(
+    title = "Proportion of Race/Hispanic Information"
+  )
+```
+
+Now we can easily see that most of the data was collected on the "WHITE" population.  It also looks like the "ASIAN" population had the least amount of data collected on them.  Maybe that explains why their group had the highest average income in the previous section.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
