@@ -1,0 +1,176 @@
+---
+title: "Challenge 5 Submission"
+author: "Julian Castoro"
+description: "Introduction to Visualization"
+date: "10/21/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - pathogen_cost
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(plotly)
+
+options(scipen=999)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+-   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
+
+
+```{r}
+rawData<- read_excel("C:/Users/Julian/Desktop/Amherst CS/DACSS602/601_Fall_2022/posts/_data/Total_cost_for_top_15_pathogens_2018.xlsx",skip = 3)
+
+head(rawData)
+
+```
+
+### Briefly describe the data
+This data set looks to be describing different foodborne illnesses and their associated case count and cost to the US.
+
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+Data needed a little tidying as shown below. While reading in the data I also cut a few unnecessary lines.
+
+
+```{r}
+
+tidy <- rawData%>%
+  rename(PathogenName = 1)
+
+
+tidy <- tidy%>%
+  slice(1:(n()-8))
+
+tidy
+
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+## after some light graphing i wanted to create a qualitative variable
+tidy<- tidy%>%
+  mutate(severity= case_when(
+    Cases<500000 ~ "Mild",
+    (Cases<2000000) ~ "Moderate",
+    Cases > 2000000 ~ "Extreme"
+  ))
+
+
+## calculating some stats
+medianCost <- median(tidy$Cost)
+meanCost <- mean(tidy$Cost)
+sdCost<- sd(tidy$Cost)
+sdCases<- sd(tidy$Cases)
+
+
+```
+
+## Univariate Visualizations
+```{r}
+histogramCases <- 
+  tidy %>%
+    ggplot(aes(x=Cases)) +
+    geom_histogram(bins = 200,fill="#69b3a2") +
+    labs(title="Number of Cases of Foodborne illness 2018",x="Cases", y = "Count")
+
+histogramCases
+## seems like there is one pathogen with a very large number of cases.
+
+# i want to try and group these different pathogens into mild moderate and extreme number of cases
+```
+```{r}
+PointCases <- 
+  tidy %>%
+    ggplot(aes(y=PathogenName,x=Cases)) +
+    geom_point() +
+    labs(title="Cases of Foodborne illness 2018",x="Cases", y = "Pathogen")
+
+PointCases
+```
+
+Now I look at the cost and see if there is a similar outlier
+```{r}
+histogramCost <- 
+  tidy %>%
+    ggplot(aes(x=Cost)) +
+    geom_histogram(bins = 100)
+#+
+ #  scale_x_continuous(breaks = round(seq(min(tidy$Cost), max(tidy$Cost), by = 100000),1))
+
+histogramCost
+## seems like there is one pathogen with a very large number of cases.
+```
+
+```{r}
+PointCost <- 
+  tidy %>%
+    mutate(Cost=Cost/1000000)%>%
+    ggplot(aes(y=PathogenName,x=Cost,color=severity)) +
+    geom_point()+
+    labs(title="Cost of Foodborne illness 2018",x="Cost(Millions)", y = "Pathogen")
+
+PointCost
+```
+
+
+
+## Bivariate Visualization(s)
+I am not including the Extreme case so that the graph does not need to be rescaled
+```{r}
+#cases vs Count
+# i removed the extreme case so its a bit easier to visualize
+biVariate <- tidy %>%
+  filter(severity!="Extreme") %>%
+  ggplot( aes(Cases, Cost, color=severity,label=PathogenName)) +
+    geom_point() +
+    theme_bw()
+
+
+ggplotly(biVariate)
+```
+
+Any additional comments?
