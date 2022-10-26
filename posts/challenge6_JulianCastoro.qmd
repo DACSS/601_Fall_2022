@@ -1,0 +1,161 @@
+---
+title: "Challenge 6 Instructions"
+author: "Meredith Rolfe"
+description: "Visualizing Time and Relationships"
+date: "08/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - Julian Castoro
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(ggforce)
+
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - debt  ⭐
+  - fed_rate ⭐⭐
+  - abc_poll ⭐⭐⭐
+  - usa_hh ⭐⭐⭐
+  - hotel_bookings ⭐⭐⭐⭐
+  - AB_NYC ⭐⭐⭐⭐⭐
+
+  
+
+```{r}
+
+RawData <- read_excel("_data/debt_in_trillions.xlsx")
+head(RawData)
+```
+
+### Briefly describe the data
+The data appears to be the amount of cumulative debt held by some nations citizens, most likely the US.
+
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+
+All that is needed here is separating out the quarter and date fields.
+
+```{r}
+splitData<- RawData %>%
+  separate(`Year and Quarter`,c('Year','Quarter'),sep = ":")
+view(splitData)
+
+```
+
+## Time Dependent Visualization
+
+Below is a time dependent visualization for credit card debt, I later transform the data so that I can see how this type of debt stacks up to the others
+
+
+```{r}
+scatter <- splitData %>%
+  ggplot(mapping=aes(x = Year, y = `Credit Card`))+ 
+  geom_point(aes(color=Quarter))
+scatter
+
+  
+```
+## pivoting data again
+```{r}
+longerSplitData<- splitData%>%
+  pivot_longer(!c(Year,Quarter), names_to = "DebtType",values_to = "DebtPercent" )
+
+longerSplitData
+```
+
+
+
+## Visualizing Part-Whole Relationships
+
+```{r}
+
+
+longerSplitDataPlot <- longerSplitData%>%
+  ggplot(mapping=aes(x = Year, y = DebtPercent))
+
+
+longerSplitDataPlot +
+  facet_wrap(~DebtType, scales = "free")
+
+
+
+```
+
+Now I wanted to visualize the data by debt type
+
+```{r}
+longerSplitDataPlot + 
+  geom_point(aes(color = DebtType))
+  
+```
+Now, this seemed to show the Mortgage debt influencing the total the most, I wanted to visualize how different types of debt swayed the total debt for that year so i seperated out the types of debt.
+
+```{r}
+longerSplitDataPlot+
+  geom_point() +
+  facet_wrap(~DebtType) +
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+```
+The above clearly demonstrates how mortgages drove the total debt but what do the trends of the other types of debt look like? Do they have the same shape? I had to set scales to free in order to see this.
+
+
+
+
+```{r}
+longerSplitDataPlot+
+  geom_point(aes(color = Quarter,alpha=0.9,)) +
+  facet_wrap(~DebtType, scales = "free_y") + 
+  guides(alpha="none") +
+  labs(title="Debt by type from '03 - '21")+
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+
+ 
+```
+
+
+
