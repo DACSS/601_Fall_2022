@@ -1,0 +1,181 @@
+---
+title: "Sarah McAlpine - Challenge 6"
+author: "Sarah McAlpine"
+desription: "Homework Challenge #6"
+date: "10/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge6
+  - sarahmcalpine
+  - AB_NYC
+  - ggplot2
+  - summarytools
+  - ggridges
+  - treemap
+  
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(ggridges)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Read in Data
+```{r}
+#initial read-in for summary
+airbnb_orig <- read_csv("_data/AB_NYC_2019.csv")
+
+# print(dfSummary(airbnb_orig,
+#           varnumbers = FALSE,
+#                         plain.ascii  = FALSE, 
+#                         style        = "grid", 
+#                         graph.magnif = 0.70, 
+#                         valid.col    = FALSE),
+#       method = 'render',
+#       table.classes = 'table-condensed')
+
+
+```
+
+### Briefly Describe the Data
+
+The original data lists 48,895 distinct Airbnb rentals in New York City, almost 80% of which were reviewed between 2011 to 2019. The data include information that guests would want, such as listing names, host names, location in terms of the neighborhoods as well as latitude and longitude, room types, price, and minimum nights. It also includes the number of reviews, date of the last review, number of reviews per month (possibly calculated from the total months of the review period represented?), calculated host listings, and a count available days of the year. 
+
+## Tidy Data (as needed)
+I am suspicious of some values that will require some investigation: prices range from \$0 to $10,000, minimum nights range from 1 to 1250 (nearly 3.5 years), and the dates of the last review span over 8 years, from 2011 to 2019. I could check to see if the calculated host listings count is consistent with what's here, and therefore exclude it from my read-in. I will also want to address the two neighborhood variables. My data frame summary already confirmed that each ID is distinct.
+
+A few are missing rental names and host names--I wonder if these will align with some of the other errant data such as prices of $0 or minimum nights that don't make sense in a real world application.
+
+```{r}
+no_name_1 <- airbnb_orig %>%
+  filter(is.na(name)) %>%
+  arrange(desc(availability_365)) %>%
+  select(name, price, minimum_nights, availability_365)
+
+
+no_name_2 <-airbnb_orig %>%
+  filter(is.na(name)) %>%
+  arrange(desc(last_review)) %>%
+  select(name, last_review, number_of_reviews)
+
+no_name_1
+no_name_2
+```
+As expected, the rentals with missing names tend to have availability of 0 or nearly 365, and many have no reviews. I want to know if the ones that have reviews tend to be some of the oldest reviews. (I will test that theory once I graph the reviews on a timeline.) One has a minimum stay of 1000 nights (but I still haven't found the one requiring 1250 nights!). All of them have prices within a realistic range, generally speaking, so I would guess these were discontinued listings. 
+
+In order for this data to be tidy, it needs to represent one case per row with variables that are all independent from one another. Location information seems to be the most duplicative, so I will tidy that now. I will elect to keep the more specific neighborhood names with the borough in parentheses afterward, which will require a `unite` function. I am not sure if longitude and latitude are redundant locations, but I will keep them in case I want to map these later.
+
+```{r}
+
+airbnb <- airbnb_orig %>% 
+  #combine neighbourhood and neighbourhood group
+  unite("location",neighbourhood_group:neighbourhood)
+
+airbnb
+```
+
+## Time Dependent Visualization
+
+Now I'm ready to plot the reviews on a timeline. 
+```{r}
+# set up viz data object
+reviews_timing <- airbnb %>%
+  #include only the rows with reviews
+  filter(number_of_reviews > 0) %>%
+    # set up the x 
+  ggplot(aes(x=last_review)) +
+  #select density plot and set airbnb official color
+  geom_density(fill="#FF5A5F")+
+  #rename x axis
+  labs(x="Date of Last Review", title = "Airbnb NYC 2019, Density of Last Review Date")+
+  # make it shiny
+  theme_gray()
+  
+  reviews_timing
+```
+There is a huge uptick in last review dates at the end of timeframe covered. I imagine this is good news for hosts who want up-to-date reviews. I selected the `geom_density` plot because I couldn't calculate counts of dates without binning them, which I first tried with `geom_line`.
+
+
+To make it interesting, I will plot different lines for each borough.
+```{r}
+# set up viz data object
+reviews_by_borough <- airbnb_orig %>%
+  #include only the rows with reviews
+  filter(number_of_reviews > 0) %>%
+  filter(last_review > '2019-01-01') %>%
+  #create groups by borough
+  group_by(neighbourhood_group)
+
+reviews_by_borough %>%
+  # set up the x and y and group and color
+  ggplot(aes(x=last_review, y=neighbourhood_group, fill= neighbourhood_group)) +
+  geom_density_ridges(alpha=0.6, ) +
+    theme_ridges() +
+    theme(
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines")) +
+  #rename x axis
+  labs(x="Date of Last Review", y= "Borough", title = "Date of Last Reviews in 2019, Airbnb Listings NYC")+
+  # make it shiny
+  theme_gray()
+  
+  reviews_by_borough
+```
+I first graphed this as another `geom_density` but couldn't see everything since it's all so uniform and stacked together. So I tried a ridgeline plot. I also limited to the year 2019 to see if I could find any remarkable variation, and there doesn't seem to be any. Another analysis could look at any differences about price bins.
+
+## Visualizing Part-Whole Relationships
+I want to learn more about how neighborhoods make up the NYC boroughs, as they are listed in this data set. I selected `treemap` because I want to show subgroups within groups, and also to see how each neighborhood and borough are represented in the data by count of listing. This graph will allow me to easily see how much area each covers.
+```{r}
+#prep the data frame
+boroughs <- airbnb_orig %>%
+  # select just the variables I want
+  select(neighbourhood, neighbourhood_group) %>%
+  count(neighbourhood, neighbourhood_group)
+boroughs
+
+
+boroughs %>%
+treemap(boroughs,
+        index= c("neighbourhood_group", "neighbourhood"),
+        vSize = "n",
+        type = "index",
+        title = "Count of Listings by Neighborhood, Airbnb NYC 2019"
+)
+  
+  
+```
+Wow. This really paints a picture regarding where the listings are located. I can easily see that Manhattan and Brooklyn are by far the most popular, with Queens in third, and the Bronx and Staten Island having a very small proportion of rows.
+
+It would be interesting to create another treemap of average prices in each neighborhood.
+```{r}
+#prep the data frame
+boroughs_price <- airbnb_orig %>%
+  select(neighbourhood, neighbourhood_group, price) %>%
+  group_by(neighbourhood, neighbourhood_group) %>%
+  summarize(median(price))
+boroughs_price
+
+
+
+boroughs_price %>%
+treemap(boroughs,
+        index= c("neighbourhood_group", "neighbourhood"),
+        vSize = "median(price)",
+        type = "index",
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019"
+)
+```
+Cool! Fort Wadsworth and then Woodrow are clearly the most expensive. Is that the castle, and/or the $1250 outlier I never dealt with? 
+
