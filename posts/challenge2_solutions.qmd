@@ -1,0 +1,117 @@
+---
+title: "Challenge 2 solutions"
+author: "Xiaoyan Hu"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+# {.tabset}
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+#set working directory
+#read in data
+setwd("/Users/cassie199/Desktop/22fall/DACSS601/601_Fall_2022/posts/_data")
+data1 <- read.csv("railroad_2012_clean_county.csv")
+head(data1)
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+This railroad data had 3 columns including state, county and total employees. There are 2930 varibles and described how many employees in each state and each county. there are total 8027 employees in this statitatics. the median of empolyees is 21 per county.  However, more information can be derived from this file.
+
+```{r}
+# label : summary
+summary(data1)
+# varibles including state, county and total employees
+colnames(data1)
+# There are 2930 obercations and 3 varibles in this file
+dim(data1)
+# Preview of data
+head(data1)
+
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+Each state have counties as listed below
+and there are 255432 empolyees in total
+```{r}
+# Count the number of county of each state. For example, GA has 152 counties and IN have 92 counties
+table(data1$state)
+# grouping by state gave a total count of how many total empolyees in each states
+data1%>%
+  group_by(county) %>%
+  summarise(sum = sum(total_employees, na.rm=TRUE))%>%
+  ungroup()
+
+```
+
+```{r}
+# In this trunk, I chose group the data by "state" as IL and calculated the empolyees in IL with all their informations. Here I selected total employees in IL that more than 21 and calculated the summary. The mean of these counties is 186, total 19131 with a median of 42.
+data1%>%
+  select(state, total_employees)%>%
+  filter(state== "IL")%>%
+  group_by("total_employees">21) %>%
+  summarise(mean(total_employees, na.rm = TRUE), sum(total_employees, na.rm = TRUE),median(total_employees, na.rm = TRUE))
+
+
+    
+ 
+```
+
+```{r}
+# In this trunk I chose the empolyees that are more then 100 over all states and ranked them by ascending order. Top 10 was sliced 
+data1%>%
+  select(state, county, total_employees)%>%
+  filter(total_employees >=100)%>%
+  arrange(desc(total_employees))%>%
+  slice(1:10)%>%
+  ungroup()
+```
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+In this case, I calculated a total number of how many times each state and did arrange by desceding order. This can help to find out the where have the most employees in the state or over all of the states. 
