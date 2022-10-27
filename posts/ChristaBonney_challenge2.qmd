@@ -1,0 +1,245 @@
+---
+title: "Challenge 2: Data Wrangling"
+author: "Christa Bonney"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(modeest)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+#read in birds.csv data
+birds_data <- (read.csv("~/GIT/601_Fall_2022/posts/_data/birds.csv"))
+```
+
+```{r}
+#get data dimensions
+dim(birds_data)
+
+#get column names (variables)
+colnames(birds_data)
+
+#preview data
+head(birds_data)
+
+#view birds_data data set
+view(birds_data)
+```
+
+Based on the current data provided it can be surmised that what is being catalogued is agricultural data, specifically livestock - poultry (chickens, ducks, geese, etc.) and their FAO estimated monetary value per 1000 birds, for various countries/areas, from the years 1961 to 2018. Since all of the observations fall under the "Live Animal" 'Domain', I believe that the 'element code' pertains to the category that the associated 'item code' would fall under (ex. 'stocks' of 'chickens'). Altogether we are looking at 30977 observations across 14 variables. Of the 14 variables there are:
+
+
+"Domain.Code": consisting of qualitative ordinal values
+
+"Domain": consisting of qualitative ordinal values
+
+"Area.Code": consisting of qualitative ordinal values
+
+"Area": consisting of qualitative ordinal values
+
+"Element.Code": consisting of qualitative ordinal values
+
+"Element": consisting of qualitative ordinal values
+
+"Item.Code": consisting of qualitative ordinal values
+
+"Item": consisting of qualitative ordinal values 
+
+"Year.Code": consisting of qualitative ordinal values  
+
+"Year": consisting of qualitative ordinal values
+
+"Unit": consisting of qualitative ordinal values
+
+"Value": consisting of quantitative continuous values
+
+"Flag": consisting of qualitative ordinal values
+
+"Flag.Description":consisting of qualitative ordinal values
+
+The various variables are considered ordinal assuming the organization tracking this information has a curated selection of options for data input per each category.
+
+For this assignment the focus will be on the "Area", "Item", "Year" and "Value" variables to generate information to examine global changes in the value per 1000 head of chickens in the years 2008 and 2018.
+
+```{r}
+#get table of values in 'Area' column to get variety of countries featured in data set
+#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.
+
+table(select(birds_data, "Area"))
+
+```
+
+
+```{r}
+#get table of values in 'Item' column to get variety of poultry species featured in dataset
+#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.
+
+table(select(birds_data, "Item"))
+```
+
+```{r}
+#get table of values in 'Year' column to get range of years featured in data set
+#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.
+
+table(select(birds_data, "Year"))
+```
+
+From these tables we can see that a large variety of countries and general geographical areas such as Yemen, Mainland China, Eastern Europe, and Saint Lucia, etc., have contributed agricultural data pertaining to their poultry production fields with data gathered from 1961 to 2018. The categorical selection options range from 'chickens' to 'ducks', 'geese', 'turkeys', and 'pigeons (and related fowl)'. 
+
+```{r}
+#| label: summary
+
+```
+
+```{r}
+#select out desired columns to create a condensed data set
+
+select_bird_data <- as_tibble(select(birds_data, "Item", "Value", "Area", "Year"))
+```
+
+
+```{r}
+#rename "Value" column to 'Value per 1000 Head Chickens' to reflect units of measurement for poultry
+select_bird_data <- rename(select_bird_data, 'Value per 1000 Head Chickens' = 'Value')
+```
+
+```{r}
+#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018
+
+#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018
+
+#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018
+
+#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018
+
+select_bird_data %>%
+  filter(Item == 'Chickens' & Year == '2018')
+```
+
+
+```{r}
+#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018
+
+#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018
+
+#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018
+
+#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018
+
+#repeat steps to generate comparable data for 2008
+
+chickens_2018 <- (filter(select_bird_data, Item == 'Chickens' & Year == '2018'))
+```
+  
+
+```{r}
+#could not generate ordered results with arrange() and 'sort', values stayed out of order regardless of the way filtering and grouping functions were ordered in the script
+
+#several attempts were made to generate centralizing data with summarize(): filtering, na.omit(), na.rm = TRUE, etc
+
+#resorted to finding alternate function, summary(), to get desired results
+
+summary(chickens_2018, 'Value per 1000 Head Chickens')
+```
+
+```{r}
+# Create function to calculate mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+# Create 2018 chickens value vector from column
+v <- select(chickens_2018, 'Value per 1000 Head Chickens')
+
+# Calculate the mode using mode function.
+result <- getmode(v)
+print(result)
+
+#the printed results return the values in the whole column
+
+#not a successful effort to calculate the mode
+```
+
+
+```{r}
+#could not get method of creating a mode function to work
+
+#installed 'modeest' package, and used mlv(Mysamples, method = "mfv") to attempt to calculate mode for value of chickens per 1000 head in 2018 (global)
+
+#initially did not work
+
+#had to convert column data 'Value per 1000 Head Chickens' into a matrix, then into a vector, to be able to apply the mlv() function
+
+#got return of NA  - since data included a missing/NA value - so also used na.rm = TRUE to get numerical values 
+
+chix_2018V <- as.vector(as.matrix(select(chickens_2018, 'Value per 1000 Head Chickens')))
+mlv(chix_2018V, method = "mfv", na.rm = TRUE)
+
+#calculate Standard Deviation
+sd(chix_2018V, na.rm = TRUE)
+```
+
+```{r}
+#filter for global chicken value data for only year 2008
+chickens_2008 <- (filter(select_bird_data, Item == 'Chickens' & Year == '2008'))
+
+#use 'summary' function to generate centralizing and other data
+summary(chickens_2008, 'Value per 1000 Head Chickens')
+
+#calculate mode for 2008 global chicken value data
+chix_2008V <- as.vector(as.matrix(select(chickens_2008, 'Value per 1000 Head Chickens')))
+mlv(chix_2008V, method = "mfv", na.rm = TRUE)
+
+#calculate Standard Deviation
+sd(chix_2008V, na.rm = TRUE)
+```
+
+
+Value per 1000 Head Chickens in 2008:
+
+mean: 318818
+median: 16025
+mode: 5, 18, 878
+
+standard deviation: 1910971
+min: 4
+max: 18969655
+1st quantile: 2282
+3rd quantile: 107146
+
+
+Value per 1000 Head Chickens in 2018:
+
+mean: 396772
+median: 19374
+mode: 40
+
+standard deviation: 1533739
+min: 4
+max: 23707134
+1st quantile: 2900
+3rd quantile: 123910
+
+The desire was to compare the reported global values per 1000 head chickens between 2008 and 2018 to see if the overall value had increased with the 10yr interlude, or had decreased. From this information we can see that the ranges in reported global values per 1000 head chickens for both the 2008 and 2018 data sets is quite substantial, evidenced by the minimum, maximum, and SD values for each. The minimum reported global values differ little, being 4 for each. While the maximum values (2008: 18,969,655; 2018: 23,707,134) and mean values (2008: 318,818; 2018: 396,772) indicate a significant increase in the global values for 1000 head chickens in the 10 year period.
+
