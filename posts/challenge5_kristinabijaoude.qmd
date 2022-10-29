@@ -50,7 +50,7 @@ summary(AB_NYC_2019)
 For the most part, the dataset is clean, but it needs a fixer-upper in some areas. First, let's rename the variables.
 
 ```{r}
-AB_NYC_2019 <- AB_NYC_2019 %>%
+AB_NYC_tidy <- AB_NYC_2019 %>%
   rename("Listing ID" = id,
          "Listing Name" = name,
          "Host ID" = host_id,
@@ -65,15 +65,15 @@ AB_NYC_2019 <- AB_NYC_2019 %>%
          "Number of Reviews per Month" = reviews_per_month,
          "Calculated Host Listings Count" = calculated_host_listings_count,
          "Number of Days Available During the Year" = availability_365)
-view(AB_NYC_2019)
+view(AB_NYC_tidy)
 ```
 
 Let's create a new variable called "Geolocation" by combining the latitude and longitude columns.
 
 ```{r}
-AB_NYC_2019 <- unite(AB_NYC_2019, "latitude", "longitude", col = "Geolocation", sep = ":")
+AB_NYC_tidy <- unite(AB_NYC_tidy, "latitude", "longitude", col = "Geolocation", sep = ":")
 
-view(AB_NYC_2019)
+view(AB_NYC_tidy)
 
 # it should come out like this
 
@@ -87,7 +87,7 @@ view(AB_NYC_2019)
 
 ```{r}
 library(ggplot2)
-AB_NYC_2019 %>%
+AB_NYC_tidy %>%
   count(`Room Type`)
 
 Room_Type <- data.frame(
@@ -113,7 +113,7 @@ The majority of AirBnB hostings are entire homes or apartment rooms and private 
 
 
 ```{r}
-AB_NYC_2019 %>%
+AB_NYC_tidy %>%
   count(`Borough`)
 
 Borough <- data.frame(
@@ -138,7 +138,7 @@ to the surprise of almost nobody, the vast majority of AirBnB hostings are locat
 
 ```{r}
 
-AB_NYC_2019 %>%
+AB_NYC_tidy %>%
   filter(`Minimum Number of Nights` == 1)%>%
   count(`Minimum Number of Nights`) +
   sum()
@@ -169,11 +169,11 @@ Interesting, the majority of the hostings lets visitors sleep for 1 night. The m
 
 ```{r}
 # create data
-x <- c(AB_NYC_2019$`Minimum Number of Nights`)
-y <- c(AB_NYC_2019$`Price per Night ($)`)
+x <- c(AB_NYC_tidy$`Minimum Number of Nights`)
+y <- c(AB_NYC_tidy$`Price per Night ($)`)
 
 # create scatterplot
-ggplot(AB_NYC_2019, 
+ggplot(AB_NYC_tidy, 
        aes(x = x, 
            y = y,
            na.rm = TRUE)) +
@@ -192,13 +192,34 @@ The scatterplot graph I coded above shows a correlation between Minimum Number o
 
 ```{r}
 # create data
-NYC_Borough <- c(AB_NYC_2019$Borough)
-Price <- c(AB_NYC_2019$`Price per Night ($)`)
+NYC_Borough <- c(AB_NYC_tidy$Borough)
+Price <- c(AB_NYC_tidy$`Price per Night ($)`)
 
 # create violin plot
- ggplot(AB_NYC_2019, aes(x=NYC_Borough, y=Price, fill=Price)) +
+ ggplot(AB_NYC_tidy, aes(x=NYC_Borough, y=Price, fill=Price)) +
    scale_y_continuous(label = scales::dollar) +
   geom_violin()
 ```
 
 This is a funny looking violin plot. The upper tip of each violin plot shows the outlier-- the most expensive hosting per borough. Again, to no one's surprise, the most expensive hostings are in Manhattan, Brooklyn, and Queens as well. 
+
+Below, I plot out a map of New York ity with one dot representing one AirBnB location.
+
+```{r}
+# AirBnB locations in NYC
+lat <- c(AB_NYC_2019$latitude)
+long <- c(AB_NYC_2019$longitude)
+
+
+# one dot represents one AirBnB hosting
+ggplot() +
+  geom_polygon(data = AB_NYC_2019, aes(x=lat, y = long, group = long), fill="grey", alpha=0.3) +
+  geom_point(data= AB_NYC_2019, aes(x=lat, y=long)) +
+  ggtitle("AirBnb Hosting Locations in New York City") +
+  theme_void()
+
+ggplot() + 
+  geom_polygon(data=AB_NYC_2019, aes(x=long, y=lat),
+                color="black", fill="lightblue" )
+```
+
