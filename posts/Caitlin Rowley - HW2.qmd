@@ -1,0 +1,83 @@
+---
+title: "Caitlin Rowley - HW2"
+author: "Caitlin Rowley"
+editor: visual
+---
+
+Read in a dataset from the \_data folder in the course blog repository, or choose your own data. If you decide to use one of the datasets we have provided, please use a challenging dataset - check with us if you are not sure. 
+
+```{r}
+
+#| label: setup
+#| warning: false
+#| message: false
+
+# install packages and load libraries:
+
+install.packages("readr")
+install.packages("readxl")
+
+library(tidyverse)
+library(readr)
+library(readxl)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+I selected a data set from the Inside AirBnB website capturing data related to summary information and metrics for listings in Boston, MA.
+
+```{r}
+# read in dataset:
+
+Boston <- read_csv("C:\\Users\\caitr\\OneDrive\\Documents\\DACSS\\601_Fall_2022\\Boston AirBnB Data.csv")
+```
+
+```{r}
+# clean the data:
+
+# At first glance, it seems as though there are no values in the column titled "neighbourhood_group." So, I will find all unique values within that column to determine whether it can be removed from my tidy data set.
+
+unique(Boston[c("neighbourhood_group")])
+
+# I now know that there is no data within this column. I will remove it from my data set.
+
+Boston_tidy <- subset(Boston, select = -c(neighbourhood_group))
+
+# I can see from viewing this data frame that there are no other columns that are absent any values, so I will move on to other tidying tasks.
+
+# rename columns:
+
+names(Boston_tidy) <- c('room_id', 'room_name', 'host_id', 'host_name', 'neighborhood', 'room_latitude', 'room_longitude', 'room_type', 'room_price', 'min_nights', 'number_reviews', 'last_review', 'reviews_per_month', 'host_listings', 'availablility_next_365', 'number_reviews_LTM', 'room_license')
+
+# find duplicates:
+
+duplicates <- duplicated(Boston_tidy)
+
+# reached "max.print", so I will increase the limit and identify if any values within the vector = TRUE:
+
+options(max.print=999999)
+duplicates["TRUE"]
+```
+
+"Boston_tidy" represents AirBnB rental listing data for the city of Boston over the last twelve months. The data frame has 17 variables and 5,185 rows of data. Each row now represents one unique observation---or in this case, a unique rental listing---that includes data related to the following variables: (1) room/listing ID number, (2) name of the room/listing, (3) listing host ID number, (4) listing host name, (5) room/listing neighborhood, (6) room/listing latitude, (7) room/listing longitude, (8) type of room/listing, (9) room/listing price, (10) minimum number of nights for rent, (11) number of room/listing reviews, (12) most recent room/listing review, (13) number of room/listing reviews per month, (14) number host-specific listings, (15) room/listing availability over the next year, (16) number of reviews for room/listing over the past 12 months, and (17) room/listing licensure status.
+
+Some potential research questions include:
+
+-   Which neighborhoods have the most expensive price per bed?
+
+-   Which neighborhoods have the highest number of listings?
+
+-   Which property types are listed most frequently?
+
+-   What's the average listing price by property types?
+
+-   What's the average price per bed price by property type?
+
+-   What does the occupancy rate look like by neighborhood?
+
+-   What factors affect the price the most?
+
+-   Can the price be accurately predicted, given other information about the listing?
+
+-   Is there a correlation between number of reviews and occupancy?
