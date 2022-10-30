@@ -1,0 +1,80 @@
+---
+title: "HW2"
+author: "Prajakti Kapade"
+description: "Homework 2"
+date: "10/26/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+
+---
+
+```{r}
+library(dplyr) 
+```
+The columns of the dataset are :
+```{r}
+data_country <- read.csv('_data/FAOSTAT_livestock.csv')
+colnames(data_country)
+data_country
+```
+The columns/features are of the following type:
+1. Domain.Code - categorical variable, related to the Domain
+2. Domain - categorical variable
+3. Area.Code - Categorical/Ordinal, related to the Area
+4. Area - categorical variable
+5. Element.Code - Categorical variable related to the element
+6. Element - Categorical variable
+7. Item.Code - Categorical variable related to the Item
+8. Item - Categorical variable
+9. Year.Code  - Categorical variable related to the Year (it is similar to the Year)
+10. Year - Categorical variable
+11. Unit - categorical
+12. Value - Continuous variable
+13. Flag - categorical related to Flag.Description
+14. Flag Description - Categorical
+
+As, we can see some columns are related to each other we can choose certain columns from it, to reduce complexity.
+We are taking a small subset of the data by extracting some columns of use.
+```{r}
+data_country_subset <- data_country[c('Domain','Area','Element','Item','Year','Unit','Value','Flag.Description','Flag')]
+data_country_subset
+```
+
+The summary of the columns in the dataset are shown below:
+```{r}
+
+#install.packages( pkgs = "summarytools" )
+summary(data_country)
+```
+
+From the code below, we can see only one element is present.
+```{r}
+date_country_groups<-group_by(data_country,Element)
+abc_data.d_by_product<-summarise(date_country_groups,
+          n=n())
+abc_data.d_by_product
+```
+
+```{r}
+date_country_groups<-group_by(data_country,Item)
+abc_data.d_by_product<-summarise(date_country_groups,
+          n=n())
+abc_data.d_by_product
+```
+
+There is only one domain present in the dataset.
+```{r}
+date_countryg<-group_by(data_country,Domain)
+abc_data.d_by_product<-summarise(date_countryg,
+          n=n())
+abc_data.d_by_product
+```
+Research Question: 
+1. Which area has higher number of livestocks, what are the median, mean and mode values for the same? 
+2. Across which years were the count of livestocks the highest? 
+3. What is the unit type across areas and which one is the highest in numbers?
+4. How is flag affecting the livestock value count?
+
