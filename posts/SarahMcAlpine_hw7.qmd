@@ -1,0 +1,125 @@
+---
+title: "Sarah McAlpine - Challenge 7"
+author: "Sarah McAlpine"
+desription: "Homework Challenge 7"
+date: "11/2/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - sarahmcalpine
+  - airbnb
+  - ggplot2
+  - summarytools
+  - treemap
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(summarytools)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Adding Dimensions to Airbnb Data Visualization
+
+```{r}
+#initial read-in 
+airbnb_orig <- read_csv("_data/AB_NYC_2019.csv")
+
+
+#airbnb_clean$price <- replace(airbnb_clean$price, airbnb_clean$price == 0, NA)
+
+airbnb_medianpriced <- airbnb_orig %>%
+  filter(price>0) %>%
+  group_by(room_type, neighbourhood_group) %>%
+    summarize(median(price))
+
+#airbnb_medianpriced
+
+airbnb_medianpriced %>%
+treemap(room_type,
+        index= c("neighbourhood_group", "room_type"),
+        vSize = "median(price)",
+        type = "index",
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019"
+)
+#try again, swapping room and neighborhood group
+airbnb_medianpriced %>%
+treemap(room_type,
+        index= c("room_type","neighbourhood_group"),
+        vSize = "median(price)",
+        type = "index",
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019"
+)
+
+```
+These treemaps doesn't tell a clear story. I think I'll try violin plots to see the range and density of prices, but I need to scale my data to those greater than zero and smaller than $1000.
+
+## Violin Plots
+```{r}
+airbnb_priced <- airbnb_orig %>%
+  filter(price>0, price<1000) %>%
+  group_by(room_type, neighbourhood_group) 
+
+airbnb_priced %>%  
+  ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
+  geom_violin(width = 1, size = .5, 
+              scale = "area",
+              trim = TRUE)+
+  coord_flip()+
+  xlab("room type")
+```
+This violin plot shows the density of prices of each rental, by both room type and by borough, but the scale is so various that it's hard to really compare. Perhaps 3 separate graphs would show this better, or even a lower max value. I could also try this again after removing outliers--I imagine that would be much clearer.
+
+```{r}
+airbnb_pricedlow <- airbnb_orig %>%
+  filter(price>0, price<300) %>%
+  group_by(room_type, neighbourhood_group) 
+
+airbnb_pricedlow %>%  
+  ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
+  geom_violin(width = 1, size = .5, 
+              scale = "area")+
+  coord_flip()+
+  xlab("room type")
+```
+
+
+
+## Grouped Bars
+```{r}
+airbnb_medianpriced <- airbnb_orig %>%
+  filter(price>0) %>%
+  group_by(room_type, neighbourhood_group) %>%
+    summarize(median(price))
+
+airbnb_medianpriced <- airbnb_medianpriced %>%
+  rename(median_price = "median(price)") 
+
+#airbnb_medianpriced
+
+airbnb_medianpriced %>%
+  ggplot(aes(x = room_type, y = median_price, fill = neighbourhood_group)) +
+  geom_bar(position= "dodge", stat = "identity") +
+  xlab("room type") +
+  ylab("median price per night")+
+  coord_flip()
+
+airbnb_medianpriced %>%
+  ggplot(aes(x = reorder(neighbourhood_group, +median_price), y = median_price, fill = room_type)) +
+  geom_bar(position= "dodge", stat = "identity")+
+  xlab("borough")+
+  ylab("median price per night")+
+  ggtitle("Median NYC Airbnb Prices 2019, by Room Type and Borough")
+
+```
+These last two graphs show the clear distinctions among the median prices by room type, and while both show the differences across boroughs, the final graph tells the clearest story. I couldn't figure out how to reorder the boroughs for the horizontal bar plot--that may make it easier to see the 5 boroughs in relation to one another. Can anyone help with that?
