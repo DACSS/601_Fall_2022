@@ -1,0 +1,223 @@
+---
+title: "Challenge 3 - Pivoting for Tidy Data"
+author: "Christa Bonney"
+description: "Tidy Data: Pivoting"
+date: "10/31/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+#read in dataset for eggs_tidy csv
+eggs_data <- read.csv("~/GIT/601_Fall_2022/posts/_data/eggs_tidy.csv")
+
+```
+
+```{r}
+#get dimensions of data
+
+dim(eggs_data)
+```
+
+```{r}
+#get column names
+
+colnames(eggs_data)
+
+```
+
+```{r}
+#preview data to determine type
+
+head(eggs_data)
+```
+
+
+```{r}
+#get range of months and years for accrued data
+table(select(eggs_data, "year"))
+
+table(select(eggs_data, "month"))
+
+```
+
+The eggs_tidy set consists of  6 variables with 120 cases. The variables are:
+
+"month": qualitative ordinal, options of all 12 months from 'January' to 'December' as values
+
+"year": qualitative ordinal, data from years 2004 to 2013 as values
+
+"large_half_dozen"
+"large_dozen"
+"extra_large_half_dozen"
+"extra_large_dozen"
+
+these remaining four variables have quantitative continuous values
+
+I would surmise that this data set is a log of total profit from chicken egg sales for an independent seller, totaled for each month in set years. The four variables account for 2 chicken egg sizes commonly sold, 'large' and 'extra-large', and the carton quantities chicken eggs are normally sold in, in stores, 'dozen' and 'half-dozen'. And the values for these variables are continuous, which prices would be, but chicken eggs sold in half- or whole- dozen cartons do not, generally, expand into tens or hundreds of dollars per carton, so this is likely a log of monthly sale totals. As well, one does not generally sell incomplete cartons, so it is more likely total sales profit than a total of products sold in the month.
+
+To determine how the average price of large eggs (dozen and half-dozen) and extra-large eggs (dozen and half-dozen) changes from 2004 to 2013 I will be pivoting the data...
+
+
+## Anticipate the End Result
+
+The eggs_tidy data set currently consists of 6 variables and 120 cases. 
+
+```{r}
+#there are 6 columns and 120 rows
+
+#each 'year' value is associated with 12 'month' values
+
+#pivot to get year values isolated for each egg variable
+
+#there are 10 year values (2004 - 2013), so should get 10 new columns
+
+#could not pivot_wider year column without generating NAs in new year columns
+#dropped 'month' column with subset function
+years_data <- subset(eggs_data, select = -month)
+head(years_data)
+
+```
+```{r}
+#filter data sets to get monthly values for select years for each of the 4 egg variables
+data_2004 <- filter(years_data, year == '2004')
+
+data_2005 <- filter(years_data, year == '2005')
+
+data_2006 <- filter(years_data, year == '2006')
+
+data_2007 <- filter(years_data, year == '2007')
+  
+data_2008 <- filter(years_data, year == '2008')
+  
+data_2009 <- filter(years_data, year == '2009')
+  
+data_2010 <- filter(years_data, year == '2010')
+
+data_2011 <- filter(years_data, year == '2011')
+  
+data_2012 <- filter(years_data, year == '2012')
+
+data_2013 <- filter(years_data, year == '2013')
+
+```
+
+```{r}
+#for some reason could not get individual means from year-filtered data sets, so converted to matrices, then vectors, which allowed for correct means to be calculated for 'annual average price' from monthly values
+
+#then made vectors for each variable (ex. "large half dozen") from calculated, filtered, year data means
+
+avg_annual_prices_lg_half_doz_eggs <- c(
+  mean(c((as.matrix(select(data_2004, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2005, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2006, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2007, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2008, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2009, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2010, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2011, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2012, 'large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2013, 'large_half_dozen')))))
+)
+
+avg_annual_prices_lg_doz_eggs <- c(
+  mean(c((as.matrix(select(data_2004, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2005, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2006, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2007, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2008, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2009, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2010, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2011, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2012, 'large_dozen'))))),
+  mean(c((as.matrix(select(data_2013, 'large_dozen')))))
+)
+
+avg_annual_prices_ex_lg_half_doz_eggs <- c(
+  mean(c((as.matrix(select(data_2004, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2005, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2006, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2007, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2008, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2009, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2010, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2011, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2012, 'extra_large_half_dozen'))))),
+  mean(c((as.matrix(select(data_2013, 'extra_large_half_dozen')))))
+)
+
+avg_annual_prices_ex_lg_doz_eggs <- c(
+  mean(c((as.matrix(select(data_2004, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2005, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2006, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2007, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2008, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2009, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2010, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2011, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2012, 'extra_large_dozen'))))),
+  mean(c((as.matrix(select(data_2013, 'extra_large_dozen')))))
+)
+```
+
+  
+```{r}
+head(avg_annual_prices_lg_half_doz_eggs)
+head(avg_annual_prices_lg_doz_eggs)
+head(avg_annual_prices_ex_lg_half_doz_eggs)
+head(avg_annual_prices_ex_lg_doz_eggs)
+```                
+
+```{r}
+#make a new years vector to use as a variable column
+
+year <- c('2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013')
+
+#combine vectors into a new data set
+
+annual_prices <- data.frame(year, avg_annual_prices_lg_half_doz_eggs, avg_annual_prices_lg_doz_eggs, avg_annual_prices_ex_lg_half_doz_eggs, avg_annual_prices_ex_lg_doz_eggs)
+
+#pivot years 4 egg columns to rows, and years to a column to see annual average price value changes for each year for each product
+options(digits = 5)
+print(annual_prices)
+```
+What is displayed is a clear pattern of increasing egg prices from 2004 to 2013 for all four egg price variables.
+
+What is not displayed is all of the scripts that I attempted and deleted in my efforts to functionalize the data into something that I could pivot, as I kept running into errors with every method I tried or looked up to try. I do realize I am the common denominator in these script failures, though. But I ended up reaching the end result I was aiming for, in my attempts to generate pivotable data (for me). So I'm just going to do a little pivoting with the final data set I produced to show I can!
+
+```{r}
+# the annual prices data frame is composed of 5 variables and 10 rows. I am going to pivot_wider the 'year' column with the means_ldh column
+
+
+#this should displace the year and avg_annual_prices_lg_half_doz_eggs columns, and add 10 new 'year + avg annual lg_half_doz_eggs price' columns
+
+(5 - 2) + 10
+
+#pivot_wider pivot_wider the 'year' column with the means_ldh column, this generates a changed annual_prices data set with 13 columns in total.
+
+pivot_wider(annual_prices, names_from = 'year', values_from = 'avg_annual_prices_lg_half_doz_eggs')
+```
+
+The end result of this attempt is the change from the data set only having 5 columns, to having 13 after having pivoted the 'year' and 'avg_annual_prices_lg_half_doz_eggs' columns.
