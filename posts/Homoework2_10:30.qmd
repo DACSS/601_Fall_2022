@@ -1,0 +1,170 @@
+---
+title: "Homework_2_Guanhua_Tan"
+editor: source
+author: "Guanhua Tan"
+desription: "Homework 2"
+date: "10/14/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - homework2
+  - pisa2018
+---
+
+```{r}
+# import package
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+# read the data
+pisa <- read_csv('_data/CY07_MSU_SCH_QQQ.csv')
+dim(pisa)
+length(unique(pisa$CNT))
+pisa2018 <- pisa %>%
+  select(starts_with("SC155"))
+dim(pisa2018)
+```
+
+# Briefly Decribe the Dataset.
+
+This dataset is one part of PISA 2018 dataset with a focus on schools. It covers 80 countries and different regions within each country. The dataset documents 21,903 schools' responses regarding 187 questions. Some key identifiers include CNT (Country Name), STRATUM (Region Name) and OECD (belongs to or not OECD)
+
+# Tidy Data and Mutate
+
+## Camprison of Countires
+
+```{r}
+# clean data and reduce the numbers of column
+pisa2018_joint <- cbind(pisa[,1:12], pisa2018)
+head(pisa2018_joint)
+```
+
+I decided to concentrate my analysis on a series questions of digital device (SC115Q). So I make two different datasets at first. One includes all identifier information. The other covers the columns that contains "SC155Q". Then, I use function "cbind" to combine these two into a new dataset (pisa2018_joint).Furthermore, I mutate 11 columns to calculate every country average regarding 11 questions. After that, I recognize the data with keeping columns of CNT, Region, OECD and 11 questions.
+
+```{r}
+# mutate columns about the averages of each country for every question.
+pisa2018_joint_average <- pisa2018_joint %>%
+  group_by(CNT)%>%
+  mutate(Ave01Q=mean(SC155Q01HA, na.rm=T), 
+         Ave02Q=mean(SC155Q02HA, na.rm=T), 
+         Ave03Q=mean(SC155Q03HA, na.rm=T),
+         Ave04Q=mean(SC155Q04HA, na.rm=T),
+         Ave05Q=mean(SC155Q05HA, na.rm=T),
+         Ave06Q=mean(SC155Q06HA, na.rm=T),
+         Ave07Q=mean(SC155Q07HA, na.rm=T),
+         Ave08Q=mean(SC155Q08HA, na.rm=T),
+         Ave09Q=mean(SC155Q09HA, na.rm=T),
+         Ave10Q=mean(SC155Q10HA, na.rm=T),
+         Ave11Q=mean(SC155Q11HA, na.rm=T),)
+pisa2018_joint_average
+```
+
+```{r}
+# recognize the dataset
+pisa2018_clean <- pisa2018_joint_average %>%
+  select(CNT, Region, OECD, Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q) %>%
+  group_by(CNT) %>%
+  distinct()
+pisa2018_clean
+```
+
+## Five Case Studies--Argentina, Brazil, Hong Kong, Philipines, United Kidom
+
+```{r}
+# choose three countries to look at regional difference within the countries
+# United Kingdom (GBR), Hong Kong (HKG), Philippines (PHL), Argentina (ARG), Brazil(BRA)
+
+pisa2018_joint_case_study <- pisa2018_joint  %>%
+  select(CNT, STRATUM, OECD, SC155Q01HA,SC155Q02HA, SC155Q03HA, SC155Q04HA, SC155Q05HA,
+         SC155Q06HA, SC155Q07HA, SC155Q08HA, SC155Q09HA, SC155Q10HA, SC155Q11HA) %>%
+  group_by(STRATUM) %>%
+  arrange(STRATUM) %>%
+  filter(CNT== "GBR" | CNT== "HKG" | CNT=="PHL"| CNT=="ARG" | CNT=="BRA")
+pisa2018_joint_case_study
+
+```
+
+In order to investigate regional differences within the countries, I chose five countries in four different continent as case study. I clean the data and group_by data as regional code. Additionally, I mutate 11 columns to calculate every region average regarding 11 questions. Finally, I reorganize the dataset with columns of CNT, STRATUM, OECD, and 11 questions' average of every region.
+
+```{r}
+# create a case study dataset with average
+pisa2018_case_study_average <-pisa2018_joint_case_study %>%
+  mutate(Ave01Q=mean(SC155Q01HA, na.rm=T), 
+         Ave02Q=mean(SC155Q02HA, na.rm=T), 
+         Ave03Q=mean(SC155Q03HA, na.rm=T),
+         Ave04Q=mean(SC155Q04HA, na.rm=T),
+         Ave05Q=mean(SC155Q05HA, na.rm=T),
+         Ave06Q=mean(SC155Q06HA, na.rm=T),
+         Ave07Q=mean(SC155Q07HA, na.rm=T),
+         Ave08Q=mean(SC155Q08HA, na.rm=T),
+         Ave09Q=mean(SC155Q09HA, na.rm=T),
+         Ave10Q=mean(SC155Q10HA, na.rm=T),
+         Ave11Q=mean(SC155Q11HA, na.rm=T),) %>%
+  select(CNT, STRATUM, OECD, Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q) %>%
+  distinct()
+pisa2018_case_study_average
+ 
+
+
+```
+
+### Argentina case
+
+```{r}
+# Argentina Case
+ARG_2018 <- pisa2018_case_study_average %>%
+  filter(CNT== 'ARG') %>%
+  select(STRATUM,Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q)
+ARG_2018
+
+```
+
+### Brazil Case
+
+```{r}
+# Brazil case
+BRA_2018 <-pisa2018_case_study_average %>%
+  filter(CNT== 'BRA') %>%
+  select(STRATUM,Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q)
+BRA_2018
+```
+
+### Hong Kong Case
+
+```{r}
+# Hong Kong case
+Hong_Kong_2018 <-pisa2018_case_study_average %>%
+  filter(CNT== 'HKG') %>%
+  select(STRATUM,Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q)
+Hong_Kong_2018
+
+```
+
+### Philippines Case
+
+```{r}
+# Philippines case
+PHL_2018 <-pisa2018_case_study_average %>%
+  filter(CNT== 'PHL') %>%
+  select(STRATUM,Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q)
+PHL_2018
+```
+
+### United Kingdom Case
+
+```{r}
+# United Kingdom case
+GBR_2018 <-pisa2018_case_study_average %>%
+  filter(CNT== 'GBR') %>%
+  select(STRATUM,Ave01Q,Ave02Q, Ave03Q,Ave04Q,Ave05Q,Ave06Q,Ave07Q,Ave08Q, Ave09Q,Ave10Q,Ave11Q)
+GBR_2018
+```
+
+# Research Questions 
+SC115 is a series of questions about the application of digital device in different countries. Some questions measure the availability of digital device in different. Some questions interrogate if there are enough supports for teachers in terms of training program, technical support, and time. The dataset categorize the countries into two divisions--OECD or Non-OECD. The dataset reflects regional differences within a country. I'd like to ask a set of questions:is there a difference between OECD countries and Non-Countries? Is there a difference within OECD countries and Non-countries? Are there significant differences regarding different regions within a country? I will present my research results by deploying tables, numbers, and graphics. Furthermore, I will probably explore the reasons that caused the differences.
