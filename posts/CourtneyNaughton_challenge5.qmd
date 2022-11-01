@@ -1,0 +1,128 @@
+---
+title: "Challenge 5"
+author: "Courtney Naughton"
+description: "Introduction to Visualization"
+date: "10/13/2022"
+format:
+  html:
+    html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - cereal
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(viridisLite)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+
+
+```{r}
+cereal<- read_csv("_data/cereal.csv")
+cereal
+```
+
+### Briefly describe the data
+This dataset has 20 rows and 4 column. It includes 20 types of cereal with detailed amount of sodium, sugar and type (A or C). The type is either child or adult.
+
+## Tidy Data (as needed)
+
+This dataset is relatively tidy. We can sort this by sugar levels. I also converted Sodium in milligrams to grams so that we can compare it to Sugar.
+
+```{r}
+by_sugar <-cereal %>% 
+  arrange(desc(Sugar))  %>%
+  mutate(Sodium = Sodium/1000)
+by_sugar
+
+```
+
+I also pivoted the data longer so that I could eventially create a stacked graph of sodium and sugar in one bar graph.
+
+```{r}
+cereal_new<- pivot_longer(by_sugar, col = c("Sodium","Sugar"),
+                 names_to="Ingredient",
+                 values_to = "Amount")
+cereal_new
+
+```
+
+## Univariate Visualizations
+Using cereal data, we can look at the amount of sugar in each cereal, separating by type (adult or child).
+
+
+```{r}
+by_sugar %>%
+  filter(Type== "A") %>% 
+  arrange(Sugar) %>%   
+ mutate(Cereal=factor(Cereal, levels=Cereal)) %>%
+  ggplot( aes(x=Cereal, y=Sugar)) +
+    geom_segment( aes(xend=Cereal, yend=0)) +
+    geom_point( size=4, color="orange") +
+    coord_flip() +
+    theme_bw() +
+    xlab("")+
+  ggtitle("Adult Cereals by Sugar Levels")
+
+# Barplot
+by_sugar %>%
+  filter(Type== "C") %>% 
+  arrange(Sugar) %>%   
+  mutate(Cereal=factor(Cereal, levels=Cereal)) %>%
+ggplot( aes(x=Cereal, y=Sugar)) + 
+  geom_bar(stat = "identity", fill = viridis(10)) +
+  theme_minimal() +
+  coord_flip() +
+    ggtitle("Children Cereals by Sugar Levels")
+```
+
+
+
+## Bivariate Visualization(s)
+
+Next, I want to see the amount of ingredients in each children's cereal. I first had to convert Sodium in mg to grams so that units of measurement are consistent.
+```{r}
+cereal_new %>%
+  filter(Type== "C") %>% 
+  mutate(Cereal = fct_reorder(Cereal, desc(Amount))) %>%
+ggplot(aes(fill=Ingredient, y= Amount, x=Cereal), ) + 
+    geom_bar(position="stack", stat="identity")+
+   theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("Children Cereals with Sodium and Sugar Amounts")
+```
+
+Any additional comments?
+
+As you can see from the chart, the makeup of Apple Jacks and Froot Loops are identical. Cheerios could be considered the most healthy with the lowest amount of sugar and sodium.
