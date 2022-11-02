@@ -1,0 +1,201 @@
+---
+title: "Challenge 8 Instructions"
+author: "Matthew Norberg"
+description: "Joining Data"
+date: "11/01/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+    smooth-scroll: true
+    code-line-numbers: true
+    highlight-style: github
+    theme: zephyr
+    df-print: paged
+categories:
+  - challenge_8
+  - snl
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+```{r}
+# Read in the data set
+df <- read_csv('./_data/snl_actors.csv')
+df
+```
+
+### Briefly describe the data
+
+The data set is describing the characters in the TV show Saturday Night Live.  Each row in the data set describes one actor in the show and is uniquely identifiable by the 'aid' column.  That is, the 'aid' column serves as a primary key for the data set.  There are three other columns in the data set: 'type', 'url', and 'gender'.  The 'type' column describes what type of actor.  The values in this column are categorical and take on one four possible values: 'cast', 'crew', 'guest', and 'unknown'.  The 'url' column appears to be a combination of the 'type' column followed by an additional identifier for the actor.  The identifier can be 1 to 4 characters long and either contains characters or digits but not both.  In some cases, the additional identifier is a 4 character code, in other cases, it is a 4 digit code.  However, there are no duplicate values (excluding the missing values) in this column.  So we know that no two actors with a non-missing 'url' have the same additional identifier.  If the value in the 'type' column is missing 'unknown', then the 'url' value is missing.  However, there is one row which does not follow this rule: ('Jack Handey', NA, 'crew', 'male').  This row has a missing value in the 'url' column but does not have an unknown value in the 'type' column.  This pattern can be verified with the following chunk of R code.
+
+```{r}
+filter(df, is.na(url))
+```
+
+For the gender column, there are also four possible values: 'andy', 'female', 'male', and 'unknown'.  It is unclear what the meaning of the 'andy' value is in the 'gender' column.  We can find these rows using the filter function, but it is not easy to see why they would be labeled as 'andy'.  My guess is that this is a data collection mistake. 
+
+```{r}
+filter(df, gender == 'andy')
+```
+
+## Tidy Data (as needed)
+
+First, we should verify that the pattern observed in the 'url' column holds for each non missing value in the column.  By pattern, I am referring to the fact that each non-null value in the 'url' column appears to be a combination of the 'type' column and some additional identifier.  
+
+We should check that every line begins with "/", followed by some number of characters, followed by "/?", and then ending with some additional characters.  The following chunk of R code verifies this pattern.  Note that there are 2,249 rows in the output.  We know from before that there are 2,306 rows in total and 57 of them have missing values in the 'url' column.  Since `2,306 - 2,249 = 57`, we know that this pattern must hold for each row which does not have a missing value in the 'url' column. 
+
+```{r}
+filter(df, str_detect(url, "/./?."))
+```
+
+Next, we should check to make sure the first part of each non-null entry in the 'url' column matches the value in the the 'type' column.  We should also check to make sure that the second part of each non-null entry in the 'url' column is between 1 and 4 characters long.  This will verify that the pattern holds for the entire data set. 
+
+```{r}
+checkURL <- function() {
+  
+  for (i in seq_along(df$url)) {
+    # Get current value
+    cVal <- df$url[[i]]
+    
+    # Skip over null values
+    if (is.na(cVal)) {
+      next
+    }
+    
+    # Split value into two parts
+    parts <- str_split(cVal, "/[[?]]")[[1]]
+    
+    # Need to remove first / character and convert string to lower case
+    urlType <- parts[[1]] %>% str_sub(2) %>% str_to_lower()
+    
+    # Get the value in the type column
+    tType <- df$type[[i]]
+    
+    # If it is 'guest', add an 's'
+    if (tType == "guest") {
+      tType <- str_c(tType, "s")
+    }
+    
+    # Check to make sure the url type matches the type column
+    if (urlType != tType) {
+      print("PATTERN DOES NOT HOLD")
+      return(FALSE)
+    }
+    
+    # Get the id
+    id <- parts[[2]]
+    
+    # Check to make sure length is between 1 and 4
+    if (str_length(id) < 1 | str_length(id) > 4) {
+      print("PATTERN DOES NOT HOLD")
+      return(FALSE)
+    }
+  }
+  
+  print("PATTERN HOLDS")
+  return(TRUE)
+}
+
+checkURL()
+```
+
+At this point, we know that the first part of the 'url' column matches the value in the 'type' column for each non missing entry.  To clean the data set, we could create a new column which contains the identifier in the 'url' column.  Then we can remove the original 'url' column.  In doing so, we lose no information because the original 'url' column could easily be reconstructed by using the 'type' column.  The cleaning operation is performed in the next code chunk.
+
+```{r}
+genNewCol <- function() {
+  res <- df$url
+  for (i in seq_along(df$url)) {
+    cVal <- df$url[[i]]
+    if (is.na(cVal)) {
+      next
+    }
+    df$url[[i]] <- str_split(cVal, "/[[?]]")[[1]][[2]]
+  }
+  return(df$url)
+}
+
+df$url <- genNewCol()
+df <- df %>% rename(additionalID = url)
+df
+```
+
+## Join Data
+
+We have two more data sets that are related to the the Saturday Night Live Actors data set: 'Saturday Night Live Casts' and 'Saturday Night Love Seasons'.
+
+```{r}
+casts <- read_csv('./_data/snl_casts.csv')
+seasons <- read_csv('./_data/snl_seasons.csv')
+```
+
+The actors data set and the casts data set both have a column called 'aid'.  Therefore, we can join the two data sets together by matching the 'aid' columns together.  This is done in the code chunk below. 
+
+```{r}
+actorCasts <- inner_join(df, casts)
+actorCasts
+```
+
+The casts dataset has 614 rows and 8 columns while the actors dataset has 2,306 rows and 4 columns.  Therefore, we would expect the resulting dataset from the join operation to have 614 rows and 11 columns because we performed an inner join.  
+
+We can see that the resulting tibble has many missing values in the 'first_episode' and 'last_episode'.  I think it is also more likely that we are concerned with the seasons that each actor appeared in and the total number of episodes they appeared in each season than the specific episodes.  Therefore, to tidy the data set, I am going to remove the 'first_epid' and 'last_epid' columns.  This is also going to make the next join operation with the seasons data set cleaner.
+
+```{r}
+actorCasts <- actorCasts %>%
+              select(-c(first_epid, last_epid))
+```
+
+Looking at the seasons tibble and the 'actorCasts' tibble, we can see that both tables have a 'sid' column which we can use to join them together. However, we can also see that both tibbles have a 'n_episodes' column and they both have a different meaning.  In the 'actorCasts' tibble generated above, the column tells us the number of episodes that the actor appeared in during the season identified in the row.  In the 'seasons' tibble, the 'n_episodes' column tells us the total number of episodes in the season.  To avoid confusion, I am going to rename these columnes before joining.  Note that we would have had a similar issue with the 'first_epid' and 'last_epid' columns if we had not removed them.
+
+```{r}
+actorCasts <- actorCasts %>% rename(n_episodes_starred_in = n_episodes)
+seasons <- seasons %>% rename(n_episodes_in_season = n_episodes)
+```
+
+```{r}
+actorCastsSeasons <- inner_join(actorCasts, seasons)
+actorCastsSeasons
+```
+
+```{r}
+# Reordering tibble for clarity 
+actorCastsSeasons <- actorCastsSeasons %>%
+                     relocate(n_episodes_in_season, .after = n_episodes_starred_in)
+```
+
+Now we have a complete data set that we can do analysis on.  For each actor that appeared in a show, we can easily find information about the actor, the season they starred in, and their casting role by only looking at one data set. 
+
+
