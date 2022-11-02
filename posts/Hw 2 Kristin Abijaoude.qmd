@@ -37,7 +37,8 @@ Today, we are looking at Voter ID laws by country, as well as US States. I downl
 To open the CSV dataset, we will use read_csv() command, as demonstrated below in the chunk.
 
 ```{r}
-Voter_ID <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/dataverse_files/cvil_22_09_08.csv")
+Voter_ID <- read_csv("_data/dataverse_files/cvil_22_09_08.csv")
+Voter_ID
 ```
 
 Voter ID laws differ wherever you go; we analyize voting laws from around the globe, from our commonwealth to Afghanistan to Norway to Zimbabwe. We get a glimpse of the dimensions of the dataset, as well as the name of the columns, in which we will fix. We have 249 rows, with each row representing a country or a US state, and 16 columns representing each voter law, from compulsory ID laws to voter ID requirements.
@@ -78,17 +79,17 @@ Voter_ID <- Voter_ID %>%
          "Does the country have compulsory national ID cards?" = cmp_id,
          "Registration Type Law" = reg_law,
          "Continent" = continent)
-view(Voter_ID)
+Voter_ID
 ```
 
-Now, notice that I did not rename every variable because some are mere repeats of other variables. Therefore, I will remove them because they're unnecessary to keep. The command I will use is select(), with another command -c() inside the select() command, and type in the variables that I will remove.
+Now, notice that I did not rename every variable because some are mere repeats of other variables. Therefore, I will remove them because they're unnecessary to keep. The command I will use is 'select()', with another command '-c()' inside the 'select()' command, and type in the variables that I will remove.
 
 ## Remove Unneeded Variables
 
 ```{r}
 Voter_ID <- Voter_ID %>%
   select(-c(id_type_lab, us_dum, reg_dev, reg_lab))
-view(Voter_ID)
+Voter_ID
 ```
 
 Next, we will recode the values in the dataset so we won't be confused by what those numbers mean. We will go through certain variables that need recoding using the mutate () and recode () commands. Let's start off with continents. 
@@ -103,7 +104,7 @@ Voter_ID <- Voter_ID %>%
                             `3` = "Asia",
                             `4` = "Europe",
                             `5` = "Oceania"))
-view(Voter_ID)
+Voter_ID
 ```
 
 Next, we will recode the values in compulsory voting laws.
@@ -116,7 +117,7 @@ Voter_ID <- Voter_ID %>%
 Voter_ID <- Voter_ID %>%
   mutate(Voter_ID, `Does the country enforce compulsory voting?` = recode(`Does the country enforce compulsory voting?`, `0` = "No", `1`="Yes"))
   
-view(Voter_ID)
+Voter_ID
 ```
 
 Here, we figure out what type of voting laws there are to prove one's identity. In this dataset, there are three categories: basic personal information, non-photo ID required or requested, and photo ID required.
@@ -130,7 +131,7 @@ Voter_ID <- Voter_ID %>%
                   `2` = "Non-Photo ID Required or Requested",
                   `3` = "Photo ID Required"))
 
-view(Voter_ID)
+Voter_ID
 ```
 
 Another question regarding voting ID is whether a country provides an exhaustive, or a really comprehensive, list of types of ID to prove one's identity. In other words, can you use just about anything to prove your identity in order to vote?
@@ -142,7 +143,7 @@ Voter_ID <- Voter_ID %>%
                   `0` = "No",
                   `1` = "Yes"))
 
-view(Voter_ID)
+Voter_ID
 ```
 
 Next, does the country have compulsory national ID laws? In countries where you must show some form of ID, some provide national ID cards that can be used when showing up at the booth.
@@ -155,7 +156,7 @@ Voter_ID <- Voter_ID %>%
                   `1` = "Yes",
                   "#N/A" = "No Data"))
 
-view(Voter_ID)
+Voter_ID
 ```
 
 Lastly, let's recode voter registration, which is in three categories:
@@ -174,7 +175,7 @@ Voter_ID <- Voter_ID %>%
                   `3` = "Automatic Registration"))
 
 # Sanity Check
-view(Voter_ID)
+Voter_ID
 ```
 
 I will replace NAs with the label "no data"
@@ -193,13 +194,13 @@ Voter_ID$`Year of Current Law Enforced`[is.na(Voter_ID$`Year of Current Law Enfo
 
 Voter_ID$`Registration Type Law`[is.na(Voter_ID$`Registration Type Law`)] <-no_data
 
-view(Voter_ID)
+Voter_ID
 ```
 
 ```{r}
 Voter_ID <- relocate(Voter_ID, "Continent", .after = "Country ID")
   
-view(Voter_ID)
+Voter_ID
 ```
 
 
@@ -231,11 +232,8 @@ What do you think is the best way to increase voter turnout?
 
 
 ```{r}
-library(dplyr)
 Voter_ID %>%
   count(`Registration Type Law`)
-
-library(ggplot2)
 
 Voter_Reg <- data.frame(
   Voter.Registration.Law =factor(c("Lassiez Faire Registration","Automatic Registration","Assisted Registration")),  
@@ -248,11 +246,8 @@ ggplot(data=Voter_Reg, aes(x= Voter.Registration.Law, y=Countries.And.Territorie
 ```
 
 ```{r}
-library(dplyr)
 Voter_ID %>%
   count(`Voter ID Law Type`)
-
-library(ggplot2)
 
 Voter_ID_Type <- data.frame(
   Voter.ID.Type =factor(c("Basic Personal Details","Non-Photo ID Required or Requested","Photo ID Required")),  

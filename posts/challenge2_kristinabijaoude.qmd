@@ -21,32 +21,30 @@ categories:
 #| message: false
 
 library(tidyverse)
+library(dplyr)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
 ```{r}
-library(tidyverse)
-read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/railroad_2012_clean_county.csv")
+railroads <- read_csv("_data/railroad_2012_clean_county.csv")
+railroads
 ```
 
 This dataset is county-level data from censuses across 2930 counties with at least one railroad employee. Each row has information about the county name, the state that the county is in, and the total number of railroad employees in said county. The information is likely collected from the 2012 US Census.
 ```{r}
 #| label: Summary
-library(dplyr)
 summary(railroads)
 ```
 
 ```{r}
 #| label: Select ()
 ## Selecting county and total employees
-library(dplyr)
 select(railroads, `county`, `total_employees`)
 ```
 ```{r}
 #| label: Mean ()
 ## Average # of employees in each state
-library(dplyr)
 railroads %>%
   group_by(state) %>%
   summarise(mean.employees = mean(total_employees, na.rm = TRUE))
@@ -55,13 +53,11 @@ railroads %>%
 ```{r}
 #| label: filter ()
 ## filtering counties with up to 100 railroad employees
-library(dplyr)
 filter(railroads,`total_employees` <= 100)
 ```
 
 ```{r}
 #| label: the big stuff
-library(dplyr)
 summarize(railroads, mean.total_employees = mean(`total_employees`, na.rm = TRUE), median.total_employees = median(`total_employees`, na.rm = TRUE), min.total_employees = min(`total_employees`, na.rm = TRUE), max.total_employees = max(`total_employees`, na.rm = TRUE), sd.total_employees = sd(`total_employees`, na.rm = TRUE), var.total_employees = var(`total_employees`, na.rm = TRUE), IQR.total_employees = IQR(`total_employees`, na.rm = TRUE))
 ```
 There are many more counties with a lower number of total railroad employees than those with a higher number of them, which partially explains the low numbers for median and mean, and why the mean is greater than the median. The standard deviation is very high which shows there were outliers with large values, such as Cook County, IL with 8207 railroad employees. 
