@@ -22,6 +22,7 @@ categories:
 #| message: false
 
 library(tidyverse)
+library(dplyr)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
@@ -29,7 +30,8 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ## Read in data
 
 ```{r}
-fedfunds <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FedFundsRate.csv")
+fedfunds <- read_csv("_data/FedFundsRate.csv")
+fedfunds
 ```
 
 ### Briefly describe the data
@@ -46,7 +48,7 @@ In addition to federal funds rates, this dataset also measures inflation rates, 
 
 ```{r}
 #First, let's dissect the dataset itself
-#dimentions
+#dimensions
 dim(fedfunds)
 #[904 rows] x [8 columns]
 
@@ -67,16 +69,15 @@ summary(fedfunds)
 
 ## Tidy Data (as needed)
 
-### Create the date variable with unite () command
+### Create the date variable with 'unite()' command
 
 ```{r}
 #unite year, month, and day column to create a single column for date
-library(tidyr)
 fedfunds <- unite(fedfunds, `Year`, `Month`, `Day`, col = "Date YYYY/MM/DD", sep = "/")
 fedfunds
 ```
 
-### Fill in NAs with is.na() command
+### Fill in NAs with 'is.na()' command
 
 Here, I fill in the NAs with various values that I believe would make sense to the reader as well as myself. For example, I replace the NAs with the mean (average) in the following variables: federal funds target rate, unemployment rate, and inflation rate. Meanwhile, I replace the NAs with the highest or lowest value in upper and lower federal funds rate columns, as well as real GDP change. I specified the value replacing the NAs in the chunk below.
 
@@ -121,7 +122,7 @@ mean.inflation
 fedfunds$`Inflation Rate`[is.na(fedfunds$`Inflation Rate`)] <- mean.inflation
 
 #sanity check!
-view(fedfunds)
+fedfunds
 ```
 
 ```{r}
@@ -130,7 +131,7 @@ fedfundrates <-fedfunds %>% pivot_longer(cols=c(`Effective Federal Funds Rate`, 
                     values_to='Rate in percentage')%>%
   select(-c(`Federal Funds Target Rate`, `Federal Funds Upper Target`, `Federal Funds Lower Target`))
 
-view(fedfundrates)
+fedfundrates
 ```
 
 When I pivot the columns, I end up with 3616 rows!
