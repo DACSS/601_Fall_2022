@@ -1,0 +1,266 @@
+---
+title: "Challenge-2"
+author: "Said Arslan"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+
+---
+
+```{r}
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+
+
+## Read in the Data
+
+
+I have picked the railroad data for this challenge. It includes information about railroad employees in 2012.
+
+
+```{r}
+
+railroad <- read.csv("_data/railroad_2012_clean_county.csv")
+
+```
+
+
+
+
+## Describe the data
+
+```{r}
+
+dim(railroad)
+head(railroad)
+summary(railroad)
+
+```
+
+
+In the dataset there are 2930 rows (observations) and 3 columns (variables). Each row gives the number of railroad employees in a county of a state.
+
+
+```{r}
+
+sum(is.na(railroad$state))
+sum(is.na(railroad$county))
+sum(is.na(railroad$total_employees))
+
+```
+There are no missing values.
+
+
+```{r}
+
+n_distinct(railroad$state)
+n_distinct(railroad$county)
+
+```
+
+I would expect 51 distinct values under `state` column but there are 53.
+
+
+```{r}
+
+unique(railroad$state)
+
+```
+
+All are state abbreviations except "AE" and "AP".
+
+
+On the other hand, there are 2930 observations but 1709 distinct county names, which implies that there are a lot of counties with same name in different states.
+
+
+
+
+## Provide Grouped Summary Statistics
+
+
+```{r}
+
+sum(railroad$total_employees)
+
+```
+
+There are total of 255,432 railroad employees in the U.S. in 2012.
+
+
+```{r}
+
+railroad %>% 
+  group_by(state) %>% 
+  summarise(total_employees= sum(total_employees),  
+            proportion= round(total_employees/sum(railroad$total_employees)*100,1)) %>% 
+  arrange(desc(total_employees))
+
+```
+
+Top 3 states with the largest number of railroad employees are Texas, Illinois and New York. 7.8% of railroad employees in the country are from Texas.
+
+
+```{r}
+
+railroad %>% 
+  group_by(state, county) %>% 
+  summarise(total_employees= sum(total_employees)) %>% 
+  arrange(desc(total_employees)) %>% 
+  head()
+
+
+```
+
+County Cook of Illiniois has the highest number of employees with 8,207. 
+
+
+## Explain and Interpret
+
+Geographically large and populated states like Texas, Illinois have more employment which makes quite sense. If the dataset is merged with other datasets that includes information about such as geographical characteristics of states, population, length of railroads etc., very interesting further analysis can be made.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
