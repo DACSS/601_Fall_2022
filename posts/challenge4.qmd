@@ -1,0 +1,85 @@
+---
+title: "Challenge 4"
+author: "Mariia Dubyk"
+desription: "More data wrangling: pivoting"
+date: "11/03/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+
+```{r}
+abc_poll<-read.csv("_data/abc_poll_2021.csv")
+library(summarytools)
+view(dfSummary(abc_poll))
+```
+
+### Briefly describe the data
+The dataframe shows responses to the questionnaire. The respondents are adults (age 18-91) from the USA. We can see some demographic data like education, income, age, state, etc (column 4-17). Responses to other questions (probably about views or experience) are in columns 18-28. Column 2 probably identifies language of the respondent. Dataset contains of 527 observations and 30 variables (not including "id"). Some variables are dichotomous, and other variables may have several possible values.  
+
+## Tidy Data (as needed)
+
+From the first sight data looks tidy. 
+- We have each response in a separate column.
+- I did not find missing data. 
+- I need to look closer at column 8 "ppethm" and think if it would be proper to make two variables of it or remove information after comma.
+- Also it might be easier to understand data if columns had different names. 
+```{r}
+abc_poll<-rename(abc_poll, language = xspanish, age =  ppage, education5 = ppeduc5, education = ppeducat, gender = ppgender, ethnicity = ppethm, household_size = pphhsize, income = ppinc7, marital_status = ppmarit5, region = ppreg4, rent = pprent, state = ppstaten, work = PPWORKA, employment = ppemploy)
+abc_poll <- abc_poll%>%
+  mutate(ethnicity = str_remove (ethnicity, ", Non-Hispanic"))
+
+```
+
+Any additional comments?
+
+## Identify variables that need to be mutated
+Some variables should turned into factors. I will try to do it with QPID. This variable need to be reordered so that for example bar chart looked better.
+
+Document your work here.
+
+```{r}
+abc_poll<-abc_poll %>%
+  mutate(QPID = fct_recode(QPID, "dem" = "A Democrat",
+                                "rep" = "A Republican",
+                                "ind" = "An Independent",
+                                "na" = "Skipped",
+                              "other" = "Something else")) %>%
+  mutate(QPID = fct_relevel(QPID, "dem", "ind", "rep","other", "na"))
+
+ggplot(abc_poll, aes(QPID)) + geom_bar()
+
+```
+
+Any additional comments?

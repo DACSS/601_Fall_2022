@@ -37,10 +37,11 @@ The dataset has 70 columns and 70,138 rows. The variables include RowID, State, 
 I want to get rid of columns "district_state_type," "county_state_id," "term," and "school_state_type" because they are all N/A. I will also take out the demographic columns that don't end in int because I would prefer the other form.
 
 ```{r}
-enrollment <- read_csv("/Users/143660/Documents/GitHub/enrollments.csv")
+enrollment <- read_csv("_data/enrollments_Naughton.csv")
 ```
 
 ```{r}
+#| label: Select Data 
 enrollment_new <- select(enrollment, 
                          rowid, 
                          state, 
@@ -64,6 +65,7 @@ enrollment_new
 I first want to look at Boston's enrollment. When I did this, I noticed that in 2021, enrollment for schools were listed as "Boston - School Name" so I will need to take out "Boston - " so that the name of the school is consistent with the other years.
 
 ```{r}
+#| label: Boston 8th Grade Data
 enrollment_Boston8 <- enrollment_new  %>%
   filter( district =="Boston", grade=="grade_8") %>% 
   select(school, year, grade, male_int, female_int, non_binary_int, total_int) %>% 
@@ -79,6 +81,7 @@ enrollment_Boston8
 ```
 Next, I graphed the enrollment during the 8th grade of Boston schools whose total was 100 or more in 2015. This was 14 schools:
 ```{r}
+#| label: 8th Grade Boston data, certain schools
 
 total_Boston8 <-select(enrollment_Boston8, "school",year, Total) %>% 
   filter(school%in% c("Boston Latin",
@@ -92,13 +95,19 @@ total_Boston8 <-select(enrollment_Boston8, "school",year, Total) %>%
                       "Mario Umana Academy", 
                       "O'Bryant School Math/Science", 
                       "TechBoston Academy", 
-                      "Washington Irving Middle", 
-                      "Wm B Rogers Middle"))
-                      total_Boston8
+                      "Washington Irving Middle"))
+total_Boston8
 
 ggplot(total_Boston8, aes(year, Total)) + 
   geom_line(aes(group = school)) +
   geom_point(aes(colour = school))
+
+ggplot(total_Boston8, aes(year, Total)) + 
+  geom_line(aes(group = school)) +
+  geom_point(aes(colour = school),  
+             show.legend = FALSE) +
+  facet_wrap(~ school, nrow = 4)
+
 
 ```
 ### Potential Research Questions

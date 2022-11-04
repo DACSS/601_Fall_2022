@@ -25,141 +25,218 @@ categories:
 library(tidyverse)
 library(summarytools)
 library(treemap)
+library(viridis)
+library(wesanderson)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Adding Dimensions to Airbnb Data Visualization
-
+## Tree Maps
+Not very interesting with this summary data.
 ```{r}
+#| label: read-in
+#| warning: false
+
 #initial read-in 
-airbnb_orig <- read_csv("_data/AB_NYC_2019.csv")
+airbnb_orig <- read_csv("_data/AB_NYC_2019.csv",
+                        show_col_types = FALSE)
 
-
-#airbnb_clean$price <- replace(airbnb_clean$price, airbnb_clean$price == 0, NA)
-
+# prep data for graph
 airbnb_medianpriced <- airbnb_orig %>%
   filter(price>0) %>%
   group_by(room_type, neighbourhood_group) %>%
-    summarize(median(price))
+    summarize(median(price))%>%
+  mutate(neighbourhood_group = fct_relevel(neighbourhood_group,
+                                           "Manhattan",
+                                           "Brooklyn",
+                                           "Queens",
+                                           "Bronx",
+                                           "Staten Island"
+                                           )) 
 
-#airbnb_medianpriced
+#how do I do this next bit without starting a new pipe?
+airbnb_medianpriced <- airbnb_medianpriced %>%
+  rename(median_price = "median(price)") 
+
+```
+These treemaps tell a simple, predictable story. The data I'm using is too simple for this graph type. I think I'll try violin plots to see the range and density of prices. I played around with applying different color palettes.
+```{r}
+#| label: treemap color play
+#| warning: false
+zissou <- wes_palette("Zissou1", 5, type = "discrete")
+moonrise <- wes_palette("Moonrise3", 5, type = "discrete")
+royal2 <- wes_palette("Royal2", 5, type = "discrete")
+dar2 <- wes_palette("Darjeeling2", 5, type = "discrete")
 
 airbnb_medianpriced %>%
 treemap(room_type,
         index= c("neighbourhood_group", "room_type"),
-        vSize = "median(price)",
+        vSize = "median_price",
         type = "index",
-        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019"
-)
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019",
+        overlap.labels = 0,
+        palette = (moonrise))
+
+airbnb_medianpriced %>%
+treemap(room_type,
+        index= c("neighbourhood_group", "room_type"),
+        vSize = "median_price",
+        type = "index",
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019",
+        palette = viridis(n=6, option = "A"))
+  
+
 #try again, swapping room and neighborhood group
 airbnb_medianpriced %>%
 treemap(room_type,
         index= c("room_type","neighbourhood_group"),
-        vSize = "median(price)",
+        vSize = "median_price",
         type = "index",
-        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019"
-)
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019",
+        palette = ("Set2")
+) 
 
 ```
-These treemaps tell a simple, predictable story. The data I'm using is too simple for this graph type. I think I'll try violin plots to see the range and density of prices, but I need to scale my data to those greater than zero and smaller than $1000.
-
-## Violin Plots
+How do I adjust so that the labels don't overlap? I used `overlap.labels = 0` on the first one, but that just suppressed the "Entire home/apt" label instead of moving one or the other.
 ```{r}
+#| label: Custom colors 
+airbnb_medianpriced %>%
+treemap(room_type,
+        index= c("neighbourhood_group", "room_type"),
+        vSize = "median_price",
+        type = "index",
+        title = "Median Listing Price by Neighborhood, Airbnb NYC 2019",
+        overlap.labels = 0,
+        palette = c("#FFCE30", "#E83845", "#E389B9", "#746AB0", "#288BA8"))
+        
+```
+
+## Violin Plots With and Without Outliers
+```{r}
+#| label: violins
+
+#initial violin plot
+airbnb_orig %>%  
+  ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
+  geom_violin(width = 1, size = .5, 
+              scale = "area",
+              trim = TRUE)+
+  coord_flip()+
+  labs(x="room type", title = "With Outliers")
+
+
+#create is_outlier function
 is_outlier <- function(x) {
   return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
 }
+#apply the function, removing outliers
 airbnb_trim <- airbnb_orig %>%
   filter(!is_outlier(price))
 
 #confirm decrease in rows
-airbnb_trim
+#airbnb_trim
 
+#set up df for this plot
 airbnb_priced <- airbnb_orig %>%
   filter(price>0, price<800) %>%
   group_by(room_type, neighbourhood_group) 
 
+# violin plot without outliers
 airbnb_priced %>%  
   ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
   geom_violin(width = 1, size = .5, 
               scale = "area",
               trim = TRUE)+
   coord_flip()+
-  xlab("room type")
-
-airbnb_priced %>% 
-  filter(price<300) %>%
-  ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
-  geom_violin(width = 1, size = .5, 
-              scale = "area",
-              trim = TRUE)+
-  #coord_flip()+
-  xlab("room type")+
-  facet_wrap(vars(room_type), scales = "free_x")
+  labs(x="room type", title = "Without Outliers")
+# 
+# airbnb_priced %>% 
+# #  filter(price<300) %>%
+#   ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
+#   geom_violin(width = 1, size = .5, 
+#               scale = "area",
+#               trim = TRUE)+
+#   #coord_flip()+
+#   xlab("room type")+
+#   facet_wrap(vars(room_type), scales = "free_x")
 ```
-This violin plot shows the density of prices of each rental, by both room type and by borough, but the scale is so various that it's hard to really compare. Perhaps 3 separate graphs would show this better, or even a lower max value. I could also try this again after removing outliers--I imagine that would be much clearer.
+This violin plot shows the density of prices of each rental, by both room type and by borough, but the scale is so various that it's hard to really compare. Next I will try facet wrap and two rotations of the axes to see which is better to read. 
 
-## The Violin Plots Work Better without Outliers
+## Violin Plots with Facet Wrap
 ```{r}
+#| label: violins facet wrap
+
+#horizontal violin plot
 airbnb_trim %>% 
   ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
   geom_violin(width = 1, size = .5, 
               scale = "area",
               trim = TRUE)+
-  #coord_flip()+
+  coord_flip()+
   xlab("room type")+
   facet_wrap(vars(room_type), scales = "free_x")+
-  theme_minimal()
-```
+  theme_bw()
 
+# vertical violin plot
+airbnb_trim %>% 
+  ggplot(aes(x=room_type, y=price, fill=neighbourhood_group)) + 
+  geom_violin(width = 1, size = .5, 
+              scale = "area",
+              trim = TRUE)+
+  facet_wrap(vars(room_type), scales = "free_x")+
+  theme_bw()+
+  labs(x="Room Type", y = "Price", fill= "Borough", title = "NYC Airbnb Prices by Borough and Room Type", subtitle= "2019")
+```
+The vertical violin plot tells a clear story. I've added a title to make it "publication ready."
 
 ## Grouped Bars
 ```{r}
-airbnb_medianpriced <- airbnb_orig %>%
-  filter(price>0) %>%
-  group_by(room_type, neighbourhood_group) %>%
-    summarize(median(price), "median_price") %>%
-  rename("median_price" , "median(price)")
-#how do I do this next bit without starting a new pipe?
-
-airbnb_medianpriced <- airbnb_medianpriced %>%
-  rename(median_price = "median(price)") 
-
-airbnb_medianpriced
-
+#| label: grouped bars
 airbnb_medianpriced %>%
   ggplot(aes(x = room_type, y = median_price, fill = neighbourhood_group)) +
   geom_bar(position= "dodge", stat = "identity") +
   xlab("room type") +
   ylab("median price per night")+
-  coord_flip()
+ # scale_y_reverse() + 
+  #coord_flip()+
+  scale_fill_viridis_d()
 
 airbnb_medianpriced %>%
-  ggplot(aes(x = reorder(neighbourhood_group, +median_price), y = median_price, fill = room_type)) +
-  geom_bar(position= "dodge", stat = "identity")+
-  xlab("borough")+
-  ylab("median price per night")+
-  ggtitle("Median NYC Airbnb Prices 2019, by Room Type and Borough")
+  ggplot(aes(x = reorder(neighbourhood_group, median_price), 
+             y = median_price, 
+             fill = room_type)) +
+  geom_bar(
+    position= "dodge", 
+    stat = "identity")+
+  labs(x="Borough", 
+       y = "Median Price per Night", 
+       title = "Median NYC Airbnb Prices by Borough and Room Type (2019)", 
+       fill = "Room Type") +
+  scale_fill_viridis_d()
+
+
+#new copy to try colors
+airbnb_medianpriced %>%
+  ggplot(aes(x = reorder(neighbourhood_group, median_price), 
+    y = median_price,   
+    fill = room_type)) +
+  geom_bar(position= "dodge", stat = "identity") +
+  labs(x="Borough", y = "Median Price per Night", title = "Median NYC Airbnb Prices by Borough and Room Type (2019)", fill = "Room Type") +
+  coord_flip()+
+  scale_fill_viridis_d()
 
 ```
-These last two graphs show the clear distinctions among the median prices by room type, and while both show the differences across boroughs, the final graph tells the clearest story. I couldn't figure out how to reorder the boroughs for the horizontal bar plot--that may make it easier to see the 5 boroughs in relation to one another. Can anyone help with that?
+These last two graphs show the clear distinctions among the median prices by room type, and while both show the differences across boroughs, the final graph tells the clearest story. I used fct_level to change the order of boroughs, but now I would like the amounts to go largest to smallest, and so I'd like to reverse the order of room types to mirror how they appear in the legend. 
+
+
+## Experiments with Geom_Point
 ```{r}
-
-airbnb_quantiles<-airbnb_orig%>%
-  filter(price>0)%>%
-  group_by(room_type) %>%
-  summarize(quantile(price, na.rm=TRUE))
-
-# i coded this at 9pm
+# experiment i coded at 9pm
 airbnb_orig %>%
   group_by(room_type)%>%
   #how to rename a column within a pipe? maybe this is why prof Rolfe says to do it while tidying, in the read-in chunk
   ggplot(aes(x=neighbourhood_group, y=price)) +
   geom_point(alpha=.1, size=10)
-```
-In this next section of code, I use the `is_outlier` function. <strong>I'm psyched I got that to work!</strong>
-```{r}
-
 
 airbnb_trim%>%
  group_by(room_type, neighbourhood_group)%>%
@@ -180,9 +257,9 @@ airbnb_trim%>%
             position = position_dodge(width=1))
 
 ```
-## Box Plot Over Geom_Point
+## Box Plot Over Geom_Point: MY BEST SO FAR!
 ```{r}
-
+# basic geom_point
 airbnb_trim%>%
  group_by(room_type, neighbourhood_group)%>%
   ggplot(aes(x=neighbourhood_group, y=price)) +
@@ -192,18 +269,20 @@ airbnb_trim%>%
   labs(x="Boroughs",y="price per night", title = "NYC Airbnb Rental Prices 2019 by Borough")+
   theme_light()
 
+# Add a boxplot on top!
 airbnb_trim%>%
  group_by(room_type, neighbourhood_group)%>%
   ggplot(aes(x=neighbourhood_group, y=price)) +
   geom_point(alpha=.08, size=5, color = "#00A699")+
   facet_wrap("room_type")+
-  scale_x_discrete(guide = guide_axis(n.dodge=2))+
+  #scale_x_discrete(guide = guide_axis(n.dodge=2))+
   labs(x="Boroughs",y="price per night", title = "NYC Airbnb Rental Prices 2019 by Borough")+
   theme_light()+
-  geom_boxplot()
+  geom_boxplot()+
+  theme(axis.text.x = element_text(angle = 30))
 
 ```
 Wow. This is an incredible improvement with the single line:
-`+  geom_boxplot()`. I now have a very good idea what prices these three types of rentals go for across the boroughs. What if I add neighborhoods, and facet_wrap?
+`+  geom_boxplot()`. I now have a very good idea what prices these three types of rentals go for across the boroughs.
   
 
