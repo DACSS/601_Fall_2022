@@ -1,0 +1,210 @@
+---
+title: "Challenge-4"
+author: "Said Arslan"
+desription: "More data wrangling: pivoting"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+
+---
+
+```{r}
+
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+
+## Read Data
+
+```{r}
+
+abc.poll <- read_csv("_data/abc_poll_2021.csv")
+head(abc.poll)
+sample_n(abc.poll, 10)
+
+```
+
+## Briefly describe the data
+
+
+```{r}
+
+print(dfSummary(abc.poll, 
+                varnumbers= FALSE, 
+                plain.ascii= FALSE, 
+                style= "grid", 
+                graph.magnif= 0.80, 
+                valid.col= FALSE),
+      method= 'render', 
+      table.classes= 'table-condensed')
+
+
+```
+
+
+The dataset should be from a political survey. There are 527 rows and 31 columns. Each row(observation) contains information about a survey respondent as well as his/her answers to survey questions.
+3 of 31 variables are 'numeric' variables which are `id`, `ppage` and `weights_pid`. All of the rest are 'character' variables.
+Actually most of these character variables should be coded as 'factor' variable because they are essentially categorical variables that could have a few possible values.
+
+All variable names that start with "Q" are survey questions.
+
+
+```{r}
+
+colnames(select(abc.poll, starts_with("Q")))
+length(colnames(select(abc.poll, starts_with("Q"))))
+
+```
+
+So, there are 11 survey questions.
+
+All variable names that start with "pp" contain demographic information about respondents.
+
+
+```{r}
+
+colnames(select(abc.poll, starts_with("pp")))
+length(colnames(select(abc.poll, starts_with("pp"))))
+
+```
+
+So, there 14 variables identifying respondents' demographic characteristics.
+variable `complete_status` could be dropped from the dataset as all observations in the dataset have same value, 'qualified.
+
+
+
+```{r}
+
+abc.poll <- abc.poll %>% select(-complete_status)
+
+```
+
+
+When we look at the Data Frame Summary table above, we can see that there are no missing values in the dataset; however, two  values of `ppeduc5` variable cannot be displayed and identified as NA. 
+
+
+```{r}
+
+table(abc.poll$ppeduc5)
+
+```
+
+As it can be seen above, there is an issue with properly reading these two string values. Their correct values should be "Bachelor's degree" and "Master's degree or above". Let me fix it.
+
+
+```{r}
+
+abc.poll$ppeduc5[startsWith(abc.poll$ppeduc5, "Bac")] <- "Bachelor's degree"
+abc.poll$ppeduc5[startsWith(abc.poll$ppeduc5, "Mas")] <- "Master's degree or above"
+
+table(abc.poll$ppeduc5)
+
+```
+
+Also it would be better if we redefine `ppeduc5` variable so that its 5 values show up in ascending order from "no high school diploma" to "master's degree". To do that, I will change class of `ppeduc5` variable from character to factor. 
+
+
+
+```{r}
+
+abc.poll <- abc.poll %>% mutate(ppeduc5 = factor(ppeduc5, 
+                       levels=c("No high school diploma or GED",
+                                "High school graduate (high school diploma or the equivalent GED)",
+                                "Some college or Associate degree",
+                                "Bachelor's degree",
+                                "Master's degree or above")))
+                                
+class(abc.poll$ppeduc5)
+table(abc.poll$ppeduc5)
+
+```
+
+We can do the same class change for many of the variables so that their values could be put in a order properly based on common sense. These variables are  `ppeducat`, `ppinc7` and  `ppemploy`.
+
+
+```{r}
+
+unique(abc.poll$ppeducat)
+unique(abc.poll$ppinc7)
+unique(abc.poll$ppemploy)
+
+```
+
+
+```{r}
+
+abc.poll <- abc.poll %>% mutate(ppeducat = factor(ppeducat, 
+                       levels=c("Less than high school",
+                                "High school",
+                                "Some college",
+                                "Bachelors degree or higher")))
+                                
+
+abc.poll <- abc.poll %>% mutate(ppinc7 = factor(ppinc7, 
+                       levels=c("Less than $10,000",
+                                "$10,000 to $24,999",
+                                "$25,000 to $49,999",
+                                "$50,000 to $74,999",
+                                "$75,000 to $99,999",
+                                "$100,000 to $149,999",
+                                "$150,000 or more")))
+
+
+abc.poll <- abc.poll %>% mutate(ppemploy = factor(ppemploy, 
+                       levels=c("Not working",
+                                "Working part-time",
+                                "Working full-time")))
+
+
+```
+
+
+On the other hand, some values of `pprent` and `Contact` variables are unnecessarily very long strings, They could be shortened for neatness of further analysis on the data.
+
+
+
+```{r}
+
+unique(abc.poll$pprent)
+unique(abc.poll$Contact)
+
+```
+
+
+```{r}
+
+abc.poll$pprent[startsWith(abc.poll$pprent, "Owned")] <- "Owned by one of the househould"
+abc.poll$Contact[startsWith(abc.poll$Contact, "Yes")] <- "Yes"
+abc.poll$Contact[startsWith(abc.poll$Contact, "No")] <- "No"
+
+abc.poll <- rename(abc.poll, willingness_to_contact= Contact)
+
+sample_n(abc.poll, 10)
+
+```
+
+
+```{r}
+
+print(dfSummary(abc.poll, 
+                varnumbers= FALSE, 
+                plain.ascii= FALSE, 
+                style= "grid", 
+                graph.magnif= 0.80, 
+                valid.col= FALSE),
+      method= 'render', 
+      table.classes= 'table-condensed')
+
+```
+

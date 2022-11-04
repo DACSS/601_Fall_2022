@@ -1,0 +1,107 @@
+---
+title: "Challenge-3"
+author: "Said Arslan"
+desription: "Tidy Data: Pivoting"
+date: "10/01/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - eggs
+
+---
+
+```{r}
+
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+
+## Read in data
+
+
+```{r}
+
+eggs <- read.csv("_data/eggs_tidy.csv")
+
+```
+
+
+### Briefly describe the data
+
+
+```{r}
+
+dim(eggs)
+head(eggs)
+tail(eggs)
+sample_n(eggs, 10)
+
+unique(eggs$year)
+
+```
+
+The dataset includes monthly prices of 4 types of boxes of eggs (in cents) beginning from January 2004 to December 2013.
+
+
+The column variables `large_half_dozen`, `large_dozen`, `extra_large_half_dozen` and `extra_large_half_dozen` are actually not variable names but type and number of eggs in boxes. On the other hand, the values under these 4 columns show prices. Thus we should reorganize these columns so that each row represents an observation. Column names in tidied version are: `month`, `year`, `type` and `price`. 
+
+
+
+## Anticipate the End Result
+
+
+originally our dataset has 120 rows and 6 columns. I will use 4 variables for pivoting. So 2 variables will be used as identifiers for each observation. Therefore I should have 480(120*4) rows and 4(2+2) columns in the longer format.
+
+
+
+## Pivot the Data
+
+
+```{r}
+
+eggs.pivoted <-pivot_longer(eggs, cols= ends_with("dozen"),
+                 names_to= "type",
+                 values_to= "price")
+
+head(eggs.pivoted)
+
+```
+
+
+Also, it would be better if the first column is `year` and the second column is `month` because main identifier for time of an observation is `year`. Values of `month` are repetitive.
+
+
+```{r}
+
+
+eggs.pivoted <- eggs.pivoted[, c("year", "month", "type", "price")]
+
+head(eggs.pivoted)
+
+```
+
+
+To check if my calculation for dimension of new dataset is correct or not, let me look at row and column numbers of pivoted dataframe.
+
+
+```{r}
+
+cat("Number of rows are: \n")
+nrow(eggs.pivoted)
+
+cat("Number of columns are: \n")
+ncol(eggs.pivoted)
+
+```
+
+In new dataset, each row shows price of a specific type of box of eggs in a month of a year.
+Now, using this dataframe, we can do further price analysis by grouping based on type.

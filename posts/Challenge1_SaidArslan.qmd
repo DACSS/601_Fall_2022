@@ -1,5 +1,5 @@
 ---
-title: "Challenge 1"
+title: "Challenge-1"
 author: "Said Arslan"
 desription: "Reading in data and creating a post"
 date: "09/25/2022"
@@ -30,7 +30,7 @@ I will analyze the `birds.csv` dataset in this challenge.
 
 ```{r read_data}
 
-birds <- read.csv("C:/Users/saida/Desktop/FALL 2022/DACSS 601/601_Fall_2022/posts/_data/birds.csv")
+birds <- read.csv("_data/birds.csv")
 
 ```
 
@@ -61,10 +61,11 @@ table(birds$Item) # types of birds
 table(birds$Flag) # flag types
 
 country.names <- unique(birds$Area) # countries included in the dataset
-country.names
+print(country.names)
 
 years.of.observations <- range(birds$Year) # range of data in terms of years
 years.of.observations
+
 
 ```
 If we assess the number of unique values in each column with the names of variables, we can say that this dataset is extracted from a large stock dataset because it includes only live animals as `Domain` and only 5 types of domestic fowl is included under `Item` variable which are chicken, duck, geese, turkey and other types of birds. Besides that, only one type of element (stocks) is included in the data.
@@ -96,8 +97,8 @@ It looks 1036 value are missing/ not observed in the dataset.
 birds %>% 
   select(Area, Value) %>% 
   group_by(Area) %>% 
-  summarize_all(sum, na.rm = TRUE) %>% 
-  arrange(desc(Value))
+  summarize(Total = sum(Value)) %>% 
+  arrange(desc(Total))
 
 ```
 
@@ -109,9 +110,9 @@ Summarize table shows the total of stock levels in 58 years for each predefined 
 stock.levels <-  birds %>% 
   select(Item, Value) %>% 
   group_by(Item) %>% 
-  summarize_all(sum, na.rm = TRUE) %>% 
-  arrange(desc(Value)) %>% 
-  mutate(Percentage = round(proportions(Value), digits=3))
+  summarize(Total = sum(Value, na.rm = TRUE)) %>% 
+  arrange(desc(Total)) %>% 
+  mutate(Percentage = 100*round(proportions(Total), digits=3))
   
 
 stock.levels
