@@ -1,0 +1,424 @@
+---
+title: "Challenge 8"
+author: "Theresa Szczepanski"
+description: "Joining Data"
+date: "11/3/2022"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Theresa_Szczepanski
+  - challenge_8
+  - MCAS
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+
+
+
+
+##  MCAS_2022.csv 
+
+::: panel-tabset
+### Read in data MCAS_2022 
+To read in the `MCAS_2022` data, I used the following process:
+
+- Filter out Student Names and then Read in the data
+- Examine the summary
+- Identify information to filter, mutate, and rename on the read in
+- note variables that require further investigation
+
+::: panel-tabset
+### Filter, Rename, and Mutate on Read in
+
+
+After examining the summary (see tab), I chose to 
+
+**Filter**:
+
+- _SchoolID_ : There are several variables that identify our school, I removed all
+but one, `testschoolcode`.
+
+- _StudentPrivacy_: I left the `sasid` variable which is a student identifier number,
+but eliminated all values corresponding to students' names.
+
+- `dis`: We are a charter school within our own unique district, therefore any 
+"district level" data is identical to our "school level" data.
+
+
+ 
+ 
+__Rename__
+
+I currently have not renamed variables, but I have a list of variables for 
+which I need to talk with my administration to access a key to understand what they represent.
+Ideally, after this, I would put 
+
+- an `E_` before all `ELA` MCAS student performance metric variables
+- an `M_` before all `Math` MCAS student performance metric variables
+- an `S_` before all `Science` MCAS student performance metric variables
+- an `SI_` before all student demographic characteristic identifying variables
+
+__Mutate__
+ 
+ I left as __doubles__
+ 
+ - variables that measured scores on specific MCAS items e.g., `mitem1`
+ - variables that measured student growth percentiles (`sgp`)
+ - variables that counted a student's years in the school system or state.
+ 
+ Recode to __char__
+ 
+ - variables that are __nominal__, e.g., `town`
+ 
+ Refactor as __ord__
+ 
+ - variables that are __ordinal__, e.g., `mperflev`.
+ 
+ Recode to __date__
+ 
+ -`dob` using lubridate.
+ 
+ 
+
+
+```{r}
+#Filter, rename variables, and mutate values of variables on read-in
+
+MCAS_2022<-read_csv("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830305.csv",
+                    skip=1)%>%
+  select(-c("sprp_dis", "sprp_sch", "sprp_dis_name", "sprp_sch_name", "sprp_orgtype",
+  "schtype", "testschoolname", "yrsindis", "conenr_dis"))%>%
+
+#Recode all nominal variables as characters
+  mutate(testschoolcode = as.character(testschoolcode))%>%
+  # mutate(sasid = as.character(sasid))%>%
+  mutate(highneeds = as.character(highneeds))%>%
+  mutate(lowincome = as.character(lowincome))%>%
+  mutate(title1 = as.character(title1))%>%
+  mutate(ever_EL = as.character(ever_EL))%>%
+  mutate(EL = as.character(EL))%>%
+  mutate(EL_FormerEL = as.character(EL_FormerEL))%>%
+  mutate(FormerEL = as.character(FormerEL))%>%
+  mutate(ELfirstyear = as.character(ELfirstyear))%>%
+  mutate(IEP = as.character(IEP))%>%
+  mutate(plan504 = as.character(plan504))%>%
+  mutate(firstlanguage = as.character(firstlanguage))%>%
+  mutate(nature0fdis = as.character(natureofdis))%>%
+  mutate(spedplacement = as.character(spedplacement))%>%
+  mutate(town = as.character(town))%>%
+  mutate(ssubject = as.character(ssubject))%>%
+
+
+#Recode all ordinal variable as factors
+
+  mutate(grade = as.factor(grade))%>%
+  mutate(levelofneed = as.factor(levelofneed))%>%
+  mutate(eperf2 = recode_factor(eperf2,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                  .ordered = TRUE))%>%
+  mutate(eperflev = recode_factor(eperflev,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                   "DNT" = "DNT",
+                                   "ABS" = "ABS",
+                                  .ordered = TRUE))%>%
+    mutate(mperf2 = recode_factor(mperf2,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                  .ordered = TRUE))%>%
+  mutate(mperflev = recode_factor(mperflev,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                   "INV" = "INV",
+                                   "ABS" = "ABS",
+                                  .ordered = TRUE))%>%
+
+  # The science variables contain a mixture of legacy performance levels and
+  # next generation performance levels which needs to be addressed in the ordering
+  # of these factors.
+  mutate(sperf2 = recode_factor(sperf2,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                  .ordered = TRUE))%>%
+  mutate(sperflev = recode_factor(sperflev,
+                                   "E" = "E",
+                                   "M" = "M",
+                                   "PM" = "PM",
+                                   "NM"= "NM",
+                                   "INV" = "INV",
+                                   "ABS" = "ABS",
+                                  .ordered = TRUE))%>%
+  #recode DOB using lubridate
+  mutate(dob = mdy(dob,
+  quiet = FALSE,
+  tz = NULL,
+  locale = Sys.getlocale("LC_TIME"),
+  truncated = 0
+))
+
+
+
+view(MCAS_2022)
+
+MCAS_2022
+
+                                 
+
+
+  
+ 
+  
+
+```
+
+
+### Post Read In Summary
+
+```{r}
+
+# examine the summary to decide how to best set up our data frame
+
+ print(summarytools::dfSummary(MCAS_2022,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+
+
+:::
+
+### Read in the Data MCAS_G9Science2022_ItemAnalysis
+
+```{r}
+library(readxl)
+
+# G9 Science Item analysis
+
+MCAS_G9Science2022_ItemAnalysis<-read_excel("_data/2022MCASDepartmentalAnalysis.xlsx", sheet = "SG9Physics", skip = 1, col_names= c("sitem", "sType", "sReporting Category", "sStandard", "sItem Desc", "delete", "sItem Possible Points","RT Percent Points", "State Percent Points", "RT-State Diff")) %>%
+                  select(!contains("delete"))%>%
+                  filter(str_detect(sStandard, "HS"))%>%
+                  mutate("sitem" = as.character(sitem))
+  
+   
+view(MCAS_G9Science2022_ItemAnalysis)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+### Tidy Data (still more to be done)
+
+In order to have tidy data, each row should be a unique observation. A unique 
+case therefore should consist of all of the demographic information about the 
+student tested and their scores for each of student performance metrics.
+
+- The demographic characteristics and the specific performance metric
+variable define a _case_.
+
+- The _value_ for each case is the student's performance on a given metric.
+
+- Like survey data, the MCAS student performance data will require a relatively
+__wide__ data frame, clearly defined and coded variables, and then effective use 
+of group by to provide appropriate summary statistics for a given performance 
+criteria.
+
+```{r}
+MCAS_2022
+
+```
+
+
+
+
+
+
+
+### Narrative Summary
+
+From our `MCAS_2022` data frame summary, we can see that this data set
+contains performance results from 495 students from [Rising Tide Charter Public School](https://risingtide.org/)
+ on the Spring 2022 
+[Massachusetts Comprehensive Assessment System (MCAS)](https://www.doe.mass.edu/mcas/default.html) 
+tests.
+
+For each student, there are values reported for 256 different variables which 
+consist of information from four broad categories
+
+
+- *Demographic characteristics* of 
+the students themselves (e.g., race, gender, date of birth, town, grade level, 
+years in school, years in Massachusetts, and low income, title1, IEP, 504m 
+and EL status ). These variables were mostly nominal and of character type. Notable
+ exceptions include the ordinal variables: `grade`, and `level of need` and the 
+ numerical variables `years in mass`, and `years in school`, 
+```{r}
+# I know this is HARDCODED and bad! I need to rename the demographic variables with
+# a consistent prefix and then use "contains"
+MCAS_2022_StudentDemo <- select(MCAS_2022, c(1:27))
+MCAS_2022_StudentDemo
+
+
+```
+
+- *Key assessment features* including subject, test format, and
+accommodations provided 
+
+```{r}
+# add label that says Math Performance Variables
+MCAS_2022_AssessType<- select(MCAS_2022, contains('mode')|contains('alt')|
+                                contains('attempt')|
+                                contains('access')|
+                                contains('testtat')|
+                               contains('subject'))
+#need to add caption
+MCAS_2022_AssessType
+
+
+```
+
+- *Performance metrics*: This includes a students score on individual item strands, 
+e.g.,`mitem1`-`mitem42`. All of the the itemized performance metrics were of `double` data 
+type.
+ 
+ There are also a collection of summary performance metrics, such as a student's 
+`scaledscore`, performance level, growth percentile, score on open response items, 
+score on multiple choice items, and predicted scaled score in 2023 with [updated 
+performance criteria](https://www.nbcboston.com/news/local/education-leaders-to-vote-on-proposed-raising-of-mcas-requirements/2807994/) from DESE. All of these variables were of `double` type, with the exception 
+of the `perflev` variables. These were of `ordinal` type and characterized a 
+students performance as __exceeding, meeting, partially meeting,
+ or not meeting__ expectations.
+
+```{r}
+# add label that says Math Performance Variables
+MCAS_2022_MathPerf <- select(MCAS_2022, contains('mitem')|contains('mper')|contains('msca'))
+MCAS_2022_MathPerf
+
+
+```
+
+
+
+
+
+
+### Potential Research Questions
+
+- We are regional school of choice; are students coming from all regions equitably 
+served in our school?
+
+- How are we supporting our high needs students by subject area?
+
+- Using the MCAS item standards map, what areas of focus should our curriculum teams 
+focus on by gradelevel and subject area?
+
+I also have access to performance data on some of our students for [STAR literacy 
+and Mathematics test](https://www.renaissance.com/products/star-reading/)
+
+- Can I add this data into our MCAS data frame and identify ways to use the STAR 
+screening data to identify appropriate interventions to support students in MCAS 
+achievement?
+
+I also have access to students course placement and grades by subject area.
+
+- Can I add this data into our data frame and compare __teacher measured__ performance 
+against __standardized measured__ performance and search for trends in groups that 
+demonstrate the greatest disparity in their __teacher measured__ performance vs.
+__standardized measured__ performance level.
+
+### Codebook for MCAS_2022 Variables
+Here I would complete a key for all of the variables that are included in my table.
+And link relevant decoding documents from [DESE](https://www.doe.mass.edu/mcas/results.html)
+
+
+
+`esgp`, `msgp`, `ssgp` _continuous_: The [student's growth percentile](https://www.doe.mass.edu/mcas/growth/default.html).
+by subject area (e: English, m: Math, s: Science)
+
+
+`eperf2`, `mperf2`, _ordinal_: The student's performance level in ELA and Math
+
+| value | Key|
+| ----------- |--------|
+|Exceeds Expectations  | E    | 
+|Meets Expectations | M     | 
+| Partially Meets Expectations  | PM     |
+|Does Not Meet Expectations | NM     | 
+
+
+`gender`, _nominal_ : the reported gender identify of the student.
+
+
+| value | Key|
+| ----------- |--------|
+|Female | F     | 
+|Male | M     | 
+|Non binary  | N     |
+
+
+
+
+### Mutate Variables
+
+
+
+
+
+### Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+:::
+
