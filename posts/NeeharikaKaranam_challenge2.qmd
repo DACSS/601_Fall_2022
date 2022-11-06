@@ -1,0 +1,81 @@
+---
+title: "Challenge 2"
+author: "Neeharika Karanam"
+desription: "Data wrangling: using group() and summarise()"
+date: "11/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+```{r}
+
+hotel_data <- read.csv('_data/hotel_bookings.csv')
+hotel_data
+```
+This dataset gives a clear description of all the hotel bookings across various countries and contains like the country, room assigned, deposit type, reservation status, no. of adults, children, babies and the meal.
+
+## Describe the data
+
+```{r}
+#| label: summary
+library(summarytools)
+print(dfSummary(hotel_data))
+
+```
+
+From the summary we can see that there are two distinct values as the Resort and the city and the dataset consists of the data between 2015 and 2017. We can also observe that there are around 37% of the bookings are canceled which can be derived from the is_canceled column part of the summary. There is a lot of categorical values in the dataset and we can easily understand how the various categorical values can be distributed over the data set which gives an in-depth analysis.
+
+## Provide Grouped Summary Statistics
+
+```{r}
+dataGroupedByMS <- hotel_data %>%
+  group_by(market_segment)
+
+dataGroupedByMS %>%
+  summarise(
+    avg_stays_in_week_nights = mean(stays_in_week_nights, nr.rm = TRUE),
+    avg_stays_in_weekend_nights = mean(stays_in_weekend_nights, nr.rm = TRUE)
+  )
+
+```
+
+```{r}
+prop.table(table(select(dataGroupedByMS, reservation_status))) %>% 
+  `*`(100) %>% 
+  round(2)
+
+```
+
+### Explain and Interpret
+
+The table which is grouped by the market segment gives us the insight where the market segment bookings gives the details of the bookings that happen during the weekends and the bookings look like during weekdays. This will help in deciding on how to organize or on how to plan the activities which are being targeted by a certain segment during these days.
+
+The table which shows the distributions in the percentage basis of the bookings of each of the segment of that were cancelled or when there are no-shows or that has been checked-out. This data will help the hotels in analyzing on what are the market segments gets the most of the cancellations and the hotels which get the least. We can also find various ways in order to reduce the number of cancellations which are targeted towards a particular segment.
