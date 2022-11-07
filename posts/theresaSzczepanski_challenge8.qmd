@@ -13,7 +13,8 @@ format:
 categories:
   - Theresa_Szczepanski
   - challenge_8
-  - MCAS
+  - MCAS_2022
+  - MCAS_G9Science2022_ItemAnalysis
 ---
 
 ```{r}
@@ -42,12 +43,10 @@ Today's challenge is to:
 
 
 
-
-
 ##  MCAS_2022.csv 
 
 ::: panel-tabset
-### Read in data MCAS_2022 
+### Read in Data Set 1
 To read in the `MCAS_2022` data, I used the following process:
 
 - Filter out Student Names and then Read in the data
@@ -231,7 +230,15 @@ MCAS_2022
 
 :::
 
-### Read in the Data MCAS_G9Science2022_ItemAnalysis
+### Read in Data Set 2
+
+To read in `MCAS_G9Science2022_ItemAnalysis`, I:
+
+- Selected only the 9th Grade Physics Item Report
+- Deleted an extra column from a cell merge
+- refactored the `sitem` variable to prepare to join this data set to the Student 
+performance data set.
+- Added an s to the column names as a reminder that all of these columns relate to the Science exam.
 
 ```{r}
 library(readxl)
@@ -244,45 +251,23 @@ MCAS_G9Science2022_ItemAnalysis<-read_excel("_data/2022MCASDepartmentalAnalysis.
                   mutate("sitem" = as.character(sitem))
   
    
+#view(MCAS_G9Science2022_ItemAnalysis)
+# use string r to fix the item #
+MCAS_G9Science2022_ItemAnalysis<-
+  separate(MCAS_G9Science2022_ItemAnalysis, sitem, c("sitem", "delete"))%>%
+  select(!contains("delete"))%>%
+  mutate(sitem =
+           str_c("sitem", sitem))
+  
+        
+  
+                   
+MCAS_G9Science2022_ItemAnalysis
+
 view(MCAS_G9Science2022_ItemAnalysis)
 
-```
-
-
-
-
-
-
-
-
-
-
-
-
-### Tidy Data (still more to be done)
-
-In order to have tidy data, each row should be a unique observation. A unique 
-case therefore should consist of all of the demographic information about the 
-student tested and their scores for each of student performance metrics.
-
-- The demographic characteristics and the specific performance metric
-variable define a _case_.
-
-- The _value_ for each case is the student's performance on a given metric.
-
-- Like survey data, the MCAS student performance data will require a relatively
-__wide__ data frame, clearly defined and coded variables, and then effective use 
-of group by to provide appropriate summary statistics for a given performance 
-criteria.
-
-```{r}
-MCAS_2022
 
 ```
-
-
-
-
 
 
 
@@ -301,116 +286,83 @@ consist of information from four broad categories
 - *Demographic characteristics* of 
 the students themselves (e.g., race, gender, date of birth, town, grade level, 
 years in school, years in Massachusetts, and low income, title1, IEP, 504m 
-and EL status ). These variables were mostly nominal and of character type. Notable
- exceptions include the ordinal variables: `grade`, and `level of need` and the 
- numerical variables `years in mass`, and `years in school`, 
-```{r}
-# I know this is HARDCODED and bad! I need to rename the demographic variables with
-# a consistent prefix and then use "contains"
-MCAS_2022_StudentDemo <- select(MCAS_2022, c(1:27))
-MCAS_2022_StudentDemo
-
-
-```
+and EL status ). 
 
 - *Key assessment features* including subject, test format, and
 accommodations provided 
 
-```{r}
-# add label that says Math Performance Variables
-MCAS_2022_AssessType<- select(MCAS_2022, contains('mode')|contains('alt')|
-                                contains('attempt')|
-                                contains('access')|
-                                contains('testtat')|
-                               contains('subject'))
-#need to add caption
-MCAS_2022_AssessType
 
-
-```
 
 - *Performance metrics*: This includes a students score on individual item strands, 
-e.g.,`mitem1`-`mitem42`. All of the the itemized performance metrics were of `double` data 
-type.
+e.g.,`mitem1`-`mitem42`. 
  
- There are also a collection of summary performance metrics, such as a student's 
-`scaledscore`, performance level, growth percentile, score on open response items, 
-score on multiple choice items, and predicted scaled score in 2023 with [updated 
-performance criteria](https://www.nbcboston.com/news/local/education-leaders-to-vote-on-proposed-raising-of-mcas-requirements/2807994/) from DESE. All of these variables were of `double` type, with the exception 
-of the `perflev` variables. These were of `ordinal` type and characterized a 
-students performance as __exceeding, meeting, partially meeting,
- or not meeting__ expectations.
+
+Our second data set, `MCAS_G9Science2022_ItemAnalysis` is 42 \times 9 and consists of 
+9 variables with information pertaining to the 2022 [HS Introductory Physics Item Report](https://profiles.doe.mass.edu/mcas/mcasitems2.aspx?grade=HS&subjectcode=PHY&linkid=23&orgcode=04830000&fycode=2022&orgtypecode=5&). The variables can be broken down into 2 categories:
+
+ Details about a given test item: 
+ - content `Reporting Category` (MF (motion and forces)
+WA (waves), and EN (energy), 
+
+- `Standard` from the Massachusetts Curriculum Framework, 
+
+- `Item Description` providing the details of what was asked of students.
+
+Summary Performance Metrics:
+
+- Here you can see the percentage of points earned by students at Rising Tide on an item
+vs. the percentage of points earned by students in Massachusetts.
+
+
+
+
+
+
+
+
+### Tidy Data to Prep for Join
+
+I am interested in analyzing the 9th Grade Science Performance. To do this, I will 
+select a subset of our data frame. I selected:
+
+- 9th Grade and 10th grade students (since a few 10th grade students also took the test)
+- Scores on the 42 Science Items
+- Demographic characteristics of the students.
+
+Then I filtered out the 10th grade students who did not take the test
 
 ```{r}
-# add label that says Math Performance Variables
-MCAS_2022_MathPerf <- select(MCAS_2022, contains('mitem')|contains('mper')|contains('msca'))
-MCAS_2022_MathPerf
+G9ScienceMCAS_2022 <- select(MCAS_2022, contains("sitem"), gender, grade, yrsinsch,
+                             race, IEP, `plan504`, sattempt)%>%
+                            filter((grade == 9) & sattempt != "N")
 
+G9ScienceMCAS_2022<-select(G9ScienceMCAS_2022, !(contains("43")|contains("44")|contains("45")))
+
+  
+
+view(G9ScienceMCAS_2022)
+G9ScienceMCAS_2022
 
 ```
 
+When I compared this data frame to the State reported analysis, the state analysis only contains 
+68 students. To be able to use the state data, I thus filtered out our 10, 10th grade students and only looked at the performance of the 9th grade students. Notably, my data frame has 69 entries while the state is reporting data on only 68 students. I will have to investigate this further.
+
+Since I will join this data frame with the `MCAS_G9Science2022_ItemAnalysis`, using `sitem` as the key, I need to pivot this data set longer.
+
+```{r}
+G9ScienceMCAS_2022<- pivot_longer(G9ScienceMCAS_2022, contains("sitem"), names_to = "sitem", values_to = "sitem_score")
+
+view(G9ScienceMCAS_2022)
+G9ScienceMCAS_2022
+
+```
+
+As expected, we now have 42 \times 69 = 2898 rows. 
 
 
 
 
-
-### Potential Research Questions
-
-- We are regional school of choice; are students coming from all regions equitably 
-served in our school?
-
-- How are we supporting our high needs students by subject area?
-
-- Using the MCAS item standards map, what areas of focus should our curriculum teams 
-focus on by gradelevel and subject area?
-
-I also have access to performance data on some of our students for [STAR literacy 
-and Mathematics test](https://www.renaissance.com/products/star-reading/)
-
-- Can I add this data into our MCAS data frame and identify ways to use the STAR 
-screening data to identify appropriate interventions to support students in MCAS 
-achievement?
-
-I also have access to students course placement and grades by subject area.
-
-- Can I add this data into our data frame and compare __teacher measured__ performance 
-against __standardized measured__ performance and search for trends in groups that 
-demonstrate the greatest disparity in their __teacher measured__ performance vs.
-__standardized measured__ performance level.
-
-### Codebook for MCAS_2022 Variables
-Here I would complete a key for all of the variables that are included in my table.
-And link relevant decoding documents from [DESE](https://www.doe.mass.edu/mcas/results.html)
-
-
-
-`esgp`, `msgp`, `ssgp` _continuous_: The [student's growth percentile](https://www.doe.mass.edu/mcas/growth/default.html).
-by subject area (e: English, m: Math, s: Science)
-
-
-`eperf2`, `mperf2`, _ordinal_: The student's performance level in ELA and Math
-
-| value | Key|
-| ----------- |--------|
-|Exceeds Expectations  | E    | 
-|Meets Expectations | M     | 
-| Partially Meets Expectations  | PM     |
-|Does Not Meet Expectations | NM     | 
-
-
-`gender`, _nominal_ : the reported gender identify of the student.
-
-
-| value | Key|
-| ----------- |--------|
-|Female | F     | 
-|Male | M     | 
-|Non binary  | N     |
-
-
-
-
-### Mutate Variables
 
 
 
@@ -418,7 +370,23 @@ by subject area (e: English, m: Math, s: Science)
 
 ### Join Data
 
-Be sure to include a sanity check, and double-check that case count is correct!
+Now, we should be ready to join our data sets using `sitem` as the key. We should have a 
+2,898 \times (9 + 8) = 2,898 \times 17 data frame.
+
+```{r}
+G9Science_StudentItem <- G9ScienceMCAS_2022 %>%
+  left_join(MCAS_G9Science2022_ItemAnalysis, "sitem")%>%
+
+
+view(G9Science_StudentItem)
+
+```
+
+As exepected,w e now have a 2,898 \times 17 data frame.
+
+
+### Analysis of Joined Data
+
 
 :::
 
