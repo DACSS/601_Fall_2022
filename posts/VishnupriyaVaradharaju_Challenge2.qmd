@@ -1,0 +1,249 @@
+---
+title: "Challenge 2 Solutions"
+author: "Vishnupriya Varadharaju"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+options(dplyr.summarise.inform = FALSE)
+```
+
+### Working with Birds data set
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## 1. Read in the Data
+
+```{r}
+# Reading the birds data into variable birds_data
+birds_data <- read.csv("_data/birds.csv")
+head(birds_data)
+```
+
+## 2. Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+# Finding the dimensions of the data
+dim(birds_data)
+
+# Finding the columns of the data and their respective datatypes
+str(birds_data)
+
+```
+
+```{r}
+# Removing the code columns and retaining the columns with detailed description
+# for better readability
+new_birds_data <- select(birds_data, !ends_with('Code') & !('Flag'))
+head(new_birds_data)
+
+# Getting the summary of the new data
+summary(new_birds_data)
+```
+
+```{r}
+# Finding the number of distinct elements in each column 
+
+# Domain
+n_distinct(new_birds_data$Domain)
+table(new_birds_data$Domain)
+
+```
+
+```{r}
+# Area
+# Printing only the first 100 entries to save on space
+n_distinct(new_birds_data$Area)
+table(new_birds_data$Area) %>%
+  head(100)
+
+```
+
+
+```{r}
+# Element
+n_distinct(new_birds_data$Element)
+table(new_birds_data$Element)
+```
+
+
+```{r}
+# Item
+n_distinct(new_birds_data$Item)
+table(new_birds_data$Item)
+```
+
+
+
+```{r}
+# Year
+n_distinct(new_birds_data$Year)
+table(new_birds_data$Year)
+```
+
+
+```{r}
+# Unit
+n_distinct(new_birds_data$Unit)
+table(new_birds_data$Unit)
+```
+
+
+```{r}
+# Value
+# n_distinct(new_birds_data$Value)
+# table(new_birds_data$Value)
+```
+
+
+```{r}
+# Flag Description
+n_distinct(new_birds_data$Flag.Description)
+table(new_birds_data$Flag.Description)
+```
+
+
+```{r}
+# Checking for null values in Value column
+# Percentage of Null Values in Value Field
+nulsval <- ((sum(is.na(new_birds_data$Value)))/length(new_birds_data$Value)) * 100
+nulsval
+
+# Omit all the entries with null values
+new_birds_data <- na.omit(new_birds_data)
+dim(new_birds_data)
+```
+
+
+ANALYSIS:
+
+From the above data analysis, we can see that the total number of observations are 30977 and 14 different fields. Out of the 14 only the important 8 fields were selected for further analysis as the remaining columns were redundant. In the 8 fields, 7 fields are categorical and 1 field is numerical. This data contains entries of the quantities of livestock in different countries around the world across different years. All the entries are "Live Animals" and "Stocks" with Unit of "1000 Head". There are 248 different countries starting from Afghanistan going all the way to Zimbabwe. Out of the 30977 entries, there are Chickens (13074) Ducks (6909), Geese and Guinea Fowls (4136), Pigeons, other birds (1165) and Turkeys (5693). The Year spans from 1961 to 2018 with values increasing from 493 to 577. The Value for each entry is highly varying as it is a numerical field. Under the Flag.Description field, there are 6 sub-groups. While checking for null values in the Value field it's seen that there are 1036 entries with null values. These entries can be removed as they will not be intuitive to the analysis. After omitting null values, the total number of entries are 29941.
+
+
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+# Finding the central tendency - mean, median and std for subgroup Item
+# Not calculating mode here as Value is numeric
+new_birds_data %>%
+  select(Item, Value)%>%
+  group_by(Item) %>%
+  summarize(mean(Value), median(Value), sd(Value))
+```
+
+
+```{r}
+# Finding the mean of Values for subgroups Area and Item
+new_birds_data %>%
+  select(Year, Area, Item, Value)%>%
+  group_by(Area, Item) %>%
+  summarize(mean(Value)) %>%
+  head(20)
+```
+
+
+```{r}
+# Finding the mean of Values for subgroups Area and Item
+# Getting the mean value of items specifically for India
+new_birds_data %>%
+  select(Year, Area, Item, Value)%>%
+  group_by(Area, Item) %>%
+  summarize(mean(Value)) %>%
+  filter(Area == "India")
+
+```
+
+
+```{r}
+# Finding the mode of Item for subgroups Area and Item and arranging in 
+# ascending order
+
+new_birds_data %>%
+  select(Year, Area, Item, Value)%>%
+  group_by(Area, Item) %>%
+  summarize(mode = sum(n())) %>%
+  arrange(mode) %>%
+  head(10)
+
+new_birds_data %>%
+  select(Year, Area, Item, Value)%>%
+  group_by(Area, Item) %>%
+  summarize(mode = sum(n())) %>%
+  arrange(desc(mode)) %>%
+  head(10)
+
+```
+
+```{r}
+# Calculating the dispersion - min, max, std
+# Finding the min, max and std of Value for Items for each Year globally
+
+new_birds_data %>%
+  select(Year, Area, Item, Value)%>%
+  group_by(Year, Item) %>%
+  summarize(minVal = min(Value, na.rm = TRUE), maxVal = max(Value, na.rm = TRUE),
+            stdVal = sd(Value, na.rm = TRUE)) %>%
+  arrange(desc(Year)) %>%
+  head(20)
+
+```
+
+
+```{r}
+# Calculating the dispersion - quantile
+# Finding the min, max and std of Value for Items for each Year globally
+
+new_birds_data %>%
+  select(Area, Item, Value)%>%
+  group_by(Area, Item) %>%
+  summarize(quantVal = quantile(Value, na.rm = TRUE)) %>%
+  filter(Area == "Bahamas" || Area == "Zimbabwe" || Area == "Seychelles") %>%
+  arrange(desc(Area))
+
+```
+
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+ANALYSIS:
+
+Exploratory data analysis is performed on the cleaned data. First, the dataset is grouped by Item to find the mean, median and standard deviation of Values for each of the Item entries across all Areas and Years. Mean, median and std is the highest for the Item Chickens. Looking at the data, the mean values seem to be higher than the median indicating that they’re all right skewed. 
+Next, group by Area and Item is done and the mean Value of each category of items for each Country is calculated. Then on filtering specifically for the Area ‘India’, the mean Values for the item “Chickens” and “Ducks” are shown.
+Then, the mode of the Item for different Areas is calculated and arranged in ascending order. The Item Chicken occurs the least in Aruba with a mode of 3 and plenty of values with the maximum mode of 58 across Areas and Items.
+Next, the data is grouped by Year and Item and the minimum, maximum and standard deviation of the Values across all Area is calculated. On arranging them in descending order of Years, we can see that the minimum values start from 0 and the maximum values go beyond 7 digits as well. The standard deviation of these values is also very large, especially for the Item “Chickens”.
+Finally, the Quantile is calculated after grouping by Area and Item. The data is then filtered to show the entries for the Area - “Bahamas, Zimbabwe, and Seychelles” arranged in descending order. 
+
+
