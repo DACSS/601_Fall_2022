@@ -297,7 +297,7 @@ accommodations provided
 e.g.,`mitem1`-`mitem42`. 
  
 
-Our second data set, `MCAS_G9Science2022_ItemAnalysis` is 42 \times 9 and consists of 
+Our second data set, `MCAS_G9Science2022_ItemAnalysis` is 42 by 9 and consists of 
 9 variables with information pertaining to the 2022 [HS Introductory Physics Item Report](https://profiles.doe.mass.edu/mcas/mcasitems2.aspx?grade=HS&subjectcode=PHY&linkid=23&orgcode=04830000&fycode=2022&orgtypecode=5&). The variables can be broken down into 2 categories:
 
  Details about a given test item: 
@@ -358,7 +358,7 @@ G9ScienceMCAS_2022
 
 ```
 
-As expected, we now have 42 \times 69 = 2898 rows. 
+As expected, we now have 42 X 69 = 2898 rows. 
 
 
 
@@ -371,7 +371,7 @@ As expected, we now have 42 \times 69 = 2898 rows.
 ### Join Data
 
 Now, we should be ready to join our data sets using `sitem` as the key. We should have a 
-2,898 \times (9 + 8) = 2,898 \times 17 data frame.
+2,898 by (9 + 8) = 2,898 by 17 data frame.
 
 ```{r}
 G9Science_StudentItem <- G9ScienceMCAS_2022 %>%
@@ -379,14 +379,172 @@ G9Science_StudentItem <- G9ScienceMCAS_2022 %>%
 
 
 view(G9Science_StudentItem)
+G9Science_StudentItem
 
 ```
 
-As exepected,w e now have a 2,898 \times 17 data frame.
+As expected, we now have a 2,898 \times 17 data frame.
 
 
 ### Analysis of Joined Data
 
+When examining our performance relative to the [state by subgroups](https://profiles.doe.mass.edu/mcas/subgroups2.aspx?linkid=25&orgcode=04830305&fycode=2022&orgtypecode=6&), it is noteworthy that Rising Tide Female Introductory Physics students on average scored lower relative to their peers in the state and Rising Tide Male Introductory students scored higher on average. This trend is not true for Rising Tide MS science students. When we look at our student's performance by item and by gender, we can see several questions with a larger disparity in performance by gender.
 
+```{r}
+G9Science_Gender<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP)%>%
+  group_by(gender, sitem)%>%
+  summarise(sitem_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+  ggplot(G9Science_Gender, aes(fill=gender, y=sitem_percent, x=sitem)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="Non IEP Students" ,
+       y = "Percent Points Earned",
+       x= "Item, Introductory Physics 2022 ",
+       title = "Student Item Performance by Gender",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+
+```
+Now let's examine the items where students had the weakest performance relative to the state.
+
+  
+
+```{r}
+# G9 Science Calculate Non IEP Gender Analysis
+G9Science_Gender_NonIEP<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
+  filter(`RT-State Diff` <= -10)%>%
+  filter(IEP == 0)%>%
+  group_by(gender, sitem) %>%
+  summarise(gender_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+G9Science_Gender_NonIEP
+# Grouped bar Chart Calculate Items
+
+G9Science_Gender_NonIEP%>%
+  ggplot(aes(fill=gender, y=gender_percent, x=sitem)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="Non IEP Students" ,
+       y = "Percent Earned",
+       x= "Weakest Items ",
+       title = "Item Performance by Gender",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))#+
+  #coord_flip()
+```
+From our students who are not on IEPs, Male students seem to have had more success with questions where they were required to calculate than our female students. Now, we can 
+examine our students on IEPs.
+
+```{r}
+# G9 Science Calculate  IEP Gender Analysis
+G9Science_Gender_IEP<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
+  filter(`RT-State Diff` <= -10)%>%
+  filter(IEP != 0)%>%
+  group_by(gender, sitem) %>%
+  group_by(gender, sitem) %>%
+  summarise(gender_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+G9Science_Gender_IEP
+
+G9Science_Gender_IEP%>%
+  ggplot(aes(fill=gender, y=gender_percent, x=sitem)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="IEP Students" ,
+       y = "Percent Earned",
+       x= "Weakest Item ",
+       title = "Item Performance by Gender",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))#+
+  #coord_flip()
+
+
+```
+It seems as though we have the opposite trend in our students who are on IEP plans. 
+Perhaps the accommodations and modifications of these plans are more beneficial to female students or perhaps the male students on plans have stronger disabilities.
+
+Where is the gender gap the largest? There are many things to examine here and I am running out of time...
+```{r}
+G9Science_Male_NonIEP<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
+  filter(gender == "M")%>%
+  filter(IEP == 0)%>%
+  group_by(sitem) %>%
+  summarise(male_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+G9Science_Female_NonIEP<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
+  filter(gender == "F")%>%
+  filter(IEP == 0)%>%
+  group_by(sitem) %>%
+  summarise(female_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+
+G9ScienceGender<-G9Science_Female_NonIEP%>%
+  left_join(G9Science_Male_NonIEP, "sitem")%>%
+  mutate(gender_diff = 100*(female_percent - male_percent))
+
+
+
+
+ # pivot_longer(female_percent, male_percent, names_to = gender, values_to = item_percent)
+
+G9ScienceGender
+print(summarytools::dfSummary(G9ScienceGender,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+G9ScienceGender %>%
+  filter(gender_diff < -10)%>%
+  ggplot(aes(fill = gender_diff , y = gender_diff, x=sitem)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="Non IEP Students" ,
+       y = "Diff F to M Percent Earned",
+       x= "Largest Gender Gap Items ",
+       title = "Item Performance by Gender",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))#+
+  
+
+```
+Using Prior Math MCAS result to predict Introductory Physics MCAS Performance. Could we use prior Math MCAS scores to identify students who need extra support for their Science MCAS.
+```{r}
+#view(MCAS_2022)
+ MCAS_subset<-select(MCAS_2022, sscaleds, gender, grade, yrsinsch,
+                               , IEP, `plan504`, sattempt, mattempt,mscaleds2021 )%>%
+                              filter((grade == 9) & sattempt != "N")
+
+ ggplot(MCAS_subset, aes(x=mscaleds2021, y=sscaleds, color=gender)) + 
+     geom_point(size = 1, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "2022 Introductory Physics vs. 2021 Math MCAS", y = "Science Scaled Score",
+       x = "Math Scaled Score")# +
+   #facet_wrap(vars(gender))
+  #theme_minimal()
+
+```
+Science Performance by Reporting Category: Should teachers review a given unit more closely.
+```{r}
+G9Science_Desc<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, IEP)%>%
+  group_by(`sReporting Category`)%>%
+  summarise(desc_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+
+  ggplot(G9Science_Desc, aes(fill = `sReporting Category`, y=desc_percent, x=`sReporting Category`)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="All Students" ,
+       y = "Percent Points Earned",
+       x= "Item, Introductory Physics 2022 ",
+       title = "Student Item Performance by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+
+```
 :::
 
