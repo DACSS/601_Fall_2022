@@ -1,0 +1,98 @@
+
+##Challenge_4
+
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(stringr)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Read in data
+
+```{r}
+library(readr)
+FedFundsRate <- read_csv("_data/FedFundsRate.csv")
+
+```
+
+### Briefly describe the data
+
+To see sample columns in the data set we do a head
+
+```{r}
+head(FedFundsRate)
+```
+```{r}
+colnames(FedFundsRate)
+```
+
+```{r}
+dim(FedFundsRate)
+
+```
+
+```{r}
+print(summarytools::dfSummary(FedFundsRate,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+
+```
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+we see that there are many na's in the data, so we replace all of them by 0's
+
+```{r}
+FedFundsRate<- FedFundsRate %>% replace_na(list(`Federal Funds Target Rate`=0,`Federal Funds Lower Target`=0,`Inflation Rate`=0, `Federal Funds Upper Target`=0,`Real GDP (Percent Change)` =0, `Unemployment Rate` =0,`Effective Federal Funds Rate`=0))
+```
+
+
+
+## Identify variables that need to be mutated
+
+I have observed that year month and day are separated, So it's optimal to have the date formatted.
+
+
+```{r}
+FedFundsRate$Date <- str_c(FedFundsRate$Year,"-",FedFundsRate$Month,"-",FedFundsRate$Day)%>%ymd()%>%as.Date()
+```
+
+```{r}
+FedFundsRate$Date
+```
+
+```{r}
+feds <- FedFundsRate %>% 
+  pivot_longer(cols = c( "Federal Funds Target Rate","Inflation Rate","Federal Funds Lower Target",
+                         "Federal Funds Upper Target","Effective Federal Funds Rate","Unemployment Rate","Real GDP (Percent Change)"),
+               names_to = "names",
+               values_to = "value",
+               values_drop_na = TRUE)
+
+feds
+
+```
+deleting the first three columns
+```{r}
+feds<-subset(feds,select=-c(1,2,3))
+```
+
+```{r}
+head(feds)
+```
+
+The data is now tidy enough to work
