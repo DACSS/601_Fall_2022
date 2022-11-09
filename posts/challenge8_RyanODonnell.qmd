@@ -1,0 +1,133 @@
+---
+title: "Challenge 8"
+author: "Ryan O'Donnell"
+description: "Joining Data"
+date: "11/8/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+    df-print: paged
+categories:
+  - challenge_8
+  - ryan_odonnell
+  - water_quality
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+```{r}
+#:| read-in
+
+field_orig <- read_xlsx("_data/2022_Field_Sheets_LPP.xlsx",
+                        range = "G2:AT310",
+                        col_names = c("0-Date","0-PastWeater","0-CurrentWeather",
+                                      "1-SiteName", "1-SiteID", "1-SampleTime","1-Parameters","1-AirTemp","1-WaterTemp","1-QCType","delete",
+                                      "2-SiteName", "2-SiteID", "2-SampleTime","2-Parameters","2-AirTemp","2-WaterTemp","2-QCType","delete",
+                                      "3-SiteName", "3-SiteID", "3-SampleTime","3-Parameters","3-AirTemp","3-WaterTemp","3-QCType","delete",
+                                      "4-SiteName", "4-SiteID", "4-SampleTime","4-Parameters","4-AirTemp","4-WaterTemp","4-QCType","delete",
+                                      "0-Streamflow", "0-Color", "0-Odor", "0-Debris", "0-Comments"),
+                        skip = 1,
+                        na = c("NA", "NR", "NT")) %>%
+  select(-starts_with("delete"))
+
+lab_data <- read_xlsx("_data/2022_Lab_Data.xlsx",
+                      col_names = c("SiteName", "SiteID", "SampleDate", "LabID", "SampleTime", "SampleDelivered", "Duplicate", "WetWeather", "HoldingTime", "PreservationTemp", "PreservationAcceptable", "Volume", "ResultMPN", "Lab", "Analyst", "Org", "LabComments"),
+                      skip = 1,
+                      na = c("NA", "NR", "NT"))
+
+head(field_orig)
+head(lab_data)
+```
+
+### Briefly describe the data
+
+This is a data joining task that I need to do for work! I have two different excel files: E. coli bacteria data from our water quality lab and the data collected from the field sheets that volunteers fill out when they collect their samples. I need a final set of data that will be formatted so it can be stored with the rest of our data and also easily put into a template to upload to the EPA database for water quality data.
+
+## Tidy Data (as needed)
+
+The lab data is already tidy, it is uploaded as is to a website that maps the data as soon as it is available. The field sheet data, on the other hand, is a mess (some of which is intentional). The file is generated from a Microsoft Form that my seasonal employees use to enter what was written on the paper field sheets. Prior to starting this homework, I had to manually check all the Site IDs because I failed to validate the data on input. Each field sheet has information for up to four samples, so I will need to do some finagling to get the data into a tidy, single case format. I am excited to learn how to do this in a somewhat automated way!
+
+```{r}
+#| label: tidy
+
+field_tidy <- field_orig %>% pivot_longer(cols = -starts_with("0"), 
+                           names_to = c("drop",".value"), 
+                           names_sep = "-", 
+                           values_drop_na = TRUE) %>%
+  select(-`drop`) %>%
+  rename_at(vars(starts_with("0")), ~ str_remove(., "0-"))
+
+field_tidy
+```
+
+I found the solution to consolidating repeating columns on Stack Overflow by using the ".value" argument in pivot_longer but I don't quite understand how it works.
+
+## Mutating Variables
+
+I need to ensure the dates are stored consistently because I will be using that to join the two datasets. The times could use some fixing but I don't need to deal with them just yet.
+
+```{r}
+#| label: mutate
+
+lab_fixed <- lab_data %>%
+  mutate(SampleDate = ymd(SampleDate))
+
+field_fixed <- field_tidy %>%
+  mutate(Date = ymd(Date))
+
+```
+
+## Join Data
+
+These two datasets do not match up perfectly. Not all the field observations are associated with E. coli results. I will need to repeat this process with the results for other parameters, some of which I am waiting for external labs to send me. I am also expecting some of the field sheets to be missing, so this will be an initial check to look through my field sheets before I put them away for good. I intend to polish this code up to get the exact columns I need for my final format once I have all the field sheets and all the results.
+
+```{R}
+#| label: the big join!
+
+united_data <- left_join(x = lab_fixed, 
+                         y = field_fixed, 
+                         by = c("SampleDate" = "Date", "SiteID" = "SiteID"),
+                         suffix = c("_lab", "_field"),
+                         na_matches = "never")
+
+united_data
+
+```
+
+I can envision using two versions of this. First, joining all of the columns as a check on the accuracy of the data entry, etc. For example, the site names that the volunteer wrote on the field sheet should match with the site name from the lab that is associated with, same with the sample time. Then, I would be able to clean up the preliminary data and run it through a similar code that formats everything properly for long term storage and upload.
