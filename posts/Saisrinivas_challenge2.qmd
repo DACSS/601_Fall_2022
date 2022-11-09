@@ -1,0 +1,86 @@
+---
+title: "Challenge 2"
+author: "Saisrinivas Ambatipudi"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+hotel1 <- read_csv("_data/hotel_bookings.csv")
+hotel1
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+After using the read_csv function we can see that the data has 119320 rows and 32 columns. After using the summary function we can see that:
+- The dates span from 2015 to 2017 for this data set.
+- In one booking 55 adults booked a room when we check the max of the adults column.
+- In one booking 10 children and in another booking 10 babies based on max values of the children and the babies column respectively.
+- A booking was on waiting list for a maximum of 391 days!!
+- The maximum number of 5 special requests was made on one booking.
+- The maximum number of 8 parking spaces were requested on one booking, looks like it was the time 55 people came to the place.XD
+
+```{r}
+summary(hotel1)
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+hotel2 <- hotel1 %>% group_by(hotel, arrival_date_month, arrival_date_year)
+hotel3 <- hotel2 %>% summarise(Babies = sum(babies), Children = sum(children, na.rm = TRUE), Adults = sum(adults))
+hotel3
+##Babies <- c(sum(Babies))
+##Children <- c(sum(Children))
+##Adults <- c(sum(Adults))
+##hotel4 <- hotel3(Babies, Children, Adults)
+##hotel4
+
+
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
