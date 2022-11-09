@@ -1,0 +1,217 @@
+---
+title: "Homework 2"
+author: "Emily Duryea"
+desription: "Homework 2 submission by Emily Duryea"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - homework2
+  - emilyduryea
+  - student
+  - academic
+---
+
+# Homework 2
+
+## Homework 2 Goals
+
+1.  Read in a dataset
+2.  Clean the data as needed using dplyr and related tidyverse packages
+3.  Provide a narrative about the data set
+4.  Identify potential research questions that your dataset can help answer
+
+## The Dataset
+
+The dataset that I will be using is a data set I found on the website Kaggle (link can be found [here](https://www.kaggle.com/datasets/csafrit2/higher-education-students-performance-evaluation?resource=download)). The dataset is a survey given to university students that collects demographic variables (e.g., age, job status, family background) and variables pertaining to their academic performance (e.g., time spent studying, class attendance, GPA).
+
+## Goal #1: Read in a dataset
+
+Below is the R code I used to read in the data set, as well as a summary of the data.
+
+```{r}
+studentsurvey <- read.csv("_data/student_prediction.csv")
+summary(studentsurvey)
+```
+
+## Goal #2: Clean the data
+
+The next step was to clean the data. As this dataset was used in a previous research study (Yılmaz & Sekeroglu, 2019), the data has already been de-identified participants using a number code to represent responses in order to keep subjects' identities private. What I did want to change was the labeling of certain variables where it was unnecessary. For example, to represent gender, the researchers used the code "1" to represent "female" and "2" to represent "male." To make it less confusing when using the dataset, I chose to rename these terms. However, some I chose not to rename - if the variable involved a range, the number placeholder was kept (e.g., for ages, the ranges were 1 = 18-21, 2 = 22-25, 3 = 26 or above).
+
+```{r}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+
+studentsurvey$GENDER <- factor(studentsurvey$GENDER, 
+                 levels=c(1,2), 
+                 labels=c("female","male"))
+
+studentsurvey$HS_TYPE <- factor(studentsurvey$HS_TYPE, 
+                 levels=c(1,2,3), 
+                 labels=c("private","state", "other"))
+
+studentsurvey$SCHOLARSHIP <- factor(studentsurvey$SCHOLARSHIP, 
+                 levels=c(1,2,3,4,5), 
+                 labels=c("None","25%", "50%", "75%", "Full"))
+
+studentsurvey$WORK <- factor(studentsurvey$WORK, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$ACTIVITY <- factor(studentsurvey$ACTIVITY, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$PARTNER <- factor(studentsurvey$PARTNER, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$TRANSPORT <- factor(studentsurvey$TRANSPORT, 
+                 levels=c(1,2,3,4), 
+                 labels=c("Bus","Car/Taxi", "Bicycle", "Other"))
+
+studentsurvey$LIVING <- factor(studentsurvey$LIVING, 
+                 levels=c(1,2,3,4), 
+                 labels=c("Rental","Dorm", "With Family", "Other"))
+
+studentsurvey$MOTHER_EDU <- factor(studentsurvey$MOTHER_EDU, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("primary school","secondary school", "high school", "university", "Masters", "Doctorate"))
+
+studentsurvey$FATHER_EDU <- factor(studentsurvey$FATHER_EDU, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("primary school","secondary school", "high school", "university", "Masters", "Doctorate"))
+
+studentsurvey$KIDS <- factor(studentsurvey$KIDS, 
+                 levels=c(1,2,3), 
+                 labels=c("Married","Divorced", "Died"))
+
+studentsurvey$MOTHER_JOB <- factor(studentsurvey$MOTHER_JOB, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("retired","housewife", "government officer", "private sector employee", "self-employment", "other"))
+
+studentsurvey$FATHER_JOB <- factor(studentsurvey$FATHER_JOB, 
+                 levels=c(1,2,3,4,5), 
+                 labels=c("retired", "government officer", "private sector employee", "self-employment", "other"))
+
+studentsurvey$READ_FREQ <- factor(studentsurvey$READ_FREQ, 
+                 levels=c(1,2,3), 
+                 labels=c("None","Sometimes", "Often"))
+
+studentsurvey$READ_FREQ_SCI <- factor(studentsurvey$READ_FREQ_SCI, 
+                 levels=c(1,2,3), 
+                 labels=c("None","Sometimes", "Often"))
+
+studentsurvey$ATTEND_DEPT <- factor(studentsurvey$ATTEND_DEPT, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$IMPACT <- factor(studentsurvey$IMPACT, 
+                 levels=c(1,2,3), 
+                 labels=c("Positive","Negative","Neutral"))
+
+studentsurvey$ATTEND <- factor(studentsurvey$ATTEND, 
+                 levels=c(1,2,3), 
+                 labels=c("always","sometimes","never"))
+
+studentsurvey$PREP_STUDY <- factor(studentsurvey$PREP_STUDY, 
+                 levels=c(1,2,3), 
+                 labels=c("alone","with friends","not applicable"))
+
+studentsurvey$PREP_EXAM <- factor(studentsurvey$PREP_EXAM, 
+                 levels=c(1,2,3), 
+                 labels=c("close to exam date","regularly throughout semester","never"))
+
+studentsurvey$NOTES <- factor(studentsurvey$NOTES, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$LISTENS <- factor(studentsurvey$LISTENS, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$LIKES_DISCUSS <- factor(studentsurvey$LIKES_DISCUSS, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$CLASSROOM <- factor(studentsurvey$CLASSROOM, 
+                 levels=c(1,2,3), 
+                 labels=c("not useful","useful","not applicable"))
+```
+
+## Goal #3: Narrative About the Data Set
+
+To start looking at the dataset to familiarize myself with the data and the sample, I began by running some descriptive statistics with the sample's demographic variable. Below are some bar graphs pertaining to the demographics of the sample.
+
+### Sample Gender
+
+```{r}
+ggplot(studentsurvey, aes(x = GENDER)) + geom_bar()
+```
+
+Most of the sample are male students.
+
+### Sample High School Type
+
+```{r}
+ggplot(studentsurvey, aes(x = HS_TYPE)) + geom_bar()
+```
+
+Most students in this sample graduated from a state/public school.
+
+### Sample Scholarship
+
+```{r}
+ggplot(studentsurvey, aes(x = SCHOLARSHIP)) + geom_bar()
+```
+
+Most students have at least a 50% scholarship.
+
+### Sample Work Status
+
+```{r}
+ggplot(studentsurvey, aes(x = WORK)) + geom_bar()
+```
+
+Most participants do not work while they are studying in school.
+
+### Sample Activities
+
+```{r}
+ggplot(studentsurvey, aes(x = ACTIVITY)) + geom_bar()
+```
+
+Most participants do not regularly participate in organized activities at their university (i.e., clubs, sports).
+
+### Sample Conclusions
+
+Those are just some of the demographic variables that this survey recorded. Depending on research questions used, some demographic variables will have more importance depending on what is being analyzed.
+
+## Goal #4: Research Questions
+
+I am also using this dataset in another class, and here are the research questions I plan on investigating:
+
+1\) Does classroom engagement (i.e., taking notes, attending class, listening) result in a higher GPA in university students?
+
+2\) Does reported studying (i.e., weekly study hours) result in a higher GPA in university students?
+
+3\) Does collaboration between students (i.e., studying together, positive class discussions) result in a higher GPA in university students?
+
+Some other examples could be:
+
+4\) How does parental education level affect academic performance?
+
+5\) How does work/activities influence study hours?
+
+6\) Are students who find discussions more helpful more likely to study with friends?
+
+There are many research questions that could be investigated using this data set, but the three I listed above are the ones I am most interested in investigating.
+
+## Works Cited
+
+Yılmaz, N., & Sekeroglu, B. (2019, August). Student Performance Classification Using Artificial Intelligence Techniques. *In International Conference on Theory and Application of Soft Computing, Computing with Words and Perceptions* (pp. 596-603). Springer, Cham.

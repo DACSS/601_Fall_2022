@@ -23,6 +23,7 @@ categories:
 
 library(tidyverse)
 library(dplyr)
+library(summarytools)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
@@ -48,23 +49,15 @@ In addition to federal funds rates, this dataset also measures inflation rates, 
 
 ```{r}
 #First, let's dissect the dataset itself
-#dimensions
-dim(fedfunds)
-#[904 rows] x [8 columns]
 
-#number of columns
-ncol(fedfunds)
-#8 columns
-
-#number of rows
-nrow(fedfunds)
-#904 rows
-
-#names of columns
-colnames(fedfunds)
-
-#summary of fedfunds.csv
-summary(fedfunds)
+print(dfSummary(fedfunds,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
 ```
 
 ## Tidy Data (as needed)
@@ -139,6 +132,32 @@ When I pivot the columns, I end up with 3616 rows!
 ```{r}
 nrow(fedfundrates)
 ```
+
+## Visualizing Data
+
+```{r}
+# create data
+dates <- fedfunds$`Date YYYY/MM/DD`
+dates <- ymd(dates)
+gdp <- fedfunds$`Real GDP (Percent Change)`
+unemploy <- fedfunds$`Unemployment Rate`
+inflation <- fedfunds$`Inflation Rate`
+fedfunds$`Federal Funds Lower Target`
+
+# effective federal fund rate vs unemployment rate chart
+ggplot(data = fedfunds, aes(x= `dates`)) + 
+  geom_line(aes(y = `Effective Federal Funds Rate`), color = "darkred") +
+  geom_line(aes(y = unemploy), color="darkgreen") +
+  geom_line(aes(y = `Federal Funds Upper Target`), color="darkblue") +
+  geom_line(aes(y= `Federal Funds Target Rate`), color ="purple")+
+  geom_line(aes(y = `Federal Funds Lower Target`), color = "black")+
+  geom_line(aes(y = inflation), color = "lightseagreen")+
+  ylab("Percentages")+
+  ggtitle("Effective Federal Funds Rate vfrom 1954 to 2017")
+
+```
+
+
 
 Sources:
 

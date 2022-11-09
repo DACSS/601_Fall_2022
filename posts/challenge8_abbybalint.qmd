@@ -1,0 +1,78 @@
+---
+title: "Challenge 8 - Abby Balint"
+author: "Abby Balint"
+description: "Joining Data"
+date: "11/6/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - abby_balint
+  - faostat
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+Reading in the FAO data sets - 
+```{r}
+codes <- read_csv("_data/FAOSTAT_country_groups.csv")
+cattle <- read_csv("_data/FAOSTAT_cattle_dairy.csv")
+```
+
+### Briefly describe the data
+
+The main dataset I am working with here is the FAO Stat Cattle dataset. This is publicly available food and agriculture data for over 245 countries in the world. This file in particular contains information about cow milk, with variables units sold and value of the product. The data begins in the 1960s and goes through 2018. This file contains over 36,000 rows of information. 
+
+The second file I will be joining in is a codebook that groups up the countries so that we don't have to look at the data at such a granular, individual country level. My goal is to join in the country group variable to be able to perform analysis on these groups within the cattle/dairy dataset.
+
+
+## Tidy Data (as needed)
+
+All rows have an "Area code" assigned to the country, and that is what I will be using to join in the country group variable. However, it is called "Country Code" in the country file, so I am renaming the variable to "Country Code" here as well. 
+```{r}
+cattlenew <- rename (cattle, "Country Code"= "Area Code" )
+head(cattlenew)
+
+```
+
+
+## Join Data
+
+Here I am joining the two files with a left join based on Country Code.
+
+```{r}
+cattlefinal <- left_join(cattlenew, codes, by = "Country Code" )
+head(cattlefinal)
+```
+Now that my data is joined, if I wanted to graph certain country groups I would now be able to, like in the below.
+
+```{r}
+cattlefinal %>%
+  filter(Year >= 2010) %>%
+  filter(`Flag Description` == "Official data") %>%
+  filter(`Country Group`=="Central Asia") %>%
+  filter(`Unit` == "tonnes") %>%
+  ggplot(aes(x=`Area`, y=`Value`)) + 
+  geom_point(
+    color="purple",
+    fill="#69b3a2",
+    size=.5,
+    alpha=.5
+  )+
+  labs(title = "Official Tonnes of Milk Produced in Central Asia from the Year 2010-2018", x="Country", y="Value of Milk") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
+
