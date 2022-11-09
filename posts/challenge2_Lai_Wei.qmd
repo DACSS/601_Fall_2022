@@ -35,8 +35,6 @@ Today's challenge is to
 
 ## Read in the Data
 
-Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
-
 -   railroad\*.csv or StateCounty2012.xls ⭐
 -   FAOstat\*.csv or birds.csv ⭐⭐⭐
 -   hotel_bookings.csv ⭐⭐⭐⭐
@@ -45,21 +43,38 @@ Read in one (or more) of the following data sets, available in the `posts/_data`
 hotel <- read.csv("_data/hotel_bookings.csv")
 ```
 
-Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+Read the hotel_bookings data as hotel. 
 
 ## Describe the data
 
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
-
 ```{r}
-
-
+hotel %>% 
+  select(reservation_status) %>% 
+  distinct()
 ```
+There are 3 different reservation status of the hotel, 'check-out', 'canceled' and 'no-show'.
 
 ## Provide Grouped Summary Statistics
 
-Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+Data summary
+```{r}
+hotel %>% 
+  summarise(across(c(country,market_segment),n_distinct))
+``` 
+Count the number of unique 178 countries and 8 different market_segments of hotel data
 
+Group_by() application
+```{r}
+hotel %>% 
+  group_by(reservation_status) %>% 
+  summarise(num_adult = sum(adults,na.rm = TRUE),
+            num_child = sum(children,na.rm = TRUE),
+            num_baby = sum(babies, na.rm = TRUE))
+```
+In total, we can see how many adults, children and babies were checking in successfully. The information may help the hotel to arrange more facilities 
+for children or babies. 
+
+Data summary visualization 
 ```{r}
 print(summarytools::dfSummary(hotel,
                         varnumbers = FALSE,
@@ -73,4 +88,4 @@ print(summarytools::dfSummary(hotel,
 
 ### Explain and Interpret
 
-Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+I choose this data is because I did the middle level in summer session and this time I want to practice something which is more complex and fun for increasing my R skill. 
