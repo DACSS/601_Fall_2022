@@ -150,22 +150,29 @@ Unfortunately, the only date variable present in the original data was `Last Rev
 #| label: Count x Borough Bar
 #| output: true
 
-bar_list <- bnb_plot %>% ggplot(aes(x=`Borough`, fill=`Room Type`))+
-                                geom_bar(position='dodge')+
-                                  scale_fill_brewer(palette = 'PRGn')+
+bar_list_data <- bnb_plot %>% 
+             count(Borough, `Room Type`)
+
+  
+bar_list <- bnb_plot %>% 
+  ggplot(aes(x=`Borough`, fill=`Room Type`))+
+      geom_bar(position='dodge')+
+                                      ggrepel::geom_label_repel(stat='count',
+                                                            aes(label=..count..), segment.color=NA, size=2.25, nudge_y = 500, label.size = 0, alpha=0.7)+
+      scale_fill_brewer(palette = 'RdYlBu')+
                                     scale_y_continuous(breaks=seq(0,8000, by=2000))+
-                                   theme_dark()+
-                                        labs(title= "2019 NYC Air Bnb Listing Count by Borough", x= "Borough", y= "Count", caption= "visualized by Room Type")
+                                      theme_grey()+
+                                        labs(subtitle= "2019 NYC AirBnb", title= "Listings by Borough" , x="", y= "", caption= "visualized by Room Type")
                            
 bar_list
 
 ```
-Using a bar plot with `position = dodge` allows us to view Lisiting counts for each Borough by Room Type, with every Room Type having an individual bar.
+Using a bar plot with `position = dodge` allows us to view Lisiting counts for each Borough by Room Type, with every Room Type having an individual bar. The labels here aren't great but this was the best I could do with such comapct bars; probably not a good choice for the `dodge` aesthetics.
 :::
 
 :::{.callout-note collapse="true"}
 
-## `Price` by `Borough` Bar
+## Listings by `Price` Bar
 ```{r}
 
 #| label: Price x Borough Bar
@@ -181,10 +188,13 @@ bnb_price <- bnb_plot %>%
 
 bar_price <- bnb_price %>% ggplot(aes(x=`Price Rating`, fill=`Borough`))+
                             geom_bar(position ='fill')+
-                                  scale_fill_brewer(palette = 'PRGn')+
-                                   theme_dark()+
-                                      coord_flip()+
-                                        labs(title= "2019 NYC Air Bnb Listings by Price Rating", x= " Nightly Price", y= "Frequency", caption= "visualized by Borough")
+                                  scale_fill_brewer(palette = 'RdYlBu')+
+                                   theme_grey()+
+  
+                                    theme(legend.position = "top")+
+                                      #coord_flip()+
+                                    #ggeasy::easy_rotate_x_labels(side="right")+
+                                        labs(title= "Listings by Price", subtitle="2019 NYC AirBnb", x= " Nightly Price", y= "Frequency", caption= "visualized by Borough", fill="")
 
 bar_price
 ```
@@ -194,7 +204,7 @@ A bar graph with `position = "fill"` allows us to view each Borough's share of t
 
 :::{.callout-note collapse="true"}
 
-## `Availability` by `Price`
+## Listings by `Availability`
 
 ```{r}
 #| label: availability x price
@@ -203,11 +213,12 @@ A bar graph with `position = "fill"` allows us to view each Borough's share of t
 
 bnb_price %>% ggplot(aes(x=Availability, fill=`Price Rating`))+
                 geom_bar(position = 'stack')+
-                    scale_fill_brewer(palette = 'PRGn')+
+                    scale_fill_brewer(palette = 'RdYlBu')+
                                     scale_y_continuous(breaks=seq(0,7500, by=1500))+
-                                        theme_dark()+
+                                      #theme(axis.text = element_text(family="sans", face="italic"))+
+                                        theme_grey()+
                                           coord_flip()+
-                                        labs(title= "2019 NYC Air Bnb Listing Count by Availabilty", x= " Availability", y= "Count", caption= "visualized by Price Rating")
+                                        labs(subtitle= "2019 NYC AirBnb", title ="Listings by Availabilty", x= " Availability", y= "Lisitng Count", caption= "visualized by Price Rating")
                
                
 
@@ -223,19 +234,31 @@ Using a normal `position = stack` bar graph to plot Listing Count by Availabilit
 ```{r}
 #| label: price x review count scatter
 #| output: true
+set.seed(100)
 
-bnb_plot %>% 
-                ggplot(aes(x=`Review Count`, y=Price))+
-                geom_point(aes(color=Borough))+
-                  coord_cartesian(ylim=c(0,1000))+
-                    scale_fill_brewer(palette = 'PRGn')+
-                                    scale_y_continuous(breaks=seq(0,1500, by=150))+
-                                   theme_minimal()+
-                                        labs(title= "2019 NYC Air Bnb Price by Review Count ", x= "Review Count", y= "Nightly Price", caption= "visualized by Borough")
-                    
+price_rev_scatter <- bnb_2 %>% 
+      summarize(`Price`, `Review Count`, `Borough`)%>%
+        arrange(desc(Price), desc(`Review Count`))%>%
+          filter(`Review Count` >= 50, `Price`<= 1000)%>%
+              slice_sample(n=250, replace=F)%>%
+                ggplot(aes(x=`Price`, y= `Review Count`))+
+                 geom_point(aes(color=Borough))+
+                  #geom_smooth()+
+                    geom_text(aes(x=700, y=600, label="Sample: n = 250
+                                                       Price <= 1000
+                                                       Reviews >= 30", fontface="italic", family="sans"), size=3, vjust='top', hjust='right', alpha=0.5, )+
+                     coord_cartesian(xlim=c(0,750), ylim=c(0,600))+
+                      scale_color_brewer(palette = 'RdYlBu')+
+                        scale_y_continuous(breaks=seq(0,1500, by=150))+
+                          theme_grey()+
+                            labs(title= "Price by Review Count ", subtitle = "2019 NYC AirBnB", x= "Review Count", y= "Nightly Price", caption= "visualized by Borough")
+      
+price_rev_scatter
 
 ```
 Not a particularly useful visualization, I wanted to take a look at the relationship between Price and Review Count. Using a scatterplot, we can see that properties with more reviews typically have a lower price point, which makes sense as they are more accessible to the general public. Unfortunately, there are so many unique price points, the graph is very saturated and we cannot properly view Borough, the third dimension.
+
+**Update:** Took a sample of n=250 from all listings with `Price` below $1000 and `Review Count` above 30. Now we can see there isn't *that* strong a trend between Price and Review Count.
 :::
 
 ::: 
