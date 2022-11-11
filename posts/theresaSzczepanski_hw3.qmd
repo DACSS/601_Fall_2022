@@ -1,8 +1,8 @@
 ---
-title: "Challenge 8"
+title: "Homework 3"
 author: "Theresa Szczepanski"
-description: "Joining Data"
-date: "11/3/2022"
+desription: "More data read in, wrangling, and pivoting"
+date: "11/11/2022"
 format:
   html:
     df-print: paged
@@ -12,7 +12,7 @@ format:
     code-tools: true
 categories:
   - Theresa_Szczepanski
-  - challenge_8
+  - hw3
   - MCAS_2022
   - MCAS_G9Science2022_ItemAnalysis
 ---
@@ -26,22 +26,11 @@ library(tidyverse)
 library(ggplot2)
 library(lubridate)
 library(readxl)
+library(hrbrthemes)
+library(viridis)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
-
-## Challenge Overview
-
-Today's challenge is to:
-
-1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
-2)  tidy data (as needed, including sanity checks)
-3)  mutate variables as needed (including sanity checks)
-4)  join two or more data sets and analyze some aspect of the joined data
-
-(be sure to only include the category tags for the data you use!)
-
-
 
 ##  MCAS_2022.csv 
 
@@ -103,7 +92,7 @@ __Mutate__
  
  Recode to __date__
  
- -`dob` using lubridate.
+ - `dob` using lubridate.
  
  
 
@@ -267,9 +256,17 @@ MCAS_G9Science2022_ItemAnalysis
 view(MCAS_G9Science2022_ItemAnalysis)
 
 
+
+
 ```
+```{r}
+ ggplot(MCAS_G9Science2022_ItemAnalysis, aes(x=`State Percent Points`, y=`RT-State Diff`)) + 
+     geom_point(size = 1, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "RT-State Diff by Difficulty Level to State", y = "RT-State Diff",
+       x = "State Percent Points")
 
-
+```
 
 ### Narrative Summary
 
@@ -386,207 +383,140 @@ G9Science_StudentItem
 As expected, we now have a 2,898 \times 17 data frame.
 
 
-### Analysis of Joined Data
 
-When examining our performance relative to the [state by subgroups](https://profiles.doe.mass.edu/mcas/subgroups2.aspx?linkid=25&orgcode=04830305&fycode=2022&orgtypecode=6&), it is noteworthy that Rising Tide Female Introductory Physics students on average scored lower relative to their peers in the state and Rising Tide Male Introductory students scored higher on average. This trend is not true for Rising Tide MS science students. When we look at our student's performance by item and by gender, we can see several questions with a larger disparity in performance by gender.
+
+
+### Analysis of Student Performance by Content Strands
+
+
+RT State Difference by Reporting Category
+
+- Did students perform better relative to the state in different content categories?
+
+- Did students on plans perform differently relative to the state in different content
+categories?
+
+- What reporting categories were emphasized by the state?
+
+- How did students perform based on key words?
 
 ```{r}
-G9Science_Gender<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP)%>%
-  group_by(gender, sitem)%>%
-  summarise(sitem_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+G9Science_Cat_StateDiff<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  group_by(`sReporting Category`)%>%
+  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
+            sd_RT_State_Diff = sd(`RT-State Diff`, na.rm=TRUE),
+            med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE))
 
-  ggplot(G9Science_Gender, aes(fill=gender, y=sitem_percent, x=sitem)) +
+G9Science_Cat_StateDiff
+   ggplot(G9Science_Cat_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
     geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="Non IEP Students" ,
+  labs(subtitle ="All Students" ,
        y = "Percent Points Earned",
        x= "Item, Introductory Physics 2022 ",
-       title = "Student Item Performance by Gender",
+       title = "Student Item Performance by Reporting Category",
       caption = "2022 HS Introductory Physics MCAS")+
        theme(axis.text.x=element_text(angle=60,hjust=1))
-
 ```
-Now let's examine the items where students had the weakest performance relative to the state.
+Box Plot to Visualize distribution
+```{r}
+G9Science_Cat_Box <-G9Science_StudentItem%>%
+  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  ggplot( aes(x=`sReporting Category`, y=`RT-State Diff`, fill=`sReporting Category`)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+   # geom_jitter(color="black", size=0.1, alpha=0.9) +
+    theme_ipsum() +
+    theme(
+     # legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("G9 Introductory Physics School State Difference by Content Category") +
+    xlab("")
+
+G9Science_Cat_Box
+```
+```{r}
+G9Science_Density <-G9Science_StudentItem%>%
+  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  ggplot(aes(x = `RT-State Diff`, color = `sReporting Category`, fill = `sReporting Category`)) + 
+  geom_density( color="#e9ecef", alpha=0.9) +
+  labs(title = "Introductory Physics MCAS",
+       subtitle = "Percent Earned RT-State Diff",
+       y = "Density",
+       x = "RT-State Diff",
+       caption = "2022") + 
+  theme_minimal() +
+  facet_wrap(vars(`sReporting Category`))
+
+G9Science_Density
+```
+
+`
+```{r}
+G9Science_Histo <-G9Science_StudentItem%>%
+  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  ggplot(aes(x = `RT-State Diff`, color = `sReporting Category`, fill = `sReporting Category`)) + 
+  geom_histogram( color="#e9ecef", alpha=0.9) +
+  labs(title = "Introductory Physics MCAS",
+       subtitle = "Percent Earned RT-State Diff",
+       y = "frequency",
+       x = "RT-State Diff",
+       caption = "2022") + 
+  theme_minimal() +
+  facet_wrap(vars(`sReporting Category`))
+
+G9Science_Histo
+```
+### Analysis of Student Performance by Difficulty Level 
+
+Consideration of the difficulty level and modifications.
 
   
 
 ```{r}
-# G9 Science Calculate Non IEP Gender Analysis
-G9Science_Gender_NonIEP<-G9Science_StudentItem%>%
+# G9 Science  IEP  Analysis By Difficulty
+G9Science_IEP<-G9Science_StudentItem%>%
   select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
-  filter(`RT-State Diff` <= -10)%>%
-  filter(IEP == 0)%>%
-  group_by(gender, sitem) %>%
-  summarise(gender_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
-
-G9Science_Gender_NonIEP
-# Grouped bar Chart Calculate Items
-
-G9Science_Gender_NonIEP%>%
-  ggplot(aes(fill=gender, y=gender_percent, x=sitem)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="Non IEP Students" ,
-       y = "Percent Earned",
-       x= "Weakest Items ",
-       title = "Item Performance by Gender",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))#+
-  #coord_flip()
-```
-From our students who are not on IEPs, Male students seem to have had more success with questions where they were required to calculate than our female students. Now, we can 
-examine our students on IEPs.
-
-```{r}
-# G9 Science Calculate  IEP Gender Analysis
-G9Science_Gender_IEP<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
-  filter(`RT-State Diff` <= -10)%>%
-  filter(IEP != 0)%>%
-  group_by(gender, sitem) %>%
-  group_by(gender, sitem) %>%
-  summarise(gender_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
-
-G9Science_Gender_IEP
-
-G9Science_Gender_IEP%>%
-  ggplot(aes(fill=gender, y=gender_percent, x=sitem)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="IEP Students" ,
-       y = "Percent Earned",
-       x= "Weakest Item ",
-       title = "Item Performance by Gender",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))#+
-  #coord_flip()
-
-
-```
-It seems as though we have the opposite trend in our students who are on IEP plans. 
-Perhaps the accommodations and modifications of these plans are more beneficial to female students or perhaps the male students on plans have stronger disabilities.
-
-Where is the gender gap the largest? There are many things to examine here and I am running out of time...
-```{r}
-G9Science_Male_NonIEP<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
-  filter(gender == "M")%>%
-  filter(IEP == 0)%>%
-  group_by(sitem) %>%
-  summarise(male_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
-
-G9Science_Female_NonIEP<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
-  filter(gender == "F")%>%
-  filter(IEP == 0)%>%
-  group_by(sitem) %>%
-  summarise(female_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
-
-
-G9ScienceGender<-G9Science_Female_NonIEP%>%
-  left_join(G9Science_Male_NonIEP, "sitem")%>%
-  mutate(gender_diff = 100*(female_percent - male_percent))
-
-
-
-
- # pivot_longer(female_percent, male_percent, names_to = gender, values_to = item_percent)
-
-G9ScienceGender
-print(summarytools::dfSummary(G9ScienceGender,
-                         varnumbers = FALSE,
-                         plain.ascii  = FALSE,
-                         style        = "grid",
-                         graph.magnif = 0.70,
-                        valid.col    = FALSE),
-       method = 'render',
-       table.classes = 'table-condensed')
-
-G9ScienceGender %>%
-  filter(gender_diff < -10)%>%
-  ggplot(aes(fill = gender_diff , y = gender_diff, x=sitem)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="Non IEP Students" ,
-       y = "Diff F to M Percent Earned",
-       x= "Largest Gender Gap Items ",
-       title = "Item Performance by Gender",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))#+
+  filter(IEP != 0)
   
 
-```
-Using Prior Math MCAS result to predict Introductory Physics MCAS Performance. Could we use prior Math MCAS scores to identify students who need extra support for their Science MCAS.
-```{r}
-#view(MCAS_2022)
- MCAS_subset<-select(MCAS_2022, sscaleds, gender, grade, yrsinsch,
-                               , IEP, `plan504`, sattempt, mattempt,mscaleds2021 )%>%
-                              filter((grade == 9) & sattempt != "N")
-
- ggplot(MCAS_subset, aes(x=mscaleds2021, y=sscaleds, color=gender)) + 
+G9Science_IEP%>%
+   ggplot( aes(x=`State Percent Points`, y=`RT-State Diff`)) + 
      geom_point(size = 1, color="#69b3a2")+
  geom_smooth(method="lm",color="grey", size =.5 )+
-  labs(title = "2022 Introductory Physics vs. 2021 Math MCAS", y = "Science Scaled Score",
-       x = "Math Scaled Score")# +
-   #facet_wrap(vars(gender))
-  #theme_minimal()
+  labs(title = "RT-State Diff by Difficulty Level to State", y = "RT-State Diff",
+       x = "State Percent Points", caption = "IEP only")
 
 ```
-Science Performance by Reporting Category: Should teachers review a given unit more closely.
-```{r}
-G9Science_Desc<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
-  group_by(`sReporting Category`)%>%
-  summarise(desc_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
+To fix this, we need RT-State Diff to be filtered INVALID comparison
 
-  ggplot(G9Science_Desc, aes(fill = `sReporting Category`, y=desc_percent, x=`sReporting Category`)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="All Students" ,
-       y = "Percent Points Earned",
-       x= "Item, Introductory Physics 2022 ",
-       title = "Student Item Performance by Reporting Category",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))
-
-```
-RT State Difference by Reporting Category
 ```{r}
-G9Science_StateDiff<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
-  group_by(`sReporting Category`)%>%
-  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE))
-
-   ggplot(G9Science_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="All Students" ,
-       y = "Percent Points Earned",
-       x= "Item, Introductory Physics 2022 ",
-       title = "Student Item Performance by Reporting Category",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))
-```
-```{r}
+# G9 Science Calculate  
 G9Science_Calculate<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sItem Desc`, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
-  filter(str_detect(`sItem Desc`, "calculate|Calculate")) #%>%
- #print( summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE)))
-#mean(`RT-State Diff`, na.rm=TRUE)
-#G9Science_Calculate
-
-#%>%
- # ggplot(aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
-  #   geom_bar(position="dodge", stat="identity") +
-
-
-  # group_by(`sReporting Category`)%>%
-  # summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE))
-  # 
-  #  ggplot(G9Science_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
-  #   geom_bar(position="dodge", stat="identity") +
-  # labs(subtitle ="All Students" ,
-  #      y = "Percent Points Earned",
-  #      x= "Item, Introductory Physics 2022 ",
-  #      title = "Student Item Performance by Reporting Category",
-  #     caption = "2022 HS Introductory Physics MCAS")+
-  #     theme(axis.text.x=element_text(angle=60,hjust=1))
+  select(gender, sitem, sitem_score, `sItem Desc`, `sItem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`)%>%
+  filter(str_detect(`sItem Desc`, "calculate|Calculate"))%>%
+  filter(IEP == 0)%>%
+  group_by(sitem)%>%
+  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
+            avg_StatePercent = mean(`State Percent Points`))
+ 
+view(G9Science_Calculate)
+    ggplot(G9Science_Calculate, aes(x=`avg_StatePercent`, y=`avg_RT_State_Diff`)) + 
+      geom_point(size = 1, color="#69b3a2")+
+  geom_smooth(method="lm",color="grey", size =.5 )+
+   labs(title = "Itetms with Calculate RT-State Diff by Difficulty Level to State", y = "RT-State Diff",
+        x = "State Percent Points")
 ```
+
+
+
 
 :::
+
+
+
+
+
+
 
