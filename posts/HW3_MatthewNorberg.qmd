@@ -1,0 +1,241 @@
+---
+title: "Olympic Analysis"
+author: "Matthew Norberg"
+date: "11/7/2022"
+format: 
+  html: 
+    toc: true
+    code-copy: true
+    code-tools: true
+    smooth-scroll: true
+    code-line-numbers: true
+    highlight-style: github
+    theme: zephyr
+    df-print: default
+categories:
+  - hw3
+  - Olympic_Data
+---
+
+```{r setUP}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(gridExtra)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read Clean Data
+
+In the previous homework assignment, I cleaned the Olympic data set and saved the cleaned data set in a new csv file.  To avoid duplicating code, I am going to read in the cleaned data set instead of the original one. 
+
+```{r Read}
+df <- read_csv('./Data/athletes_clean.csv')
+df
+```
+
+## Investigating Athletes
+
+Let's start by gathering some basic stats on the athletes.  I am going to separate the athletes into a male and female group because I think this will more accurately portray the information.
+
+```{r basicStats}
+# Gather basic athletes stats
+df %>% 
+  group_by(Sex) %>%
+  summarise(Count = n(), 
+            AverageAge = mean(Age), 
+            SDAge = sd(Age),
+            AverageHeight = mean(Height),
+            SDHeight = sd(Height),
+            AverageWeight = mean(Weight),
+            SDWeight = sd(Weight))
+```
+
+The statistics above are for everyone in the data set.  The first question I have as someone who is interested in the data is if these stats are different for people who have won medals.  The next block of code generates the same stats for the athletes who have won a medal.
+
+```{r basicMedalStats}
+# Gather basic stats for athletes who won a medal
+df %>%
+  filter(Medal != "None") %>%
+  group_by(Sex) %>%
+  summarise(Count = n(), 
+            AverageAge = mean(Age), 
+            SDAge = sd(Age),
+            AverageHeight = mean(Height),
+            SDHeight = sd(Height),
+            AverageWeight = mean(Weight),
+            SDWeight = sd(Weight))
+```
+
+The tables that I created above are a good way to look at the distribution of athlete statistics.  However, they are not as good as a diagram. Let's look at density plots of the age, height, and weight variables to get a better view of the distribution.  
+
+```{r statDistributions}
+ageDensity <- df %>%
+              ggplot() + 
+              geom_density(mapping = aes(x = Age, group = Sex, fill = Sex), 
+                           adjust = 2,
+                           alpha = 0.1) + 
+              labs(title = "Age Density For All Athletes")
+
+heightDensity <- df %>%
+                 ggplot() + 
+                 geom_density(mapping = aes(x = Height, group = Sex, fill = Sex), 
+                              adjust = 2,
+                              alpha = 0.1) +
+                 labs(title = "Height Density For All Athletes")
+
+weightDensity <- df %>%
+                 ggplot() + 
+                 geom_density(mapping = aes(x = Weight, group = Sex, fill = Sex), 
+                              adjust = 2,
+                              alpha = 0.1) +
+                 labs(title = "Weight Density For All Athletes")
+
+grid.arrange(ageDensity, heightDensity, weightDensity, ncol = 2)
+```
+
+The density plots shown above seem to make sense based on the data set we are looking at.  We would expect the Age and Weight distribution to be skewed because we are looking at data for Olympic athletes.  I am surprised that the distribution of the Height variable appears to be symmetric.  Based on the data set, I would have thought the distribution would have been skewed as well. 
+
+I am wondering if the distributions for these variables look different if we only look at the athletes that have won medals.  We can generate these visuals by filtering the data set so that it only contains athletes who have won medals and then using the same code from above to create the density plots. 
+
+```{r statMedalDistributions}
+medalAgeDensity <- df %>%
+                   filter(Medal != "None") %>%
+                   ggplot() + 
+                      geom_density(mapping = aes(x = Age, group = Sex, fill = Sex), 
+                      adjust = 2,
+                      alpha = 0.1) + 
+                      labs(title = "Athletes With Medals")
+
+medalHeightDensity <- df %>%
+                      filter(Medal != "None") %>%
+                      ggplot() + 
+                         geom_density(mapping = aes(x = Height, group = Sex, fill = Sex), 
+                         adjust = 2,
+                         alpha = 0.1) + 
+                         labs(title = "Athletes With Medals")
+
+medalWeightDensity <- df %>%
+                      filter(Medal != "None") %>%
+                      ggplot() + 
+                         geom_density(mapping = aes(x = Weight, group = Sex, fill = Sex), 
+                         adjust = 2,
+                         alpha = 0.1) +
+                         labs(title = "Athletes With Medals")
+
+grid.arrange(ageDensity, medalAgeDensity, ncol = 2)
+grid.arrange(heightDensity, medalHeightDensity, ncol = 2)
+grid.arrange(weightDensity, medalWeightDensity, ncol = 2)
+```
+
+I think it is interesting that the density plots do not change much when we only look at the athletes who have won medals.  Based on the plots generated in the previous code block, it appears that it would be difficult to predict whether or not an athlete would win a medal based solely on their age, height, and weight. Perhaps if I grouped the athletes by event and then compared the density plots for age, height, and weight for the athletes that won a medal versus the athletes who did not win a medal in the particular event, I would see different results.  This is something I would like to investigate for the final analysis.
+
+## Investigating Medals By Country
+
+To start investigating how medals relates to country, let's find out how many medals of each type each country has and how many total medals each country has.  This has been done with the following chunk of R Code. 
+
+```{r countryMedals}
+countryMedal <- df %>%
+                group_by(Region) %>%
+                count(Medal) %>%
+                pivot_wider(names_from = Medal, values_from = n) %>%
+                relocate(Bronze, .after = None) %>%
+                relocate(Silver, .after = Bronze) %>% 
+                arrange(desc(Gold)) %>%
+                mutate(TotalMedals = sum(Bronze,Silver,Gold, na.rm = TRUE))
+countryMedal
+```
+
+We can visualize this information a little better by generating a bar plot to show visually how many medals each country has won.  I thought it was more interesting to look at the number of gold medals each country has won.  The bar chart is generated below.  Note that I only included the top 25 countries with the most gold medals to make the chart have a reasonable size. 
+
+```{r}
+# Chart of number of golds per country
+countryMedal %>%
+  head(n = 25) %>%
+  ggplot(aes(x = fct_reorder(Region, Gold), y = Gold)) + 
+    geom_bar(stat = "identity", fill="#f68060", alpha=.6, width=.4) + 
+    coord_flip() + 
+    theme_bw() + 
+    labs(x = "Country", title = "Number of Gold Medals Per Country")
+```
+
+Based on the chart above, it seems that the amount of gold medals won by each country is extremely skewed.  Let's see if this is true with the total number of medals won by each country by making a histogram.
+
+```{r totalMedalsHist, warning=FALSE}
+# Medal Distribution
+countryMedal %>%
+  filter(!is.na(TotalMedals)) %>%
+  ggplot(aes(x = TotalMedals)) + 
+  geom_histogram(fill="#f68060", color="#e9ecef", alpha=0.9, bins = 100) + 
+  labs(x = "Total Medals",
+       y = "Number of Countries",
+       title = "Number of Countries vs Total Medals") +
+  xlim(c(0,6000)) + 
+  ylim(c(0,20))
+```
+
+It seems like the distribution of the total number of medals earned by each country is also very skewed based on the diagram below.  The large majority of countries in the dataset have less than 1000 medals, however there are a few that have so many like the United States.
+
+## Investigating Medals By Athletes
+
+Instead of looking at the countries with the most medals, let's look at the athletes who have won the most medals.  The following chunk of R code find the athletes that have won the most medals and shows the number of each type of medal earned by the athlete.
+
+```{r bestAthletesCreation}
+# Medal count by athlete
+bestAthletes <- df %>%
+                filter(Medal != "None") %>%
+                group_by(Name) %>%
+                count(Medal) %>%
+                pivot_wider(names_from = Medal, values_from = n) %>%
+                mutate(TotalMedals = Bronze + Silver + Gold) %>%
+                arrange(desc(TotalMedals))
+
+bestAthletes
+```
+
+No surprise that Michael Phelps is at the top of the list of the previous tibble.  One way to visualize the athletes and the amount of medals they have won is with a timeline graph.  For the top 10 athletes in the tibble above, I will create a graph where the x axis denotes the year and the y axis denotes the total number of medals they have won at that point in time.
+
+```{r top5}
+top5 <- bestAthletes %>% 
+        select(Name) %>% 
+        head(n = 10)
+
+df %>%
+  filter(Name %in% top5$Name) %>%
+  group_by(Name, Year, Season) %>%
+  count(Medal) %>%
+  pivot_wider(names_from = Medal, values_from = n) %>%
+  mutate(TotalMedals = sum(Bronze,Silver,Gold, na.rm = TRUE)) %>%
+  group_by(Name) %>%
+  mutate(CumulativeMedals = cumsum(TotalMedals)) %>%
+  ggplot(mapping = aes(x = Year, y = CumulativeMedals, color = Name)) +
+    geom_point() +
+    geom_line() + 
+    labs(x = "Year", y = "Total Number of Medals Earned At Time Period X", title = "Athlete Medal Accumulation Over Time")
+```
+
+## Investigating Medals By Event
+
+One more interesting way to look at the medals in the data set is by event.  Some events award more medals than others and I wanted to know which events awarded the most.  The bar chart below shows the top 10 events which give the most medals.
+
+```{r}
+df %>%
+  group_by(Event) %>%
+  count(Medal) %>%
+  pivot_wider(names_from = Medal, values_from = n) %>%
+  mutate(TotalMedals = sum(Bronze,Silver,Gold, na.rm = TRUE)) %>%
+  arrange(desc(TotalMedals)) %>%
+  head(n = 10) %>%
+  ggplot(aes(x = fct_reorder(Event, TotalMedals), y = TotalMedals)) +
+    geom_bar(stat = "identity", fill="#f68060", alpha=.6, width=.4) + 
+    coord_flip() +
+    theme_bw() +
+    labs(y = "Total Number of Medals",
+         x = "Event",
+         title = "Number of Medals by Event")
+```
+
+The graph generated above shows that some events award more medals than others.  Perhaps if I only look at the events that award the most medals, I will see trends in the athletes that determine who will get the medals versus who will not.  In otherwords, I think the analsis of the athletes will be more revealing when I analyze them for their specific event, instead of analyzing them all at once.
