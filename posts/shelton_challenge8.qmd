@@ -1,0 +1,274 @@
+---
+title: "Challenge 8 Solution"
+author: "Dane Shelton"
+description: "Joining Data"
+date: "11/10/2022"
+format:
+  html:
+    df-print: paged
+    callout-icon: false
+    callout-appearance: simple
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - shelton
+  - snl
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Tasks:
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+:::panel-tabset
+
+## 1. Read in data: SNL
+
+Read in and describe the following datasets, using R package `readr` and command `read_csv`.
+
+ 
+  - `snl_actors.csv`
+  - `snl_casts.csv`
+  
+
+```{r}
+#| label: Read In US HH
+#| utput: true
+
+# Read In Using ReadXl
+
+cast_og <-  read_csv('_data/snl_casts.csv', show_col_types = F)
+act_og <-  read_csv('_data/snl_actors.csv', show_col_types=F)
+```
+
+:::{.callout-note collapse="true"}
+## `snl_actors.csv`
+```{r}
+#| label: head(act)
+head(act_og, n=5)
+```
+
+`snl_actors.csv` provides a list of all 2000+ personalities that have appeared on or worked on an SNL episode,`type`: whether they're a guest or regular cast member, and their `gender`.
+:::
+
+:::{.callout-note collapse="true"}
+
+## `snl_casts.csv`
+```{r}
+#| label: head(cast)
+head(cast_og, n=5)
+```
+
+`snl_casts.csv` goes more in depth, providing a list of each cast member for seasons 1 - 46 of the show (1975 - 2018). the 614 bservations are identified by several variables including cast member `name`, `season id`, whether they were the `update_anchor`, whether they were a `featured` cast member, and the total number of `n_episodes` they appeared in for the given season. 
+
+:::
+
+```{r}
+#| label: quick eda
+#| include: false
+
+(summarytools::dfSummary(cast_og))
+```
+
+## 2. Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+#| label: quick tidy 
+#| echo: true
+
+# Rename Columns and Remove First/Last/Percent
+cast_join <- cast_og %>%
+                rename("Name" = aid, 
+                       "Season" = sid, 
+                       "Featured"= featured,
+                       "Anchor"=update_anchor,
+                       "Episode Count"=n_episodes)%>%
+                select(c(Name:Featured, 
+                         Anchor:`Episode Count`))
+
+# Rename and Remove URl
+act_join <- act_og %>% 
+                rename("Name" = aid, 
+                       "Type" = type,
+                       "Gender" = gender) %>%
+                select(c("Name","Type","Gender" ))
+
+```
+
+## 3. Mutate
+
+Are there any variables that require mutation to be usable in your analysis stream? 
+
+Yes; I am going to mutate the `Type` variable for `act_join`. `Gender` is listed as unknown for most musical acts and celebrities, so I am going to create a `Musician/Celeb` category within `Type`. This isn't a brilliant fix as `Gender` is correct for some musicians, so they will be listed as normal `Guests`. We'll proceed anyways as it removes the identifier `unknown` and adds another layer to the data.
+
+
+Document your work.
+
+```{r}
+#| label: mutate act_join
+#| echo: true
+
+act_mutate <-  act_join%>%
+              mutate(Type = 
+                       case_when(`Gender` == 'unknown' ~ 'Musician/Celeb',
+                                 `Type` == 'guest' ~ 'Guest',
+                               `Type` == 'cast' ~ 'Cast',
+                               `Type` == 'crew' ~ 'Crew',
+                               ),
+                     Gender=
+                       case_when(`Gender` == 'male' ~ 'M',
+                                 `Gender` == 'female' ~ 'F',
+                                 `Gender` == 'unknown' ~ 'NA',
+                                 `Gender` == 'andy' ~ 'NA'))
+
+```
+
+:::{.callout-note collapse="true"}
+
+## `cast_join`
+```{r}
+#| label: cast_join
+#| output: true
+
+head(cast_join, n=5)
+
+```
+:::
+
+
+:::{.callout-note collapse="true"}
+
+## `act_mutate`
+```{r}
+#| label: act_mutate
+#| output: true
+
+head(act_mutate, n=5)
+
+```
+:::
+
+
+## 4. Join Data
+
+For the `cast_join` data, our keys are `Name`and `Season`; `Name` is also a foreign key related to the `act_mutate` data. Let's first check to ensure there are no counts above 1 for `cast_join` primary keys.
+
+```{r}
+#| label: cast_join Primary keys
+#| include: true
+#| echo: true
+
+# Primary Keys Count
+cast_join %>%
+  count(Name, Season)%>%
+      filter(n>1)
+```
+
+Let's use a variety of joins to combine `act_mutate` and `cast_join`
+
+::: {.callout-note collapse="true"}
+
+##  Mutating Join 1 - Full Join
+```{r}
+#| label: joins 1
+#| include: true
+#| echo: true
+
+# Mutating Join: All appearances: cast,crew,guest,celeb, musician
+act_cast_full <- full_join(cast_join, act_mutate, by='Name')
+
+act_cast_full
+```
+A `full_join` is used to match observations that share the same key, which is `Name` in `cast_join` and `act_mutate`. All observations are kept though, meaning we have several N/A in our data as not all guests have information cast members do.
+:::
+
+
+::: {.callout-note collapse="true}
+
+## Mutating Join 2 - Cast Only
+```{r}
+#| label: joins 2
+#| echo: true
+#| include: true
+
+# Left Joing: Only those that appeared in cast_join, could also use inner_join so only key matches
+
+cast_only <- left_join(cast_join, act_mutate, by='Name')
+
+cast_only 
+```
+
+A `left_join(by='Name')` is used to join the two datasets by `Name` keeping only the observations in the `cast_join` dataset with a matching name in `act_mutate` 
+:::
+
+
+:::{.callout-note collapse="true}
+
+## Unique Cast Members
+```{r}
+#| label: joins 3
+#| echo: true
+#| include: true
+
+# How many unique cast members, how many appearances did they make total?
+unique_cast <- cast_only %>% 
+  group_by(Name)%>%
+  summarize(Name, Gender, Type, `Total Apps` = sum(`Episode Count`))%>%
+  distinct(Name, Gender, Type, `Total Apps`)%>%
+  arrange(desc(`Total Apps`))
+
+unique_cast <- unique_cast %>%
+                mutate(Gender=
+                         case_when(`Gender`=='M' ~ 'M',
+                                   `Gender` == 'F'~ 'F',
+                                   `Gender` == 'NA' ~ 'F'),
+                       Type=('Cast'))
+unique_cast
+
+```
+
+`cast_only` is used with other `dplyr` verbs to create a table of 156 unique cast members that worked on at least one season on SNL. They're arranged by the total number of episodes they appeared in.
+:::
+
+
+:::{.callout-note collapse="true"}
+
+## Filtering Join 1 - Non-Cast Members
+```{r}
+#| label: joins 4 filtering
+#| echo: true
+#| include: true
+      
+# Just Actors: Non-Cast
+act_only <- anti_join(act_mutate, cast_join)
+
+act_only
+```
+
+A filtering join is used on the rows (mutating joins are for columns). An anti-join removes all the observations in `act_mutate` that are also present in `cast_join`, leaving us with only non-cast members. From this table we could filter out observations based on `Gender` or `Type` for interesting lists.
+:::
+
+:::
