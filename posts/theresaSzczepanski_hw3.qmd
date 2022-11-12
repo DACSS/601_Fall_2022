@@ -398,18 +398,54 @@ categories?
 
 - What reporting categories were emphasized by the state?
 
+```{r}
+G9Science_Cat_Total<-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)
+view(G9Science_Cat_Total)
+
+ ggplot(G9Science_Cat_Total, aes(x= `sReporting Category`, fill = `sReporting Category`))+
+  geom_bar( alpha=0.9) 
+
+ 
+  # #theme_minimal() +
+  # labs(title = "Urbanization Level",
+  #      subtitle = "Before",
+  #      caption = "US Teacher and Principals Survey SY2017-2018", 
+  #      y = "Number of Schools", 
+  #      x = "Urbanization Level") 
+  # #coord_flip()
+
+```
+Where were the most points lost relative to other students in the state?
+
+```{r}
+
+```
+
 - How did students perform based on key words?
 
 ```{r}
-G9Science_Cat_StateDiff<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+view(MCAS_G9Science2022_ItemAnalysis)
+G9Science_Cat_StateDiff<-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
   group_by(`sReporting Category`)%>%
   summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
             sd_RT_State_Diff = sd(`RT-State Diff`, na.rm=TRUE),
-            med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE))
+            med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE),
+            sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE))
 
-G9Science_Cat_StateDiff
-   ggplot(G9Science_Cat_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+G9Science_Cat_MeanStateDiff<-G9Science_Cat_StateDiff%>%
+   ggplot( aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="All Students" ,
+       y = "Average Percent Points Earned",
+       x= "Item, Introductory Physics 2022 ",
+       title = "Student Item Performance by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+
+G9Science_Cat_TotalStateDiff<-G9Science_Cat_StateDiff%>%
+   ggplot( aes(fill = `sReporting Category`, y=`sum_RT_State_Diff`, x=`sReporting Category`)) +
     geom_bar(position="dodge", stat="identity") +
   labs(subtitle ="All Students" ,
        y = "Percent Points Earned",
@@ -417,18 +453,24 @@ G9Science_Cat_StateDiff
        title = "Student Item Performance by Reporting Category",
       caption = "2022 HS Introductory Physics MCAS")+
        theme(axis.text.x=element_text(angle=60,hjust=1))
+
+G9Science_Cat_MeanStateDiff
+G9Science_Cat_TotalStateDiff
 ```
+
+
 Box Plot to Visualize distribution
 ```{r}
-G9Science_Cat_Box <-G9Science_StudentItem%>%
-  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+G9Science_Cat_Box <-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+  group_by(`sReporting Category`)%>%
   ggplot( aes(x=`sReporting Category`, y=`RT-State Diff`, fill=`sReporting Category`)) +
     geom_boxplot() +
     scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-   # geom_jitter(color="black", size=0.1, alpha=0.9) +
+    geom_jitter(color="black", size=0.1, alpha=0.9) +
     theme_ipsum() +
     theme(
-     # legend.position="none",
+      legend.position="none",
       plot.title = element_text(size=11)
     ) +
     ggtitle("G9 Introductory Physics School State Difference by Content Category") +
@@ -437,8 +479,8 @@ G9Science_Cat_Box <-G9Science_StudentItem%>%
 G9Science_Cat_Box
 ```
 ```{r}
-G9Science_Density <-G9Science_StudentItem%>%
-  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+G9Science_Density <-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
   ggplot(aes(x = `RT-State Diff`, color = `sReporting Category`, fill = `sReporting Category`)) + 
   geom_density( color="#e9ecef", alpha=0.9) +
   labs(title = "Introductory Physics MCAS",
@@ -454,8 +496,8 @@ G9Science_Density
 
 `
 ```{r}
-G9Science_Histo <-G9Science_StudentItem%>%
-  select(sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+G9Science_Histo <-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
   ggplot(aes(x = `RT-State Diff`, color = `sReporting Category`, fill = `sReporting Category`)) + 
   geom_histogram( color="#e9ecef", alpha=0.9) +
   labs(title = "Introductory Physics MCAS",
@@ -468,7 +510,24 @@ G9Science_Histo <-G9Science_StudentItem%>%
 
 G9Science_Histo
 ```
+
+
+
 ### Analysis of Student Performance by Difficulty Level 
+Overall Difficutly level
+
+```{r}
+G9Science_Diff<-MCAS_G9Science2022_ItemAnalysis%>%
+  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+  ggplot( aes(x=`State Percent Points`, y=`RT-State Diff`)) + 
+     geom_point(size = 1, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "RT-State Diff by Difficulty Level to State", y = "RT-State Diff",
+       x = "State Percent Points", caption = "IEP only")
+G9Science_Diff
+
+```
+
 
 Consideration of the difficulty level and modifications.
 
