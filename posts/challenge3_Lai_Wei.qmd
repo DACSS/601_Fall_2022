@@ -1,0 +1,86 @@
+---
+title: "Challenge 3"
+author: "Lai Wei"
+desription: "Tidy Data: Pivoting"
+date: "11/08/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+```{r}
+Households <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx",
+                         skip = 5,
+                         col_names = c("Year","Household","Total",str_c("income",1:9,sep = "_i"),"Median_income","MarginOfError","Mean_income","MarginOfError"))
+Households
+```
+Read the data and rename the columns. 
+
+### Briefly describe the data
+Existing the number of rows
+```{r}
+nrow(Households)
+```
+There are 383 statistics in different years in total. 
+
+### Challenge: Describe the final dimensions
+
+```{r}
+Households %>% 
+  filter(Year%in%c(2007,2017)) 
+```
+Use the filter() to get the information in 2007 and 2017.
+
+## Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
+
+### Pivot_Wider
+
+```{r}
+Households %>% 
+  filter(Year%in%2018) %>% 
+  select(Household,Year,Median_income) %>% 
+  pivot_wider(values_from = Median_income ,names_from = Year)
+```
+By using pivot_wider() function, we can get a new table that showing in year 2018, how much each household have in the median range. 
+
