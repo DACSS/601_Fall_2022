@@ -1,0 +1,104 @@
+---
+title: "Challenge 5 Solutions"
+author: "Caitlin Rowley"
+description: "Introduction to Visualization"
+date: "10/22/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+Read in data:
+
+```{r}
+cereal <- read_csv("_data/cereal.csv")
+```
+
+The "cereal" data set includes brands of cereal with their corresponding sugar and sodium content. The data set also includes a variable titled "category" with values of "A," "B," and "C," but it is unclear what these values refer to. The data set is clean as-is and does not require mutation, so I will move on to data visualization.
+
+Univariate visualization:
+
+I will first generate a histogram to illustrate the sugar content of cereals so we can see the distribution of values across the count of cereal types.
+
+```{r}
+# histogram:
+
+# cereal count by sugar content:
+
+ggplot(cereal, aes(x=Sugar)) + 
+  geom_histogram(binwidth=1, fill="lightpink", color="white", alpha=0.9)
+
+```
+
+I will next generate a density plot. Given that this is a univariate visualization to capture sodium content by the count of cereal types, this chart won't give us much information; regardless, I wanted to try it! I will add a mean indicator to give us a bit more insight, which shows the average sodium content to be approximately 260 (I assume) miligrams.
+
+```{r}
+# density plot:
+
+# cereal count by sodium content:
+
+cereal %>%
+  ggplot( aes(x=Sodium)) +
+    geom_density(fill="plum3", color="white", alpha=0.9) +
+  geom_vline(aes(xintercept=mean(Sodium)),
+            color="white", linetype="dashed", size=1)
+
+```
+
+I will next generate a boxplot to visualize the distribution of sugar content in a different format.
+
+```{r}
+# try boxplot:
+
+ggplot(cereal, aes(y = Sugar)) +
+    geom_boxplot() +
+  geom_boxplot(fill="cyan3", color="black", alpha=0.9)
+  
+```
+
+Bivariate visualization:
+
+Next, I will generate a dot plot capturing sodium content by cereal brand. Because this is a relatively small data set, I thought I'd try using a dot plot instead of a histogram.
+
+```{r}
+# dot plot: 
+
+library(lattice)
+
+dotplot(cereal$Cereal ~ cereal$Sodium)
+
+```
+
+Next, I chose to create a bivariate visualization capturing sodium content by sugar content. I also added value labels to each data point so we can see the cereal brand in reference.
+
+```{r}
+# scatter plot:
+
+library(ggrepel)
+
+ggplot(cereal, aes(y=Sugar, x=Sodium)) +
+  geom_point() +
+  geom_text_repel(aes(label = Cereal))
+```
