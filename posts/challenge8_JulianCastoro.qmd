@@ -1,0 +1,213 @@
+   ---
+title: "Challenge 8 Instructions"
+author: "Meredith Rolfe"
+description: "Joining Data"
+date: "08/25/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - military marriages
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+
+
+I chose this dataset because it will be very similar to my final project dataset.
+
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+
+```{r}
+
+cols <- c("payGrade","singleWO_Child_M","singleWO_Child_F","singleWO_Child_T",
+                     "singleW_Child_M","singleW_Child_F","singleW_Child_T",
+                     "JointService_M","JointService_F","JointService_T",
+                     "CivilianMarriage_M","CivilianMarriage_F","CivilianMarriage_T",
+                    "Total_M","Total_F","TotalT")
+
+AirForce_MaritalStatus <- read_excel("_data/ActiveDuty_MaritalStatus.xls",range= "AirForce!B10:Q31",col_names = cols)
+MarineCorps_MaritalStatus <- read_excel("_data/ActiveDuty_MaritalStatus.xls",range= "MarineCorps!B10:Q37",col_names = cols)
+Navy_MaritalStatus <- read_excel("_data/ActiveDuty_MaritalStatus.xls",range= "Navy!B10:Q36",col_names = cols)
+Army_MaritalStatus <- read_excel("_data/ActiveDuty_MaritalStatus.xls",range= "Army!B10:Q37",col_names = cols)
+
+
+head(AirForce_MaritalStatus)
+head(MarineCorps_MaritalStatus)
+head(Navy_MaritalStatus)
+head(Army_MaritalStatus)
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+
+
+```{r}
+
+#final shape:
+#cols = Pay grade, sex, Martital status
+
+tidyData <- function(inSheet){
+  # First we remove totals 
+  tidySheet <- inSheet%>%
+    select(c("payGrade","singleWO_Child_M","singleWO_Child_F",
+                     "singleW_Child_M","singleW_Child_F",
+                     "JointService_M","JointService_F",
+                     "CivilianMarriage_M","CivilianMarriage_F"))%>%
+    filter(!str_detect(`payGrade`,"TOTAL"))
+  #could just put this in the same statement but for readability, I will separate.
+  # pivoting and fixing col names
+  pivotedSheet<-tidySheet%>%
+    pivot_longer(cols=c("singleWO_Child_M","singleWO_Child_F",
+                   "singleW_Child_M","singleW_Child_F",
+                   "JointService_M","JointService_F",
+                   "CivilianMarriage_M","CivilianMarriage_F"), names_to = "Marital Status",values_to = "Count")%>%
+    mutate(`Marital Status`,Sex=substr(`Marital Status`,nchar(`Marital Status`),nchar(`Marital Status`)),.after=`payGrade`)%>%
+    mutate(`Marital Status`,`Marital Status`=substr(`Marital Status`,0,nchar(`Marital Status`)-2))
+  
+  inSheet <- pivotedSheet
+}
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+Using above declared function to clean all data.
+
+```{r}
+
+AirForce_MaritalStatus<- tidyData(AirForce_MaritalStatus)
+MarineCorps_MaritalStatus<- tidyData(MarineCorps_MaritalStatus)
+Navy_MaritalStatus<- tidyData(Navy_MaritalStatus)
+Army_MaritalStatus<- tidyData(Army_MaritalStatus)
+
+colNames<- c("payGrade", "Sex", "Marital Status", "Airforce_Count")
+colnames(AirForce_MaritalStatus)<-colNames
+
+colNames<- c("payGrade", "Sex", "Marital Status", "MarineCorps_Count")
+colnames(MarineCorps_MaritalStatus)<-colNames
+
+colNames<- c("payGrade", "Sex", "Marital Status", "Navy_Count")
+colnames(Navy_MaritalStatus)<-colNames
+
+colNames<- c("payGrade", "Sex", "Marital Status", "Army_Count")
+colnames(Army_MaritalStatus)<-colNames
+
+
+
+
+head(AirForce_MaritalStatus)
+head(MarineCorps_MaritalStatus)
+head(Navy_MaritalStatus)
+head(Army_MaritalStatus)
+
+```
+
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+First I ensure each type of marital status has information. Lengths of tibbles will be different because of different amounts of pay grades, if each tot col has 4 however that means there is representation of each category.
+
+```{r}
+
+AirForce_MaritalStatus%>%
+  group_by(payGrade)%>%
+  summarise(tot = n_distinct(`Marital Status`))
+
+MarineCorps_MaritalStatus%>%
+  group_by(`payGrade`)%>%
+  summarise(tot = n_distinct(`Marital Status`))
+
+Navy_MaritalStatus%>%
+  group_by(`payGrade`)%>%
+  summarise(tot = n_distinct(`Marital Status`))
+
+Army_MaritalStatus%>%
+  group_by(`payGrade`)%>%
+  summarise(tot = n_distinct(`Marital Status`))
+
+```
+
+
+
+Next I see how many different pay grades there are. From below we see that once all joins are done we should have at least 24 distinct pay grades.
+```{r}
+nrow(AirForce_MaritalStatus)
+nrow(MarineCorps_MaritalStatus)
+
+
+AirForce_MaritalStatus%>%
+  distinct((payGrade))%>%
+  nrow()
+
+
+MarineCorps_MaritalStatus%>%
+  distinct((payGrade))%>%
+  nrow()
+
+Navy_MaritalStatus%>%
+  distinct((payGrade))%>%
+  nrow()
+
+Army_MaritalStatus%>%
+  distinct((payGrade))%>%
+  nrow()
+
+```
+
+
+```{r}
+finalTable<-full_join(AirForce_MaritalStatus,MarineCorps_MaritalStatus,by=c("payGrade"="payGrade","Sex"="Sex","Marital Status"="Marital Status"))
+
+finalTable<-full_join(finalTable,Navy_MaritalStatus,by=c("payGrade"="payGrade","Sex"="Sex","Marital Status"="Marital Status"))
+
+finalTable<-full_join(finalTable,Army_MaritalStatus,by=c("payGrade"="payGrade","Sex"="Sex","Marital Status"="Marital Status"))
+
+finalTable%>%
+  distinct((payGrade))%>%
+  nrow()
+
+finalTable%>%
+  group_by(`payGrade`)%>%
+  summarise(tot = n_distinct(`Marital Status`))
+
+
+
+```
+Final Result of joins:
+```{r}
+head(finalTable)
+```
