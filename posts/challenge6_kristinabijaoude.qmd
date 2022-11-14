@@ -1,0 +1,269 @@
+---
+title: "Challenge 6 Kristin Abijaoude"
+author: "Kristin Abijaoude"
+description: "Visualizing Time and Relationships"
+date: "10/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - kristin_abijaoude
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(readr)
+hotel_bookings <- read_csv("_data/hotel_bookings.csv") # open dataset
+```
+
+### Briefly describe the data
+
+In this challenge, I decided to challenge myself a bit more and use the hotel_bookings.csv dataset. From what I've gathered, this dataset consists of data of tourists visiting Portugal from 2015 to 2017. I visited Portugal for a cultural excursion trip when I studied abroad in Spain during undergrad, so I guess I'm part of those statistics. 
+
+Given that Portugal is a beautiful and peaceful country, no wonder so many visited there!
+
+Below, I created a summary of the dataset, which outlines how frequent each data is, how many NAs there are, and other statisticals variations, such as mean and mode.
+
+```{r}
+print(dfSummary(hotel_bookings,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+## Tidy Data (as needed)
+
+To start off the tidying process, I recode the numbers with the appropriate values with `case_when()`, where I switch the values based on a condition. In the dataset methodology, 1 means "canceled", as in the guest canceled their trip, while 0 means "not canceled". I created a new variable with `mutate()`, and deleted the old variable with `select()` and `-c()`. I provide a sanity check at the end, and voila! 
+
+```{r}
+# change dummy variables
+hb_tidy <- hotel_bookings %>%
+  mutate("Canceled?" = case_when(is_canceled == 1 ~ "Canceled", 
+                                 is_canceled == 0 ~ "Not Canceled"))%>%
+  select(-c("is_canceled"))%>%
+  mutate(arrival_date = make_date(arrival_date_year, match(arrival_date_month, month.name),
+                                  arrival_date_day_of_month))
+# sanity check point
+head(hb_tidy)
+```
+
+Next, I create an "Arrival Date" variable with `unite()` by combining the year, month, and day variables.
+
+```{r}
+# Unite the dates
+hb_tidy <- hb_tidy %>%
+  unite("Arrival Date", arrival_date_year, arrival_date_month, arrival_date_day_of_month, sep = "-")
+
+hb_tidy
+```
+Next, I use `recode()` to change the country codes to the full country names. For an odd reason, China appears twice with two different country codes (CHN and CN), and I was unable to combine them to "China".
+
+```{r}
+# name countries
+hb_tidy %>%
+  count(country)
+
+hb_tidy <- hb_tidy %>%
+  mutate(hb_tidy, `country` 
+         = recode(`country`,
+                  `ABW` = "Aruba", `AGO` = "Angola", `AIA` = "Anguilla", `ALB` = "Albania", `AND` = "Andorra", `ARE` = "United Arab Emirates", `ARG` = "Argentina", `ARM` = "Armenia", `ASM` = "American Samoa", `ATA` = "Antartica", `ATF` = "French Southern Territories", `AUS` = "Australia", `AUT` = "Austria", `AZE` = "Azerbaijan", `BDI` = "Burundi", `BEL` = "Belgium", `BEN` = "Benin", `BFA` = "Burkina Faso",`BGD` = "Bangladesh", `BGR` = "Bulgaria", `BHR` = "Bahrain", `BHS` = "Bahamas", `BIH` = "Bosnia and Herzegovina", `BLR` = "Belarus", `BOL` = "Bolivia", `BRA` = "Brazil", `BRB` = "Barbados", `BWA` = "Botswana", `CAF` = "Central African Republic", `CHE` = "Switzerland", `CHL` = "Chile", `CIV` = "Cote d'Ivoire", `CMR` = "Cameroon", `COL` = "Columbia", `COM` = "Comoros", `CPV` = "Cabo Verde", `CRI` = "Costa Rica", `CUB` = "Cuba", `CYM` = "Cayman Islands", `CYP` = "Cyprus", `CZE` = "Czechia", `DEU` = "Germany", `DJI` = "Djibouti", `DMA` = "Dominica", `DNK` = "Denmark", `DOM` = "Dominican Republic", `DZA` = "Algeria", `ECU` = "Ecuador", `EGY` = "Egypt", `ESP` = "Spain", `EST` = "Estonia", `ETH` = "Ethiopia", `FIN` = "Finland", `FJI` = "Fiji", `FRA` = "France", `FRO` = "Faroe Islands", `GAB` = "Gabon", `GBR` = "United Kingdom", `GEO` = "Georgia", `GGY` = "Guernsey", `GHA` = "Ghana", `GIB` = "Gibraltar", `GLP` = "Guadeloupe (FRA)", `GNB` = "Guinea-Bissau", `GRC` = "Greece", `GTM` = "Guatemala", `GUY` = "Guyana", `HKG` = "Hong Kong", `HND` = "Honduras", `HRV` = "Croatia", `HUN` = "Hungary", `IDN` = "Indonesia", `IMN` = "Isle of Man", `IND` = "India", `IRL` = "Ireland", `IRN` = "Iran", `IRQ` = "Iraq", `ISR` = "Israel", `ITA` = "Italy", `JAM` = "Jamaica", `JEY` = "Jersey", `JOR` = "Jordan", `JPN` = "Japan", `KAZ` = "Kazakhstan", `KEN` = "Kenya", `KHM` = "Cambodia", `KIR` = "Kiribati", `KNA` = "Saint Kitts and Nevis", `KOR` = "South Korea", `KWT` = "Kuwait", `LAO` = "Laos", `LBN` = "Lebanon", `LBY` = "Libya", `LCA` = "Saint Lucia", `LIE` = "Liechtenstein", `LKA` = "Sri Lanka", `LTU` = "Lithuania", `LUX` = "Luxembourg", `LVA` = "Latvia", `MAC` = "Macau", `MAR` = "Morocco", `MCO` = "Monaco", `MDG` = "Madagascar", `MDV` = "Maldives", `MEX` = "Mexico", `MKD` = "Macedonia", `MLI` = "Mali", `MLT` = "Malta", `MMR` = "Myanmar", `MNE` = "Montenegro", `MOZ` = "Mozambique", `MRT` = "Mauritania", `MUS` = "Mauritius", `MWI` = "Malawi", `MYS` = "Malaysia", `MYT` = "Mayotte", `NAM` = "Namibia", `NCL` = "New Caledonia", `NGA` = "Nigeria", `NIC` = "Nicaragua", `NLD` = "Netherlands", `NOR` = "Norway", `NPL` = "Nepal", `NULL` = "Other", `NZL` = "New Zealand", `OMN` = "Oman", `PAK` = "Pakistan", `PAN` = "Panama", `PER` = "Peru", `PHL` = "Philippines", `PLW` = "Palau", `POL` = "Poland", `PRI` = "Puerto Rico", `PRT` = "Portugal", `PRY` = "Paraguay", `PYF` = "French Polynesia", `QAT` = "Qatar", `ROU` = "Romania", `RUS` = "Russia", `RWA` = "Rwanda", `SAU` = "Saudi Arabia", `SDN` = "Sudan", `SEN` = "Senegal", `SGP` = "Singapore", `SLE` = "Sierra Leone", `SLV` = "El Salvador", `SMR` = "San Marino", `SRB` = "Serbia", `STP` = "Sao Tome and Principe", `SUR` = "Suriname", `SVK` = "Slovakia", `SVN` = "Slovenia", `SWE` = "Sweden", `SYC` = "Seychelles", `SYR` = "Syria", `TGO` = "Togo", `THA` = "Thailand", `TJK` = "Tajikistan", `TMP` = "East Timor", `TUN` = "Tunisia", `TUR` = "Turkey", `TWN` = "Taiwan", `TZA` = "Tanzania", `UGA` = "Uganda", `UKR` = "Ukraine", `UMI` = "US Minor Outlying Islands", `URY` = "Uruguay", `USA` = "United States", `UZB` = "Uzbekistan", `VEN` = "Venezuela", `VGB` = "British Virgin Islands", `VNM` = "Vietnam", `ZAF` = "South Africa", `ZMB` = "Zambia", `ZWE` = "Zimbabwe"))
+
+# sanity check point
+head(hb_tidy)
+
+# okay I noticed that China's code is listed there twice (CHN and CN) as separate values, and I had a hard time combining them together
+```
+
+For meals, I also used `recode()`. I used the study's methodology to guide me, but I still had the same issue with the China country codes.
+
+```{r}
+hb_tidy %>% count(meal)
+
+hb_tidy <- hb_tidy %>%
+  mutate(hb_tidy, `meal` 
+         = recode(`meal`,
+                  `BB` = "Bed and breakfast",
+                  `FB` = "Full breakfast",
+                  `HB` = "Half breakfast",
+                  `SC` = "No meal",
+                  `undefined` = "no meal"))
+
+# again, same issue with the China country codes
+
+head(hb_tidy)
+```
+
+Then, I `mutate()` the more dummy variables to deal with frequent guests coming to Portugal. This time, I used a condition `case_when()`, where 1 means a guest visited Portugal before, while 0 means the guest is a first time visitor.
+
+```{r}
+# deal with more dummy variables
+hb_tidy <- hb_tidy %>%
+  mutate("Repeated Guest" = case_when(
+    is_repeated_guest == 1 ~ "Repeated guest", 
+    is_repeated_guest == 0 ~ "Not Repeated guest"))%>%
+  select(-c(is_repeated_guest))
+
+head(hb_tidy)
+```
+Next, I combined the number of guests with `mutate()`.
+
+```{r}
+# combining adult, children, and babies variables together
+hb_tidy <- hb_tidy %>%
+  mutate(`number of guests` = `adults` + `children` + `babies`)%>%
+  select(-c("adults", "children", "babies"))
+  
+hb_tidy
+```
+Almost finished! This time, I pivoted the data with `pivot_longer()`, where I created variables called "number of guests" and "booking dates".
+
+```{r}
+hb_pivot <- hb_tidy %>% pivot_longer(cols = c("Arrival Date"), 
+                                     names_to = "guest", "Arrival Date", 
+                                     values_to = "booking date")%>%
+  select(-c("guest"))
+
+# sanity checkpoint
+hb_pivot
+```
+## Time Dependent Visualization
+
+```{r}
+# create data frame
+hb_time <- hb_tidy %>% count(arrival_date)%>%
+  as_tibble()
+hb_time
+
+# visualizing vacation bookings in portugal 
+ggplot(hb_time, aes(x=`arrival_date`, y=`n`)) +
+  geom_line() + 
+  xlab("Arrival Date (YYYY-MM)") +
+  ylab("Number of Bookings")+
+  ggtitle("Number of Hotel Bookings in Portugal")
+```
+Now, that I tidied up the data, I use the tidy data to create time visualizations. Above, I calculated the number of guests booking trips to Portual from the years 2015 to 2017. There is a modest increase in hotel bookings, especially in 2016. 
+
+```{r}
+# create data frame
+place <- hb_pivot$hotel
+guest <- hb_pivot$`number of guests`
+datehb <- hb_pivot$`booking date`%>%
+  ymd()
+
+hb_graph <- data.frame(place, guest, datehb)
+
+# aggregate relationship
+hb_graph <- aggregate(guest ~ place + datehb, hb_graph, FUN = sum) 
+# I merged down the same dates to create a graph that encapsulate who is booking a hotel reservation at a city or at a resort
+
+# pivot data
+hb_graph <- hb_graph %>% pivot_wider(names_from = place, values_from = guest)
+
+# sanity check point
+hb_graph
+```
+Finally, after many attempts, I created this graph below! 
+
+```{r}
+ggplot(hb_graph, aes(x=datehb)) +
+  geom_line(aes(y = `City Hotel`, color="City Hotel")) + 
+  geom_line(aes(y = `Resort Hotel`, color = "Resort Hotel")) +
+  xlab("Date of Booking (YMD)") +
+  ylab("Number of Hotel Booking") +
+  ggtitle("Number of Hotel Bookings in Portugal from 2015 to 2017") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))
+```
+
+```{r}
+# create data frame
+library(maps)
+library(RColorBrewer)
+library(sp)
+library(choroplethr)
+library(choroplethrMaps)
+library(rworldmap)
+library(sf)
+library(ggplot2)
+library(ggmap)
+library(hrbrthemes)
+library(rnaturalearth)
+
+country <- hb_tidy %>% count(country) 
+colnames(country)
+country <- country %>% rename ("value" = "n",
+                               "region" = "country")
+
+mapdata <- map_data("world") # ggplot2
+mapdata # shows longitude and latitude of countries
+
+mapdata <- left_join(mapdata, country, by = "region")
+mapdata <- mapdata %>% select(-c(value.x, value.y)) # remove unnecessary variables
+mapdata[is.na(mapdata)] <- 0
+mapdata
+
+# create choropleth map
+map1 <- ggplot(mapdata, aes( x = long, y = lat, group = group))+
+  geom_polygon(aes(x = long, y = lat, fill = `value`), color = "black")
+map1
+map2 <- map1 + scale_fill_gradient(name = "International Visitors to Portugal", low = "darkgreen", high = "red")+
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()
+  )
+map2
+```
+Although the colors are faint, you can sort of see that Portugal dominates the charts with visitors to... Portgual. Below, I created the top 12 countries of origins for visitors to Portugal.
+
+```{r}
+# library
+library(treemap)
+
+# gather our data from most visitors
+country %>% arrange(desc(value))
+
+# results 
+# Portugal   48590
+# United Kingdom 12129
+# France 10415
+# Spain 8568
+
+# Create data
+top12 <- c("Portugal","United Kingdom","France", "Spain", "Germany", "Italy", "Ireland", "Belgium", "Brazil", "Netherlands", "United States", "Switzerland")
+
+top12visits <- c(48590, 12129, 10415, 8568, 7287, 3766, 3375, 2342, 2224, 2104, 2097, 1730)
+
+# create data frame
+top12intl <- data.frame(
+  top12 =factor(c("Portugal","United Kingdom","France", "Spain", "Germany", "Italy", "Ireland", "Belgium", "Brazil", "Netherlands", "United States", "Switzerland")),  
+  top12visits =c(48590, 12129, 10415, 8568, 7287, 3766, 3375, 2342, 2224, 2104, 2097, 1730))
+top12intl
+
+# treemap
+treemap(top12intl,
+            index="top12",
+            vSize="top12visits",
+            type = "index",
+            title= "Top 12 Countries of Origins of Guests to Portugal")
+
+```
+
