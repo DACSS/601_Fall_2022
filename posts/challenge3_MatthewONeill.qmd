@@ -1,0 +1,185 @@
+---
+title: "Challenge 3"
+author: "Matthew O'Neill"
+desription: "Tidy Data: Pivoting"
+date: "10/07/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Data Overview
+
+I've chosen the US households data
+
+```{r}
+#Code below was taken from Meredith's as I wasn't entirely sure what the most useful
+#dataset structure would be
+income_brackets <- c(i1 = "Under $15,000",
+                     i2 = "$15,000 to $24,999",
+                     i3 = "$25,000 to $34,999",
+                     i4= "$35,000 to $49,999",
+                     i5 = "$50,000 to $74,999",
+                     i6 = "$75,000 to $99,999",
+                     i7 = "$100,000 to $149,999",
+                     i8 = "$150,000 to $199,999",
+                     i9 = "$200,000 and over")
+
+data <- read_excel("../posts/_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx", sheet=NULL, range=NULL,
+         skip=5,
+         n_max = 352,
+         col_names = c("year", "hholds", "del",
+                       str_c("income",1:9,sep="_i"),
+                       "median_inc", "median_se", 
+                       "mean_inc","mean_se"))%>%
+  select(-del)
+data
+
+```
+
+### Data Description
+
+The dataset I decided to work with this week was the USA household data, which breaks down US households by income, race, and hispanic origin from 1967 to 2019. It contains the number of households surveyed in a given year, what income bracket each was in, andthe mean and median for each year and group.
+
+This dataeet could be very useful in an analysis about wealth inequality by race and to look at the kinds of trends there might be over the 50 or so year period that data was collected.
+
+We could use pivot tables here since we are interested in aggregates of different groups, and we could specifically build a table to see what proportion of each income bracket was made up of which races and ethnicities.
+
+One thing we will want to do before we start however, is clean up our data a bit, because instead of race being a column in the dataset, it is currently just a divider between sections. 
+
+```{r}
+#I once again used code from the solution as I couldn't figure out how to organize the data
+#properly. I feel I have a much better idea of how to clean data after this exercise.
+
+#I planned to only use the first part to remove empty lines between sections but the second part is very useful for the next section where we group alone and not alone.
+data<-data%>%
+  mutate(identity = case_when(
+    str_detect(year, "[[:alpha:]]") ~ year,
+    TRUE ~ NA_character_
+  ))%>%
+  fill(identity)%>%
+  filter(!str_detect(year, "[[:alpha:]]"))
+
+data<-data%>%
+  separate(year, into=c("year", "delete"), sep=" ")%>%
+  mutate(identity = str_remove(identity, " [0-9]+"),
+         across(any_of(c("hholds", "mean_inc", "mean_se", "year")), 
+                parse_number))%>%
+  select(-delete)
+
+data
+
+```
+
+Now the dataset is in much better shape, with an "identity" column which we will be able to use to make comparisons, and we no longer have to worry about empty rows signifying a change in race. We will want to make this a bit more condensed still, as the data contains distinctions between households with alone people and not alone, but we ware mainly just interested in a potential inequality between races, so we can safely group the alone and not alone rows into groups. For example we will label the group of all data for white households as "gp_white".
+
+
+```{r}
+#I used the code from the solution here to group alone and not alone, as well as add a 
+#"all races" section. The filter is also needed to combine values of alone and not alone.
+data <-data%>%
+  mutate(gp_identity = case_when(
+   identity %in% c("BLACK", "BLACK ALONE") ~ "gp_black",
+    identity %in% c("ASIAN ALONE OR IN COMBINATION",
+                  "ASIAN AND PACIFIC ISLANDER") ~ "gp_asian",
+    identity %in% c("WHITE, NOT HISPANIC", 
+                    "WHITE ALONE, NOT HISPANIC") ~ "gp_white",
+    identity %in% c("HISPANIC (ANY RACE)") ~ "gp_hisp",
+    identity %in% c("ALL RACES") ~ "gp_all"
+  ))%>%
+  filter(!is.na(gp_identity))%>%
+    group_by(year, gp_identity)%>%
+    summarise(across(c(starts_with("inc"),starts_with("me"),
+                      "hholds"), 
+                      ~sum(.x, na.rm=TRUE)))%>%
+  ungroup()
+data
+
+```
+
+
+
+
+## Anticipated End Result
+
+The end product should look like a table with the percentage of each income bracket that each race makes up. This could shed light on races being disproportionally represented in different income brackets.
+
+Ideally we would have each year, race, and income bracket as seperate rows to see the income of households over time and what proportion of each income bracket they made up in a given year.
+
+
+```{r}
+data
+nrow(data)
+ncol(data)
+
+```
+
+Now our current dataset contains 235 rows and 16 columns, but we want to pivot each income bracket column into one single variable, and since there are 9 income brackets, we should expect there to be 9*235, or 2115 rows in our new dataset. 
+
+We are not interested in the means and medians currently, so we won't select those columns when we do out pivot.
+
+The 9 income bracket columns will shrink to 1 column, and 1 column will be added to hold the percentage value, so we should expect 6 columns: year, race, number of households, income bracket, and percentile. 
+
+Thus, we expect our output to be 2115 rows and 6 columns,
+
+## Pivot the Data
+
+
+```{r}
+
+#FInally, I used solution code again here. Pivot_longer was a function that I was confused
+#about, but the solution made thigns very clear, as we are reducing the income columns to see
+#them as rows instead. 
+#The second part gives more description to the income bracket types.
+brackets <-data%>%
+  ungroup()%>%
+  select(year, gp_identity, hholds, starts_with("income"))%>%
+  pivot_longer(cols=starts_with("income"),
+               names_prefix= "income_",
+               names_to = "income_bracket",
+               values_to = "percent")%>%
+  mutate(hholds_bracket = round(hholds*(percent/100)),
+         income_bracket = recode(income_bracket,!!!income_brackets))
+brackets
+
+nrow(brackets)
+ncol(brackets)
+```
+
+We can see that our rows and columns are as expected, and we now have a nice table showing the percent of households of each race in every income bracket in any given year.
+
+### Credit
+
+I found myself stuck on various data cleaning steps in this exercise, as well as figuring out how to use pivot tables to get the data in the way we wanted, so I followed the code from the solutions for this exercise.
+
+Overall, I needed some help wit hexamples of how to apply R functions to clean data and change it into a more useful form, and I will hopefulyl have a much easier time doing so in future challenges and assignments.

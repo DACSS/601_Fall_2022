@@ -1,0 +1,88 @@
+---
+title: "Challenge 4"
+author: "Matt O'Neill"
+desription: "More data wrangling: pivoting"
+date: "08/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+```{r}
+data = read_csv("../posts/_data/FedFundsRate.csv")
+data
+
+```
+
+### Briefly describe the data
+
+The data describes monthly metrics related to the US economy from 1954 to 2017. The data includes the effective Federal interest rate, the change in GDP from the previous quarter, the unemployment rate for that month, and the year over year inflation rate.
+
+## Tidy Data
+
+```{r}
+
+sum(is.na(data$"Federal Funds Target Rate"))
+
+
+```
+There are 442 rows out of 904 which contain N/A values for the Target Rate. This is because the target rate was not a piece of data that was recorded until 1982 and, in 2012, the Target Rate was replaced with a target upper and lower bound for the federal funds rate to fall between. 
+
+If we were interested in working with the target rate, we could find the midpoint of the lower and upper bound of the target rate and treat that as an estimated target rate. 
+
+For now though, the data is tidy enough to work with and there are no unnecessary rows or columns to completely get rid of.
+
+## Identify variables that need to be mutated
+
+The dates do however need to be mutated, as we currently have columns for month, day, and year. This is redudant, and we can reformat using the str_c() function. We do need to specify day as now all rows fall on the first day of the month.
+
+
+```{r}
+
+data<-data%>%
+  mutate(date = str_c(`Year`,`Month`, `Day`, sep="/"),date = ymd(date))
+
+data <- data[-c(1,2,3)]
+data <- select(data, date, everything())
+data
+
+```
+We mutated the dateset to include a date column, moved that date coulmn to the front, and removed the now redundant year, month, and day columns. 
+
+### Additional Comments
+
+The rest of the data is formatted well and there doesn't appear to be any additional redudancies we can get rid of. If we were working with GDP we might consider reducing the data to be quarterly, but all other metrics are recorded on a monthly basis, so it doesn't make sense to do it preemptively.
+
+
