@@ -494,7 +494,7 @@ G9Science_Cat_MeanStateDiff<-G9Science_Cat_StateDiff%>%
 G9Science_Cat_MeanStateDiff
 
 ```
-Since Motion and Forces questions account for 50% of the points available on the test, our students "lost" in total the most points relative to the state in this category.
+Since Motion and Forces questions account for 50% of the points available on the test, our students "lost" in total the most points relative to their peers in the state in this category.
 
 ```{r}
 
@@ -513,7 +513,7 @@ G9Science_Cat_TotalStateDiff
 ```
 
 
-Box Plot to Visualize distribution
+Here we see the distribution of `RT-State Diff` by reporting category and question item. We can see generally that Motion and Forces seems to have the highest variablility. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
 ```{r}
 G9Science_Cat_Box <-MCAS_G9Sci2022_Item%>%
   select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
@@ -535,36 +535,22 @@ G9Science_Cat_Box
 
 
 `
-Where did Rising Tide Students lose the most points?
+Where did Rising Tide Students lose the most points? We can see that in total students 
+lost the most points on items from Motion and Forces
 ```{r}
 G9Science_Cat_Loss<-G9Science_StudentItem%>%
   select(`sitem`, `sitem_score`, `sReporting Category`, `sitem Possible Points`, `RT-State Diff`)%>%
   group_by(`sReporting Category`)%>%
   summarise(sum_RT_points_lost = sum(`sitem Possible Points`-`sitem_score`, na.rm=TRUE),
-            Avg_RT_points_lost_per_student = sum(`sitem Possible Points`-`sitem_score`, na.rm=TRUE)/69,
-            sd_RT_points_lost = sd(`sitem Possible Points`-`sitem_score`, na.rm=TRUE),
-            med_RT_points_lost = median(`sitem Possible Points`-`sitem_score`, na.rm=TRUE))
+            RT_points_lost_per_student = sum(`sitem Possible Points`-`sitem_score`, na.rm=TRUE)/69)
+            #sd_RT_points_lost = sd(`sitem Possible Points`-`sitem_score`, na.rm=TRUE),
+            #med_RT_points_lost = median(`sitem Possible Points`-`sitem_score`, na.rm=TRUE))
 
 G9Science_Cat_Loss
 
 ```
 
 
-
-### Student Performance by Performance Level 
-Overall Difficutly level
-
-```{r}
-G9Science_Diff<-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
-  ggplot( aes(x=`State Percent Points`, y=`RT-State Diff`)) + 
-     geom_point(size = 1, color="#69b3a2")+
- geom_smooth(method="lm",color="grey", size =.5 )+
-  labs(title = "RT-State Diff by Difficulty Level to State", y = "RT-State Diff",
-       x = "State Percent Points", caption = "IEP only")
-G9Science_Diff
-
-```
 
 
 
@@ -576,7 +562,7 @@ G9Science_Diff
 
 
 
-### Key Words
+### Student Performance Key Words
 
 -How did students perform based on key words? 
 
