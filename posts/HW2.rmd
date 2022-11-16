@@ -1,0 +1,120 @@
+---
+title: "HW2"
+author: "Lai Wei"
+description: "Introduction to Visualization"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+---
+
+- Goals of this HW: 
+  gain experience with working with external data, dplyr, and the pipe operator.
+
+Background for  mmr_2015.csv: 
+The maternal mortality ratio (MMR) is defined as the number of maternal deaths per 100,000 live births. The UN maternal mortality estimation group produces estimates of the MMR for all countries in the world.
+
+In this HW, I will use mmr_2015.csv, which is a data set that contains a subset of the (real) data that were used to generate the United Nations Maternal mortality estimates, as published in the year 2015. Variables in the data set mmr_2015.csv are as follows:
+
+-	Iso = ISO code
+-	Name = country name
+-	Year = observation year
+-	MMR = observed maternal mortality ratio, which is defined as the number of maternal deaths/total number of births*100,000
+
+
+```{r setup}
+library(tidyverse)
+library(babynames)
+library(dplyr)
+```
+
+1. using mmr_2015.csv: Read in mmr_2015.csv. Then construct a graph that shows the observed values of the MMR plotted against year (starting in 2000) for India and Thailand, as in the example Figure 1 below. Use the pipe operator so that the graph follows from a multi-line command that starts with “mmr %>%”. Hint 1: Use data transformation functions to filter rows with i. year >= 2000 and ii. countries India and Thailand only. Hint 2: Use ggplot() to display the data.
+
+
+```{r}
+mmr <- read.csv("D:/Umass Amherst/BIOSTATS 597D/HW/mmr_2015.csv")
+data_IT = filter(mmr,country == "India"|country == "Thailand",year >= 2000)
+ggplot(data = data_IT,aes(x = year,y= mmr))+
+  geom_point(aes(group = country,color = country))
+```
+
+2. using babynames as used in the lecture slides: 
+
+Reproduce the example Figure 2 below where babynames was filtered to include only those rows with year > 1975, sex equal to male, and either prop > 0.025 or n > 50000. Note that the y-axis starts at zero.
+
+
+```{r}
+babynames %>% 
+  filter(year > 1975, sex == "M",prop > 0.025|n > 50000) %>% 
+  ggplot(aes(x = year, y = prop))+
+  geom_point(aes(group = name,color = name), size = 2)+
+  geom_line(aes(group = name, color = name))+
+  expand_limits(y = 0)
+  
+```
+
+3. Construct and print a tibble that shows the countries sorted by their average observed MMR (rounded to zero digits), with the country with the highest average MMR listed first, as example Figure 3 below:
+
+
+```{r}
+data1<- group_by(mmr,country) %>% 
+  summarise_at(vars(mmr),list(name = mean))
+  names(data1)[2] = "ave" 
+  data1$ave <- round(data1$ave,0)
+  arrange(data1,desc(ave))
+```
+
+4. Continuing with the mmr data set
+
+Part a: For each year
+- first calculate the mean observed value for each country (to allow for settings where countries may have more than 1 value per year; note that this is not true in this data set). 
+- then rank countries by increasing MMR for each year. 
+
+Calculate the mean ranking across all years, extract the mean ranking for 10 countries with the lowest ranking across all years, and print the resulting table. 
+
+```{r}
+data2<-
+  mmr %>% 
+  group_by(year) %>% 
+  mutate(Mean = mean(mmr,na.rm = TRUE)) %>% 
+  arrange(desc(mmr))
+data2
+  arrange(data2,desc(Mean)) 
+lowest10 <- print(tail(data2,10))
+
+
+```
+
+Part b: do the same thing but now with rankings calculated separately for two periods, with period 1 referring to years < 2000 and period 2 referring to years >= 2000. 
+For each period
+
+- first calculate the mean observed value for each country (to allow for settings where countries may have more than 1 value per period)
+- then rank countries by increasing MMR for each period. 
+
+Calculate the mean ranking across all periods, extract the 10 countries with the lowest ranking across all periods, and print the table.
+
+```{r}
+before_2000<-mmr %>% 
+  filter(year < 2000) %>% 
+  group_by(country) %>% 
+  mutate(Mean = mean(mmr,na.rm = TRUE)) %>% 
+  arrange(desc(mmr))
+before_2000
+  print(tail(before_2000,10))
+
+after_2000 <- mmr %>% 
+  filter(year >= 2000) %>% 
+  group_by(country) %>% 
+  mutate(Mean = mean(mmr,na.rm = TRUE)) %>% 
+  arrange(desc(mmr))
+after_2000
+  print(tail(after_2000,10))
+  
+```
+
+
+
