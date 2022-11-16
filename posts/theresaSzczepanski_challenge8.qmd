@@ -532,7 +532,7 @@ Using Prior Math MCAS result to predict Introductory Physics MCAS Performance. C
 Science Performance by Reporting Category: Should teachers review a given unit more closely.
 ```{r}
 G9Science_Desc<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, IEP)%>%
+  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
   group_by(`sReporting Category`)%>%
   summarise(desc_percent = sum(sitem_score, na.rm=TRUE)/sum(`sItem Possible Points`))
 
@@ -546,5 +546,47 @@ G9Science_Desc<-G9Science_StudentItem%>%
        theme(axis.text.x=element_text(angle=60,hjust=1))
 
 ```
+RT State Difference by Reporting Category
+```{r}
+G9Science_StateDiff<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  group_by(`sReporting Category`)%>%
+  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE))
+
+   ggplot(G9Science_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="All Students" ,
+       y = "Percent Points Earned",
+       x= "Item, Introductory Physics 2022 ",
+       title = "Student Item Performance by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+```
+```{r}
+G9Science_Calculate<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sItem Desc`, `sReporting Category`, `sItem Possible Points`, `State Percent Points`, `RT-State Diff`, IEP)%>%
+  filter(str_detect(`sItem Desc`, "calculate|Calculate")) #%>%
+ #print( summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE)))
+#mean(`RT-State Diff`, na.rm=TRUE)
+#G9Science_Calculate
+
+#%>%
+ # ggplot(aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+  #   geom_bar(position="dodge", stat="identity") +
+
+
+  # group_by(`sReporting Category`)%>%
+  # summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE))
+  # 
+  #  ggplot(G9Science_StateDiff, aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+  #   geom_bar(position="dodge", stat="identity") +
+  # labs(subtitle ="All Students" ,
+  #      y = "Percent Points Earned",
+  #      x= "Item, Introductory Physics 2022 ",
+  #      title = "Student Item Performance by Reporting Category",
+  #     caption = "2022 HS Introductory Physics MCAS")+
+  #     theme(axis.text.x=element_text(angle=60,hjust=1))
+```
+
 :::
 
