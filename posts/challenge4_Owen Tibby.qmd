@@ -1,0 +1,216 @@
+---
+title: "Challenge 4 Instructions"
+author: "Owen Tibby"
+desription: "More data wrangling: pivoting"
+date: "10/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - poultry_tidy
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+# Install pacman ("package manager") if needed
+if (!require("pacman")) install.packages("pacman")
+
+# Load  packages with pacman
+pacman::p_load(pacman, rio, tidyverse, dplyr, readxl, readr)
+
+library(dplyr)
+
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## [Challenge Overview]{.underline}
+
+[*Today's challenge is to:*]{.underline}
+
+1)  [*read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)*]{.underline}
+2)  [*tidy data (as needed, including sanity checks)*]{.underline}
+3)  [*identify variables that need to be mutated*]{.underline}
+4)  [*mutate variables and sanity check all mutations*]{.underline}
+
+## [*Read in data*]{.underline}
+
+[*Read in one (or more) of the following datasets, using the correct R package and command.*]{.underline}
+
+-   [*abc_poll.csv ⭐*]{.underline}
+-   [*poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐*]{.underline}
+-   [*FedFundsRate.csv⭐⭐⭐*]{.underline}
+-   [*hotel_bookings.csv⭐⭐⭐⭐*]{.underline}
+-   [*debt_in_trillions.xlsx ⭐⭐⭐⭐⭐ \###*]{.underline}
+
+------------------------------------------------------------------------
+
+For my first attempt at this challenge, I'll be working with the poultry_tidy.csv data. 😎
+
+**Read in data: Method A**
+
+```{r}
+#Reading in data (method A)
+#poultry_tidy <- read_excel("_data/poultry_tidy.xlsx")
+poultry_tidy <- read_excel("_data/poultry_tidy.xlsx", 
+    col_types = c("text", "numeric", "text", 
+        "numeric"))
+
+ptidy <- poultry_tidy
+
+```
+
+**Read in data: Method B using import ()**
+
+This is very useful when importing other file formats like .xlsx
+
+```{r}
+#Reading in data (method B) using the import function in rio
+
+#(poultry_tidy <- import("_data/poultry_tidy.xlsx") %>% as_tibble())
+```
+
+### [*Briefly describe the data*]{.underline}
+
+\*\*The data in poultry_tidy represents the wholesaling to first receivers of 5 types of poultry products from 2004 to 2013. My analysis will detail several observances for price increases, missing values as well as the year-by-year totals for each poultry product.
+
+\## [*Tidy Data (as needed)*]{.underline}
+
+[*Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.*]{.underline}
+
+**First, I want to explore how the data is stored/formatted in each column (character, mumeric, etc.). I want to ensure numeric fields are strictly numeric and character fields the same.**
+
+**From the summary() function I gather that only the *Price_Dollar* has NAs**.
+
+```{r}
+summary(poultry_tidy)
+
+#Finding the number of distinct products
+poultry_tidy %>% 
+  select(Product) %>% 
+distinct(Product, .keep_all = TRUE) %>% as.tibble()
+
+```
+
+**Finding the specific products/ years that had NAs (I'll keep this saved in a variable just in case I want to access it later)**
+
+```{r}
+#Saving data with NAs
+poultry_tidy_raw <- poultry_tidy
+
+#Showing NAs
+na_poultry <- poultry_tidy[is.na(poultry_tidy$Price_Dollar),]
+print(na_poultry)
+
+```
+
+Any additional comments?
+
+## [Identify variables that need to be mutated]{.underline}
+
+[Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?]{.underline}
+
+[Document your work here.]{.underline}
+
+```{r}
+#Mutating Price_Dollar (so that I can remove the NAs without a problem)
+# poultry_tidy <- poultry_tidy %>%
+# mutate(Price_withNA = Price_Dollar) %>%
+#   head()
+
+#Mutating before making a date column
+ poultry_tidy <- mutate(poultry_tidy, Month2= `Month`, Year2= `Year`) 
+
+#Replacing NAs with 0
+# poultry_tidy <- poultry_tidy %>%
+# mutate(across(Price_Dollar, ~replace_na(.x,0)))
+# poultry_tidy
+
+
+#Removing NAs
+# poultry_tidy <- poultry_tidy %>%
+# mutate(across(Price_Dollar, na.rm= TRUE)) %>% 
+#   dfSummary()
+
+
+```
+
+I could also make a date column but this is just for practice because I don't actually need it.
+
+```{r}
+
+# making a date column
+
+poultry_tidy <- unite(poultry_tidy, `Month2`,`Year2`, col = "Date", sep = " ")
+```
+
+
+**Removing the the NAs. 7 records were removed**
+
+```{r}
+ poultry_tidy <- na.omit(poultry_tidy,Price_Dollar)
+ summary(poultry_tidy)
+
+```
+
+**When and how has the price increased for each product?**
+
+```{r}
+#Explore the distinct records in each column}
+PriceHikes <-poultry_tidy %>%
+select(Year, Product, Month, Price_Dollar) %>%
+  group_by(Year) %>% 
+arrange(Product) %>%
+distinct(Price_Dollar, .keep_all = TRUE) %>% 
+  print()
+
+
+summary(PriceHikes)
+
+```
+
+The table and summary above shows how the price to First Receivers increased, when it increased and how many price hikes took place within the period (76).
+
+Now it may be useful to explore how we can simply the visualisation.
+
+```{r}
+# #Replacing NAs with 0
+poultry_tidy <- poultry_tidy %>%
+mutate(across(Price_Dollar, ~replace_na(.x,0))) %>%
+
+
+#Pivot Wider
+select(Product, Year, Month, Price_Dollar) %>% 
+  pivot_wider(names_from = "Month", values_from = "Price_Dollar") %>% 
+  tail() %>% 
+  print()
+
+
+
+```
+
+```{r}
+
+
+#Adding a Total Column
+poultry_tidy <- poultry_tidy %>%
+rowwise() %>% 
+  mutate(Total = sum(c_across(`January`: `December`))) %>% 
+print()
+
+```
+
+\`\`\`
+
+Any additional comments?
+
+Although this data set was not particularly challenging, it showed me that I need to revisit how to replace NAs.
+
+I noticed that even after replacing the NAs as Zeros, the total column is not summing. I am assuming it may be a parsing error.

@@ -1,0 +1,245 @@
+---
+title: "Homework 2"
+author: "Owen Tibby"
+desription: "Homework 2"
+date: "11/07/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - HW2
+  - Car Prices
+  - Owen Tibby
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(tidyr)
+library(summarytools)
+library(dplyr)
+library(readr)
+library(stringr)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+::: panel-tabset
+## Instructions
+
+For this homework, your goal is to read in a more complicated dataset. Please use the category tag "hw2" as well as a tag for the dataset you choose to use.
+
+Read in a dataset from the _data folder in the course blog repository, or choose your own data. If you decide to use one of the datasets we have provided, please use a challenging dataset - check with us if you are not sure. 
+
+Clean the data as needed using dplyr and related tidyverse packages.
+
+Provide a narrative about the data set (look it up if you aren't sure what you have got) and the variables in your dataset, including what type of data each variable is. The goal of this step is to communicate in a visually appealing way to non-experts - not to replicate r-code.
+
+Identify potential research questions that your dataset can help answer.
+
+When you click the Render button a document will be generated that includes both content and the output of embedded code.
+:::
+
+## 
+
+::: panel-tabset
+## Reading in the Data
+:::
+
+```{r}
+#RStudio Desktop
+carprices <- read_csv("~/Github/car_prices.csv", col_types = cols(vin = col_skip(), mmr = col_number(), sellingprice = col_number(), ...17 = col_skip()))
+
+#RStudio Cloud
+# carprices <- read_csv("car_prices.csv",
+#     col_types = cols(vin = col_skip(), mmr = col_number(), sellingprice = col_number(), ...17 = col_skip()))
+```
+
+::: panel-tabset
+## Brief Description of the data
+
+This data set contains historical used vehicle auction prices that took place between 1982 and 2015.
+
+First, lets take a look at the variables in the data set.
+
+```{r}
+#dfSummary(carprices)
+```
+:::
+
+::: panel-tabset
+## Cleaning the Data
+
+Removing NA values from make and model.
+
+```{r}
+#Observing the amount of NAs in our most important variables
+# carprices %>% 
+#   filter(is.na(model), is.na(make)) %>% 
+#   dim()
+
+carprices <- carprices %>% 
+  filter(!is.na(make), !is.na(model), !is.na(odometer), !is.na(mmr)) 
+  #dfSummary(carprices)
+
+
+  
+ 
+
+
+
+
+
+```
+
+```{r}
+
+#carprices <- na.omit(carprices, `mmr`, `condition`)
+
+
+```
+
+I notice that there are 76 distinct values for body. I'll explore and condense them into fewer categories in a new column called "Body_type" below.
+
+```{r}
+
+carprices %>% 
+  select(body) %>% 
+ distinct() %>% print()
+                          
+  
+
+```
+
+```{r}
+#Creating a Body Type column
+carprices <- mutate(carprices, Body_Type = case_when(str_detect(body, "edan")~ "Sedan", str_detect(body, "SUV") ~ "SUV", str_detect(body, "ab") ~ "Pickup", str_detect(body, "oup")~ "Coupe", str_detect(`body`, "Van")~ "Minivan", str_detect(`body`,"onv")~ "Convertible", str_detect(`body`,"ago") ~ "Wagon", str_detect(`body`,"atch")~ "Hatchback", str_detect(`body`,"crew")~ "Pickup" ))
+# print(carprices)
+
+
+```
+
+I'll create a new variable called Launch_date. Since most vehicles of model year x are released in the fall of the the previous year, I'll follow that logic and assume that for all makes.
+
+```{r}
+#Creating Launch Date Step 1
+
+carprices<- carprices %>% 
+  mutate(launch_month= "9", launch_day= "1", launch_year= (`year`-1))
+  
+```
+
+```{r}
+#Creating Launch Date Step 2
+carprices <- carprices %>% 
+mutate(launch_date= make_date(year= `launch_year`, month = `launch_month`, day=`launch_day`))
+
+# print(carprices)
+  
+
+```
+
+```{r}
+#Converting saledate to a date variable
+carprices <- carprices %>% 
+  separate(saledate, into= c("ddd", "sale_month", "sale_day", "sale_year", "sale_time", "GMT", "TMZ"), sep=" ") 
+
+#print(carprices)
+
+```
+
+```{r}
+#Recoding the format of the sale month
+carprices <- mutate(carprices, sale_month2= recode(sale_month, `Jan` ="1", `Feb`= "2", `Mar`="3", `Apr`="4", `May`="5", `Jun`="6", `Jul`="7", `Aug`="8", `Sep`="9", `Oct`="10", `Nov`="11", `Dec`="12" ))
+```
+
+```{r}
+#Creating Date_Sold
+carprices <- mutate(carprices, Date_Sold = make_date(year=sale_year, month = sale_month2, day = sale_day))
+
+
+```
+
+Tidying up what I have so far:
+
+```{r}
+# Selecting useful columns
+ 
+carprices <- carprices %>% 
+select(year, make, model, trim, transmission, Body_Type, state, condition, odometer, color, interior, seller, mmr, sellingprice, launch_date, Date_Sold ) 
+#print(carprices)
+```
+
+Calculating the age of the vehicle at the time of sale:
+
+```{r}
+#Age of vehicle
+
+carprices <- mutate(carprices, Vehicle_Age_Months= round(as.numeric(difftime(Date_Sold, launch_date, units= "days"))/30))
+print(carprices)
+ 
+#Checking for negatives in Vehicle Age
+carprices %>% 
+  # select(Vehicle_Age_Months) %>% 
+  filter(Vehicle_Age_Months<0) %>% 
+  count()
+
+
+
+#Recoding Vehicle Age
+carprices<-carprices %>% 
+  mutate(Vehicle_Age_Months=recode(Vehicle_Age_Months, `-8`=0))%>% 
+  print()
+```
+
+I'm curious to see if we can get MSRP by looking at mileage and vehicle age and using the MMR. I'll explore below:
+```{r}
+#Exploring if we can get MSRP 
+carprices %>% 
+  group_by(`make`) %>% 
+  filter(Vehicle_Age_Months<3, odometer<1000) %>% 
+  arrange(`make`, `model`) %>% 
+  print()
+```
+
+
+```{r}
+carprices %>% 
+  select(state) %>% 
+  distinct() %>% 
+  print()
+```
+:::
+
+::: panel-tabset
+## Narrative about the data set..
+
+This data set contains historical used vehicle auction prices that took place between 1982 and 2015. The data was collected from all Manheim auction houses across the 38 states in the USA. Each observation details a wholesale auction trasaction that includes: the vehicle information, state, selling price and the market average price i.e the Manheim Market Report price (MMR) and other specifics about the sale. 
+
+
+
+
+
+:::
+
+::: panel-tabset
+## Potential Research Questions
+
+1.  What is the average selling price varies by state?
+2.  What is the correlation between condition and selling price?
+3.  Is there a correlation between MMR vs Selling price?
+4.  How age of transaction varies by state? To do this, I need to create a column for launch date.
+5.  How does mileage affect vehicle sale price?
+6.  Is there a correlation between mileage and condition?
+7.  What are the average miles driven in each state?
+8.  How does condition vary mileage vary with age?
+9.  Controlling vehicle condition, how does mileage vary with age?
+10. Selling price by body type?
+:::
+
+## 
