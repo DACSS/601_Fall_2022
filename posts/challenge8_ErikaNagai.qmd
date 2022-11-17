@@ -1,0 +1,237 @@
+---
+title: "Challenge 8 Erika Nagai"
+author: "Erika Nagai"
+description: "Joining Data"
+date: "11/7/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   military marriages ⭐⭐
+-   faostat ⭐⭐
+-   railroads ⭐⭐⭐
+-   fed_rate ⭐⭐⭐
+-   debt ⭐⭐⭐
+-   us_hh ⭐⭐⭐⭐
+-   snl ⭐⭐⭐⭐⭐
+
+I chose to use the datasets of snl (Saturday Night Live).
+
+```{r}
+snl_actor <- read_csv("_data/snl_actors.csv")
+snl_casts <- read_csv("_data/snl_casts.csv")
+snl_seasons <- read_csv("_data/snl_seasons.csv")
+
+```
+
+### Briefly describe the data
+
+There are three datasets `snl_actor`, `snl_casts`, and `snl_seasons` datasets. SNL stands for "Saturday Night Live", an American live comedy television program that started in 1975.
+
+*`snl_actor` dataset*
+
+This data is a list of persons who had been featured in Saturday Night Live. Each row represents one person (actor, comedian, celebrity) and his/her name in the column `aid` functions as a primary key. This dataset has three other columns, `url`, `type`, and `gender`.
+
+```{r}
+snl_actor
+```
+
+```{r}
+print(summarytools::dfSummary(snl_actor),
+      varnumbers = FALSE,
+      plain.ascii  = FALSE,
+      style        = "grid",
+      graph.magnif = 0.80,
+      valid.col    = FALSE,
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+The values in `url` column seem to consist of "/", the type (Actor, Guests, Crew), again "/", and then 4 characters, which are either the first 2 characters of first name and family name respectively, or 4 digits.
+
+There are 57 observations that are missing `url` value, of which 57 have unknown value for `type`. Only one of the observations with NA `url` data is that of "Jack Handey", a crew.
+
+```{r}
+
+snl_actor %>% 
+  filter(is.na(url))
+
+snl_actor %>% 
+  filter(is.na(url) & type == "crew") 
+```
+
+For `gender` column, there are 4 possible categories, "male", "female", "unknown", and "andy". The values "andy" don't seem to have much sense. 21 observations have "andy" for their `gender` value. While most of them are "guest" type, however I don't see any patters for classifying the observations as `andy`. Thus, I believe this is an error and I replaced `andy` with `unknown` for further analysis
+
+```{r}
+
+snl_actor %>%
+  filter(gender == "andy")
+
+snl_actor %>% 
+  filter(gender == "andy") %>%
+  group_by(type) %>%
+  summarise(
+    number = n()
+  )
+
+snl_actor$gender[snl_actor$gender=="andy"] <- "unknown"
+snl_actor
+  
+```
+
+*`snl_seasons`*
+
+`snl_seasons` describes the information of each season of SNL such as 1. When it started and ended 2. how many episodes did each episode have. `sid` is the number of seasons (from 1 to 46) and works as an unique identifier of season.
+
+1)  sid \[primary id\]
+2)  year: when the season started
+3)  first_epid: the date when the season's first episode aired
+4)  last_epid: the date when the season's last episode aired
+5)  n_episodes: the number of episodes of the season
+
+```{r}
+snl_seasons
+
+```
+
+Since the values of `first_spid` and `last_epid` are date, I converted the values from double type to date type.
+
+```{r}
+snl_seasons <- transform(snl_seasons, 
+                         first_epid = as.Date(as.character(first_epid), "%Y%m%d"), 
+                         last_epid = as.Date(as.character(last_epid), "%Y%m%d"))
+
+snl_seasons
+```
+
+*`snl_casts`*
+
+`snl_casts` dataset describes the persons who joined SNL episodes and the detail of episodes. Each row represents an actor/comedian that was on the show and has the information on which season he/she paricipated the show. `aid` and `sid` seem to work as a foreign key with `aid` from `snl_actors` dataset and \``sid` from `snl_seasons` respectively.
+
+```{r}
+snl_casts
+
+print(summarytools::dfSummary(snl_casts),
+      varnumbers = FALSE,
+      plain.ascii  = FALSE,
+      style        = "grid",
+      graph.magnif = 0.80,
+      valid.col    = FALSE,
+      method = 'render',
+      table.classes = 'table-condensed')
+
+
+```
+
+The date type of `first_epid` and `last_epid` is date so I converted them from double to date. It is not very clear how `first_epid` and `last_epid` are used because only some of observations have value for these columns. I realized that the value of `season_fraction` of the observations that have some value either in `first_epid` or `last_epid` is less than 1, meaning the person didn't participate a whole season but joined after the season started or left before the season ended. The blank first_epid and blank last_epid should contain the date the season began and the date the season ended.
+
+```{r}
+
+snl_casts <- transform(snl_casts, 
+                         first_epid = as.Date(as.character(first_epid), "%Y%m%d"), 
+                         last_epid = as.Date(as.character(last_epid), "%Y%m%d"))
+
+snl_casts %>% filter(!is.na(first_epid)|!is.na(last_epid))
+
+```
+
+## Join the data
+
+I joined `snl_casts` and `snl_seasons` using `sid` as a foreign key. As mentioned above, NA values in `first_epid` or `last_epid` should be replaced with the date of the season began or ended.
+
+```{r}
+snl_casts_join <- snl_casts %>% 
+  inner_join(snl_seasons, by = "sid")
+
+snl_casts_join$first_epid.x[is.na(snl_casts_join$first_epid.x)] <- snl_casts_join$first_epid.y
+snl_casts_join$last_epid.x[is.na(snl_casts_join$last_epid.x)] <- snl_casts_join$last_epid.y
+  
+colnames(snl_casts_join) <- c("aid", "sid", "featured", "first_epid_actor", "last_epid_actor", "upload_anchor", "n_episodes_actor", "%_apperance", "year", "first_epid_season", "last_epid_season", "n_episodes_season")
+
+snl_casts_join
+```
+
+Now I joined `snl_casts_join` and `snl_actors` by using `aid`
+
+```{r}
+snl_casts_join <- snl_casts_join %>% 
+  inner_join(snl_actor, by = "aid")
+
+snl_casts_join
+```
+
+## Data Visualization
+
+### Has female representation improved in SNL over time?
+
+```{r}
+vis1 <- snl_casts_join %>% 
+  group_by(year, gender) %>%
+  summarize(
+    n = n()
+  )
+ggplot(vis1, aes(fill=gender, y=n, x=year)) + 
+  geom_bar(stat="identity")+ #sta="identity" is necessary
+  labs(title = "Change in the number of SNL actors by gender",
+       subtitle = "Overall, the total number of actors who appear in SNL is increasing, as is the number of female actors.")
+  
+```
+
+```{r}
+ggplot(vis1, aes(fill=gender, y=n, x=year)) + geom_bar(position="fill", stat="identity") +
+  labs(title = "Change in the proportion of SNL actors by gender",
+       subtitle = "Male actors have made up more than half of the cast since the show started. 
+       The proportion of female actors of 2020 is almost as same as that of 1970")
+```
+
+```{r}
+
+snl_casts_join %>% 
+  filter(featured==TRUE) %>%
+  group_by(year, gender) %>%
+  summarize(
+    number = n()
+  ) %>%
+  ggplot(aes(fill=gender, y=number, x=year)) + geom_bar(stat="identity")+
+  labs(title = "Change in the number of SNL featured actors by gender",
+       subtitle = "Until 1990, featured actors in SNL were male dominant, 
+       however since 1990 the number of female actors featured in SNL incleased.")
+  
+  
+```
