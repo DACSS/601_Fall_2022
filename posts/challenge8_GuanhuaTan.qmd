@@ -1,0 +1,117 @@
+---
+title: "Challenge 8 Guanhua Tan"
+author: "Guanhua Tan"
+description: "Joining Data"
+date: "11/10/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - pisa2018
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+install.packages("tmap")
+library(tmap)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - Pisa2018
+  
+```{r}
+# read the data
+pisa <- read_csv('_data/CY07_MSU_SCH_QQQ.csv')
+dim(pisa)
+length(unique(pisa$CNT))
+pisa2018 <- pisa %>%
+  select(starts_with("SC155"))
+dim(pisa2018)
+```
+
+### Briefly describe the data
+
+This dataset is one part of PISA 2018 dataset with a focus on schools. It covers 80 countries and different regions within each country. The dataset documents 21,903 schools' responses regarding 187 questions. Some key identifiers include CNT (Country Name), STRATUM (Region Name) and OECD (belongs to or not OECD)
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+#tidy data
+
+pisa2018_joint <- cbind(pisa[,1:12], pisa2018) %>%
+  select(CNT, STRATUM, OECD, SC155Q01HA,SC155Q02HA, SC155Q03HA, SC155Q04HA, SC155Q05HA,
+         SC155Q06HA, SC155Q07HA, SC155Q08HA, SC155Q09HA, SC155Q10HA, SC155Q11HA)
+pisa2018_joint$Accessiblity=rowMeans(pisa2018_joint[,c("SC155Q01HA","SC155Q02HA", "SC155Q03HA","SC155Q04HA")])
+pisa2018_joint$Human_Resource_Support=rowMeans(pisa2018_joint[,c("SC155Q05HA","SC155Q06HA", "SC155Q07HA","SC155Q08HA","SC155Q09HA", "SC155Q10HA", "SC155Q11HA")])
+pisa2018_joint_clean <-pisa2018_joint %>%
+  select(CNT, STRATUM, OECD, Accessiblity, Human_Resource_Support) %>%
+  group_by(CNT) %>%
+  mutate(Accessiblity_Country_Ave=mean(Accessiblity, na.rm=T)) %>%
+  mutate(Human_Resource_ave=mean(Human_Resource_Support, na.rm=T)) %>%
+  select(CNT,OECD, Accessiblity_Country_Ave, Human_Resource_ave) %>%
+  distinct() %>%
+  arrange(desc(Accessiblity_Country_Ave))
+pisa2018_joint_clean
+
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+The dataset covers 80 countries and regions including 21903 schools' responses regrading 187 questions. So I decided to narrow my reach here to five countries. I'd like to look at schools responses regarding a set of questions "SC155". SC155 surveys the accessibility to digital devices and its related training as well as assistance. I clean the data and group_by data as regional code. So I make two different datasets at first. One includes all identifier information. The other covers the columns that contains "SC155Q". Then, I use function "cbind" to combine these two into a new dataset (pisa2018_joint). Furthermore, I found that the questions from SC155Q01HA to SC155Q01HA focus on the accessibility to digital devices while the questions from SC155Q05HA to SC155Q11HA stress on if the schools offer enough traibing, support, and incentives. I mutate two new variables--"Accessibility" and "Human_Resource_Support that respectively calculate the average of the former and the latter. Besides, I calculate every country average for "Accessibility" and "Human_Resource_Support." After tidying data, the dataset has four columns and 80 rows.
+
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+```{r}
+# joint data--merge pisa2018 into the world map data
+data("World")
+world2<-World %>%
+  mutate(CNT=iso_a3) %>%
+  select(-iso_a3)
+world2
+
+world_pisa <-merge(x=world2, y=pisa2018_joint_clean, by="CNT", all.x=T)
+world_pisa
+```
+In order to create a map, I need to use merge function to join the variables I'd like to show in the map dataset "World." I keep all the map dataset information.
+
+```{r}
+# draw a world map about the accessibly of digital device
+#because my dataset reflect regional differences instead of differences over time, I believe that may would be a good choice of showing regional difference
+
+# data("world_pisa")
+tm_shape(world_pisa) +
+  tm_polygons(col="Accessiblity_Country_Ave",  palette = "Set1")
+tm_shape(world_pisa) +
+  tm_polygons(col="Human_Resource_ave",  palette = "Set1")
+
+```
+Finally, I create two world maps reflecting regional differences in terms of the accessibility to digital devices and the human resources support for them all over the world.Apparently, just a few countries have the grades higher than 3 points, which reflects that these countries' agreement of enjoying good accessibility to digital devices.However, even some developed countries still expressed their limited accessibility to digital devices such as United Kingdom and France. The phenomenon, in fact, open the more questions and their answers will require further investigations on these country. I will take France and Unite Kingdom as case studies. With respect to "Human Resource Support," most countries have reported the grades under 3 points. This may not disclose that these countries share the similar scenarios but there is no any objective measurements for them to measure their access to and human resources support on digital devices. Therefore, instead of reflecting that OECD countries lack human resources support, the data may show OECD and non-OECD countries have distinct expectations on human resources support. So self-report can only demonstrate the gap between their expectations and current situations.
