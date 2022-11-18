@@ -32,67 +32,112 @@ library(ggpubr)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
+The `MCAS_2022` data frame contains performance results from 495 students from [Rising Tide Charter Public School](https://risingtide.org/) on the Spring 2022 
+[Massachusetts Comprehensive Assessment System (MCAS)](https://www.doe.mass.edu/mcas/default.html) 
+tests.
 
-##  MCAS Data Read-In Summary
+For each student, there are values reported for 256 different variables which 
+consist of information from four broad categories
+
+
+- *Demographic characteristics* of 
+the students themselves (e.g., race, gender, date of birth, town, grade level, 
+years in school, years in Massachusetts, and low income, title1, IEP, 504, 
+and EL status ). 
+
+- *Key assessment features* including subject, test format, and
+accommodations provided 
+
+
+
+- *Performance metrics*: This includes a student's score on individual item strands, 
+e.g.,`mitem1`-`mitem42`. 
+
+See the `MCAS_2022` data frame summary and __codebook__ in the __appendix__ for further details.
+ 
+
+The second data set, `MCAS_G9Sci2022_Item`, is 42 by 9 and consists of 
+9 variables with information pertaining to the 42 questions on the 2022 [HS Introductory Physics Item Report](https://profiles.doe.mass.edu/mcas/mcasitems2.aspx?grade=HS&subjectcode=PHY&linkid=23&orgcode=04830000&fycode=2022&orgtypecode=5&). The variables can be broken down into 2 categories:
+
+ Details about the content of a given test item: 
+ 
+ This includes the content `Reporting Category` (MF (motion and forces)
+WA (waves), and EN (energy), the `Standard` from the [2016 STE Massachusetts Curriculum Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf), the `Item Description` providing the details of what specifically was asked of students, and the points 
+available for a given question, `sitem Possible Points`.
+
+Summary Performance Metrics:
+
+- For each item, the state reports the percentage of points earned by students at 
+Rising Tide, `RT Percent Points`, the percentage of available points earned by students
+in the state, `State Percent Points`, and the difference between the percentage of points earned by Rising Tide students and the percentage of points earned by students in the state, `RT-State Diff`.
+
+- Lastly, `CU306 Disability`, is a 3 X 5 dataframe consisting of summary 
+performance data by `sItem Reporting Category` for students with disabilities; most importantly including `RT Percent Points` and `State Percent Points`.
+
+
+When considering our student performance data, we hope to address the following broad questions:
+
+
+- What adjustments (if any) should be made at the Tier 1 level, i.e., curricular adjustments 
+for all students?
+
+- What would be the most beneficial areas of focus for a targeted intervention course for 
+students struggling to meet or exceed performance expectations?
+
+- Are there notable differences in student performance for students with and without disabilities?
+
+## Function Library
+
+To read in, tidy, and join our data frames for each content area we will use the 
+following functions
+```{r}
+
+
+#Item analysis Read in
+
+#subject must be: "math", "ela", or "science"
+read_item<-function(sheet_name, subject){
+  subject_item<-case_when(
+    subject == "science"~"sitem",
+    subject == "math"~"mitem",
+    subject == "ela"~"eitem"
+  )
+  read_excel("_data/2022MCASDepartmentalAnalysis.xlsx", sheet = sheet_name, 
+             skip = 1, col_names= c(subject_item, "Type", "Reporting Category", "Standard", "item Desc", "delete", "item Possible Points","RT Percent Points", "State Percent Points", "RT-State Diff")) %>%
+                  select(!contains("delete"))%>%
+                  filter(!str_detect(sitem,"Legend|legend"))%>%
+    mutate(sitem= as.character(sitem))%>%
+    separate(c(1), c("sitem", "delete"))%>%
+  select(!contains("delete"))%>%
+   mutate(sitem =
+            str_c(subject_item, sitem))
+    
+}
+
+# Test<-read_item("SG9Physics", "science")
+# view(Test)
+# Test2<-read_item("SG8", "science")
+# view(Test2)
+Test3<-read_item("SG5", "science")
+view(Test3)
+
+# item_sheets<-excel_sheets("_data/2022MCASDepartmentalAnalysis.xlsx")
+# item_sheets
+# science_all<- map_dfr(
+#   excel_sheets("_data/ActiveDuty_MaritalStatus.xls")[1:3],"science",
+#   read_item)
+# science_all
+
+
+```
+
+## MCAS 2022 Read-In Tidy
 
 ::: panel-tabset
+
 ### Read in Student Performance Data
 
-::: panel-tabset
-### Filter, Rename, and Mutate on Read in
-
-
-After examining the summary (see appendix), I chose to 
-
-**Filter**:
-
-- _SchoolID_ : There are several variables that identify our school, I removed all
-but one, `testschoolcode`.
-
-- _StudentPrivacy_: I left the `sasid` variable which is a student identifier number,
-but eliminated all values corresponding to students' names.
-
-- `dis`: We are a charter school within our own unique district, therefore any 
-"district level" data is identical to our "school level" data.
-
- 
-__Rename__
-
-I currently have not renamed variables, but there are some trends to note:
-
-- an `e` before most `ELA` MCAS student item performance metric variables
-- an `m` before most `Math` MCAS student item performance metric variables
-- an `s` before most `Science` MCAS student item performance metric variables
-
-
-__Mutate__
- 
- I left as __doubles__
- 
- - variables that measured scores on specific MCAS items e.g., `mitem1`
- - variables that measured student growth percentiles (`sgp`)
- - variables that counted a student's years in the school system or state.
- 
- Recode to __char__
- 
- - variables that are __nominal__ but have numeric values, e.g., `town`
- 
- Refactor as __ord__
- 
- - variables that are __ordinal__, e.g., `mperflev`.
- 
- Recode to __date__
- 
- - `dob` using lubridate.
- 
- 
-
-
 ```{r}
-# Write a function for recoding numeric variables to characters
- numericToChar<-function(df, var){
-    mutate(df, var = as.character(var))
-  }
 
 #Filter, rename variables, and mutate values of variables on read-in
 
@@ -181,117 +226,80 @@ MCAS_2022<-read_csv("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830
   truncated = 0
 ))
 
-
-
-view(MCAS_2022)
+#view(MCAS_2022)
 
 MCAS_2022
 
-
-
-
-
-                                 
-
-
-  
- 
-  
-
+                        
 ```
-```{r}
-# G10_Math_TargetedSupport<-MCAS_2022%>%
-#   select(sscaleds, mscaleds2021, grade )%>%
-#   filter(grade == 9)
-# 
-# view(G10_Math_TargetedSupport)
-```
-:::
+
+### Workflow Summary
 
 
+After examining the summary (see appendix), I chose to 
+
+**Filter**:
+
+- _SchoolID_ : There are several variables that identify our school, I removed all
+but one, `testschoolcode`.
+
+- _StudentPrivacy_: I left the `sasid` variable which is a student identifier number,
+but eliminated all values corresponding to students' names.
+
+- `dis`: We are a charter school within our own unique district, therefore any 
+"district level" data is identical to our "school level" data.
+
+ 
+__Rename__
+
+I currently have not renamed variables, but there are some trends to note:
+
+- an `e` before most `ELA` MCAS student item performance metric variables
+- an `m` before most `Math` MCAS student item performance metric variables
+- an `s` before most `Science` MCAS student item performance metric variables
 
 
-### Narrative Summary
-
-The `MCAS_2022` data frame contains performance results from 495 students from [Rising Tide Charter Public School](https://risingtide.org/) on the Spring 2022 
-[Massachusetts Comprehensive Assessment System (MCAS)](https://www.doe.mass.edu/mcas/default.html) 
-tests.
-
-For each student, there are values reported for 256 different variables which 
-consist of information from four broad categories
-
-
-- *Demographic characteristics* of 
-the students themselves (e.g., race, gender, date of birth, town, grade level, 
-years in school, years in Massachusetts, and low income, title1, IEP, 504, 
-and EL status ). 
-
-- *Key assessment features* including subject, test format, and
-accommodations provided 
-
-
-
-- *Performance metrics*: This includes a student's score on individual item strands, 
-e.g.,`mitem1`-`mitem42`. 
-
-See the `MCAS_2022` data frame summary and __codebook__ in the __appendix__ for further details.
+__Mutate__
+ 
+ I left as __doubles__
+ 
+ - variables that measured scores on specific MCAS items e.g., `mitem1`
+ - variables that measured student growth percentiles (`sgp`)
+ - variables that counted a student's years in the school system or state.
+ 
+ Recode to __char__
+ 
+ - variables that are __nominal__ but have numeric values, e.g., `town`
+ 
+ Refactor as __ord__
+ 
+ - variables that are __ordinal__, e.g., `mperflev`.
+ 
+ Recode to __date__
+ 
+ - `dob` using lubridate.
+ 
  
 
-The second data set, `MCAS_G9Sci2022_Item` is 42 by 9 and consists of 
-9 variables with information pertaining to the 2022 [HS Introductory Physics Item Report](https://profiles.doe.mass.edu/mcas/mcasitems2.aspx?grade=HS&subjectcode=PHY&linkid=23&orgcode=04830000&fycode=2022&orgtypecode=5&). The variables can be broken down into 2 categories:
-
- Details about a given test item: 
- 
- This includes the content `Reporting Category` (MF (motion and forces)
-WA (waves), and EN (energy), the `Standard` from the [2016 STE Massachusetts Curriculum Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf), the `Item Description` providing the details of what specifically was asked of students, and the points 
-available for a given question, `sitem Possible Points`.
-
-Summary Performance Metrics:
-
-- For each item, the state reports the percentage of points earned by students at 
-Rising Tide, `RT Percent Points`, the percentage of available points earned by students
-in the state, `State Percent Points`, and the difference between the Rising Tide 
-students and students in the state, `RT-State Diff`.
 
 :::
 
 
-## G9Science Read-in and Tidy
+## G9Science Read-in and Join
 
 ::: panel-tabset
 
 
 ### G9 Science Read-In
 
-To read in `MCAS_G9Sci2022_Item`, I:
 
-- Selected only the 9th Grade Physics Item Report
-- Deleted an extra column from a cell merge
-- refactored the `sitem` variable to prepare to join this data set to the Student 
-performance data set.
-- Added an s to the column names as a reminder that all of these columns relate to the Science exam.
 
 ```{r}
 library(readxl)
 
 # G9 Science Item analysis
 
-MCAS_G9Sci2022_Item<-read_excel("_data/2022MCASDepartmentalAnalysis.xlsx", sheet = "SG9Physics", skip = 1, col_names= c("sitem", "sType", "sReporting Category", "sStandard", "sitem Desc", "delete", "sitem Possible Points","RT Percent Points", "State Percent Points", "RT-State Diff")) %>%
-                  select(!contains("delete"))%>%
-                  filter(str_detect(sStandard, "HS"))%>%
-                  mutate("sitem" = as.character(sitem))
-  
-   
-#view(MCAS_G9Sci2022_Item)
-# use string r to fix the item #
-MCAS_G9Sci2022_Item<-
-  separate(MCAS_G9Sci2022_Item, sitem, c("sitem", "delete"))%>%
-  select(!contains("delete"))%>%
-  mutate(sitem =
-           str_c("sitem", sitem))
-  
-        
-  
+MCAS_G9Sci2022_Item<-read_item("SG9Physics", "science")
                    
 MCAS_G9Sci2022_Item
 
@@ -302,32 +310,30 @@ MCAS_G9Sci2022_Item
 
 ```
 
-### CU306 By Disability Read in
-
 ```{r}
-MCAS_G9Sci2022_CU306Dis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9ByDisability.xlsm", 
+G9Sci_CU306Dis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9ByDisability.xlsm", 
   sheet = "Disabled Students", 
    col_names = c("Reporting Category", "Possible Points", "RT%Points",
                 "State%Points", "RT-State Diff"))%>%
   filter(`Reporting Category` == "Energy"|`Reporting Category`== "Motion, Forces, and Interactions"| `Reporting Category` == "Waves" )
 
-view(MCAS_G9Sci2022_CU306Dis)
+view(G9Sci_CU306Dis)
 
 
-MCAS_G9Sci2022_CU306Dis
+G9Sci_CU306Dis
 
 
                  
 
 ```
 ```{r}
-MCAS_G9Sci2022_CU306NonDis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9ByDisability.xlsm", 
+G9Sci_CU306NonDis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9ByDisability.xlsm", 
   sheet = "Non-Disabled Students", 
    col_names = c("Reporting Category", "Possible Points", "RT%Points",
                 "State%Points", "RT-State Diff"))%>%
   filter(`Reporting Category` == "Energy"|`Reporting Category`== "Motion, Forces, and Interactions"| `Reporting Category` == "Waves" )
 
-view(MCAS_G9Sci2022_CU306NonDis)
+view(G9Sci_CU306NonDis)
 ```
 
 ### Tidy Data and Join
@@ -407,7 +413,7 @@ for all students?
 - What would be the most beneficial areas of focus for a targeted intervention course for 
 students struggling to meet or exceed performance expectations?
 
-- Are there notable differences in student performance by subgroups?
+- Are there notable differences in student performance for students with and without disabilities?
 
 ::: panel-tabset
 
@@ -564,7 +570,7 @@ G9Science_Cat_Loss
 
 ### Student Performance Key Words
 
--How did students perform based on key words? 
+- How did students perform based on key words? 
 
 When scanning the `sitem Desc` entries, there are several questions containing the 
 word "Calculate".
@@ -617,18 +623,18 @@ G9Science_Calc_PointsAvail<-G9Science_Calc%>%
 
 G9Science_Calc_PointsAvail
 
-# G9Science_Calc_PointsAvail_Stacked <- G9Science_Calc%>%
-#   ggplot(aes(fill=key_word, y = `sitem Possible Points`, x=`sRepporting Category`)) + 
-#     geom_bar(position="stack", stat="identity")+
-#   labs(subtitle = "Stacked Bar Chart",
-#        y = "Available Points",
-#        x= "Reporting Category",
-#        title = "Avialable points by Key Word",
-#       caption = "2022 HS Introductory Physics MCAS")+
-#        theme(axis.text.x=element_text(angle=60,hjust=1))
-#   coord_flip()
-  
- # G9Science_Calc_PointsAvail_Stacked 
+ G9Science_Calc_PointsAvail_Stacked <- G9Science_Calc%>%
+   ggplot(aes(fill=key_word, y = `sitem Possible Points`, x=`sReporting Category`)) +
+     geom_bar(position="stack", stat="identity")+
+   labs(subtitle = "Stacked Bar Chart",
+        y = "Available Points",
+       x= "Reporting Category",
+       title = "Available points by Key Word",
+      caption = "2022 HS Introductory Physics MCAS")+
+      theme(axis.text.x=element_text(angle=60,hjust=1))+
+   coord_flip()
+
+  G9Science_Calc_PointsAvail_Stacked
  
   
   
@@ -651,6 +657,8 @@ G9Science_Calc_AvgDiffBar<-G9Science_Calc%>%
       caption = "2022 HS Introductory Physics MCAS")
 G9Science_Calc_AvgDiffBar
 ```
+Here we can see the diparity in the `RT-State Diff` by Item when we consider the term "Calculate"
+
 
 
 ```{r}
@@ -674,7 +682,7 @@ G9Science_Calc_Box <-G9Science_Calc%>%
 
 G9Science_Calc_Box
 ```
-As we can see, that a student's performance on their 8th Grade Math MCAS is strongly associcated with their performance on the Introductory Physics exam.
+As we can see, that a student's performance on their 8th Grade Math MCAS is strongly associcated with their performance on the Introductory Physics exam. This suggests, we should use prior MCAS and current STAR Math testing data to select students for intervention.
 ```{r}
 G9Science_Math<-MCAS_2022%>%
   select(sscaleds, mscaleds2021,sscaleds_prior, grade, sattempt)%>%
@@ -695,14 +703,37 @@ Here we can see that students with a higher performance level, lost a higher pro
 their points on questions involving "Calculate". In the general, classroom, to raise the level 
 of rigor, students should spend more time on calculation based activities.
 ```{r}
-# G9 Science  IEP  Analysis By Difficulty
-G9Sci_StudentCalc<-G9Science_StudentItem%>%
+# G9 Points Lost
+G9Sci_StudentCalcPerflev<-G9Science_StudentItem%>%
   select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
   mutate( key_word = case_when(
      !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
      str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
   group_by(`sperflev`, `key_word`)%>%
+  summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))
+G9Sci_StudentCalcPerflev
+
+
+G9Sci_StudentCalc<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  mutate( key_word = case_when(
+     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`sReporting Category`, `key_word`, `sperflev`)%>%
   summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=total_points_lost, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
+   labs(subtitle ="Calculate" ,
+       y = "Sum Points Lost",
+       x= "Reporting Category",
+       title = "Sum Points Lost by Key Word",
+      caption = "2022 HS Introductory Physics MCAS")
+
+G9Sci_StudentCalc
+
+
+
+
+G9Sci_StudentCalcPerflev%>%
  ggplot(aes(fill=`key_word`, y=total_points_lost, x=`sperflev`)) + geom_bar(position="fill", stat="identity") +
    labs(subtitle ="Calculate" ,
        y = "Percentage Points Lost",
@@ -710,8 +741,8 @@ G9Sci_StudentCalc<-G9Science_StudentItem%>%
        title = "Points Lost by Key Word and Performance Level",
       caption = "2022 HS Introductory Physics MCAS")
 
+G9Sci_StudentCalcPerflev
 
-G9Sci_StudentCalc
  
   
 
@@ -719,11 +750,53 @@ G9Sci_StudentCalc
 
 ```
 
+### Student Performance and Disability
+
+```{r}
+G9Sci_StudentCalcDis<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  mutate( key_word = case_when(
+     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`sReporting Category`, `key_word`, `IEP`)%>%
+  summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=total_points_lost, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity")+
+  facet_wrap(vars(IEP))+ coord_flip()+
+   labs(subtitle ="Calculate" ,
+       y = "Sum Points Lost",
+       x= "Reporting Category",
+       title = "Sum Points Lost by Key Word",
+      caption = "2022 HS Introductory Physics MCAS")
+
+G9Sci_StudentCalcDis
 
 
+```
+
+```{r}
+G9Sci_StudentCalcDis<-G9Science_StudentItem%>%
+  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  mutate( key_word = case_when(
+     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`sReporting Category`, `key_word`, `IEP`)%>%
+  summarise(sum_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=sum_points_lost, x=`sReporting Category`)) + geom_bar(position="fill", stat="identity")+
+  facet_wrap(vars(IEP))+ coord_flip()+
+   labs(subtitle ="Calculate" ,
+       y = "Percent Points Lost",
+       x= "Reporting Category",
+       title = "Percent Points Lost by Key Word",
+      caption = "2022 HS Introductory Physics MCAS")
+
+G9Sci_StudentCalcDis
 
 
+```
+```{r}
+G9Sci_CU306Dis
 
+```
    
 
 
