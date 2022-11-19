@@ -151,17 +151,31 @@ surveys_clean <- collapsed %>%
 #| label: plot quantative q's
 
 ratings <- surveys_clean %>%
-#do I need to pivot?
   ungroup() %>%
-  select(ends_with("r5") | "UserID") 
+  select(ends_with("r5") | "UserID") %>%
+  pivot_longer(cols = starts_with("benefit"), 
+               names_to = "question", 
+               values_to = "rating", 
+               values_drop_na = TRUE
+               )
 
 ratings %>%
-  ggplot(aes(UserID,benefit_costsavings_r5)) +
-  geom_point()
+  group_by(question) %>%
+ # summarize(sum(rating)) %>%
+  ggplot(aes(question, rating)) +
+  geom_point()+
+  theme(axis.text.x = element_text(angle = 30))
 
 ratings %>%
-  ggplot(aes(benefit_costsavings_r5, benefit_timesavings_r5)) +
-  geom_point()
+  ggplot(aes(question), color = "rating") +
+  geom_bar()
+
+# Leah's code
+# isotopes <- isotope_csv %>%
+#   pivot_longer(cols = everything(),
+#                names_to = c(".value", "set"), 
+#                names_pattern = "(.+)_(.)")
+
 ```
 
 
