@@ -32,6 +32,8 @@ library(ggpubr)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
+## Narrative Summary
+
 The `MCAS_2022` data frame contains performance results from 495 students from [Rising Tide Charter Public School](https://risingtide.org/) on the Spring 2022 
 [Massachusetts Comprehensive Assessment System (MCAS)](https://www.doe.mass.edu/mcas/default.html) 
 tests.
@@ -89,7 +91,7 @@ students struggling to meet or exceed performance expectations?
 ## Function Library
 
 To read in, tidy, and join our data frames for each content area we will use the 
-following functions
+following functions. This still needs to be made more adaptable to include Math and ELA.
 ```{r}
 
 
@@ -295,7 +297,7 @@ __Mutate__
 
 
 ```{r}
-library(readxl)
+
 
 # G9 Science Item analysis
 
@@ -317,7 +319,7 @@ G9Sci_CU306Dis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9ByDi
                 "State%Points", "RT-State Diff"))%>%
   filter(`Reporting Category` == "Energy"|`Reporting Category`== "Motion, Forces, and Interactions"| `Reporting Category` == "Waves" )
 
-view(G9Sci_CU306Dis)
+#view(G9Sci_CU306Dis)
 
 
 G9Sci_CU306Dis
@@ -333,7 +335,8 @@ G9Sci_CU306NonDis<-read_excel("_data/MCAS CU306 2022/CU306MCAS2022PhysicsGrade9B
                 "State%Points", "RT-State Diff"))%>%
   filter(`Reporting Category` == "Energy"|`Reporting Category`== "Motion, Forces, and Interactions"| `Reporting Category` == "Waves" )
 
-view(G9Sci_CU306NonDis)
+G9Sci_CU306NonDis
+#view(G9Sci_CU306NonDis)
 ```
 
 ### Tidy Data and Join
@@ -376,7 +379,7 @@ G9ScienceMCAS_2022
 As expected, we now have 42 X 69 = 2898 rows. 
 
 Now, we should be ready to join our data sets using `sitem` as the key. We should have a 
-2,898 by (9 + 8) = 2,898 by 17 data frame. We will also check our raw data against the 
+2,898 by (10 + 8) = 2,898 by 18 data frame. We will also check our raw data against the 
 performance data reported by the state in the item report by calculating `percent_earned` 
 by Rising Tide students and comparing it to the figure `RT Percent Points` and storing the 
 difference in `earned_diff`
@@ -386,12 +389,12 @@ G9Science_StudentItem <- G9ScienceMCAS_2022 %>%
   left_join(MCAS_G9Sci2022_Item, "sitem")
 
 
-#view(G9Science_StudentItem)
+view(G9Science_StudentItem)
 
 G9Science_StudentItem
 G9Science_StudentItem%>%
    group_by(sitem)%>%
-   summarise(percent_earned = sum(sitem_score, na.rm=TRUE)/sum(`sitem Possible Points`, na.rm=TRUE) )%>%
+   summarise(percent_earned = round(sum(sitem_score, na.rm=TRUE)/sum(`item Possible Points`, na.rm=TRUE),2) )%>%
    left_join(MCAS_G9Sci2022_Item, "sitem")%>%
    mutate(earned_diff = percent_earned-`RT Percent Points`)
 
@@ -420,7 +423,7 @@ students struggling to meet or exceed performance expectations?
 ### Performance by Content Strands
 
 
- - What reporting categories were emphasized by the state?
+What reporting categories were emphasized by the state?
  
  We can see from our summary,that 50% of the exam points (30 of the available 60) come from questions from the Motion and Forces reporting category and 23 of the 42 questions were from this category.
 
@@ -428,17 +431,22 @@ students struggling to meet or exceed performance expectations?
 
 ```{r}
 G9Science_Cat_Total<-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sitem Possible Points`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)
+  select(`sitem`, `item Possible Points`, `Reporting Category`, `State Percent Points`, `RT Percent Points`, `RT-State Diff`)
 G9Science_Cat_Total%>%
-  group_by(`sReporting Category`)%>%
-  summarise(available_points = sum(`sitem Possible Points`, na.rm=TRUE))
+  group_by(`Reporting Category`)%>%
+  summarise(available_points = sum(`item Possible Points`, na.rm=TRUE),
+            RT_percent_points = mean(`RT Percent Points`, na.rm = TRUE),
+            State_percent_points = mean(`State Percent Points`, na.rm = TRUE))
 
 
 ```
 
 
+
+
 ```{r}
- ggplot(G9Science_Cat_Total, aes(x= `sReporting Category`, fill = `sReporting Category`))+
+
+ ggplot(G9Science_Cat_Total, aes(x= `Reporting Category`, fill = `Reporting Category`))+
   geom_bar( alpha=0.9) +
    labs(title = "Item Count by Reporting Category",
        subtitle = "HS Introductory Physics",
@@ -451,80 +459,108 @@ G9Science_Cat_Total%>%
 
 ```
 
-Did Rising Tide students' performance relative to the state vary by content reporting categories?
+
+Where did RT students lose most of their points?
 
 
 ```{r}
-G9Science_Cat_Loss<-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sReporting Category`, `sitem Possible Points`, `RT-State Diff`)%>%
-  group_by(`sReporting Category`)%>%
+G9Science_Cat_Loss<-G9Science_StudentItem%>%
+  select(`sitem`, `Reporting Category`, `item Possible Points`, `sitem_score`)%>%
+  group_by(`Reporting Category`)%>%
   summarise(
-           avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
-            sd_RT_State_Diff = sd(`RT-State Diff`, na.rm=TRUE),
-            med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE),
-            sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE))
+          
+            sum_points_lost = sum(`item Possible Points`-`sitem_score`, na.rm=TRUE))
+      
 
-G9Science_Cat_Loss
 
 
 ```
-Where were the least points earned relative to other students in the state?
+```{r}
+G9Science_Percent_Loss<-G9Science_StudentItem%>%
+  select(`sitem`, `Reporting Category`, `item Possible Points`, `sitem_score`)%>%
+  mutate(`points_lost` = `item Possible Points` - `sitem_score`)%>%
+  #ggplot(df, aes(x='', fill=option)) + geom_bar(position = "fill") 
+  ggplot( aes(x='',fill = `Reporting Category`, y = `points_lost`)) +
+    geom_bar(position="fill", stat = "identity") + coord_flip()+
+ labs(subtitle ="All Students" ,
+       y = "% Points Loints",
+       x= "Reporting Category",
+       title = "Percentage of Points Lost by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+   
 
+G9Science_Percent_Loss
+#   
+
+```
+
+Did Rising Tide students' performance relative to the state vary by content reporting categories?
+
+```{r}
+G9Science_Cat_Total%>%
+  group_by(`Reporting Category`)%>%
+  summarise(available_points = sum(`item Possible Points`, na.rm=TRUE),
+            RT_percent_points = round(mean(`RT Percent Points`, na.rm = TRUE),2),
+            State_percent_points = round(mean(`State Percent Points`, na.rm = TRUE),2))%>%
+            pivot_longer(contains("percent"), names_to = "Group", values_to = "percent_points")%>%
+ ggplot( aes(fill = `Group`, y=`percent_points`, x=`Reporting Category`)) +
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="All Students" ,
+       y = "Average % Points",
+       x= "Reporting Category",
+       title = "Percent Points Earned by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))+
+   geom_text(aes(label = `percent_points`), vjust = 1.5, colour = "white", position = position_dodge(.9))
+
+```
 
 ```{r}
 #view(MCAS_G9Sci2022_Item)
 G9Science_Cat_StateDiff<-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
-  group_by(`sReporting Category`)%>%
-  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
+  select(`sitem`, `Reporting Category`, `item Possible Points`, `State Percent Points`, `RT-State Diff`)%>%
+  group_by(`Reporting Category`)%>%
+  summarise(avg_RT_State_Diff = round(mean(`RT-State Diff`, na.rm=TRUE),2),
             sd_RT_State_Diff = sd(`RT-State Diff`, na.rm=TRUE),
             med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE),
             sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE))
+
+G9Science_Cat_StateDiff
 ```
 
+
+
+
 As we can see from our table, on average, our students earned fewer points relative 
-to their peers in the state on questions from the `sReporting Category` Motion and Forces.
+to their peers in the state on items from the `Reporting Category` Motion and Forces.
 
 ```{r}
 
 G9Science_Cat_MeanStateDiff<-G9Science_Cat_StateDiff%>%
-   ggplot( aes(fill = `sReporting Category`, y=`avg_RT_State_Diff`, x=`sReporting Category`)) +
+   ggplot( aes(fill = `Reporting Category`, y=`avg_RT_State_Diff`, x=`Reporting Category`)) +
     geom_bar(position="dodge", stat="identity") +
   labs(subtitle ="All Students" ,
        y = "Avg RT-State Difference % Points",
        x= "Reporting Category",
-       title = "Average RT-State-Diff by Reporting Category",
+       title = "Mean RT-State-Diff by Reporting Category",
       caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))
+       theme(axis.text.x=element_text(angle=60,hjust=1))+
+   geom_text(aes(label = `avg_RT_State_Diff`), vjust = -1.5, colour = "white")
 
 G9Science_Cat_MeanStateDiff
 
 ```
-Since Motion and Forces questions account for 50% of the points available on the test, our students "lost" in total the most points relative to their peers in the state in this category.
+
+
+Here we see the distribution of `RT-State Diff` by reporting category and question item. We can see generally that Motion and Forces seems to have the highest variability. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
 
 ```{r}
 
-G9Science_Cat_TotalStateDiff<-G9Science_Cat_StateDiff%>%
-   ggplot( aes(fill = `sReporting Category`, y=`sum_RT_State_Diff`, x=`sReporting Category`)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="All Students" ,
-       y = "Sum RT-State Difference % Points",
-       x= "Reporting Category",
-       title = "Sum RT-State-Diff by Reporting Category",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))
-
-
-G9Science_Cat_TotalStateDiff
-```
-
-
-Here we see the distribution of `RT-State Diff` by reporting category and question item. We can see generally that Motion and Forces seems to have the highest variablility. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
-```{r}
 G9Science_Cat_Box <-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
-  group_by(`sReporting Category`)%>%
-  ggplot( aes(x=`sReporting Category`, y=`RT-State Diff`, fill=`sReporting Category`)) +
+  select(`sitem`, `Reporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+  group_by(`Reporting Category`)%>%
+  ggplot( aes(x=`Reporting Category`, y=`RT-State Diff`, fill=`Reporting Category`)) +
     geom_boxplot() +
     scale_fill_viridis(discrete = TRUE, alpha=0.6) +
     geom_jitter(color="black", size=0.1, alpha=0.9) +
@@ -540,47 +576,47 @@ G9Science_Cat_Box
 ```
 
 
-`
-Where did Rising Tide Students lose the most points? We can see that in total students 
-lost the most points on items from Motion and Forces
+
+
+
+
+
+
+### Student Performance by Item Difficulty
+
+Can differences in Rising Tide student performance on an item and State performance
+on an item be explained by difficulty level?
+
+When considering `RT-State Diff` against `State Percent Points` this does not seem to generally be the case.
+
 ```{r}
-G9Science_Cat_Loss<-G9Science_StudentItem%>%
-  select(`sitem`, `sitem_score`, `sReporting Category`, `sitem Possible Points`, `RT-State Diff`)%>%
-  group_by(`sReporting Category`)%>%
-  summarise(sum_RT_points_lost = sum(`sitem Possible Points`-`sitem_score`, na.rm=TRUE),
-            RT_points_lost_per_student = sum(`sitem Possible Points`-`sitem_score`, na.rm=TRUE)/69)
-            #sd_RT_points_lost = sd(`sitem Possible Points`-`sitem_score`, na.rm=TRUE),
-            #med_RT_points_lost = median(`sitem Possible Points`-`sitem_score`, na.rm=TRUE))
 
-G9Science_Cat_Loss
+G9Sci_Diff_Dot<-MCAS_G9Sci2022_Item%>%
+  select(`State Percent Points`, `RT-State Diff`, `Reporting Category`)%>%
+ ggplot( aes(x=`State Percent Points`, y=`RT-State Diff`)) +
+     geom_point(size = 1, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "RT-State Diff by Difficulty Level", y = "RT-State Diff",
+       x = "State Percent Points") +
+  stat_cor(method = "pearson")#+facet(vars(`Reporting Category`)) +#label.x = 450, label.y = 550)
 
+G9Sci_Diff_Dot
 ```
-
-
-
-
-
-  
-
-
-
-
-
 
 
 ### Student Performance Key Words
 
-- How did students perform based on key words? 
+How did students perform based on key words? 
 
-When scanning the `sitem Desc` entries, there are several questions containing the 
+When scanning the `item Desc` entries, there are several questions containing the 
 word "Calculate".
 
 ```{r}
 G9Science_Calc<-MCAS_G9Sci2022_Item%>%
-  select(`sitem`, `sitem Desc`,`sitem Possible Points`, `sReporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+  select(`sitem`, `item Desc`,`item Possible Points`, `Reporting Category`, `State Percent Points`, `RT-State Diff`)%>%
    mutate( key_word = case_when(
-     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
-     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))
+     !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))
 #view(G9Science_Calc)
 
 G9Science_Calc
@@ -594,37 +630,37 @@ G9Science_Calc
 ```{r}
 
 G9Science_Calc%>%
-  group_by(`sReporting Category`, `key_word`)%>%
+  group_by(`Reporting Category`, `key_word`)%>%
   summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
             med_RT_State_Diff = median(`RT-State Diff`, na.rm =TRUE),
             sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE),
-            sum_sitem_Possible_Points = sum(`sitem Possible Points`, na.rm = TRUE))
+            sum_sitem_Possible_Points = sum(`item Possible Points`, na.rm = TRUE))
 
 
 ```
 
 Now, we can see that by the Waves and Energy categories, half of the available points come
-from questions with calculate and half do not. In the Motion and Forces category, more points 
-are associated with questions that ask students to "calculate".
+from questions with calculate and half do not. In the Motion and Forces category, 40% of points are associated with questions that ask students to "calculate".
 ```{r}
 G9Science_Calc_PointsAvail<-G9Science_Calc%>%
-  group_by(`sReporting Category`, `key_word`)%>%
+  group_by(`Reporting Category`, `key_word`)%>%
   summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
             med_RT_State_Diff = median(`RT-State Diff`, na.rm =TRUE),
             sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE),
-            sum_sitem_Possible_Points = sum(`sitem Possible Points`, na.rm = TRUE))%>%
-   ggplot(aes(fill=`key_word`, y=sum_sitem_Possible_Points, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity")+ 
+            sum_item_Possible_Points = sum(`item Possible Points`, na.rm = TRUE))%>%
+   ggplot(aes(fill=`key_word`, y=sum_item_Possible_Points, x=`Reporting Category`)) + geom_bar(position="dodge", stat="identity")+ 
   labs(subtitle ="Calculate" ,
        y = "Available Points",
        x= "Reporting Category",
        title = "Available points by Key Word",
       caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))
+       theme(axis.text.x=element_text(angle=60,hjust=1))+
+   geom_text(aes(label = `sum_item_Possible_Points`), vjust = 1.5, colour = "white", position = position_dodge(.9))
 
 G9Science_Calc_PointsAvail
 
  G9Science_Calc_PointsAvail_Stacked <- G9Science_Calc%>%
-   ggplot(aes(fill=key_word, y = `sitem Possible Points`, x=`sReporting Category`)) +
+   ggplot(aes(fill=key_word, y = `item Possible Points`, x=`Reporting Category`)) +
      geom_bar(position="stack", stat="identity")+
    labs(subtitle = "Stacked Bar Chart",
         y = "Available Points",
@@ -640,31 +676,32 @@ G9Science_Calc_PointsAvail
   
 ```
 
-We can see that across all of the `sReporting Categories`, Rising Tide students performed 
+We can see that across all of the `Reporting Categories`, Rising Tide students performed 
 significantly weaker relative to their peers on questions that asked them to "calculate".
 ```{r}
 
-G9Science_Calc_AvgDiffBar<-G9Science_Calc%>%
-  group_by(`sReporting Category`, `key_word`)%>%
-  summarise(avg_RT_State_Diff = mean(`RT-State Diff`, na.rm=TRUE),
+G9Science_Calc_MeanDiffBar<-G9Science_Calc%>%
+  group_by(`Reporting Category`, `key_word`)%>%
+  summarise(mean_RT_State_Diff = round(mean(`RT-State Diff`, na.rm=TRUE),2),
             med_RT_State_Diff = median(`RT-State Diff`, na.rm =TRUE),
             sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE))%>%
-   ggplot(aes(fill=`key_word`, y=avg_RT_State_Diff, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
+   ggplot(aes(fill=`key_word`, y=mean_RT_State_Diff, x=`Reporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
    labs(subtitle ="Calculate" ,
-       y = "Avg RT-State-Diff",
+       y = "Mean RT-State-Diff",
        x= "Reporting Category",
        title = "Avg RT-State-Diff by Key Word",
-      caption = "2022 HS Introductory Physics MCAS")
-G9Science_Calc_AvgDiffBar
+      caption = "2022 HS Introductory Physics MCAS")+
+   geom_text(aes(label = `mean_RT_State_Diff`), vjust = 1.5, colour = "black", position = position_dodge(.9))
+G9Science_Calc_MeanDiffBar
 ```
-Here we can see the diparity in the `RT-State Diff` by Item when we consider the term "Calculate"
+Here we can see the disparity in the `RT-State Diff` by Item when we consider the term "Calculate"
 
 
 
 ```{r}
 G9Science_Calc_Box <-G9Science_Calc%>%
-  group_by(`key_word`, `sReporting Category`)%>%
-  ggplot( aes(x=`key_word`, y=`RT-State Diff`, fill=`sReporting Category`)) +
+  group_by(`key_word`, `Reporting Category`)%>%
+  ggplot( aes(x=`key_word`, y=`RT-State Diff`, fill=`Reporting Category`)) +
     geom_boxplot() +
     scale_fill_viridis(discrete = TRUE, alpha=0.6) +
     geom_jitter(color="black", size=0.1, alpha=0.9) +
@@ -682,51 +719,61 @@ G9Science_Calc_Box <-G9Science_Calc%>%
 
 G9Science_Calc_Box
 ```
-As we can see, that a student's performance on their 8th Grade Math MCAS is strongly associcated with their performance on the Introductory Physics exam. This suggests, we should use prior MCAS and current STAR Math testing data to select students for intervention.
+If we consider the difficulty of items containing the word `calculate` for students in the
+state (`State Percent Points`) for a given item, the gap between Rising Tide students' performance to their peers in the state `RT-State Diff` does not seem to increase with the difficulty .
 ```{r}
-G9Science_Math<-MCAS_2022%>%
-  select(sscaleds, mscaleds2021,sscaleds_prior, grade, sattempt)%>%
-  filter((grade == 9) & sattempt != "N")%>%
-  ggplot( aes(x=`mscaleds2021`, y=`sscaleds`)) + 
+view(G9Science_Calc)
+G9Science_Calc_Dot<- G9Science_Calc%>%
+  select(`State Percent Points`, `RT-State Diff`, `key_word`)%>%
+  filter(key_word == "Calc")%>%
+  ggplot( aes(x=`State Percent Points`, y=`RT-State Diff`)) +
      geom_point(size = 1, color="#69b3a2")+
  geom_smooth(method="lm",color="grey", size =.5 )+
-  labs(title = "2022 HS Introductory Physics vs. 2021 Math MCAS", y = "Physics Scaled Score",
-       x = "Math Scaled Score") + 
-  stat_cor(method = "pearson", label.x = 450, label.y = 550)
+  labs(title = "RT State Diff vs. State Percent Points", y = "RT State Diff",
+       x = "State Percent Points")#+ face(vars())
 
-G9Science_Math
-  
-
+G9Science_Calc_Dot
+ 
 ```
 
+
+Is the "calculation gap" consistent across performance levels?
+
 Here we can see that students with a higher performance level, lost a higher proportion of 
-their points on questions involving "Calculate". In the general, classroom, to raise the level 
-of rigor, students should spend more time on calculation based activities.
+their points on questions involving "Calculate". I.e., the higher a student's performance level, the higher percentage of their points were lost to items asking them to "calculate". In the general, classroom, to raise the level of rigor, students should spend more time on calculation based activities.
 ```{r}
 # G9 Points Lost
 G9Sci_StudentCalcPerflev<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  select(gender, sitem, sitem_score, `item Desc`, `item Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `Reporting Category`, `sperflev`)%>%
   mutate( key_word = case_when(
-     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
-     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
+     !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))%>%
   group_by(`sperflev`, `key_word`)%>%
-  summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))
+  summarise(total_points_lost = sum(`sitem_score`-`item Possible Points`, na.rm = TRUE),
+            mean_RT_State_Diff = round(mean(`RT-State Diff`, na.rm=TRUE),2))
 G9Sci_StudentCalcPerflev
+
+#view(G9Science_StudentItem)
 
 
 G9Sci_StudentCalc<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  select(gender, sitem, sitem_score, `item Desc`, `item Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `Reporting Category`, `sperflev`)%>%
   mutate( key_word = case_when(
-     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
-     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
-  group_by(`sReporting Category`, `key_word`, `sperflev`)%>%
-  summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
- ggplot(aes(fill=`key_word`, y=total_points_lost, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
+     !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`Reporting Category`, `key_word`)%>%
+  summarise(total_points_lost = sum(`sitem_score`-`item Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=total_points_lost, x=`Reporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
    labs(subtitle ="Calculate" ,
        y = "Sum Points Lost",
        x= "Reporting Category",
        title = "Sum Points Lost by Key Word",
-      caption = "2022 HS Introductory Physics MCAS")
+      caption = "2022 HS Introductory Physics MCAS")+
+   geom_text(aes(label = `total_points_lost`), vjust = 1.5, colour = "black", position = position_dodge(.9))
+
+
+#+
+   #geom_text(aes(label = `total_points_lost`), vjust = 1.5, colour = "white", position = position_dodge(.9))
 
 G9Sci_StudentCalc
 
@@ -738,35 +785,65 @@ G9Sci_StudentCalcPerflev%>%
    labs(subtitle ="Calculate" ,
        y = "Percentage Points Lost",
        x= "Performance Level",
-       title = "Points Lost by Key Word and Performance Level",
+       title = "Percentage of Points Lost by Key Word and Performance Level",
       caption = "2022 HS Introductory Physics MCAS")
 
 G9Sci_StudentCalcPerflev
 
- 
-  
-
+```
+```{r}
+# G9Sci_StudentCalcPerflevBox<-G9Sci_StudentCalcPerflev%>%
+#   ggplot( aes(x=`key_word`, y=`RT-State Diff`, fill=`sperflev`)) +
+#     geom_boxplot() +
+#     scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+#     geom_jitter(color="black", size=0.1, alpha=0.9) +
+#     theme_ipsum() +
+#     theme(
+#       #legend.position="none",
+#       plot.title = element_text(size=11)
+#     ) + labs(subtitle ="Calculate" ,
+#        y = "RT-State-Diff",
+#        x= "Calculate vs. Non-Calculate",
+#        title = "RT-State-Diff by Key Word",
+#       caption = "2022 HS Introductory Physics MCAS") +
+#    
+# 
+# G9Sci_StudentCalcPerflevBox
 
 
 ```
-
 ### Student Performance and Disability
+
+We can see from our `CU306` reports, that our students with disabilities performed 
+better relative to their peers in the state `RT-State Diff` across all `Reporting Categories`, while our non-disabled students performed worse relative to their peers 
+in the state across all `Reporting Categories`.
+
+```{r}
+G9Sci_CU306Dis%>%
+  select(`RT-State Diff`, `Reporting Category`)
+
+G9Sci_CU306NonDis%>%
+  select(`RT-State Diff`, `Reporting Category`)
+```
+When we examine the points lost by reporting category and disability status, there
+does not seem to be a difference in performance between disabled and non-disabled students.
 
 ```{r}
 G9Sci_StudentCalcDis<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  select(gender, sitem, sitem_score, `item Desc`, `item Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `Reporting Category`, `sperflev`)%>%
   mutate( key_word = case_when(
-     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
-     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
-  group_by(`sReporting Category`, `key_word`, `IEP`)%>%
-  summarise(total_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
- ggplot(aes(fill=`key_word`, y=total_points_lost, x=`sReporting Category`)) + geom_bar(position="dodge", stat="identity")+
+     !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`Reporting Category`, `key_word`, `IEP`)%>%
+  summarise(total_points_lost = sum(`sitem_score`-`item Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=total_points_lost, x=`Reporting Category`)) + geom_bar(position="dodge", stat="identity")+
   facet_wrap(vars(IEP))+ coord_flip()+
    labs(subtitle ="Calculate" ,
        y = "Sum Points Lost",
        x= "Reporting Category",
-       title = "Sum Points Lost by Key Word",
-      caption = "2022 HS Introductory Physics MCAS")
+       title = "Sum Points Lost by Key Word Non-Disabled vs. Disabled",
+      caption = "2022 HS Introductory Physics MCAS")+
+  geom_text(aes(label = `total_points_lost`), vjust = 1.5, colour = "black", position = position_dodge(.95))
 
 G9Sci_StudentCalcDis
 
@@ -775,18 +852,18 @@ G9Sci_StudentCalcDis
 
 ```{r}
 G9Sci_StudentCalcDis<-G9Science_StudentItem%>%
-  select(gender, sitem, sitem_score, `sitem Desc`, `sitem Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `sReporting Category`, `sperflev`)%>%
+  select(gender, sitem, sitem_score, `item Desc`, `item Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `Reporting Category`, `sperflev`)%>%
   mutate( key_word = case_when(
-     !str_detect(`sitem Desc`, "calculate|Calculate") ~ "Non-Calc",
-     str_detect(`sitem Desc`, "calculate|Calculate") ~ "Calc"))%>%
-  group_by(`sReporting Category`, `key_word`, `IEP`)%>%
-  summarise(sum_points_lost = sum(`sitem_score`-`sitem Possible Points`, na.rm = TRUE))%>%
- ggplot(aes(fill=`key_word`, y=sum_points_lost, x=`sReporting Category`)) + geom_bar(position="fill", stat="identity")+
+     !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
+     str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))%>%
+  group_by(`Reporting Category`, `key_word`, `IEP`)%>%
+  summarise(sum_points_lost = sum(`sitem_score`-`item Possible Points`, na.rm = TRUE))%>%
+ ggplot(aes(fill=`key_word`, y=sum_points_lost, x=`Reporting Category`)) + geom_bar(position="fill", stat="identity")+
   facet_wrap(vars(IEP))+ coord_flip()+
    labs(subtitle ="Calculate" ,
        y = "Percent Points Lost",
        x= "Reporting Category",
-       title = "Percent Points Lost by Key Word",
+       title = "Percent Points Lost by Key Word Non-Disabled vs. Disabled Students",
       caption = "2022 HS Introductory Physics MCAS")
 
 G9Sci_StudentCalcDis
@@ -794,14 +871,56 @@ G9Sci_StudentCalcDis
 
 ```
 ```{r}
-G9Sci_CU306Dis
-
+# view(G9Sci_CU306Dis)
+# G9Sci_CU306Dis%>%
+#   mutate(Disability_Status = "Disabled")
+# G9Sci_CU306NonDis%>%
+#   mutate(Disability_Status = "NonDisabled")
+# G9Sci_CU306Dis<-G9Sci_CU306Dis%>%
+#   full_join(G9Sci_CU306NonDis, "RT-State Diff")
+# view(G9Sci_CU306Dis)
 ```
    
 
 
 
 :::
+
+## Conclusion
+
+A student's performance on their 9th Grade Introductory PHysics MCAS is strongly associated with their performance on their 8th Grade Math MCAS exam. This suggests, we should use prior MCAS and current STAR Math testing data to identify students in need of extra support.
+```{r}
+G9Science_Math<-MCAS_2022%>%
+  select(sscaleds, mscaleds2021,sscaleds_prior, grade, sattempt)%>%
+  filter((grade == 9) & sattempt != "N")%>%
+  ggplot(aes(x=`mscaleds2021`, y =`sscaleds`))+ 
+     geom_point(size = 1, color="#69b3a2")+
+ geom_smooth(method="lm",color="grey", size =.5 )+
+  labs(title = "2022 HS Introductory Physics vs. 2021 Math MCAS", y = "Physics Scaled Score",
+       x = "Math Scaled Score") + 
+  stat_cor(method = "pearson", label.x = 450, label.y = 550)
+
+G9Science_Math
+  
+
+```
+Rising Tide students performed slightly weaker relative to the state in all content reporting areas with the weakest in `Motion and Forces` which is also represented in the most items on the exam.
+
+Rising Tide students performed significantly weaker relative to students in the State  on 
+items including the key word Calculate. This suggests, we should dedicate more classroom 
+instructional time to problem solving with calculation. Notably, the higher a student's performance level, the higher the percentage of points a student lost for calculation items. To increase the proportion of students exceeding expectations, we need to improve our students performance on calculation based items; evidence based math interventions include small group, differentiated problem sets.
+
+Students with disabilities performed better relative to their peers in the state while our non-disabled students performed worse. This further supports the need for differentiated small group problem sets in the general classroom setting.
+
+## Limitations/Areas for Improvement
+To improve this report, I need to 
+
+- edit down the number of visualizations used.
+- edit the average points lost by category to get average over all items, rather than
+average of averages.
+- mutate `IEP` so that the values `0` and `1` are `Disabled` and `Non-Disabled`
+- mutate `Reporting Category` so that the full category names appear in the graphs.
+- be more discerning on when to use `totals` and when to use `averages`. To improve performance on a test, we are concerned with total points lost; to identify curricular weaknesses we are also interested in relative performance to the state by content area
 
 ## Appendix
 ::: panel-tabset
