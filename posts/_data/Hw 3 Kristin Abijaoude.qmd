@@ -1,0 +1,129 @@
+---
+title: "HW 3 Kristin Abijaoude"
+author: "Kristin Abijaoude"
+desription: "Reading in data and creating a post"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw3
+  - pathogen
+  - kristin_abijaoude
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+#### Pathogen
+
+::: panel-tabset
+## Pathogen: Read Data
+
+```{r}
+pathogen <- read_xlsx("/Users/kristinabijaoude/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/Total_cost_for_top_15_pathogens_2018.xlsx",
+                              range = cell_rows(6:22),
+                              col_names = c("Pathogen",
+                                        "Cases",
+                                        "Cost"))
+pathogen
+```
+::: panel-tabset
+### Pathogen: Tidy and Mutate Data
+
+```{r}
+pathogen_tidy <- pathogen %>%
+  drop_na(Pathogen, Cases, Cost)
+
+pathogen_tidy
+```
+```{r}
+pathogen_tidy <- pathogen_tidy %>%
+  rename("Type of Pathogen" = "Pathogen",
+         "Number of Confirmed Cases" = "Cases",
+         "Costs in Damages in $" = "Cost")
+pathogen_tidy
+```
+
+```{r}
+# convert numeric to currency
+pathogen_tidy$`Costs in Damages in $` <- paste('$',formatC(pathogen_tidy$`Costs in Damages in $`, big.mark = ',', format = 'f')) 
+# i'm not sure where the extra numbers came from
+
+# add commas
+pathogen_tidy$`Number of Confirmed Cases` <- paste(formatC(pathogen_tidy$`Number of Confirmed Cases`, format="d", big.mark=","))
+
+# sanity check
+pathogen_tidy
+```
+
+### Statistical Descriptives
+
+```{r}
+# create a different data frame to get the summary
+# I remove the row total for all 15 pathogen so it doesn't skew the results
+pathogen1 <- pathogen_tidy[-16,]
+
+# sanity check point
+pathogen1
+
+# getting the summary of the dataset
+# number of confirmed cases
+summarize(pathogen1, mean.cases = mean(`Number of Confirmed Cases`, na.rm = TRUE), 
+          median.cases = median(`Number of Confirmed Cases`, na.rm = TRUE), 
+          min.cases = min(`Number of Confirmed Cases`, na.rm = TRUE), 
+          max.cases = max(`Number of Confirmed Cases`, na.rm = TRUE), 
+          sd.cases = sd(`Number of Confirmed Cases`, na.rm = TRUE), 
+          var.cases = var(`Number of Confirmed Cases`, na.rm = TRUE), 
+          IQR.cases = IQR(`Number of Confirmed Cases`, na.rm = TRUE))
+
+```
+
+```{r}
+# getting the summary of the dataset
+# costs in damages
+summarize(pathogen1, mean.cost = mean(`Costs in Damages in $`, na.rm = TRUE), 
+          median.cost = median(`Costs in Damages in $`, na.rm = TRUE), 
+          min.cost = min(`Costs in Damages in $`, na.rm = TRUE), 
+          max.cost = max(`Costs in Damages in $`, na.rm = TRUE), 
+          sd.cost = sd(`Costs in Damages in $`, na.rm = TRUE), 
+          var.cost = var(`Costs in Damages in $`, na.rm = TRUE), 
+          IQR.cost = IQR(`Costs in Damages in $`, na.rm = TRUE))
+```
+
+
+#### Pathogen
+::: panel-tabset
+## Debt in Trillions: Read Data
+
+```{r}
+debts <- read_xlsx("/Users/kristinabijaoude/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/debt_in_trillions.xlsx")
+debts
+```
+::: panel-tabset
+## Debt in Trillions: Tidy and Mutate Data
+```{r}
+debt_tidy <- debts %>%
+  mutate(date = parse_date_time(`Year and Quarter`, orders="yq"))
+debt_tidy
+# i tried to separate the year and quarter with str_extract(), but i wasn't having any luck with converting the century, so i had to look at the solutions in class for the most effective code
+```
+
+```{r}
+
+```
+
