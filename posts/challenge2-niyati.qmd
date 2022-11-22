@@ -1,0 +1,78 @@
+---
+title: "Challenge 2 Instructions"
+author: "Niyati Sharma"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+    df-print: paged
+    css: styles.css
+
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+birds_df <- read_csv("_data/birds.csv")
+birds_df
+#temp <- birds_df[c('Item Code', 'Item', 'Year')]
+#temp
+print(unique(birds_df$Domain))
+```
+## Describe the data
+
+This is a huge data set with 30977 rows and 14 columns. It shows the different type of birds in different countries of the world. Flag column defines the gender of the bird.The data is defined according to the years and value column shows the number of animals in that particular year.
+
+```{r}
+
+#grouping the items according to the countries
+df<-birds_df%>%
+  group_by(Area,Item)
+#Summation of the item categories
+new_df<-df%>%summarise(Sum=sum(Value, na.rm = TRUE))
+new_df
+new2<-filter(new_df, `Item` == "Chickens")
+new2
+arrange(new2,desc(Sum))
+median_value<-median(new2$Sum)
+median_value
+mean_value<-mean(new2$Sum)
+mean_value
+summary(new2)
+sd(new2$Sum)
+
+```
+From this dataset I want to calculate the sum of particular animal according to their area. So I applied group by function to select the Area and Item column from the dataset.By Sum function I get the total number of animals in that area, through filter function I am able to calculate the particular item "Chickens" with respect to area. According to filtered data set I can interpret that area "World" has the max number of chickens "674215634" whereas its lowest at Aruba "150".
