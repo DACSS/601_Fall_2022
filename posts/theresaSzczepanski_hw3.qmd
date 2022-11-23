@@ -10,6 +10,7 @@ format:
     code-fold: true
     code-copy: true
     code-tools: true
+  pdf: default
 categories:
   - Theresa_Szczepanski
   - hw3
@@ -460,7 +461,9 @@ G9Science_Cat_Total%>%
 ```
 
 
-Where did RT students lose most of their points?
+Where did RT students lose most of their points? Students lost the largest proportion 
+of points in the Motion and Forces category, which was the `Reporting Category` for 50% 
+of the points on the exam. The points lost by Rising Tide students seem to be proportional to the number of points available for each category.
 
 
 ```{r}
@@ -498,23 +501,26 @@ G9Science_Percent_Loss
 Did Rising Tide students' performance relative to the state vary by content reporting categories?
 
 ```{r}
-G9Science_Cat_Total%>%
-  group_by(`Reporting Category`)%>%
-  summarise(available_points = sum(`item Possible Points`, na.rm=TRUE),
-            RT_percent_points = round(mean(`RT Percent Points`, na.rm = TRUE),2),
-            State_percent_points = round(mean(`State Percent Points`, na.rm = TRUE),2))%>%
-            pivot_longer(contains("percent"), names_to = "Group", values_to = "percent_points")%>%
- ggplot( aes(fill = `Group`, y=`percent_points`, x=`Reporting Category`)) +
-    geom_bar(position="dodge", stat="identity") +
-  labs(subtitle ="All Students" ,
-       y = "Average % Points",
-       x= "Reporting Category",
-       title = "Percent Points Earned by Reporting Category",
-      caption = "2022 HS Introductory Physics MCAS")+
-       theme(axis.text.x=element_text(angle=60,hjust=1))+
-   geom_text(aes(label = `percent_points`), vjust = 1.5, colour = "white", position = position_dodge(.9))
+#Need to use CU306 and not take average of percentages...but percent of available points
+# G9Science_Cat_Total%>%
+#   group_by(`Reporting Category`)%>%
+#   summarise(available_points = sum(`item Possible Points`, na.rm=TRUE),
+#             RT_percent_points = round(mean(`RT Percent Points`, na.rm = TRUE),2),
+#             State_percent_points = round(mean(`State Percent Points`, na.rm = TRUE),2))%>%
+#             pivot_longer(contains("percent"), names_to = "Group", values_to = "percent_points")%>%
+#  ggplot( aes(fill = `Group`, y=`percent_points`, x=`Reporting Category`)) +
+#     geom_bar(position="dodge", stat="identity") +
+#   labs(subtitle ="All Students" ,
+#        y = "Mean % Points",
+#        x= "Reporting Category",
+#        title = "Percent Points Earned by Reporting Category",
+#       caption = "2022 HS Introductory Physics MCAS")+
+#        theme(axis.text.x=element_text(angle=60,hjust=1))+
+#    geom_text(aes(label = `percent_points`), vjust = 1.5, colour = "white", position = position_dodge(.9))
 
 ```
+As we can see from our table, on average, our students earned fewer points relative 
+to their peers in the state on items across all three reporting categories.
 
 ```{r}
 #view(MCAS_G9Sci2022_Item)
@@ -532,8 +538,7 @@ G9Science_Cat_StateDiff
 
 
 
-As we can see from our table, on average, our students earned fewer points relative 
-to their peers in the state on items from the `Reporting Category` Motion and Forces.
+
 
 ```{r}
 
@@ -541,7 +546,7 @@ G9Science_Cat_MeanStateDiff<-G9Science_Cat_StateDiff%>%
    ggplot( aes(fill = `Reporting Category`, y=`avg_RT_State_Diff`, x=`Reporting Category`)) +
     geom_bar(position="dodge", stat="identity") +
   labs(subtitle ="All Students" ,
-       y = "Avg RT-State Difference % Points",
+       y = "Avg RT-State Difference Pct Points",
        x= "Reporting Category",
        title = "Mean RT-State-Diff by Reporting Category",
       caption = "2022 HS Introductory Physics MCAS")+
@@ -553,7 +558,7 @@ G9Science_Cat_MeanStateDiff
 ```
 
 
-Here we see the distribution of `RT-State Diff` by reporting category and question item. We can see generally that Motion and Forces seems to have the highest variability. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
+Here we see the distribution of `RT-State Diff` (difference between the percentage of points earned on a given item by Rising Tide students and percentage of points earned on the same item by their peers in the State) by reporting categor. We can see generally that Motion and Forces seems to have the highest variability. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
 
 ```{r}
 
@@ -585,9 +590,10 @@ G9Science_Cat_Box
 ### Student Performance by Item Difficulty
 
 Can differences in Rising Tide student performance on an item and State performance
-on an item be explained by difficulty level?
+on an item be explained by the difficulty level of an item?
 
-When considering `RT-State Diff` against `State Percent Points` this does not seem to generally be the case.
+When considering `RT-State Diff` against `State Percent Points` this does not seem to generally be the case. Although the regression line shows `RT-State Diff` more likely to 
+be negative on items where students in the State earned fewer points; the p-value is not significant.
 
 ```{r}
 
@@ -609,7 +615,8 @@ G9Sci_Diff_Dot
 How did students perform based on key words? 
 
 When scanning the `item Desc` entries, there are several questions containing the 
-word "Calculate".
+word "Calculate" in their description. How much is calculation emphasized on this exam and how did Rising Tide students perform relative to 
+their peers in the state on items containing "calculate" in their description?
 
 ```{r}
 G9Science_Calc<-MCAS_G9Sci2022_Item%>%
@@ -676,7 +683,7 @@ G9Science_Calc_PointsAvail
   
 ```
 
-We can see that across all of the `Reporting Categories`, Rising Tide students performed 
+When we compare the mean `RT-State Diff` for items containing the word "calculate" in their description vs. items that do not, we can see that across all of the `Reporting Categories`, Rising Tide students performed 
 significantly weaker relative to their peers on questions that asked them to "calculate".
 ```{r}
 
@@ -694,8 +701,7 @@ G9Science_Calc_MeanDiffBar<-G9Science_Calc%>%
    geom_text(aes(label = `mean_RT_State_Diff`), vjust = 1.5, colour = "black", position = position_dodge(.9))
 G9Science_Calc_MeanDiffBar
 ```
-Here we can see the disparity in the `RT-State Diff` by Item when we consider the term "Calculate"
-
+Here we can see the distribution of `RT-State Diff` by `item`, `Reporting Category` and disparity in the `RT-State Diff`  when we consider the term "Calculate".
 
 
 ```{r}
@@ -719,8 +725,7 @@ G9Science_Calc_Box <-G9Science_Calc%>%
 
 G9Science_Calc_Box
 ```
-If we consider the difficulty of items containing the word `calculate` for students in the
-state (`State Percent Points`) for a given item, the gap between Rising Tide students' performance to their peers in the state `RT-State Diff` does not seem to increase with the difficulty .
+Did RT students perform worse relative to their peers in the state on more "challenging" calculation items? If we consider the difficulty of items containing the word `calculate` for students as reflected in the state-wide performance (`State Percent Points`) for a given item, the gap between Rising Tide students' performance to their peers in the state `RT-State Diff` does not seem to increase with the difficulty .
 ```{r}
 view(G9Science_Calc)
 G9Science_Calc_Dot<- G9Science_Calc%>%
@@ -740,7 +745,7 @@ G9Science_Calc_Dot
 Is the "calculation gap" consistent across performance levels?
 
 Here we can see that students with a higher performance level, lost a higher proportion of 
-their points on questions involving "Calculate". I.e., the higher a student's performance level, the higher percentage of their points were lost to items asking them to "calculate". In the general, classroom, to raise the level of rigor, students should spend more time on calculation based activities.
+their points on questions involving "Calculate". I.e., the higher a student's performance level, the higher percentage of their points were lost to items asking them to "calculate". This suggests, in the general classroom, to raise student performance, students should spend a higher proportion of time on calculation based activities.
 ```{r}
 # G9 Points Lost
 G9Sci_StudentCalcPerflev<-G9Science_StudentItem%>%
@@ -907,7 +912,7 @@ G9Science_Math
 Rising Tide students performed slightly weaker relative to the state in all content reporting areas with the weakest in `Motion and Forces` which is also represented in the most items on the exam.
 
 Rising Tide students performed significantly weaker relative to students in the State  on 
-items including the key word Calculate. This suggests, we should dedicate more classroom 
+items including the key word Calculate in their item description. This suggests, we should dedicate more classroom 
 instructional time to problem solving with calculation. Notably, the higher a student's performance level, the higher the percentage of points a student lost for calculation items. To increase the proportion of students exceeding expectations, we need to improve our students performance on calculation based items; evidence based math interventions include small group, differentiated problem sets.
 
 Students with disabilities performed better relative to their peers in the state while our non-disabled students performed worse. This further supports the need for differentiated small group problem sets in the general classroom setting.
