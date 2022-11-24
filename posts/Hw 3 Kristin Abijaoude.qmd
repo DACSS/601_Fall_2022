@@ -105,13 +105,14 @@ ggplot(data=ill,
 ```
 
 ```{r}
+# create data frame
 damage <- data.frame(
   Pathogens =factor(c("Campylobacter spp.","Clostridium perfringens","Cryptosporidium spp.","Cyclospora cayetanensis","Listeria monocytogenes", "Norovirus", "Salmonella", "Shigella", "Shiga toxin-producing E.Coli", "Non-Shiga Toxin-Producing E. coli", "Toxoplasma gondii", "Vibrio parahaemolyticus", "Vibrio vulnificus", "Other Vibrio non-cholera species", "Yersinia enterocolitica")),  
   Damages =c(2181485783, 384277856, 58394152, 2571518, 3189686110, 2566984191, 4142179161, 159202402, 311036907, 31701852, 3744008907, 45735332, 359481557, 81749064, 313297920)
   )
 damage
 
-
+# create graph
 ggplot(damage, aes(x=Pathogens, y=Damages)) +
   geom_col(fill = "darkblue")+
   scale_y_continuous(labels=scales::dollar_format()) +
@@ -155,6 +156,42 @@ From face value, we can see how some pathogens are either deadlier or costlier t
 
 However, the average person is neither a microbiologist nor an epidemiologist, so we can't tell which pathogen is deadlier, why some are costlier than others, or if there's a correlation between costs in damages and number of confirmed cases from this graph alone. If there were more information on the original dataset, I could improve my visualizations in several different ways, such as measuring the severity of each pathogen (and maybe add photos of each pathogen in the graphs) as well as infection rates, diseases caused by them, and where and how the diseases spread.
 
+::: panel-tabset \## Pathogen: Statistical Analysis
+
+Going back to middle school math:
+
+```{r}
+# Statistical Analysis for Cases
+pathogen %>%
+  summarise(mean.cases = mean(Cases),
+            Median.cases = median(Cases),
+            max.cases = max(Cases),
+            min.cases = min(Cases),
+            sum.cases = sum(Cases))
+```
+
+The average amount of confirmed cases are 594,314 cases, with the norovirus having the most with over 5,000,000 while Vibrio vulnificus with the least amount with 96 cases. Collectively, these pathogens infected a total of 8,914,713 people.
+
+![Vibrio vulnificus](Vibrio_vulnificus_01.png)
+
+![Norovirus](Norwalk.jpg)
+
+```{r}
+# Statistical Analysis for Cost in damages
+pathogen %>%
+  summarise(mean.cost = mean(Cost),
+            median.cost = median(Cost),
+            max.cost = max(Cost),
+            Min.cost = min(Cost),
+            sum.cost = sum(Cost))
+```
+
+As for the cost, the average cost in damages is `$1,171,452,847`, with Salmonella costing the most with `$4,142,179,161`, while Cyclospora cayetanensis cost `$2,571,518` in damages. Collectively, these pathogens cost `$17,571,792,712` in damages.
+
+![Salmonella](salmonella_salmonellosis.jpeg) Salmonella
+
+![Cyclospora cayetanensis](Cyclospora_cayetanensis_stained.jpeg) Cyclospora cayetanensis
+
 #### Debt in Trillions
 
 ::: panel-tabset \## Debt in Trillions: Read Data
@@ -179,7 +216,7 @@ debt_tidy
 # i tried to separate the year and quarter with str_extract(), but i wasn't having any luck with converting the century, so i had to look at the solutions in class for the most effective code
 ```
 
-Admittedly, I had trouble with separating the year and quarter. Going forward, whenever I come across a problem like this, the go-to codes are `mutate()` and `parse_date_time()`. With those codes, we get 4 different dates in the same year, such as 2003-01-01, 2003-04-01, 2003-07-01 and so on. These are the fiscal quarters for each year, normally used in government reports on the country's economy and other monetary policies. In addition, I removed the unneccessary data and relocated the year back into the first variable with `relocate()`.
+Admittedly, I had trouble with separating the year and quarter. Going forward, whenever I come across a problem like this, the go-to codes are `mutate()` and `parse_date_time()`. With those codes, we get 4 different dates in the same year, such as 2003-01-01, 2003-04-01, 2003-07-01 and so on. These are the fiscal quarters for each year, normally used in government reports on the country's economy and other monetary policies. In addition, I removed the unnecessary data and relocated the year back into the first variable with `relocate()`.
 
 For clarification, the numberes represent the amount of debt owed in trillions of dollars, with the vast majority of that debt owed from mortgages.
 
@@ -233,18 +270,33 @@ As mentioned beforehand, the vast majority of debt held is mortgages, and that s
 As much as this dataset has more information than the pathogen, there are some questions left unanswered:
 
 -   What is the average American household income or individual American income?
+
 -   How did the recessions of 2008 and 2020 affect debt, or those who have debt?
+
 -   How does debt affect unemployment, inflation, GDP, purchasing power, and other metrics used by economics?
 
+Aforementioned in the pathogen dataset, when there's more information, I could improve my visualizations by computing relationships between various economic factors (for example, plot correlation between GDP and debt) with various graphs, especially scatterplot and trends.
+
 ::: panel-tabset \## Debt in Trillion: Statistical Analysis
+
+Before I explain further, let me explain the term standard deviation. We all know what the mean is, or the average, but the standard deviation tells us how far or near the measurements of a group are from the average. In other words, the lower the standard deviation is, the closer the measurements are to the average, while the higher, the more spread out the measurements are.
+
+When I measure the mean and standard deviation here, the mortgage is clearly the outlier, as the majority of the debt held is from mortgages. The standard deviation is 1.18 sd, which means the measurements for mortgages have more outliers than other debt type. Visually, this is reflected in the above graphs I computed.
+
+Looking at the sum column, Americans collected up to 871 trillion dollars in debt from 2003 to 2021, with the vast majority of it from mortgages.
 
 ```{r}
 ds_debt<-debt_pivot%>%
   group_by(`Type of Loan`)%>%
   summarise(mean=mean(debt),
-            sd=sd(debt))
+            sd=sd(debt),
+            sum=sum(debt))
 ds_debt
+
+# how much debt did Americans collect in total
+sum(ds_debt$sum)
 ```
+
 ```{r}
 print(dfSummary(debt_tidy,
                         varnumbers = FALSE,
@@ -255,5 +307,3 @@ print(dfSummary(debt_tidy,
       method = 'render',
       table.classes = 'table-condensed')
 ```
-
-
