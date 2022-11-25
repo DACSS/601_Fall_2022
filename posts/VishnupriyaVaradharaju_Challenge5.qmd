@@ -1,0 +1,168 @@
+---
+title: "Challenge 5 Solutions"
+author: "Vishnupriya Varadharaju"
+description: "Introduction to Visualization"
+date: "11/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library("readxl")
+library(stringr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+
+## Read in data
+
+Working with the USA Households data set. Had previously read, cleaned and pivoted this dataset from challenge 3. Re-using the same cleaned data here. 
+
+```{r}
+# Reading in the USA Households dataset
+# Removing the total column as information is redundant
+h_income <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx",
+         skip=5, n_max = 351, col_names=c("year", "hnumber", "total","level1", "level2",
+                                          "level3","level4","level5","level6","level7","level8",
+                                          "level9","median_income","median_error",
+                                    "mean_income","mean_error") ) %>% select(-total)
+
+income_vals <- c("level1","level2","level3","level4","level5","level6","level7","level8","level9")
+income_levels <- c("Under $15000","$15000 to $29000","$25000 to $34999","$35000 to $49999","$50000 to $74999","$75000 to $99999","$100000 to $149999","1500000 to $199999","$200000 and over")
+h_income
+
+```
+
+### Briefly describe the data
+
+In the above data, we have the necessary household income values for various throughout different years.
+The levels of the income range have also been named accordingly and the mapping is found in the vector 'income_levels'. There is a need to pivot this data in order to get the the races corresponding to each year. Currently, the races are only present atop each section of data. Pivoting will help in grouping the data and making calculations easier against different categories of race.
+
+## Tidy Data (as needed)
+
+There is a lot of work that needs to be done to this dataset. Firstly, the data needs to be pivoted such that for each entry we know the corresponding race. Currently, the race category is not directly present. Next, the null values in the dataset have to be looked and replaces as NA. Furthermore, the datatypes of each field have to be checked.
+
+```{r}
+# Creating a new column named race_cat + removing the rows with string only 
+# race category
+h_income_race <- h_income %>% mutate(race_cat = case_when(
+  str_detect(year, "[A-Za-z]") ~ year,
+  TRUE ~ NA_character_
+)) %>% fill(race_cat) %>% filter(!str_detect(year, "[A-Za-z]"))
+
+# Removing the notes number from the year and race_cat columns
+h_income_race <- h_income_race %>% separate(year, c("year","notes"), sep = " ") %>% select(-notes)
+h_income_race$race_cat <- gsub('[0-9]+', '', h_income_race$race_cat)
+
+# Detected some non numeric characters in the numeric fields. So need to remove them
+h_income_race <- h_income_race %>%
+    mutate(across(c(hnumber, starts_with("level"), starts_with("me")),~ replace(.,str_detect(., "[A-Za-z]"), NA))) %>% mutate_at(vars(hnumber, starts_with("me"), starts_with("level")), as.numeric)
+
+class(h_income_race$hnumber)
+```
+
+
+There are 12 different categories of races. For easier visualization, categories with overlap can be grouped into a common groups.
+
+```{r}
+clean_h_income <- h_income_race %>% mutate(
+  gp_race_cat = case_when(
+    grepl("BLACK", race_cat, fixed=TRUE) ~ "grp_black",
+    grepl("ASIAN", race_cat, fixed=TRUE) ~ "grp_asian",
+    grepl("WHITE", race_cat, fixed=TRUE) ~ "grp_white",
+    grepl("HISPANIC", race_cat, fixed=TRUE) & !grepl("NOT", race_cat, fixed=TRUE) ~ "grp_hisp",
+    grepl("ALL", race_cat, fixed=TRUE) ~ "grp_all",
+  )
+) %>% filter(!is.na(gp_race_cat)) %>%
+  group_by(year, gp_race_cat) %>% 
+  summarise(across(c(starts_with("level"),starts_with("me"),
+                     "hnumber"), 
+                   ~sum(.x, na.rm=TRUE)))
+
+head(clean_h_income)
+```
+
+## Univariate Visualizations
+
+1. To visualize how the Household numbers have changed over the years, I chose one category - Asians and specifically from the years 2000-2019. I made use of a bar plot to do this. From this visualization below we can see that there has been a steady increase in the numbers through the years with values peaking for 2013 and 2017. It'll be nice to investigate the reason for the same.
+
+
+```{r}
+# Create data
+# Pivot the data only containing household income numbers from 2000 onwards for the group asian
+data_uv_plot1 <- clean_h_income %>% select(gp_race_cat, hnumber, year) %>%
+  filter(gp_race_cat == "grp_asian") %>%
+  dplyr::filter(substr(year,1,1) == "2")
+
+# Barplot
+ggplot(data_uv_plot1, aes(x=year, y=hnumber)) + geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7), width=0.8) + coord_flip() + ggtitle("Distribution of Household Numbers for Asians from 2000-2019")
+```
+
+
+Next, I wanted to visualize the mean income from the years 2000-2019 across all the races. 
+A line graph is the most suitable to show this trend. From the visualization we can see that though the asian group started off only from 1987 with low mean income, they have moved upwards and are currently having the highest income compared to the other races. Furthermore, there are sharp peaks at 2013 and 2017 which need to be investigated further.
+
+```{r}
+data_uv_plot2 <- clean_h_income %>% select(gp_race_cat, mean_income, year) 
+
+# Plot
+ggplot(data_uv_plot2, aes(x=year , y=mean_income,color=gp_race_cat, group=gp_race_cat)) +
+  geom_line() + ggtitle("Mean incomes across races from year 1967-2019") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+## Bivariate Visualization(s)
+
+Here, the data is pivoted such that the income level distribution for each race and for every year can be seen.
+
+```{r}
+# Pivoting the data
+pivot_data <- clean_h_income %>% ungroup() %>%
+  select(c(year, gp_race_cat, starts_with("level"),hnumber,)) %>%
+  pivot_longer(cols=starts_with("level"), names_to="IncomeRange", values_to="percent")
+
+# Replacing the income range levels
+pivot_data$IncomeRange <- str_replace_all(pivot_data$IncomeRange, setNames(income_levels,income_vals))
+
+# Calculating the number of household incomes for each income range distribution
+pivot_data_longer <- pivot_data %>% mutate(
+  range_household_number = round((hnumber*percent)/100)
+)
+
+pivot_data_longer
+```
+
+We can visualize by making use of bar plots, how the household numbers are distributed for the different income ranges across the different races. 
+
+```{r}
+ggplot(pivot_data_longer, aes(x=range_household_number, y=IncomeRange, fill=gp_race_cat)) + 
+  geom_bar(stat="identity", position="dodge") + 
+  scale_fill_brewer(palette = "Set1") + 
+  ggtitle("Household Income Range from 1967-2019 for all race categories")
+```
+
+In the above visualization, it is seen that the household number for the white group always seems to be the highest compared to the other races. This is mainly because the population of whites is higher in the US. To get a more accurate analysis, the household numbers can be divided by the net population of each of the categories to easily compare the proportions between different races.
+
