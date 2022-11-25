@@ -1,0 +1,309 @@
+---
+title: "HW 3 Kristin Abijaoude"
+author: "Kristin Abijaoude"
+desription: "Reading in data and creating a post"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw3
+  - pathogen
+  - debt
+  - kristin_abijaoude
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(readxl)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+#### Pathogen
+
+::: panel-tabset \## Pathogen: Read Data
+
+```{r}
+pathogen <- read_xlsx("/Users/kristinabijaoude/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/Total_cost_for_top_15_pathogens_2018.xlsx",
+                              range = cell_rows(6:20),
+                              col_names = c("Pathogen",
+                                        "Cases",
+                                        "Cost"))
+pathogen
+```
+
+Here, we are reading the dataset for the top 15 pathogen in terms of costs of damages and number of confirmed cases. It consists of 15 types of pathogens, the number of confirmed cases of each pathogen, and the cost in damages causes by said pathogen.
+
+::: panel-tabset \## Pathogen: Tidy and Mutate Data
+
+```{r}
+pathogen_tidy <- pathogen %>%
+  drop_na(Pathogen, Cases, Cost)
+
+pathogen_tidy
+```
+
+To start off, we drop missing data with `drop_na()`. Next, we rename the variables to more specific names with `rename()`.
+
+```{r}
+pathogen_tidy <- pathogen_tidy %>%
+  rename("Type of Pathogen" = "Pathogen",
+         "Number of Confirmed Cases" = "Cases",
+         "Costs in Damages in $" = "Cost")
+pathogen_tidy
+```
+
+Next, we convert the variables with the `paste()` command below. I specify the currency `$` for the first variable, then I separated the numbers with the comma. This way, it's easier to read the dataset.
+
+```{r}
+# convert numeric to currency
+pathogen_tidy$`Costs in Damages in $` <- paste('$',formatC(pathogen_tidy$`Costs in Damages in $`, big.mark = ',', format = 'f')) 
+# i'm not sure where the extra numbers came from
+
+# add commas
+pathogen_tidy$`Number of Confirmed Cases` <- paste(formatC(pathogen_tidy$`Number of Confirmed Cases`, format="d", big.mark=","))
+
+# sanity checkpoint
+pathogen_tidy
+```
+
+::: panel-tabset \## Pathogen: Visualizing Data
+
+Now that I tidied the dataset, I will use a couple of graphs to visualize the damages those pathogens did. I create the dataframe with `data.frame()`, then use `ggplot` commands to make my graphs. I added the `coord_flip()` command for easier reading.
+
+```{r}
+ill <- data.frame(
+  Pathogens =factor(c("Campylobacter spp.","Clostridium perfringens","Cryptosporidium spp.","Cyclospora cayetanensis","Listeria monocytogenes", "Norovirus", "Salmonella", "Shigella", "Shiga toxin-producing E.Coli", "Non-Shiga Toxin-Producing E. coli", "Toxoplasma gondii", "Vibrio parahaemolyticus", "Vibrio vulnificus", "Other Vibrio non-cholera species", "Yersinia enterocolitica")),  
+  Cases =c(845024, 965958, 57616, 11407, 1591, 5461731, 1027561, 131254, 63153, 112752, 86686, 34664, 96, 17564, 97656)
+  )
+ill
+
+ggplot(data=ill, 
+       aes(x = Pathogens, 
+           y = Cases,
+           fill=Cases)) + 
+  geom_bar(stat = "identity", fill ="lightgreen") +
+  geom_text(aes(label = Cases), 
+            vjust=-0.5) +
+  labs(x = "Pathogen Types", 
+       y = "Number of Cases", 
+       title  = "Pathogens by Number of Confirmed Cases") +
+  scale_y_continuous(labels=scales::comma_format()) +
+  coord_flip()
+```
+
+```{r}
+# create data frame
+damage <- data.frame(
+  Pathogens =factor(c("Campylobacter spp.","Clostridium perfringens","Cryptosporidium spp.","Cyclospora cayetanensis","Listeria monocytogenes", "Norovirus", "Salmonella", "Shigella", "Shiga toxin-producing E.Coli", "Non-Shiga Toxin-Producing E. coli", "Toxoplasma gondii", "Vibrio parahaemolyticus", "Vibrio vulnificus", "Other Vibrio non-cholera species", "Yersinia enterocolitica")),  
+  Damages =c(2181485783, 384277856, 58394152, 2571518, 3189686110, 2566984191, 4142179161, 159202402, 311036907, 31701852, 3744008907, 45735332, 359481557, 81749064, 313297920)
+  )
+damage
+
+# create graph
+ggplot(damage, aes(x=Pathogens, y=Damages)) +
+  geom_col(fill = "darkblue")+
+  scale_y_continuous(labels=scales::dollar_format()) +
+  xlab("Types of Pathogen") +
+  ylab("Costs in Damages") +
+  ggtitle("Pathogens by Costs in Damages") +
+  coord_flip()
+
+```
+
+Here's a scatterplot of the pathogens, but this time, there are labels I added with `geom_label()` and adjusted the font settings with it. In addition, I customized the graph with various sources, such as `ggtile()` and `comma_format()`.
+
+```{r}
+# create data frame
+pathogens <- pathogen_tidy %>%
+  mutate(costs = parse_number(`Costs in Damages in $`),
+         cases = parse_number(`Number of Confirmed Cases`))
+
+ggplot(pathogens, aes(cases, costs, label = `Type of Pathogen`)) +
+  geom_label(hjust = 0, nudge_x = 0.05) +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  scale_x_continuous(labels=scales::comma_format()) +
+  ylab("Costs in Damages ($)") +
+  xlab("Number of Confirmed Cases") +
+  ggtitle("Top 15 Pathogens by Cases and Costs in Damages") 
+```
+
+Here is a close up using `facet_zoom()` since there are several overlaps in the graph.
+
+```{r}
+# zoom in
+library(ggforce)
+ggplot(pathogens, aes(cases, costs, label = `Type of Pathogen`)) +
+  geom_label(hjust = 0, nudge_x = 0.05) +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  scale_x_continuous(labels=scales::comma_format()) +
+  facet_zoom(ylim = c(0, 5.0e+09))
+```
+
+From face value, we can see how some pathogens are either deadlier or costlier than other pathogens. For example, salmonella cost the most with over \$4 billion in damages, despite having fewer confirmed cases than Norovirus with a little bit over 1 million confirmed cases compared to over 5 million of confirmed Norovirus cases.
+
+However, the average person is neither a microbiologist nor an epidemiologist, so we can't tell which pathogen is deadlier, why some are costlier than others, or if there's a correlation between costs in damages and number of confirmed cases from this graph alone. If there were more information on the original dataset, I could improve my visualizations in several different ways, such as measuring the severity of each pathogen (and maybe add photos of each pathogen in the graphs) as well as infection rates, diseases caused by them, and where and how the diseases spread.
+
+::: panel-tabset \## Pathogen: Statistical Analysis
+
+Going back to middle school math:
+
+```{r}
+# Statistical Analysis for Cases
+pathogen %>%
+  summarise(mean.cases = mean(Cases),
+            Median.cases = median(Cases),
+            max.cases = max(Cases),
+            min.cases = min(Cases),
+            sum.cases = sum(Cases))
+```
+
+The average amount of confirmed cases are 594,314 cases, with the norovirus having the most with over 5,000,000 while Vibrio vulnificus with the least amount with 96 cases. Collectively, these pathogens infected a total of 8,914,713 people.
+
+![Vibrio vulnificus](Vibrio_vulnificus_01.png)
+
+![Norovirus](Norwalk.jpg)
+
+```{r}
+# Statistical Analysis for Cost in damages
+pathogen %>%
+  summarise(mean.cost = mean(Cost),
+            median.cost = median(Cost),
+            max.cost = max(Cost),
+            Min.cost = min(Cost),
+            sum.cost = sum(Cost))
+```
+
+As for the cost, the average cost in damages is `$1,171,452,847`, with Salmonella costing the most with `$4,142,179,161`, while Cyclospora cayetanensis cost `$2,571,518` in damages. Collectively, these pathogens cost `$17,571,792,712` in damages.
+
+![Salmonella](salmonella_salmonellosis.jpeg) Salmonella
+
+![Cyclospora cayetanensis](Cyclospora_cayetanensis_stained.jpeg) Cyclospora cayetanensis
+
+#### Debt in Trillions
+
+::: panel-tabset \## Debt in Trillions: Read Data
+
+```{r}
+debts <- read_xlsx("/Users/kristinabijaoude/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/debt_in_trillions.xlsx")
+debts
+```
+
+Now we are going to look at another dataset about debt held by Americans in trillions of dollars from 2003 to 2021- the following types of debt listed are Mortgages, Home Equity Revolving loans, Auto loans, Credit Card debt, Student loans, and other loans.
+
+::: panel-tabset \## Debt in Trillions: Tidy and Mutate Data
+
+```{r}
+debt_tidy <- debts %>%
+  mutate(date = parse_date_time(`Year and Quarter`, orders="yq")) %>%
+  select(-c(`Year and Quarter`)) %>%
+  relocate(`date`, .before = `Mortgage`) %>%
+  rename("Date" = "date")
+  
+debt_tidy
+# i tried to separate the year and quarter with str_extract(), but i wasn't having any luck with converting the century, so i had to look at the solutions in class for the most effective code
+```
+
+Admittedly, I had trouble with separating the year and quarter. Going forward, whenever I come across a problem like this, the go-to codes are `mutate()` and `parse_date_time()`. With those codes, we get 4 different dates in the same year, such as 2003-01-01, 2003-04-01, 2003-07-01 and so on. These are the fiscal quarters for each year, normally used in government reports on the country's economy and other monetary policies. In addition, I removed the unnecessary data and relocated the year back into the first variable with `relocate()`.
+
+For clarification, the numberes represent the amount of debt owed in trillions of dollars, with the vast majority of that debt owed from mortgages.
+
+::: panel-tabset \## Debt in Trillion: Visualizing Data
+
+```{r}
+# create data
+dates <- ymd(debt_tidy$Date)
+mortgage <- debt_tidy$Mortgage
+HE_Rev <- debt_tidy$`HE Revolving`
+auto <- debt_tidy$`Auto Loan`
+CC <- debt_tidy$`Credit Card`
+student <- debt_tidy$`Student Loan`
+
+# create graph
+ggplot(data = debt_tidy, aes(x= `dates`)) + 
+  geom_line(aes(y = mortgage, color = "Mortgage")) +
+  geom_line(aes(y = HE_Rev,  color="HE Revolving")) +
+  geom_line(aes(y = auto, color="Auto Loans")) +
+  geom_line(aes(y= CC, color ="Credit Card"))+
+  geom_line(aes(y = student, color = "Student Loans"))+
+  geom_line(aes(y = other,  color = "Other"))+
+  xlab("Year") +
+  ylab("Debt in Trillions of Dollars")+
+  scale_y_continuous(labels=scales::dollar_format()) +
+  ggtitle("Debt Held by Americans from 2003 to 2021") 
+```
+
+```{r}
+# pivot longer with pivot_longer
+debt_pivot <- pivot_longer(debt_tidy, cols = Mortgage:Other, names_to = "type", values_to = "debt") %>%
+  select(-c(Total)) %>%
+  mutate("Type of Loan" = as.factor(type)) %>%
+  select(-c(type))
+debt_pivot
+```
+
+I pivoted this data from wide to long with `pivot_longer()` because I want to facet, or split the chart into smaller components, with `facet_wrap()`.
+
+```{r}
+ggplot(debt_pivot, aes(`Date`, `debt`)) +                                    
+  geom_line(color = "darkgreen", size = 1) +
+  facet_wrap(. ~ `Type of Loan`) +
+  ylab("Debt Held in Trillions of Dollars") +
+  xlab("Date and Quarter") +
+  ggtitle("Debt Held by Americans from 2003 to 2021")
+```
+
+As mentioned beforehand, the vast majority of debt held is mortgages, and that seems to be rising in a faster race in comparison to other types of debts.
+
+As much as this dataset has more information than the pathogen, there are some questions left unanswered:
+
+-   What is the average American household income or individual American income?
+
+-   How did the recessions of 2008 and 2020 affect debt, or those who have debt?
+
+-   How does debt affect unemployment, inflation, GDP, purchasing power, and other metrics used by economics?
+
+Aforementioned in the pathogen dataset, when there's more information, I could improve my visualizations by computing relationships between various economic factors (for example, plot correlation between GDP and debt) with various graphs, especially scatterplot and trends.
+
+::: panel-tabset \## Debt in Trillion: Statistical Analysis
+
+Before I explain further, let me explain the term standard deviation. We all know what the mean is, or the average, but the standard deviation tells us how far or near the measurements of a group are from the average. In other words, the lower the standard deviation is, the closer the measurements are to the average, while the higher, the more spread out the measurements are.
+
+When I measure the mean and standard deviation here, the mortgage is clearly the outlier, as the majority of the debt held is from mortgages. The standard deviation is 1.18 sd, which means the measurements for mortgages have more outliers than other debt type. Visually, this is reflected in the above graphs I computed.
+
+Looking at the sum column, Americans collected up to 871 trillion dollars in debt from 2003 to 2021, with the vast majority of it from mortgages.
+
+```{r}
+ds_debt<-debt_pivot%>%
+  group_by(`Type of Loan`)%>%
+  summarise(mean=mean(debt),
+            sd=sd(debt),
+            sum=sum(debt))
+ds_debt
+
+# how much debt did Americans collect in total
+sum(ds_debt$sum)
+```
+
+```{r}
+print(dfSummary(debt_tidy,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
