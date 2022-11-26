@@ -1,0 +1,264 @@
+---
+title: "Challenge 3 Solutions"
+author: "Vinitha Maheswaran"
+desription: "Tidy Data: Pivoting"
+date: "11/24/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+
+For this challenge I will be working with the "USA Households\*.xlsx" data set.
+
+```{r}
+library(readxl)
+
+# Reading the USA Households\*.xlsx data set and storing in a data frame
+
+column_names = c("Year", "Household_Number_Thousands", "Total_Percent_Distribution", "Under $15,000", "$15,000 to $24,999", "$25,000 to $34,999", "35,000 to $49,999", "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999", "$150,000 to $199,999", "$200,000 and over", "Median_Income_Estimate", "Median_Income_MOE", "Mean_Income_Estimate", "Mean_Income_MOE")
+usa_data <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx", col_names = column_names, skip = 5)
+print(usa_data)
+```
+
+Since the “USA Households\*.xlsx” data set is in Excel format, I am using the 'readxl' package for reading the data. After reading, the data is stored in a dataframe “usa_data". The first three rows in the dataframe contains description about the data and the 4th and 5th row contains the column headings. I resolve this issue by skipping the first 5 rows while reading the data set and storing in dataframe with the renamed column names.
+
+
+## Data Cleaning
+
+
+```{r}
+# Removing the last 31 rows as they are just footnotes and not observations
+usa_data <- head(usa_data,-31)
+print(usa_data)
+```
+
+```{r}
+# Dimensions of usa_data
+dim(usa_data)
+```
+
+
+```{r}
+# Creating new column for Race and filling the empty values for Race with the previous value in that column
+
+usa_data <- usa_data%>%
+  mutate(Race = case_when(str_detect(Year,("([A-Z])")) ~ Year))%>%
+  fill(Race, .direction = "down")
+
+# Removing the rows from usa_data which has non-numerical values in Year column (these rows have Race value in the Year column and were inserted as separators for different Race groups)
+
+usa_data <- usa_data%>%
+  filter(!str_detect(Year,("([A-Z])")))
+
+print(usa_data)
+```
+
+```{r}
+# Removing the footnote number next to the year value in the "Year" column
+
+usa_data <- usa_data%>%
+  mutate(Year = str_remove(Year, " .*"))
+
+usa_data
+```
+
+```{r}
+# Removing the footnote number next to the race value in the "Race" column
+
+usa_data <- usa_data%>%
+  mutate(Race = str_remove(Race, "[0-9]+"))
+
+usa_data
+```
+
+```{r}
+# Remove the "Total_Percent_Distribution" column as that value is 100 for all observations
+
+usa_data <- usa_data%>%
+  subset(select = -c(3))
+
+usa_data
+```
+
+```{r}
+# Reorder the columns in the usa_data dataframe so that "Race" is the first column followed by "Year"
+
+usa_data <- usa_data%>%
+  subset(select=c(16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
+
+usa_data
+```
+
+
+
+```{r}
+# Find number of distinct Year values
+n_distinct(usa_data$Year)
+
+# Sanity check: Check that the unique Year values range from 1967 - 2019 after data cleaning 
+unique(usa_data$Year)
+```
+
+
+```{r}
+# Find number of distinct Race values
+n_distinct(usa_data$Race)
+
+# Sanity check: Check that the unique Race values do not have any footnote numbers after data cleaning 
+unique(usa_data$Race)
+```
+
+
+```{r}
+#Summary of usa_data
+library(summarytools)
+print(summarytools::dfSummary(usa_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+
+After reading the data and renaming the columns, we have 383 rows and 16 columns in the dataframe. Out of the 383 rows, the last 31 rows are footnotes and are removed resulting in 352 rows and 16 columns. The first column “Year” has information on the Year and Race and Hispanic origin of householder. The race value in the first column is currently used as a separator for the different race groups in the data. Hence, I made a new column called “Race” and filled the column with the race value if available, else filled with the previous race value. We get a total of 12 distinct race groups. Following that, I removed the rows from the dataframe that had non-numerical values in the first column as these rows with the Race value were just used as a divider between race groups. This results in a dataframe of 340 rows and 17 columns. Now, we have separate columns for “Year” and “Race”. Next, I removed the footnote numbers next to the values in the “Year” and “Race” columns. I also removed the column “Total_Percent_Distribution” as the value is 100 for all observations and is not significant. If we add the percentage value for all 9 income levels in an observation it should add up to 100. Finally, I reordered the columns so that “Race” is the first column in the dataframe followed by “Year” and the remaining columns. After cleaning the data, I end up with a dataframe of 340 observations and 16 columns/attributes. I did a sanity check to make sure that we have data for the period 1967 - 2019 and we have 12 race categories in total. Currently, I have not removed the observations with race value as "ALL RACES" as I am not sure whether they include the other race categories. I summarized the data using dfSummary() function and made sure that there are no duplicates or missing values in the data.
+
+
+
+### Briefly describe the data
+
+Describe the data, and be sure to comment on why you are planning to pivot it to make it "tidy"
+
+The USA household data contains information on the mean and median income grouped by Race and Hispanic Origin of householder for the period 1967 - 2019. The data is split into 12 different categories based on Races and we have the total number of households surveyed in a given year along with the total percentage distribution (100 for all observations), percentage distribution for various income levels, and the mean and median (estimated and margin of error) income. For some races, data is not available for all the years in the period 1967 - 2019.
+
+Currently the data has multiple observations combined in a single row and this makes it difficult to perform data manipulation operations like filtering, grouping, etc. Hence, we need to pivot the data to make it possible to group the data and calculate aggregates/statistics for the 12 different race categories corresponding to the years 1967 - 2019.  We can pivot the data to find the percentage of each income level for given race and year and visualize them as individual observations. This will also help in plotting graphs to visualize trends.
+
+
+
+## Anticipate the End Result
+
+The first step in pivoting the data is to try to come up with a concrete vision of what the end product *should* look like - that way you will know whether or not your pivoting was successful.
+
+One easy way to do this is to think about the dimensions of your current data (tibble, dataframe, or matrix), and then calculate what the dimensions of the pivoted data should be.
+
+Suppose you have a dataset with $n$ rows and $k$ variables. In our example, 3 of the variables are used to identify a case, so you will be pivoting $k-3$ variables into a longer format where the $k-3$ variable names will move into the `names_to` variable and the current values in each of those columns will move into the `values_to` variable. Therefore, we would expect $n * (k-3)$ rows in the pivoted dataframe!
+
+
+
+### Challenge: Describe the final dimensions
+
+Document your work here.
+
+```{r}
+# Printing the dataframe
+usa_data
+```
+```{r}
+# Removing the columns containing mean and median income
+
+usa_data_final <- usa_data%>%
+  subset(select=(-c(13,14,15,16)))
+
+usa_data_final
+```
+
+
+```{r}
+#existing rows/cases
+nrow(usa_data_final)
+```
+
+```{r}
+#existing columns/cases
+ncol(usa_data_final)
+```
+
+```{r}
+#expected rows/cases
+nrow(usa_data_final) * (ncol(usa_data_final)-3)
+```
+
+```{r}
+# expected columns 
+3 + 2
+```
+
+
+Any additional comments?
+
+
+I plan on pivoting the data using pivot_longer() function (increases the number of rows and decreases the number of columns) and the resultant pivot table will have way more rows in comparison to the less number of columns. Doing this will increase the ease of comparison for different income levels for given race and year. 
+
+Currently, the dataframe contains 340 rows and 16 columns. When we pivot the data, the mean and median income will be redundant for each observation and makes comparison strenuous. Hence, I subset the data and remove the columns containing mean and median income. We can use those attributes in the next steps by creating a new pivot table using them.  After subsetting the data, we are left with 340 rows and 12 columns. The pivot will be done on the 9 different income levels that will be represented as a single column called “Income Level” and the corresponding percentage values will be stored in a column called “Percent Value” keeping the “Race”, “Year”, and “Household_Number_Thousands” columns. Therefore, after pivoting we should expect 9 * 340 = 3060 rows and 3 + 2 = 5 columns. The 5 columns are “Race”, “Year”, “Household_Number_Thousands”, “Income Level” and “Percent Value”.
+
+
+
+## Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
+
+
+
+### Challenge: Pivot the Chosen Data
+
+Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
+
+```{r}
+# Pivoting the data using pivot_longer()
+df <- pivot_longer(usa_data_final, col = c(4:12),
+                   names_to = "Income Level",
+                   values_to = "Percent Value")
+df
+```
+
+```{r}
+# Checking dimension of the pivot table
+dim(df)
+```
+
+
+Any additional comments?
+
+The pivoted table has 3060 rows/observations and 5 columns which is same as the expected rows and expected columns we had predicted in the previous section. In the above pivot table, we are able to observe the count of Households and the percentage value for the 9 different income levels for each Race and Year.
