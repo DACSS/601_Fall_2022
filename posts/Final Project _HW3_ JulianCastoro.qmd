@@ -1,0 +1,721 @@
+---
+title: "Global Military Spending - An Analysis"
+description: "WIP Final Project"
+author: "Julian Castoro"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+output: distill::distill_article
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+library(ggplot2)
+library(gganimate)
+
+library(readxl)
+library(dplyr)
+library(purrr)
+library(lubridate)
+
+library(leaflet)
+
+options(digits = 3,decimals=2)
+options(scipen = 999)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+
+For HW3 I am not outputting any of the cleaning however I am leaving it in for reference.
+
+The intent of this homework for me was to show how playing around with the descriptive statistics is a great idea for exploring your data. The questions I originally had intended to answer with the graphs lead to new questions and at the end of this has added a new time period for my final project to investigate.
+
+
+Had I simply ommitted the outline I found in the data or changed my groupings to hide it, I would not have thought to highlight this time in history.
+
+
+## Data
+
+### Briefly describe the data
+
+Below is a list of the available sheets in the SIPRI military spending data export. A few of the tabs are the same base information altered to reflect a specific currency or ratio. I am choosing to use the "Current USD" as my source of raw spending numbers as I believe it to be the easiest to understand and relate to. I will also be using "share of GDP" as well as "Share of Govt. spending" to provide context around a nations spending compared to their population they intend on defending as well as compared to overall spending. 
+
+### Description of data I will use 
+"Gross domestic product (GDP) is the total monetary or market value of all the finished goods and services produced within a country’s borders in a specific time period." - investopedia 
+
+```{r}
+sheets <- excel_sheets("_data/SIPRI-Milex-data-1949-2021.xlsx")
+#sheets
+
+```
+
+### Where did this information come from?
+
+The Military spending information I am analyzing comes from **SIPRI**, the **S**tockholm **I**nternational **P**eace **R**esearch **I**nstitute. SIPRI was established in 1966 for the purpose of "research into conflict, armaments, arms control and disarmament". The organization is funded by the Swedish government however it regularly works internationally with research centers around the globe. SIPRI collected this particular data set from the official reports of each of the included governments in the form of official publications such as public budgets.
+
+
+
+Here is a peek at what the raw information looks like.
+```{r}
+#| warning: false
+#| message: false
+rawrawData_ShareOfGovSpend <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[9])
+#head(rawrawData_ShareOfGovSpend)
+
+```
+
+
+### Reading in Raw information
+
+Reading in raw information
+
+The data provided by the Stockholm International Peace Research Institute(sipri) was separated into multiple tabs in one excel .xlsx file. 
+
+In order to begin working I imported the tabs I planned to utilize, skipping over some of the notes and title rows at the start of each tab.
+
+
+
+```{r}
+rawData_CurrentUSD <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[6],skip=5)
+rawData_ShareOfGDP <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[7],skip=5)
+rawData_ShareOfGovSpend <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx",sheet=sheets[9],skip=7)
+
+
+
+#head(rawData_CurrentUSD)
+#head(rawData_ShareOfGDP)
+#head(rawData_ShareOfGovSpend)
+
+```
+
+
+
+Next I delete the first row of NA as well as the Notes column for each tibble.
+
+```{r}
+## trying Purr here to be cleaner, we have not covered this yet so please let me know if this could be better.
+
+#tibleList <- lst(rawData_CurrentUSD, rawData_ShareOfGDP, rawData_ShareOfGovSpend)
+
+# could pur this with my func i bet
+
+## not working ^^
+
+
+
+
+rawData_CurrentUSD <- rawData_CurrentUSD[-1,]  %>%
+  select(-Notes)
+
+
+rawData_ShareOfGDP <- rawData_ShareOfGDP[-1,] %>%
+  select(-Notes)
+
+
+rawData_ShareOfGovSpend <- rawData_ShareOfGovSpend[-1,] %>%
+  select(-2:-3)
+
+
+#head(rawData_CurrentUSD)
+#head(rawData_ShareOfGDP)
+#head(rawData_ShareOfGovSpend)  
+
+
+
+```
+
+### Tidying Data
+
+Before pivoting my data I wanted to add a column for region. I chose to do this with an algorithm as an exercise in iteration however it would have been more practical to just hard code this column.
+
+#### Before Pivoting I am adding a column for region
+
+
+The list of countries where there are NA's for every year:
+```{r}
+Regions <- rawData_CurrentUSD %>%
+  filter(is.na(`1949`))%>%
+  select(Country)
+
+#Regions
+```
+You will notice that some of these are continents and sub-continents, I wanted to break these into a `Region` field. The pattern I saw and chose to exploit was the fact that the overarching category would always be followed with a more specific category such as the **Africa** followed by **North Africa** values (see earlier print outs to see raw information). 
+
+I then added an empty vector into the tibble and populated it according to the Country column using the pattern described above.
+
+Once I had left flags in the region column dictating where each region was starting I could use `fill(Region)` in order to populate the rest of the column.
+
+```{r}
+emptyRegionCol <- as.numeric(vector(mode = "character",length = length(rawData_CurrentUSD$`1949`)))## doing as numeric here as a hacky way to fill this with NA's, any better way?
+
+
+#adding col to tibble to be populated later
+mutated_CurrentUSD <- rawData_CurrentUSD %>%
+  mutate(Region =emptyRegionCol,.before=2)
+
+#mutated_CurrentUSD
+#head(mutated_CurrentUSD)
+
+
+
+# replacing the empty char in region with actual region if 2 NAs appear in a row
+  #iterates along the indices of the Country vector
+for(i in seq_along(mutated_CurrentUSD$Country) ){
+  
+   #if 2 nas in a row then do something
+  if(is.na(mutated_CurrentUSD$`1949`[i]) && is.na(mutated_CurrentUSD$`1949`[i+1]) ){
+    mutated_CurrentUSD$Region[i+1] <- mutated_CurrentUSD$Country[i+1] #this works because when referencing an index outside of the vector R will return NA - Great to know.
+  }
+  
+  
+  #if the row is a region
+  if(is.na(mutated_CurrentUSD$`1949`[i]) ){
+     mutated_CurrentUSD$Region[i+1] <- mutated_CurrentUSD$Country[i]
+  }
+
+  
+}
+
+mutated_CurrentUSD <- mutated_CurrentUSD %>%
+  fill(Region)
+
+#mutated_CurrentUSD 
+```
+
+
+Now that I had my proof of concept for cleaning one of the sheets, in a format I wanted, it was time to clean the other sheets as well. I could have taken the above algorithm and modified it to work for each of the other tabs individually however I took the opportunity to practice with functions and created the below function to clean any of the tabs once they were loaded in and lightly cleaned.
+
+
+# Clean and format function
+
+```{r}
+## creating a function to clean the other sheets
+##Input: a partially cleaned tibble, must have been read in and had excess rows trimmed
+##output: tibble with regions correctly labeled and umbrella region categories i.e Africa above south Africa removed
+##Note: All sub categories contained the main category name in them, will use regex to create groupings in the future.
+
+CleanData <- function(inSheet){
+  emptyRegionCol <- as.numeric(vector(mode = "character",length = nrow(select(inSheet,2))))
+
+#adding col to tibble to be populated later
+  output <- inSheet %>%
+    mutate(Region = emptyRegionCol,.before=2)
+
+
+# replacing the empty char in region with actual region if 2 NAs appear in a row
+ #iterates along the indices of the Country vector
+  for(i in seq_along(output$Country)){
+  
+    if(is.na(output[[i,3]]) && is.na(output[[(i+1),3]]))
+      output$Region[i+1] <- output$Country[i+1]
+    
+    if(is.na(output[[i,3]]))
+       output$Region[i+1] <- output$Country[i]
+  }
+  
+  output <- output %>%
+    fill(Region)
+  
+  
+  # removing header rows
+  output <- output %>%
+    filter(!is.na(output[[3]]))
+}
+
+```
+
+Below I call the function on each of the tibbles loaded in earlier.
+
+
+```{r}
+Cleaned_currentUSD <- CleanData(rawData_CurrentUSD)
+Cleaned_ShareOfGovSpend <- CleanData(rawData_ShareOfGovSpend)
+Cleaned_ShareOfGDP <- CleanData(rawData_ShareOfGDP)
+
+#head(Cleaned_currentUSD)
+#head(Cleaned_ShareOfGovSpend)
+#head(Cleaned_ShareOfGDP)
+
+```
+
+## Pivoting years and 
+Next I pivot the years, it should be noted that both the pivoting and Converting of notation could be handled by the clean function above, i kept the steps separate so that I could show the progression of the dataframe.
+
+
+I must also handle the xxx and ... notations. From the information page of my data set I can see that the notation is described as follows:
+
+Raw Notation  | Meaning
+------------- | -------------
+...  | Data unavailable
+xxx  |  Country did not exist or was not independent during all or part of the year in question
+
+
+For now I think I will just keep both as NA but will save this form of the information for future use.
+
+
+```{r}
+
+
+
+Cleaned_currentUSD <- Cleaned_currentUSD %>%
+  pivot_longer(cols=3:ncol(Cleaned_currentUSD),names_to = "Year",values_drop_na = FALSE)%>%
+    na_if("...") %>%
+      na_if("xxx")
+  
+Cleaned_ShareOfGovSpend <- Cleaned_ShareOfGovSpend %>%
+  pivot_longer(cols=3:ncol(Cleaned_ShareOfGovSpend),names_to = "Year",values_drop_na = FALSE)%>%
+    na_if("...") %>%
+      na_if("xxx")
+
+Cleaned_ShareOfGDP <- Cleaned_ShareOfGDP %>%
+  pivot_longer(cols=3:ncol(Cleaned_ShareOfGDP),names_to = "Year",values_drop_na = FALSE)%>%
+    na_if("...") %>%
+      na_if("xxx")
+
+
+
+```
+
+
+
+### Converting column types
+Finally I will convert the column types to their correct representation.
+
+Before:
+```{r}
+#head(Cleaned_currentUSD)
+#head(Cleaned_ShareOfGovSpend)
+#head(Cleaned_ShareOfGDP)
+
+# Year to date
+#Cleaned_currentUSD$Year<-as_date(Cleaned_currentUSD$Year, format = "%Y",tz=NULL)
+#Cleaned_ShareOfGovSpend$Year<-as_date(Cleaned_ShareOfGovSpend$Year, format = "%Y",tz=NULL)
+#Cleaned_ShareOfGDP$Year<-as_date(Cleaned_ShareOfGDP$Year, format = "%Y",tz=NULL)
+
+#Year to Number
+Cleaned_currentUSD$Year<-as.integer(Cleaned_currentUSD$Year)
+Cleaned_ShareOfGovSpend$Year<-as.integer(Cleaned_ShareOfGovSpend$Year)
+Cleaned_ShareOfGDP$Year<-as.integer(Cleaned_ShareOfGDP$Year)
+
+#Cleaned_currentUSD
+
+
+# value to double
+Cleaned_currentUSD$value <- as.numeric(Cleaned_currentUSD$value)
+Cleaned_ShareOfGovSpend$value<- as.numeric(Cleaned_ShareOfGovSpend$value)
+Cleaned_ShareOfGDP$value<- as.numeric(Cleaned_ShareOfGDP$value)
+```
+
+
+
+
+```{r}
+#view(Cleaned_ShareOfGovSpend)=
+Cleaned_currentUSD <- Cleaned_currentUSD %>%
+  rename(MilitarySpend_currentUSD=value)
+
+Cleaned_ShareOfGovSpend <- Cleaned_ShareOfGovSpend%>%
+  rename(MilitarySpend_ShareofGovSpend=value)
+
+Cleaned_ShareOfGDP <- Cleaned_ShareOfGDP%>%
+  rename(MilitarySpend_ShareofGDP=value)
+
+#head(Cleaned_currentUSD)
+#head(Cleaned_ShareOfGovSpend)
+#head(Cleaned_ShareOfGDP)
+
+```
+
+## join of the different tabs
+I think we will want to do a full join as we dont want to lose any information.
+```{r}
+#nrow(Cleaned_currentUSD)
+#nrow(Cleaned_ShareOfGovSpend)
+#nrow(Cleaned_ShareOfGDP)
+
+MilitarySpend<- full_join(Cleaned_currentUSD,Cleaned_ShareOfGovSpend,by=c("Country","Year","Region"))
+
+MilitarySpend <- full_join(MilitarySpend,Cleaned_ShareOfGDP,by=c("Country","Year","Region"))
+
+
+
+#head(MilitarySpend)
+#nrow(MilitarySpend)
+```
+
+
+
+
+## HW3
+### descriptive stats
+mean median and std for each of the tabs
+Charts for the stats
+
+
+
+First I wanted to get an idea of what my data looks like for each of the countries individually. In order to see this I grouped on country name and the types of data we have.
+
+In order to get that done I need to pivot my data again.
+```{r}
+combinedData <-MilitarySpend %>%
+  pivot_longer(c(MilitarySpend_currentUSD,MilitarySpend_ShareofGovSpend,MilitarySpend_ShareofGDP),names_to = "viewOfSpend",values_to = "Spend")
+head(combinedData)
+
+#view(combinedData)
+na.omit(combinedData)
+
+```
+
+Below is a graph depicting the completeness of the information available to us.
+
+Total number of countries analyzed:
+```{r}
+combinedData%>%
+  distinct(Country)%>%
+  count()
+```
+Number of countries by region:
+```{r}
+combinedData%>%
+  group_by(Region)%>%
+  summarise(numberCountries = n_distinct(Country))%>%
+  arrange(desc(numberCountries))
+
+```
+Due to the number of Regions I may need to focus on some in particular...
+
+by year, how many countries had data available
+```{r}
+
+
+```
+
+
+Statistics by region
+
+#MilitarySpend_currentUSD
+```{r}
+byRegionStats_USD<-combinedData%>%
+  group_by(Region,viewOfSpend)%>%
+  summarize(mean = mean(Spend, na.rm=TRUE,sigfig=1),
+            std = sd(Spend, na.rm=TRUE),
+            min = min(Spend, na.rm=TRUE),
+            max = max(Spend, na.rm=TRUE))%>%
+  arrange(desc(mean))%>%
+  filter(viewOfSpend=="MilitarySpend_currentUSD")
+
+byRegionStats_USD
+
+```
+
+#MilitarySpend_ShareOfGDP
+```{r}
+byRegionStats_GDP<-combinedData%>%
+  group_by(Region,viewOfSpend,Year)%>%
+  summarize(mean = mean(Spend, na.rm=TRUE,sigfig=1),
+            std = sd(Spend, na.rm=TRUE),
+            min = min(Spend, na.rm=TRUE),
+            max = max(Spend, na.rm=TRUE))%>%
+  arrange(desc(mean))%>%
+  filter(viewOfSpend=="MilitarySpend_ShareofGDP")
+
+byRegionStats_GDP
+
+```
+```{r}
+byRegionStats_GDP
+byRegionStats_GDP<-combinedData%>%
+  group_by(Region,viewOfSpend,Year)%>%
+  filter(viewOfSpend=="MilitarySpend_ShareofGDP")
+
+
+byRegionStats_GDP$Region<-as.factor(byRegionStats_GDP$Region)
+
+violin_gdp<- na.omit(byRegionStats_GDP)%>%
+  ggplot(aes(x=Region,y=Spend))+
+  geom_violin()
+
+violin_gdp
+
+# removing NAs here because I cant plot them, I dont want to replace them with other values because it is still of interest when countries do not display thier data.
+
+
+
+```
+Something crazy going on with the middle east spend...
+
+Investigation:
+
+```{r}
+byRegionStats_GDP%>%
+  filter(Region=="Middle East")%>%
+  arrange(desc(Spend))%>%
+  head()
+
+```
+I initially thought this was a typo since there were two 1s in a row and it was such an insanely high spend. A share of GDP of 1.173 means Kuwait spent 117.3% of their GDP in that year. Upon further investigation, this is actually true and it was driven by the Persian Gulf War(aka Gulf War). The Gulf War was a conflict triggered by Iraqs invasion of Kuwait in 1990. This invasion was the first major international crisis since the Cold War and will certainly be a topic I add to the final analysis.
+
+https://www.britannica.com/event/Persian-Gulf-War
+
+
+Loosely I will plot Iraq, US and Kuwait spend from 1985-1995 to explore this time period.
+```{r}
+combinedData%>%
+  filter(Year >= 1985 & Year<= 1995)%>%
+  filter(Country %in% c("United States of America","Iraq","Kuwait"))%>%
+    ggplot(mapping=aes(y = Spend, x = Year))+  
+    geom_point(aes(color = Country, alpha=0.9),na.rm = FALSE)+
+    facet_wrap(vars(`viewOfSpend`),scales = "free_y")
+
+
+```
+A new discovery! Iraq chose not to report their spending during the Gulf war.
+
+```{r}
+
+combinedData%>%
+  filter(Country %in% c("Iraq"))%>%
+  filter(Year>1960&is.na(Spend))
+
+
+startOfNoData<- 1982
+endofNoData<- 2003
+
+iraqMissingDataPLOT<-combinedData%>%
+  filter(Country %in% c("Iraq"))%>%
+    ggplot(mapping=aes( x = Spend,y = Year))+
+    geom_point()+
+    facet_wrap(vars(`viewOfSpend`),scales = "free_x")+
+    scale_y_continuous(labels=seq(1949,2020,5),breaks =seq(1949,2020,5))
+
+iraqMissingDataPLOT+
+geom_hline(yintercept = 1982,color="red")+
+geom_hline(yintercept = 2003,color="red")+
+annotate("text",x=0,y=1982,label="1982",hjust=-0.1,vjust=-0.1,color="red")+
+annotate("text",x=0,y=2003,label="2003",hjust=-0.1,vjust=1.1,color="red")
+
+```
+
+
+Below I continue to explore the dataset. This might be too much for HW3 however I was doing it anyway for the final so I chose to include it.
+
+
+#MilitarySpend_ShareofGovSpend
+
+Now to explore the statistics within the Share of Gov Spend tab.
+```{r}
+byRegionStats_GovSpend<-combinedData%>%
+  group_by(Region,viewOfSpend)%>%
+  summarize(mean = mean(Spend, na.rm=TRUE,sigfig=1),
+            std = sd(Spend, na.rm=TRUE),
+            min = min(Spend, na.rm=TRUE),
+            max = max(Spend, na.rm=TRUE))%>%
+  arrange(desc(mean))%>%
+  filter(viewOfSpend=="MilitarySpend_ShareofGovSpend")
+
+byRegionStats_GovSpend
+
+```
+
+
+
+
+
+```{r}
+library(forcats)
+
+statsViz2<- byRegionStats%>%
+  mutate(test = fct_reorder(Region,desc(mean)))%>%
+  ggplot(mapping=aes(y = test, x = mean))+  
+  geom_point(aes(color = Region, alpha=0.9, size=max)) +
+  guides(alpha="none",color="none") +
+  labs(title = "Certain Regions on average spend more than others" ,caption = "Data from SPIRI Military Expediture Database")
+
+
+
+statsViz2
+
+```
+
+From this we can see the top 6 spenders reside in a cluster of there own when you look at their mean and max spend.
+
+Top 6
+```{r}
+top6_mean <- byRegionStats %>%
+  head()%>%
+  pull(Region)
+
+
+top6_mean
+```
+
+
+## Faceted by Region, show mean spend of each country
+
+```{r}
+byRegionStats_year<-combinedData%>%
+  group_by(Region,viewOfSpend,Year)%>%
+  summarize(mean = mean(Spend, na.rm=TRUE))%>%
+  filter(viewOfSpend == 'MilitarySpend_currentUSD')%>%
+  arrange(desc(mean))
+
+byRegionStats_year
+
+
+byRegionplot<- byRegionStats_year%>%
+  ggplot(mapping=aes(x = Year, y = mean))+  
+  geom_point(aes(color = Region, alpha=0.9,)) +
+  theme_light() +
+  guides(alpha="none") +
+  labs(title = "East asia and NA dominate raw spend" ,caption = "Data from SPIRI Military Expediture Database")
+  
+
+byRegionplot
+
+```
+
+
+## To be a little less noisy, showing the top 6 spenders over time
+
+```{r warning=FALSE,error=FALSE}
+byRegionStats_year_top6<-combinedData%>%
+  group_by(Region,viewOfSpend,Year)%>%
+  summarize(mean = mean(Spend, na.rm=TRUE))%>%
+  filter(viewOfSpend == 'MilitarySpend_currentUSD')%>%
+  filter(Region == top6_mean)%>%
+  arrange(desc(mean))
+
+
+byRegionplot_top6<- byRegionStats_year_top6%>%
+  ggplot(mapping=aes(x = Year, y = mean))+  
+  geom_point(aes(color = Region, alpha=0.9,)) +
+  facet_wrap(vars(`Region`),scales = "free_y") +
+  labs(title = "Raw Mean Spend in USD for top 6 Spenders" ,caption = "Data from SPIRI Military Expediture Database")
+  
+
+byRegionplot_top6
+
+```
+
+From here I choose to investigate Eastern Europe.
+
+```{r warning=FALSE,error=FALSE}
+byRegionStats_year_EasternEurope<-combinedData%>%
+  group_by(Region,viewOfSpend,Year)%>%
+  filter(viewOfSpend == 'MilitarySpend_currentUSD')%>%
+  filter(Region == 'Eastern Europe')
+
+EasternEuropePlot<- byRegionStats_year_EasternEurope%>%
+  ggplot(mapping=aes(x = Year, y = Spend))+  
+  geom_point(aes(color = Country, alpha=0.9)) +
+  facet_wrap(vars(`Country`)) +
+  labs(title = "Raw Mean Spend in Eastern Europe" ,caption = "Data from SPIRI Military Expediture Database")
+  
+EasternEuropePlot
+
+```
+
+I left the scaling fixed so that you could see how high USSR spending was and then they become Russia and spend slowley increases but not to the levels of the USSR.
+
+We see here that USSR spending looks to be about late 1990s, following some research I found...
+
+```{r warning=FALSE,error=FALSE}
+
+
+startOfNoData<- 1985
+endofNoData<- 1995
+
+USSRSpendPlot<-combinedData%>%
+  filter(Country %in% c("USSR","Russia"))%>%
+  filter(viewOfSpend == 'MilitarySpend_currentUSD')%>%
+    ggplot(mapping=aes( x = Year,y = Spend,color = `Country`))+
+    geom_point()
+
+
+USSRSpendPlot+
+geom_vline(xintercept = 1987,color="red")+
+annotate("text",x=1987,y=0,label="1987",hjust=1,vjust=-0,color="red")+
+  
+geom_vline(xintercept = 1990,color="red")+
+annotate("text",x=1990,y=0,label="1990",hjust=-0,vjust=-0,color="red")+
+
+geom_vline(xintercept = 1945,color="black")+
+annotate("text",x=1945,y=0,label="Start of Cold War, Defeat of Germany and Japan",hjust=-0,vjust=-0,color="black",angle='90')+
+  
+geom_vline(xintercept = 1985,color="black")+
+annotate("text",x=1985,y=0,label="Mikhail Gorbachev becomes leader of the USSR",hjust=-0.1,vjust=-0,color="black",angle='90')+
+  
+geom_vline(xintercept = 1991,color="black")+
+annotate("text",x=1991,y=0,label="1991 End of Cold War, USSR disbanded",hjust=-0.1,vjust=1,color="black",angle='90')
+
+
+
+```
+From this view of the information it leads one to believe the USSR spending was very high during the cold war, I am unsure why we were given access to their spending towards the end of the cold war, it could have been a show of good faith, more research to come. Once the war was declared over, Russian spending fell to 0 in the following year and slowly started creeping back up.
+
+Another area of research i get from this would be what happened in 2003- 2004 to spike the trend in Russian spending.
+
+
+## HW Questions
+
+### what questions are left unanswered?
+Russian spending during 2003-2004
+
+The rest of my outlined possible questions from HW2 will still be answered, their answer was just not obvious from the summary statistics.
+
+
+### what may be unclear?
+In order to improve some of these charts I could include some information about global spending at the time or perhaps augment the information to display it as a portion of global military spend? 
+  - If i showed percent of global(or engaged parties) military spend it would be interesting to show if just spending more would win the wars.
+
+
+### How could I improve these vizualizations
+
+I could change the view of some of these visualizations so that they are more appealing. I liked the use of the violin plot for the Gulf War analysis and will use more variety in graphs for the final.
+
+## Conclusion
+> “Every gun that is made, every warship launched, every rocket fired signifies in the final sense, a theft from those who hunger and are not fed, those who are cold and are not clothed. > > This world in arms is not spending money alone. It is spending the sweat of its laborers, the genius of its scientists, the hopes of its children. This is not a way of life at all in any > true sense. Under the clouds of war, it is humanity hanging on a cross of iron.”
+
+Dwight D. Eisenhower
+
+
+
+Citations:
+https://www.goodreads.com/quotes/tag/military-budget#:~:text=%E2%80%9CEvery%20gun%20that%20is%20made,is%20not%20spending%20money%20alone.
+
+https://www.sipri.org/about
+
+R Core Team (2017). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+Wickham, H., & Grolemund, G. (2016). R for data science: Visualize, model, transform, tidy, and import data. OReilly Media.
+
+https://www.investopedia.com/terms/g/gdp.asp
+
+
+Appendix:
+Full descriptions as provided by SIPRI:
+
+1. Introduction
+2. Estimates of world, regional and sub-regional totals in constant (2019) US$ (billions).
+3. Data for military expenditure by country in current price local currency, presented according to each country's financial year.
+4. Data for military expenditure by country in current price local currency, presented according to calendar year.
+5. Data for military expenditure by country in constant price (2019) US$ (millions), presented according to calendar year, and in current US$m. for 2020.
+6. Data for military expenditure by country in current US$ (millions), presented according to calendar year.
+7. Data for military expenditure by country as a share of GDP, presented according to calendar year.
+8. Data for military expenditure per capita, in current US$, presented according to calender year. (1988-2020 only)
+9. Data for military expenditure as a percentage of general government expenditure. (1988-2020 only)
+
+
+
+
