@@ -1,8 +1,8 @@
 ---
-title: "Challenge 1 Instructions"
-author: "Meredith Rolfe"
+title: "Challenge 1 Solutions"
+author: "Caitlin Rowley"
 desription: "Reading in data and creating a post"
-date: "08/15/2022"
+date: "09/16/2022"
 format:
   html:
     toc: true
@@ -26,34 +26,12 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Challenge Overview
-
-Today's challenge is to
-
-1)  read in a dataset, and
-
-2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
-
-## Read in the Data
-
-Read in one (or more) of the following data sets, using the correct R package and command.
-
--   railroad_2012_clean_county.csv ⭐
--   birds.csv ⭐⭐
--   FAOstat\*.csv ⭐⭐
--   wild_bird_data.xlsx ⭐⭐⭐
--   StateCounty2012.xls ⭐⭐⭐⭐
-
-Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+I will be using the "Railroad_2012" data set for this Challenge.
 
 ```{r}
 # install readr function
 
 install.packages("readr")
-
-# tidyverse library
-
-library(tidyverse)
 
 # read in and rename data
 
@@ -63,27 +41,24 @@ railroad
 # note that R does not like back slashes in Windows - needed to add '\\' or '/'
 ```
 
-Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+This data set shows the number of railroad employees ('total_employees') by county ('county') by state ('state'). This data was collected in 2012, most likely by a government entity.
 
-## Describe the data
-
-Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+The variables in this data set are (1) state, (2) county, and (3) total employees. The cases are each state's two-letter abbreviation, the name of the county within that state, and the actual number of employees within that count.
 
 ```{r}
 #| label: summary
 # description of data
 # include: (1) how data was collected, (2) cases and variables, (3) interpretation of data and any useful details.
 
-# This data set shows the number of railroad employees ('total_employees') by county ('county') by state ('state'). This data was collected in 2012, most likely by a government entity.
-
-# The variables in this data set are (1) state, (2) county, and (3) total employees. The cases are each state's two-letter abbreviation, the name of the county within that state, and the actual number of employees within that county. 
-
 # descriptive statistics
 # run a summary function
 
 summary(railroad)
+```
 
-# There are 2,930 cases in this data set. The minimum value, or number of employees, is 1, and the maximum value is 8,207. The median number of employees is 21, and the average number of employees across counties and states is 87.
+There are 2,930 cases in this data set. The minimum value, or number of employees, is 1, and the maximum value is 8,207. The median number of employees is 21, and the average number of employees across counties and states is 87. I will check the dimensions of the data frame to be sure.
+
+```{r}
 
 # descriptive statistics
 # check dimensions to be sure
@@ -92,67 +67,44 @@ dim(railroad)
 
 # Confirmed that there are 2,930 cases in this data set and 3 variables. 
 
-# try running a ggplot
+```
 
-ggplot(railroad, aes(total_employees))
-ggplot(railroad, aes(total_employees)) + geom_histogram()
+I will next generate a visualization.
 
-# pick better value with 'binwidth'
-
-ggplot(railroad, aes(total_employees)) + geom_histogram() + geom_histogram(aes(y = ..density..), alpha = 0.5) + geom_density(alpha = 0.2, fill="red")
-
-# try a scatterplot
-
-ggplot(railroad, aes(total_employees))
-ggplot(railroad, aes(total_employees, state)) + geom_point()
-
-# switch x and y axes
+```{r}
+# generate scatterplot:
 
 ggplot(railroad, aes(total_employees))
 ggplot(railroad, aes(state, total_employees)) + geom_point()
+```
 
-# want this to be univariate
-# try dot chart
+It is evident in looking at the scatterplot that the county with 8,207 is an outlier.
 
-ggplot(railroad, aes(x = total_employees))
-ggplot(railroad, aes(x = total_employees)) + geom_dotplot()
+Next, I will code to identify the 10 counties with the highest number of employees and the 10 counties with the lowest number of employees.
 
-# back to scatterplot
-
-ggplot(railroad, aes(total_employees))
-ggplot(railroad, aes(state, total_employees)) + geom_point()
-
-# It is evident in looking at the scatterplot that the county with 8,207 is an outlier. 
-
-#Code to identify the 10 counties with the highest number of employees and the 10 counties with the lowest number of employees.
-# arrange the data in ascending order.
-
-arrange(railroad, 'total_employees')
-
-# got same output as summary.
-
-filter(railroad, 'total_employees')
-
-# problem while computing '..1="total_employees"'
-
-arrange(railroad, desc('total_employees'))
-
-# try slicing
+```{r}
+# slice data:
 
 railroad %>%
 arrange(`total_employees`) %>%
 slice(1:10)
+```
 
-# After slicing the data to indicate the counties with the lowest numbers of railroad employees, we can see the following: 
-# The counties with the ten lowest numbers of employees are Sitka County, AK (1), Barbour County, AL (1), Henry County, AL (1), APO County, AP--which appears to be an overseas military address--(1), Newton County, AR (1), Mono County, CA (1), Bent County, CO (1), Cheyenne County, CO (1), Costilla County, CO (1), and Dolores County, CO (1).
+After slicing the data to indicate the counties with the lowest numbers of railroad employees, we can see the following:
+
+The counties with the ten lowest numbers of employees are Sitka County, AK (1), Barbour County, AL (1), Henry County, AL (1), APO County, AP--which appears to be an overseas military address\--(1), Newton County, AR (1), Mono County, CA (1), Bent County, CO (1), Cheyenne County, CO (1), Costilla County, CO (1), and Dolores County, CO (1).
+
+```{r}
+# arrange the data in descending order:
 
 railroad %>%
 arrange(desc(`total_employees`)) %>%
 slice(1:10)
 
-# After slicing the data to indicate the counties with the highest number of railroad employees, we can see the following:
-# Cook County, IL (8207), Tarrant County, TX (4235), Douglas County, NE (3797), Suffolk County, NY (3685), Independent City, VA--which does not appear to be an existing county or city, so it can be assumed that county or municipal-level data was not readily available for this value--(3249), Duval County, FL (3073), San Bernardino County, CA (2888), Los Angeles County, CA (2545), Harris County, TX (2535), and Lincoln County, NE (2289).
-
-# In taking a closer look at the cases in this data set, it can be assumed that these states and counties do not entirely represent existing states in counties within the US. Data may be incomplete or may include international municipalities, counties, etc. 
-
 ```
+
+After slicing the data to indicate the counties with the highest number of railroad employees, we can see the following:
+
+Cook County, IL (8207), Tarrant County, TX (4235), Douglas County, NE (3797), Suffolk County, NY (3685), Independent City, VA--which does not appear to be an existing county or city, so it can be assumed that county or municipal-level data was not readily available for this value\--(3249), Duval County, FL (3073), San Bernardino County, CA (2888), Los Angeles County, CA (2545), Harris County, TX (2535), and Lincoln County, NE (2289).
+
+In taking a closer look at the cases in this data set, it can be assumed that these states and counties do not entirely represent existing states in counties within the US. Data may be incomplete or may include international municipalities, counties, etc.
