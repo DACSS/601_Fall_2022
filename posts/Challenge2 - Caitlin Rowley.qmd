@@ -1,0 +1,203 @@
+---
+title: "Challenge 2 Solutions"
+author: "Caitlin Rowley"
+desription: "Data wrangling: using group() and summarise()"
+date: "09/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+I will be using the "Railroad_2012" data set.
+
+```{r}
+# Read in and rename data:
+
+library(readr)
+railroad_2012_clean_county <- read_csv("_data/railroad_2012_clean_county.csv")
+View(railroad_2012_clean_county)
+```
+
+This data set contains 2,930 rows and 3 columns. The columns, or variables, are 'state,' 'county,' and 'total_employees.'
+
+This data set represents the total number of railroad employees by county by state or territory in the year 2012. Given that each value is connected to either a state/territory or local designation, it appears that this data was collected from a government database.
+
+I will next look at some descriptive statistics.
+
+```{r}
+# I want to identify how many unique values are in the 'state' column:
+
+railroad%>%
+select(state)%>%
+n_distinct(.)
+
+```
+
+There are 53 unique values within the variable 'state.' There are 57 US state/territories based on the Federal Aviation Administration, so I want to identify each of the values.
+
+```{r}
+railroad%>%
+select(state)%>%
+distinct()
+
+```
+
+We see that there are two values that are not represented by a US state/territory abbreviation: AE and AP. According to the US Postal Service, Overseas military addresses must contain the APO or FPO designation along with a two--character "state" abbreviation of AE, AP, or AA. AE is used for armed forces in Europe, the Middle East, Africa, and Canada. AP is used for the Pacific.
+
+I will address this in the exploratory analysis.
+
+I want to gather some more basic descriptive statistics of this data set, including (1) the ten counties with the lowest number of railroad employees and (2) the ten counties with the highest number of railroad employees. I will do this by slicing the data.
+
+```{r}
+railroad %>%
+arrange(`total_employees`) %>%
+slice(1:10)
+```
+
+After slicing the data to indicate the counties with the lowest numbers of railroad employees, we can see the following:
+
+The counties with the ten lowest numbers of employees are Sitka County, AK (1), Barbour County, AL (1), Henry County, AL (1), APO County, AP--which appears to be an overseas military address\--(1), Newton County, AR (1), Mono County, CA (1), Bent County, CO (1), Cheyenne County, CO (1), Costilla County, CO (1), and Dolores County, CO (1).
+
+```{r}
+railroad %>%
+arrange(desc(`total_employees`)) %>%
+slice(1:10)
+```
+
+After slicing the data to indicate the counties with the highest number of railroad employees, we can see the following:
+
+Cook County, IL (8207), Tarrant County, TX (4235), Douglas County, NE (3797), Suffolk County, NY (3685), Independent City, VA--which does not appear to be an existing county or city, so it can be assumed that county or municipal-level data was not readily available for this value\--(3249), Duval County, FL (3073), San Bernardino County, CA (2888), Los Angeles County, CA (2545), Harris County, TX (2535), and Lincoln County, NE (2289).
+
+First, I want to see what information I can gather about observations that include 'AE,' so I will select only the rows that contain 'AE.' At first glance, it seemed as though there was only one observation that contained 'AE' based on alphabetization, but I want to be sure.
+
+```{r}
+# Use subset() to extract observations containing 'AE':
+
+subset(railroad, state=='AE')
+subset(railroad, state=='AP')
+```
+
+It is now clear that there is only one observation that contains 'AE' and one observation that contains 'AP,' both of which are Within the county identified as "APO." There are two railroad employees in 'AE' and one employee in 'AP.'
+
+It seems that I've identified the only non-US state/territory, but it is possible that other areas outside the US have the same geographic designations.
+
+I will now move on to other exploratory analyses.
+
+```{r}
+# Find summaries for various subsets of data:
+
+# I would like to gather a comprehensive overview of this data set using the summary() function:
+
+summary.data.frame(railroad)
+```
+
+Of the 2930 railroad employees, we now know the following statistics:
+
+-   lowest number of employees by county/state: 1
+
+-   number of employees in 1st quartile: 7
+
+-   median number of employees: 21
+
+-   average/mean number of employees: 87
+
+-   number of employees in third quartile: 65
+
+-   highest number of employees by county/state: 8207
+
+Next, I would like to know how many unique county names there are in this data set.
+
+```{r}
+# I will use the select() function:
+
+railroad%>%
+select(county)%>%
+distinct()
+```
+
+There are 1709 unique county names divided among the 53 state/territories.
+
+I would now like to group this data by state/territory to identify which states have the highest TOTAL number of railroad employees.
+
+```{r}
+# For this, I will use the group_by() and summary() functions:
+
+railroad%>%
+group_by(state)%>%
+summarise(total_employees = sum(total_employees),num_counties = n())%>%
+arrange(desc(total_employees))
+```
+
+We can now see that the ten states with the highest number of railroad employees are Texas (TX), Illinois (IL), New York (NY), Nebraska (NE), California (CA), Pennsylvania (PA), Ohio (OH), Georgia (GA), Indiana (IN), and Missouri (MO). Texas (19,839) and Illinois (19,131) have nearly 20,000 railroad employees each.
+
+```{r}
+# find states/territories with lowest number of railroad employees:
+
+railroad%>%
+group_by(state)%>%
+summarise(total_employees = sum(total_employees),num_counties = n())%>%
+arrange(total_employees)
+```
+
+Contrarily, the ten states/territories with the lowest number of railroad employees are AP, AE, Hawaii (HI), Alaska (AK), Vermont (VT), Washington, D.C. (DC), New Hampshire (NH), Rhode Island (RI), Maine (ME), and Nevada (NV).
+
+AP, AE, and Hawaii have significantly fewer employees than the other states/territories with 1, 2, and 4, respectively. The next most populated railroad industry by state/territory is Arkansas with 103 employees.
+
+I would now like to arrange these values by number of counties per state/territory instead of number of employees to see if there is a strong correlation between the two measures.
+
+```{r}
+
+railroad%>%
+group_by(state)%>%
+summarise(total_employees = sum(total_employees),num_counties = n())%>%
+arrange(num_counties)
+```
+
+The ten states/territories with the fewest counties are AE, AP, Washington, D.C. (DC), Delaware (DE), Hawaii (HI), Rhode Island (RI), Arkansas (AK), Connecticut (CT), New Hampshire (NH), and Massachusetts (MA).
+
+Delaware (1,495), New Hampshire (2,592), and Massachusetts (3,379), have significantly more employees than the other states/territories within this tibble, which all have fewer than 500 railroad employees.
+
+```{r}
+
+railroad%>%
+group_by(state)%>%
+summarise(total_employees = sum(total_employees),num_counties = n())%>%
+arrange(desc(num_counties))
+```
+
+The ten states/territories with the most counties are Texas (TX), Georgia (GA), Kentucky (KY), Missouri (MO), Illinois (IL), Iowa (IA), Kansas (KS), North Carolina (NC), Indiana (IN), and Virginia (VA).
+
+Texas (19,839) and Illinois (19,131) have significantly more railroad employees than the other state/territories in this tibble, all of which have fewer than 10,000 employees.
+
+There is some overlap between number of counties per state/territory and number of railroad employees, but the correlation isn't exceptionally strong.
+
+I will now generate a scatter plot to visualize the number of employees by state.
+
+```{r}
+railroad%>%
+group_by(state)%>%
+ggplot(railroad, aes(total_employees))
+ggplot(railroad, aes(state, total_employees)) + geom_point()
+```
+
+This visual clearly indicates outliers, or number of railroad employees by state, that are on the higher end of our data range. It does not tell us much related to states with fewer railroad employees, as these data points are visually compressed.
+
+I would at some point like to generate a visual to display the spread of number of employees relative to number of counties by state.

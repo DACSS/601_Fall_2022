@@ -1,0 +1,110 @@
+---
+title: "Challenge 1 Solutions"
+author: "Caitlin Rowley"
+desription: "Reading in data and creating a post"
+date: "09/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+I will be using the "Railroad_2012" data set for this Challenge.
+
+```{r}
+# install readr function
+
+install.packages("readr")
+
+# read in and rename data
+
+railroad <- read_csv("_data\\railroad_2012_clean_county.csv")
+railroad
+
+# note that R does not like back slashes in Windows - needed to add '\\' or '/'
+```
+
+This data set shows the number of railroad employees ('total_employees') by county ('county') by state ('state'). This data was collected in 2012, most likely by a government entity.
+
+The variables in this data set are (1) state, (2) county, and (3) total employees. The cases are each state's two-letter abbreviation, the name of the county within that state, and the actual number of employees within that count.
+
+```{r}
+#| label: summary
+# description of data
+# include: (1) how data was collected, (2) cases and variables, (3) interpretation of data and any useful details.
+
+# descriptive statistics
+# run a summary function
+
+summary(railroad)
+```
+
+There are 2,930 cases in this data set. The minimum value, or number of employees, is 1, and the maximum value is 8,207. The median number of employees is 21, and the average number of employees across counties and states is 87. I will check the dimensions of the data frame to be sure.
+
+```{r}
+
+# descriptive statistics
+# check dimensions to be sure
+
+dim(railroad)
+
+# Confirmed that there are 2,930 cases in this data set and 3 variables. 
+
+```
+
+I will next generate a visualization.
+
+```{r}
+# generate scatterplot:
+
+ggplot(railroad, aes(total_employees))
+ggplot(railroad, aes(state, total_employees)) + geom_point()
+```
+
+It is evident in looking at the scatterplot that the county with 8,207 is an outlier.
+
+Next, I will code to identify the 10 counties with the highest number of employees and the 10 counties with the lowest number of employees.
+
+```{r}
+# slice data:
+
+railroad %>%
+arrange(`total_employees`) %>%
+slice(1:10)
+```
+
+After slicing the data to indicate the counties with the lowest numbers of railroad employees, we can see the following:
+
+The counties with the ten lowest numbers of employees are Sitka County, AK (1), Barbour County, AL (1), Henry County, AL (1), APO County, AP--which appears to be an overseas military address\--(1), Newton County, AR (1), Mono County, CA (1), Bent County, CO (1), Cheyenne County, CO (1), Costilla County, CO (1), and Dolores County, CO (1).
+
+```{r}
+# arrange the data in descending order:
+
+railroad %>%
+arrange(desc(`total_employees`)) %>%
+slice(1:10)
+
+```
+
+After slicing the data to indicate the counties with the highest number of railroad employees, we can see the following:
+
+Cook County, IL (8207), Tarrant County, TX (4235), Douglas County, NE (3797), Suffolk County, NY (3685), Independent City, VA--which does not appear to be an existing county or city, so it can be assumed that county or municipal-level data was not readily available for this value\--(3249), Duval County, FL (3073), San Bernardino County, CA (2888), Los Angeles County, CA (2545), Harris County, TX (2535), and Lincoln County, NE (2289).
+
+In taking a closer look at the cases in this data set, it can be assumed that these states and counties do not entirely represent existing states in counties within the US. Data may be incomplete or may include international municipalities, counties, etc.

@@ -1,0 +1,132 @@
+---
+title: "Challenge 6 Solutions"
+author: "Caitlin Rowley"
+description: "Visualizing Time and Relationships"
+date: "10/31/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(magrittr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+I am going to work with the 'hotel_bookings' data set.
+
+```{r}
+library(readr)
+
+hotel_bookings <- read_csv("_data\\hotel_bookings.csv")
+```
+
+Summary of Data:
+
+The hotel_bookings data set provides data related to city/resort hotel bookings across 178 countries from 2015-2017. The data frame has 32 columns and 87,396. Each column represents one variable, and each row represents a distinct observation. The variables include hotel type (city or resort), cancelled reservations, lead time, arrival date year, arrival date month, arrival date week number, arrival date day of the month, stays in weekend nights, stays in weeknights, adults, children, babies, meal, country, market segment, distribution channel, repeat guest, previous cancellations, previous bookings not cancelled, reserved room type, assigned room type, booking changes, deposit type, agent, company, days in waiting list, customer type, average daily rate, required parking spot, total special requests, reservation status, and reservation status date.
+
+```{r}
+# unique observations
+
+hotel_bookings_clean <- distinct(hotel_bookings)
+
+# rename variables
+
+hotel_bookings_clean%>%
+rename("avg_daily_rate" = "adr")
+
+# find unique values for variables:
+
+unique(hotel_bookings_clean$hotel)
+
+# city hotel, resort hotel
+
+unique(hotel_bookings_clean$arrival_date_year)
+
+# 2015, 2016, 2017
+
+unique(hotel_bookings_clean$country)
+
+# 178 countries
+
+unique(hotel_bookings_clean$company)
+
+# confirmed there are values, not all = NULL
+```
+
+I will next transform the variables "arrival_date_month" and "arrival_date_year" to create a new variable to track bookings over time.
+
+```{r}
+# mutate:
+# I am adding data.frame() at the end of this code to shorten the length of the output. It has not been rendering, but I have saved it several times in R.
+
+hotel_bookings_clean %>%
+transform("arrival_date_year" = paste(arrival_date_month, arrival_date_year))
+data.frame()
+```
+
+## Time Dependent Visualization
+
+I created two time-dependent visualizations for the hotel_bookings data: one bar chart and one dot plot. Both visuals convey the number of stays on weekend nights by month and year. I chose the bar chart as a simple way to visualize change in weekend night stays over time. I then wanted to see the individual data points, so I generated a dot plot.
+
+I was having trouble rotating the x-axis values for the bar chart, so I tried a different code when generating the dot plot.
+
+```{r}
+install.packages("ggtext")
+library(ggtext)
+library(ggplot2)
+library(dplyr)
+
+# generate bar chart:
+
+ggplot(data = hotel_bookings_clean, aes(x = paste(arrival_date_year, arrival_date_month), y = stays_in_weekend_nights)) +
+      geom_bar(stat = "identity", fill = "pink") +
+      labs(title = "Stays on Weekend Nights by Month and Year",
+           x = "Month/Year", y = "Stays on Weekend Nights", angle = 90)
+
+# unable to rotate x-axis labels
+```
+
+```{r}
+# try a dot plot:
+
+ggplot(data = hotel_bookings_clean, aes(x = paste(arrival_date_year, arrival_date_month), y = stays_in_weekend_nights)) +
+      geom_point(stat = "identity") +
+      labs(title = "Stays on Weekend Nights by Month and Year",
+           x = "Month/Year", y = "Stays on Weekend Nights", angle = 45) +
+theme_classic() +
+theme(axis.text.x = element_markdown(angle=45, hjust=1))
+
+```
+
+## Visualizing Part-Whole Relationships
+
+I've generated a bar chart to capture the proportion of hotel bookings by market segment and hotel type. This bar chart clearly illustrates the distribution across city and resort hotels (x-axis values) using color-coding for the different values within the market segment variable.
+
+```{r}
+# dummy data
+
+hotel_bookings_clean %>%
+  filter(! is.na(market_segment)) %>%
+  filter(! is.na(hotel)) %>%
+  ggplot(aes(hotel, fill = market_segment)) + geom_bar() +
+  theme_bw() +
+  labs(title = "Bookings by Hotel Type and Market Segment", y = "Number of Bookings", x = "Hotel Type")
+```
