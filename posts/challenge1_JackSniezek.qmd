@@ -1,0 +1,100 @@
+---
+title: "Challenge 1"
+author: "Jack Sniezek"
+desription: "Reading in data and creating a post"
+date: "11/28/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+-   birds.csv ⭐⭐
+
+
+```{r}
+birds <- read_csv("_data/birds.csv")
+birds
+summary(birds)
+```
+
+
+## Describe the data
+
+At first glance of the birds dataset I can see that there are 14 variables, 8 being character based and 6 being numeric. I was quick to notice that there was a single Element "Stocks" based on the summary statistics. Checking Domain and Flag for unique elements showed me that there was one Domain "Live Animals" and six unique flag descriptions describing how the data was obtained. Observations were made from 1961-2018.
+
+```{r}
+#| label: birds data wrangling
+
+uniq_element <- select(birds,"Element")
+num_elements <- unique(uniq_element)
+num_elements
+
+uniq_domains <- select(birds,"Domain")
+num_domains <- unique(uniq_domains)
+num_domains
+
+uniq_flag <- select(birds,"Flag Description")
+num_flags <- unique(uniq_flag)
+num_flags
+
+```
+
+Checking for unique Items and Areas showed me that there are five unique Items(Chickens, Ducks, Geese and fowls, Turkeys, and Pigeons/other) and a total of 248 Areas.
+
+
+```{r}
+uniq_area <- select(birds,"Area Code", Area)
+num_areas <- unique(uniq_area)
+num_areas
+
+uniq_item <- select(birds,"Item Code", Item)
+num_items <- unique(uniq_item)
+num_items
+```
+
+For each observation, one unit is equal to 1000 head.
+```{r}
+uniq_unit <- select(birds,"Unit", Unit)
+num_units <- unique(uniq_unit)
+num_units
+```
+
+My initial thoughts are that the relevant data in this dataset seems to be Items, Areas, Area Code, Values, and Years. Another noteworthy observation I made was that the Values seem to jump to the millions between the 3rd Quartile and the Max. This makes me think there could be outliers in play.
+
+```{r}
+
+Values <- select(birds,"Value")
+Areas <- select(birds,"Area")
+arrange(Areas,desc(`Values`))
+
+```
+
+By arranging the Areas by descending values I see that there are World values being used, which would severely affect the data, but that is a problem for another day.
