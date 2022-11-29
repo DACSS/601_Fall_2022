@@ -1,0 +1,338 @@
+---
+title: "Challenge 2 Solutions"
+author: "Vinitha Maheswaran"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+
+For this challenge I will be working with the "hotel_bookings" data set. It is a publicly available data set containing booking transactions from a city hotel and a resort hotel in Portugal.
+
+```{r}
+# Reading the hotel_bookings.csv data set and storing in a data frame
+hotel_data <- read_csv("_data/hotel_bookings.csv")
+print(hotel_data)
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+
+After reading the data using read_csv function, it is stored in a dataframe "hotel_data". The hotel_bookings data set contains 119390 rows (observations) and 32 columns (attributes/variables) including information such as when the booking was made, length of stay, the number of adults, children, and/or babies, the number of available parking spaces, and many others for the respective hotels. Each row/observation represents a hotel booking. Since this is a public data set, all data elements pertaining to hotel or customer identification are not included in the data set. This data set can have an important role for research and educational purposes in hotel administration, revenue management, machine learning, data mining and other fields. This data set will be helpful for (i) Tourists (people who are booking hotels) to check and understand trends of hotel price over a period of time and plan their travel accordingly within budget, learn about hotel accommodations and features before booking (ii) Hotel Management to keep track of the relevant information about themselves as well as their competitors. Understand and analyze the seasonal trend of hotel booking and accommodate different types of visitors that they have (iii) Tourist / hospitality services - (e.g. travel agency, airlines / car rental companies) to observe the times when hotels in the region are in high demand, analyze the duration of typical stays, and use the information to help plan their own services (iv)  Local Government / independent data analysts to observe the overall trend of tourist activities in the region and analyzing the different types of visitors in the hotels during different seasons.
+
+Using the "dfSummary" function from "summarytools" package we find that there are 31994 duplicates in the data. The reason for the identified duplication is that there is no unique id for each booking. It is possible that the booking was made by different tourists and the values for each attribute was exactly the same. This confusion could have been avoided by adding a Booking ID which would be unique for each booking. We can also see that there are 4 NA's in the data for the column "Children". We can ignore this for now as 4 NA values out of 119390 values would not change the grouped summary statistics significantly. 66.4% of the data represents city hotel and the remaining 33.6% of the data represents resort hotel. 18.4%, 47.5% and 34.1% of the data correspondingly represents years 2015, 2016 and 2017. I wanted to check the unequal distribution in data for the 3 consecutive years. I further investigated the data and found that the data we have represents hotel bookings from the period July 2015 - August 2017. Hence, we cannot compare the summary statistics between 2015, 2016 and 2017 as we do not have data for the entire years of 2015 and 2017. I performed group summary statistics on "hotel", arrival_date_year" and "arrival_date_month" combined.
+
+Few interesting finds!!
+The maximum "lead_time" is 737 indicating that someone had made a booking 2 years in advance! 37% of the bookings were cancelled. A booking was made for a maximum of 55 "adults" once. A booking was made for a maximum of 10 "children" once and a maximum of 10 "babies" another time. About 77% of the bookings preferred BB (Bed & Breakfast) "meal" package. The "country" of origin was PRT (Portugal) for around 41% of the bookings. Most of the bookings are made by Offline TA/TO and Online TA "market segment". The maximum "previous_cancellations" done by a person making the hotel booking is 26. Most of the tourists prefer "reserved_room_type" A which may be the best bang for your buck. A maximum of 21 "booking_changes" was made for a particular booking. A certain booking was on a maximum of 391 "days_in_waiting_list". The maximum "adr" (Average Daily Rate) for a booking was 5400. The maximum "required_car_parking_spaces" was a maximum of 8 in two separate booking instances.
+
+```{r}
+#Finding dimension of the data set
+dim(hotel_data)
+```
+
+```{r}
+#Finding column names
+colnames(hotel_data)
+```
+
+```{r}
+#Structure of hotel_data
+str(hotel_data)
+```
+
+```{r}
+#Summary of hotel_data
+summary(hotel_data)
+```
+
+```{r}
+#Summary of hotel_data
+library(summarytools)
+print(summarytools::dfSummary(hotel_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+#Check for missing/null data in the hotel_data
+sum(is.na(hotel_data))
+sum(is.null(hotel_data))
+```
+
+```{r}
+#Check for the period of hotel booking dates
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month)%>%distinct()
+```
+
+
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+# Finding the total number of adults, children and babies who stayed in the hotels
+
+hotel_data%>%
+  select(hotel, adults, children, babies)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for each hotel
+
+hotel_data%>%
+  select(hotel, adults, children, babies)%>%
+  group_by(hotel)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for each hotel, year for the July month
+
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  filter(arrival_date_month=='July')%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for each hotel, year for the August month
+
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  filter(arrival_date_month=='August')%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(total = sum(adults+children+babies, na.rm = TRUE), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))
+```
+
+
+```{r}
+# Finding the total number of adults, children and babies for year 2016 for each month
+
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  filter(hotel=='City Hotel' & arrival_date_year==2016)%>%
+  group_by(arrival_date_year, arrival_date_month)%>%
+  summarise(total = sum(adults, children, babies), total_adults = sum(adults), total_children = sum(children, na.rm = TRUE), total_babies = sum(babies))%>%
+  arrange(match(arrival_date_month,month.name))
+```
+
+From the above statistics, we can see that most people have stayed in Portugal hotels during Fall (September and October) and during August (summer break for children).
+
+
+```{r}
+# Finding the mean of adr, adults, children and babies for each hotel
+
+hotel_data%>%
+  select(hotel, adr, adults, children, babies)%>%
+  group_by(hotel)%>%
+  summarise(avg_adr = mean(adr), avg_total = mean(adults+children+babies, na.rm = TRUE), avg_adults = mean(adults), avg_children = mean(children, na.rm = TRUE), avg_babies = mean(babies))
+```
+
+
+```{r}
+# Finding the median of adr, adults, children and babies for each hotel
+
+hotel_data%>%
+  select(hotel, adr, adults, children, babies)%>%
+  group_by(hotel)%>%
+  summarise(median_adr = median(adr), median_adults = median(adults), median_children = median(children, na.rm = TRUE), median_babies = median(babies))
+```
+
+
+```{r}
+# Finding the sd of adr, adults, children and babies for each hotel
+
+hotel_data%>%
+  select(hotel, adr, adults, children, babies)%>%
+  group_by(hotel)%>%
+  summarise(sd_adr = sd(adr), sd_adults = sd(adults), sd_children = sd(children, na.rm = TRUE), sd_babies = sd(babies))
+```
+
+
+
+```{r}
+# Finding the mean of adr, adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(avg_adr = mean(adr), avg_adults = mean(adults), avg_children = mean(children, na.rm = TRUE), avg_babies = mean(babies))
+```
+
+```{r}
+# Finding the median of adr, adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(median_adr = median(adr),  median_adults = median(adults), median_children = median(children, na.rm = TRUE), median_babies = median(babies))
+```
+
+
+```{r}
+# Finding the sd of adr, adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(sd_adr = sd(adr), sd_adults = sd(adults), sd_children = sd(children, na.rm = TRUE), sd_babies = sd(babies))
+```
+
+
+```{r}
+# Finding the max of adr, adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(max_adr = max(adr), max_adults = max(adults), max_children = max(children, na.rm = TRUE), max_babies = max(babies))
+```
+
+
+```{r}
+# Finding the min of adr, adults, children and babies for each hotel, year
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year)%>%
+  summarise(min_adr = min(adr), min_total = min(adults+children+babies, na.rm = TRUE), min_adults = min(adults), min_children = min(children, na.rm = TRUE), min_babies = min(babies))
+```
+
+
+
+```{r}
+# Finding the mean of adr, adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(avg_adr = mean(adr), avg_adults = mean(adults), avg_children = mean(children, na.rm = TRUE), avg_babies = mean(babies))
+```
+
+
+```{r}
+# Finding the median of adr, adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(median_adr = median(adr),  median_adults = median(adults), median_children = median(children, na.rm = TRUE), median_babies = median(babies))
+```
+
+
+```{r}
+# Finding the sd of adr, adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(sd_adr = sd(adr), sd_adults = sd(adults), sd_children = sd(children, na.rm = TRUE), sd_babies = sd(babies))
+```
+
+
+```{r}
+# Finding the max of adr, adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(max_adr = max(adr), max_adults = max(adults), max_children = max(children, na.rm = TRUE), max_babies = max(babies))%>%
+  arrange(desc(max_adr))
+```
+
+
+```{r}
+# Finding the min of adr, adults, children and babies for each hotel, year, month
+
+hotel_data%>%
+  select(hotel, adr, arrival_date_year, arrival_date_month, adults, children, babies)%>%
+  group_by(hotel, arrival_date_year, arrival_date_month)%>%
+  summarise(min_adr = min(adr), min_total = min(adults+children+babies, na.rm = TRUE), min_adults = min(adults), min_children = min(children, na.rm = TRUE), min_babies = min(babies))
+```
+
+
+
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+
+A total of 221636 adults, 12403 children and 949 babies stayed in both hotels from July 2015 - August 2017. I grouped by “hotel” to find the total number of “adults”, “children” and “babies” that stayed in the (i) city hotel as 146838, 7248, 392 and (ii) resort hotel as 74798, 5155, 557 respectively. Looking at the group by “hotel”, we can find that families with babies prefer to stay at resort hotel compared to city hotel. This may be due to the fact that resort hotels are generally closer to the beach or has swimming pool and fun outdoor activities for babies. City hotels are preferred more by adults traveling alone without kids. City hotel may be more suitable for people traveling for business purposes. I also find the mean, median, and sd for the “adr”, “adults”, “children” and “babies” grouped by “hotel”. The difference between the mean and median values are almost similar indicating that the data is not skewed. The average “adr” for City Hotel is more than the Resort Hotel which makes sense as city hotels are usually located in central locations making transportation easier. 
+
+Next, I grouped by “hotel”, “arrival_date_year” to find the total number of “adults”, “children” and “babies” that stayed in the city hotel and resort hotel for years 2015, 2016 and 2017. I also find the mean, median, sd, max, and min for the “adr”, “adults”, “children” and “babies” grouped by “hotel” and “arrival_date_year”. We do not interpret anything new from the mean, median and sd. From the max, we identify few interesting bookings where the maximum number of “adults” is 55 / max “children” is 10 in resort hotel for the year 2015 and max “babies” is 9 / max “babies” is 10 for city hotel in years 2015 and 2016 respectively. The min values are mostly 0s except for the year 2017 in resort hotel where the min “adr” is -6.38. Having a negative “adr” is unusual and needs to be investigated further. 
+
+Finally, I grouped by “hotel”, “arrival_date_year”, ”arrival_date_month” to find the total number of “adults”, “children” and “babies” that stayed in the city hotel and resort hotel for July 2015 - August 2017. For the city hotel, the months September and October had the highest number of people as this is the best time to visit Portugal during Fall when the weather is warm and the crowd is relatively less compared to Summer. For the resort hotel, August month had the highest number of people (children and babies in particular) as this is the best time to stay in resort during Summer and enjoy outdoor activities. Hence, hotel management can price the rooms accordingly during peak season and off-season. I also find the mean, median, sd, max, and min for the “adr”, “adults”, “children” and “babies” grouped by “hotel”, “arrival_date_year”,  and ”arrival_date_month”. We do not interpret anything new from the mean, median and sd. The max “adr” for City Hotel in March 2016 is the highest with 5400. The max “adults” for resort hotel in September and October 2015 is 55 and 50 respectively. The min values are mostly 0s or 1s. 
+
+I also grouped by “hotel”, “arrival_date_year”, ”arrival_date_month” to find the total number of “adults”, “children” and “babies” that stayed in the city hotel and resort hotel and filtered for the months July and August. We have data available for July and August for all the three years. We see an increasing trend in the number of people staying in hotels from year 2015 to year 2017.
