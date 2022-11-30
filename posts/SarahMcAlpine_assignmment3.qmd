@@ -1,0 +1,509 @@
+---
+title: "Sarah McAlpine - Homework 3"
+author: "Sarah McAlpine"
+desription: "Homework #3"
+date: "11/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - sarahmcalpine
+  - joins 
+  - personaldataset
+  - ggplot2
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(viridis)
+library(readxl)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read In & Join
+
+I'm working with three surveys for software clients that have some overlap in organizations, respondents, and questions. I anonymized the client email addresses by replacing them with a new variable, `UserID`, the letter of which is indexed to a particular client, and respondents are numbered 1-3 (i.e. R1, R2, R3 are three different people from the same organization). This should allow me to consider responses from different people at the same client organization. 
+
+All three surveys aim to measure client feedback on a single product, and since there are very few repeat respondents, I decided to use `full_join`. This will allow analysis of as much data as possible, while requiring careful handling of NA values. Since two surveys ask respondents to rate responses on a scale of 1-5 and the other on a scale of 1-10, I will divide numeric responses in the third survey by two upon readin.
+
+```{r}
+#| label: read-in and joining
+#| warning: false
+mydivide <- function(x){x/2}
+# read in each sheet--is there a way to do this in one step?
+survey1_orig <- read_xlsx("_data/ClientSurveys.xlsx", sheet =1)
+survey2_orig <- read_xlsx("_data/ClientSurveys.xlsx", sheet =2) %>%
+  mutate(across(starts_with("How would"), funs(mydivide)),
+            .keep = "unused")
+survey3_orig <- read_xlsx("_data/ClientSurveys.xlsx", sheet =3) %>%
+    mutate(across(starts_with(c("How", "Overall")), funs(mydivide)),
+            .keep = "unused")
+
+# full join to keep all data, key = UserID
+joinedsurveys_orig <- survey2_orig %>%
+  full_join(x = survey2_orig, y=survey1_orig, by = "UserID") %>%
+  full_join(survey3_orig, by = "UserID")
+
+```
+## Cleaning
+
+As with most surveys, the questions are too long for column names, so I will rename each with the simplest phrasing possible. The new names will also contain prefixes and suffixes that will help with sorting later. The code below includes the full text of each question as it was read in, followed by the new name.
+
+With these new names, I will reorder the columns to that similar data is adjacent. For instance, timestamps for the three surveys are gathered and I remove two columns I don't need (shirt size and address for client gift). I also remove the row with "test" answers.
+
+I want UserID at the front and then alphabetically ordered columns, with numeric variables coming before character variables. I could try to write a function that mutates the fundraising goal and audience variable into 2 variables.
+
+:::{.callout-question}
+Is there a more elegant way to make these changes? I couldn't get them all into a single pipe, since some of the operations seem to work in opposing directions (if that makes sense).
+:::
+
+```{r}
+#| label: renaming
+#| warning: false
+
+# look at colnames to rename them
+# colnames(joinedsurveys_orig)
+
+# assign clean data frame
+surveys_renamed <- joinedsurveys_orig
+#rename columns
+colnames(surveys_renamed) <- c("Timestamp1",
+                               "UserID",
+                               "delete",
+                               "delete2",
+                               "q_prompted_adoption",
+                               "q_goal_constituents",
+                               "qlauncheffort_staffrolestime",
+                               "qr_launcheffort_retaskstaff",
+                               "qr_launcheffort_generatecontent",
+                               "qr_launcheffort_techIT",
+                               "qr_launcheffort_staffadoption",
+                               "qlauncheffort_detail",
+                               "qr_benefit_donorengagement",
+                               "qr_benefit_increasedgifts",
+                               "qr_benefit_costsavings",
+                               "qr_benefit_timesavings",
+                               "qr_benefit_GOproductivity",
+                               "qbenefit_detail",
+                               "q_donorcommsbefore",
+                               "q_process_content",
+                               "qdonor_relationship",
+                               "qdonor_interaction",
+                               "qdonor_response",
+                               "qdonor_analytics",
+                               "q_team_analytics",
+                               "qr_implementationsupport",
+                               "q_support_detail",
+                               "q_Olacking",
+                               "q_biggest_success",
+                               "q_reality_vs_expectations",
+                               "q_client_advice",
+                               "q_Oimprove",
+                               "Timestamp2",
+                               "q_prompted_adoption",
+                               "q_choice_over_competitors",
+                               "q_feature_detail",
+                               "qr_benefit_donorengagement",
+                               "qr_benefit_increasedgifts",
+                               "qr_benefit_costsavings",
+                               "qr_benefit_timesavings",
+                               "qr_benefit_GOproductivity",
+                               "q_choice_factors",
+                               "Timestamp3",
+                               "qr_onboard_overall",
+                               "qonboard_lacking",
+                               "qonboard_lacking_detail",
+                               "qonboard_wentwell",
+                               "qonboard_wentwell_detail",
+                               "qr_onboard_communication",
+                               "qonboard_communication_detail",
+                               "qr_onboard_interpretneeds",
+                               "qonboard_interpretneeds_detail",
+                               "delete3")
+
+#view new column names
+#colnames(surveys_renamed)
+
+```
+
+```{r}
+#| label: mrolfe's suggestion
+# pivot, group, mutate/summarize, pivot back
+
+deduped_questions <- surveys_renamed %>%
+  pivot_longer(cols = (starts_with("q")),
+               names_to = "question",
+               values_to = "response",
+               values_transform = list(response = as.character),
+               values_drop_na = TRUE) %>%
+  group_by(question) %>%
+   pivot_wider(names_from = "question",
+              names_sort = TRUE,
+              values_from = "response") 
+
+# confirmed reduction in columns and same number of rows
+
+```
+
+Now that the names are manageable and understandable, and the repeated questions regrouped, I'll rearrange the data to make comparable information adjacent.
+
+```{r}
+#| label: cleaning and arranging
+#| warning: FALSE
+
+# cleaning steps
+surveys_clean <- deduped_questions %>%
+    # alpha-order columns
+    select(order(colnames(deduped_questions))) %>%
+    # remove deletes
+    select(-starts_with("delete")) %>%
+    # remove test row, should get 31 x 45
+    filter(is.na(q_goal_constituents) | q_goal_constituents != "test") %>%
+    #deal with NAs
+    mutate(across(where(is.character), ~na_if(.,"n/a"))) %>%
+    mutate(across(where(is.character), ~na_if(.,"N/A"))) %>%
+    mutate(across(where(is.character), ~na_if(.,"N/a"))) %>%
+    mutate(across(where(is.character), ~na_if(.,"???"))) %>%
+    # group
+    group_by(sort("UserID")) %>%
+    # arrange by client
+    arrange("UserID") %>%
+  #convert back to numeric
+  mutate(across(starts_with("qr"), ~as.numeric(.))) %>%
+ 
+      # move numeric values to front
+      relocate(where(is.numeric)) %>%
+      # bring UserID to the leftmost
+      relocate("UserID")
+
+```
+
+
+
+## Data Questions
+* Observation = client or respondent?
+* Observation = question?
+
+## Plotting Ideas
+* compare quantitative ratings
+* word cloud or other qualitative analysis
+```{r}
+#| label: plot quantative q's
+# arrange as question = observation, 13 x 32
+ ratings <- surveys_clean %>%
+  ungroup() %>%
+  select(starts_with("qr") | "UserID") %>%
+  pivot_longer(cols = starts_with("qr"),
+               names_to = "question",
+               values_to = "rating",
+               values_drop_na = TRUE) %>%
+  pivot_wider(names_from = "UserID",
+              values_from = "rating") 
+
+ ratings2 <- surveys_clean %>%
+  ungroup() %>%
+  select(starts_with("qr") | "UserID") %>%
+  pivot_longer(cols = starts_with("qr"),
+               names_to = "question",
+               values_to = "rating",
+               values_drop_na = TRUE) 
+
+ratings2 %>% 
+  ggplot(aes(question, rating)) +
+  geom_boxplot() +
+  coord_flip() +
+    geom_point(alpha = .4,
+             size = .2,   
+             position = "jitter"
+             )
+```
+
+```{r}
+#| warning: false
+
+benefits <- ratings %>%
+  filter(str_detect(question, "qr_benefit"))
+
+```
+```{r}
+#| warning: false
+
+#set up benefits data 
+benefits2 <- surveys_clean %>%
+  ungroup() %>%
+  select(starts_with("qr_ben") | "UserID") %>%
+  rename("cost savings" = "qr_benefit_costsavings", 
+         "improved donor engagement" = "qr_benefit_donorengagement", 
+         "gift officer productivity" = "qr_benefit_GOproductivity", 
+         "increased gifts" = "qr_benefit_increasedgifts", 
+         "time savings" = "qr_benefit_timesavings") %>%   
+  pivot_longer(cols = !UserID,
+               names_to = "question",
+               values_to = "rating",
+               values_drop_na = TRUE) 
+
+# plot on violin with points
+benefits2 %>% 
+  arrange() %>%
+  ggplot(aes(question, rating)) +
+  geom_violin(width=.5, 
+              size=0.8, 
+              color = "#fcb900", 
+              fill = "#fcb900") +
+  geom_point(position = "dodge",
+             alpha = .3,
+             size = 5,
+             color = "#ff6900") +
+  coord_flip() +
+  labs(title = "Degree of Benefits Experienced")
+
+#try geom_jtter
+
+#unuseful count of ratings overall
+benefits2 %>%
+  group_by(question) %>%
+   ggplot(aes(rating, group = question, fill = question)) +
+           geom_density(alpha = .5) 
+
+
+```
+```{r}
+#set up benefits data 
+launch <- surveys_clean %>%
+  ungroup() %>%
+  select(starts_with("qr_launch") | "UserID") %>%
+  rename("generate content" = "qr_launcheffort_generatecontent",
+         "retasking staff" = "qr_launcheffort_retaskstaff",
+         "staff adoption" = "qr_launcheffort_staffadoption",
+         "IT/technical staff" = "qr_launcheffort_techIT"
+          ) %>%   
+  pivot_longer(cols = !UserID,
+               names_to = "question",
+               values_to = "rating",
+               values_drop_na = TRUE) 
+
+# plot on violin with points
+launch %>% 
+  arrange() %>%
+  ggplot(aes(question, rating)) +
+  geom_violin(width=.5, 
+              size=0.8, 
+              color = "#fcb900", 
+              fill = "#fcb900") +
+  geom_point(position = "jitter",
+             size = .5,
+             color = "#ff6900") +
+  coord_flip() +
+  labs(title = "Degree of Effort Required for Launch", subtitle = "(More data needed; only 6 responses available)")
+
+
+```
+
+
+```{r}
+#| warning: false
+
+# avgratings <- surveys_clean %>%
+#   summarize(across(mean))
+# 
+# avgratings <- ratings %>%
+#   pivot_wider %>%
+#   summarize(across(mean(rating))) %>%
+#   
+# avgratings %>%  
+#   ggplot(aes(question, mean(rating))) +
+#   geom_point()+
+#   theme(axis.text.x = element_text(angle = 30))
+# 
+# ratings %>%
+#   group_by(question) %>%
+#   ggplot(aes(question, mean(question)),
+#              color = "rating") +
+#   geom_bar() +
+#   coord_flip()
+
+# Leah's code
+# isotopes <- isotope_csv %>%
+#   pivot_longer(cols = everything(),
+#                names_to = c(".value", "set"), 
+#                names_pattern = "(.+)_(.)")
+
+```
+
+
+## Appendix: Renaming Notes
+```{r}
+#| label: rename appendix
+#| warning: false
+
+#  [1] "Timestamp.x"                                             
+#reorder timestamps together                                     
+
+#  [2] "UserID"                                               
+
+#  [3] "What size sweatshirt would you like (we are out of mediums, sorry!)?.x"             
+# delete                                                         
+
+#  [4] "What address should we ship the sweatshirt to?.x"        
+# delete                                                         
+
+#  [5] "What prompted your adoption of O?.x"                     
+# prompted_adoption                                              
+
+#  [6] "What is your annual fundraising goal, and how many constituents do you reach out to with O?.x"
+# goal_constituents                                              
+
+#  [7] "Outside of your user base, how many individuals support processes within O and what are their individual roles? If possible, please estimate what percentage of their time is O focused..x"  
+# launcheffort_staffrolestime                                    
+
+#  [8] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Retasking of staff].x"           
+# launcheffort_retaskstaff                                       
+
+#  [9] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Generating content].x"           
+# launcheffort_generatecontent                                   
+
+# [10] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Tech/Interface with IT].x"       
+# launcheffort_techIT                                            
+
+# [11] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Challenges with staff adoption and comfort].x"
+# launcheffort_staffadoption                                     
+
+# [12] "Please add any comments or details that would help us understand your ratings better....12.x"                        
+# launcheffort_detail                                            
+
+# [13] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Improved number or quality of donor engagement touches (whether measured or anecdotal)].x" 
+# benefit_donorengagement                                        
+
+# [14] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increase in financial contributions].x"
+# benefit_increasedgifts
+
+# [15] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Cost savings].x"                    
+# benefit_costsavings                                            
+
+# [16] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Time savings].x"                    
+# benefit_timesavings                                         
+
+# [17] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increased gift officer productivity].x"         
+# benefit_GOproductivity   
+
+# [18] "Please add any comments or details that would help us understand your ratings better....18.x"                        
+# benefit_detail           
+
+# [19] "How did you manage philanthropic communications before O?.x"                        
+# donor_commsbefore 
+
+# [20] "What is your process for developing content, and how do you know what content to feed to each donor as youâ€™re personalizing sites/reports? To what extent is this decided/produced by gift officers versus other team members?.x"
+# process_content 
+
+# [21] "What challenges of donor relationship-building is O helping to solve for you?.x"    
+# donor_relationship                                             
+
+# [22] "How has O changed, facilitated, or limited your interaction with donors?.x"         
+# donor_interaction                                              
+
+# [23] "What has been the donor response to hyper-personalized communications?.x"          
+# donor_response                                                 
+
+# [24] "What have you learned from looking at the end-donor use data O provides?.x"         
+# donor_analytics                                               
+
+# [25] "What have you learned about your internal team through the aggregate analytics module?.x"                               
+# team_analytics                                                
+
+# [26] "How would you rate SA/Oâ€™s implementation and support?.x"                          
+# rateO_implementationsupport 
+
+# [27] "Is there anything you would like to expand upon regarding your selection above?.x"                
+# rateO_support_detail 
+
+# [28] "What could have been handled better?.x"
+# O_lacking
+
+# [29] "What is the biggest O-facilitated success your organization can point to (either with an individual donor relationship or in the aggregate)?.x"                            
+# biggest_success
+
+# [30] "How was the reality of O different from your expectations (both positive and negative)?.x"                                 
+# reality_vs_expectations
+
+# [31] "What advice would you have for future O users?.x"        
+# client_advice
+
+# [32] "How can O improve (in big and small ways)? Your complete candor would be much appreciated..x"                             
+# O_improve
+
+# [33] "Timestamp.y"                                             
+# reorder to beginning
+
+# [34] "What prompted your adoption of O?.y"                     
+# prompted_adoption2
+
+# [35] "Why did you choose O over other platforms you were exploring?"
+# O_over_competitors
+
+# [36] "If \"unique product features\" was selected in the above question, can you please elaborate?"                             # feature_detail 
+
+# [37] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Improved number or quality of donor engagement touches (whether measured or anecdotal)].y"
+# benefit_donorengagement2
+
+# [38] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increase in financial contributions].y"  
+# benefit_increasedgifts2
+
+# [39] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Cost savings].y"
+# benefit_costsavings2 
+
+# [40] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Time savings].y"                    
+# benefit_timesavings2  
+
+# [41] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increased gift officer productivity].y"
+# benefit_GOproductivity2
+
+# [42] "Please share any other factors your team considered before selecting O (if applicable)."               
+# choice_factors              
+
+# [43] "Timestamp"                                               
+# reorder together 
+
+# [44] "Overall, how did the onboarding process go for you?"     
+# onboard_overall 
+
+# [45] "What part of the onboarding process could O have handled better?"                   
+# onboard_lacking
+
+# [46] "Please expand on your selections above:...5"             
+# onboard_lacking_detail
+
+# [47] "What part of the onboarding process did O handle especially well?"                   
+# onboard_wentwell
+
+# [48] "Please expand on your selections above:...7"             
+# onboard_wentwell_detail
+
+# [49] "How effectively did we communicate during the onboarding process?"
+# onboard_communication 
+
+# [50] "Please expand on your selections above:...9"          
+# onboard_communication_detail
+
+# [51] "How effectively did we interpret your needs during the onboarding process?"          
+# onboard_interpretneeds
+
+# [52] "Please expand on your selections above:...11"  
+# onboard_interpretneeds_detail 
+
+# [53] "Are you willing to talk about your onboarding experience with future O clients?"
+# onboard_shareexperience
+
+
+# how many duplicate questions are there? 8
+      #dupe_questions <- surveys_clean %>% 
+      #select(contains("2"))
+
+```
