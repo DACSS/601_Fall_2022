@@ -1,0 +1,105 @@
+---
+title: "Challenge 2"
+author: "Jack Sniezek"
+desription: "Data wrangling: using group() and summarise()"
+date: "11/29/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+birds <- read_csv("_data/birds.csv")%>%
+  select(-c(contains("Code"), Element, Domain, Unit))
+birds
+summary(birds)
+```
+
+
+## Describe the data
+
+The birds dataset contained 14 variables, 8 of which are character variables and 6 are numeric variables. It was collected by the Food and Agriculture Association of the United Nations. This dataset features estimates of five types of bird(Chickens, Ducks, Geese and fowls, Turkeys, and Pigeons/Other birds) in 248 regions. The data was collected from 1961-2018.
+
+Reading in the data, I chose to omit Element, Domain, and Unit as they are the same for every data point. I also eliminated all of the "Code" variables, as they are either redundant, or not useful to work with.
+
+```{r}
+#| label: Showing how I found unique data
+
+Area <- select(birds,"Area")
+num_areas <- unique(Area)
+num_areas
+
+Item <- select(birds,"Item")
+num_items <- unique(Item)
+num_items
+
+```
+
+## Provide Grouped Summary Statistics
+
+I started my analysis of the birds dataset by taking a look at the average and median stock values by year.
+
+```{r}
+birds%>%
+    group_by(Year)%>%
+     summarise(avg_stocks = mean(Value, na.rm=TRUE),
+               med_stocks = median(Value, na.rm=TRUE))
+```
+
+While this was helpful in showing a general trend for the data over the 58 years, it was very basic. The next step I took was to show the average of each Item(type of bird) across each year. I dropped the median because I felt focusing on average would provide more information.
+
+```{r}
+t1<-birds%>%
+     group_by(Item,Year)%>%
+     summarise(avg_stocks = mean(Value, na.rm=TRUE))%>%
+     pivot_wider(names_from = Year, values_from = (avg_stocks))
+t1
+```
+
+Finally, I wanted to try to focus on a singular Area for the table, so naturally I chose to filter the Area by 'Americas' which had some of the largest numbers and is ugly to look at in the rendering. However, it was a very complete data point to focus on so it works out.
+
+```{r}
+t2<-birds%>%
+     filter(Area == "Americas")%>%
+     group_by(Item,Year)%>%
+     summarise(avg_stocks = mean(Value, na.rm=TRUE))%>%
+     pivot_wider(names_from = Year, values_from = (avg_stocks))
+t2
+```
+
+### Explain and Interpret
+
+Taking a look at my initial analysis of the average stock values by year, I can see that the stock values increase over time. When I divided the stock values by bird type, I could see that Chickens, Ducks, and Geese have increased steadily almost every year until plateauing in the 2010s. Pigeons peaked in the 1990s and then have leveled out ever since. Turkeys have been hovering around the same since 1980. When I further narrowed down to just the Americas, I noticed that there are no pigeons. Chickens grew steadily each year. Ducks and Turkeys plateaued around 1990. Geese experienced a peak in 1988-1989, and then dropped significantly, and then leveled off. 
