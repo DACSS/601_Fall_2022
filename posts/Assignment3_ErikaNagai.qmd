@@ -86,12 +86,14 @@ library(jsonlite)
 
 #write.csv(bechdel, file = "_data/bechdel.csv")
 bechdel <- read_csv("_data/bechdel.csv")
-bechdel
+glimpse(bechdel)
 
 #imdbid and titleId are technically duplicated because titleId is tt+imdbid. movie_clean1 dataframe has IDs in the same format as titleId of bechdel df so I deleted imdbid column.
 bechdel <- bechdel %>% select(-c(imdbid,...1))
-colnames(bechdel) <- c("year", "title", "bechdel_rating", "id", "imdb_id")
-bechdel
+colnames(bechdel) <- c("year", "bechdel_rating", "id", "title", "titleid")
+
+col_order <- c("title", "id", "titleid","year", "bechdel_rating")
+bechdel <- bechdel[, col_order]
 
 # I added a column bechdel_pass where 1 means the movie passes bechdel test and 0 means otherwise.
 bechdel <- bechdel %>% mutate(
@@ -103,15 +105,7 @@ bechdel <- bechdel %>% mutate(
 
 ```
 
-```{r}
-(3)
-# Read in directors 
 
-#R.utils::gunzip("~/DACSS/601_My_Project/Female_rep_movies/title.crew.tsv.gz")
-#credits <- read.delim(file = "~/DACSS/601_My_Project/Female_rep_movies/title.crew.tsv", sep = "\t")
-
-credit <- read_csv("_data/movie_credits.csv", na="NA")
-```
 
 ## Describe data
 
@@ -184,16 +178,6 @@ print(summarytools::dfSummary(bechdel),
       valid.col    = FALSE,
       method = 'render',
       table.classes = 'table-condensed')
-```
-
-### (3) Credit data
-
-This data documents the information of casts(actors, voice actors) and
-crews (director, producer, etc) for each movie, which can identified by
-id. The values in the column `cast` and `crew` are in json format.
-
-```{r}
-glimpse(credit)
 ```
 
 ## Tidy data
@@ -407,156 +391,19 @@ print(summarytools::dfSummary(movie_clean1),
 
 ```
 
-###(3) Credit Data The values in the columns `cast` and `crew` are in
-json-like format. I made `cast_data` and `crew_data` dataframes and
-converted the values that are in {} in `credit` dataframe into each row
-so that every row means one cast/crew.
+### (3) Bechdel data
 
-#### Making crew list
-
-```{r}
-#
-parse_crew <- function(crew_text) {
-  text <- 
-    sub("\\£\\$\\£", "",    #drop the first one
-        gsub("\'|\"|\\[|\\]|\\{|\\}|,", "",
-             gsub("\'credit_id\':|\'department\':|\'gender\':|\'id\':|\'job\':|\'name\':|\'profile_path\':", 
-                  "£$£", 
-                  crew_text)
-        )
-    )
-  
-  data <- data.frame(matrix(
-    trimws(unlist(
-        strsplit(text, "\\£\\$\\£")
-        )), 
-    ncol = 7, byrow = TRUE), stringsAsFactors = FALSE)
-  
-  names(data) <- c("credit_id", "department", "gender", "id", "job", "name", "profile_path")
-  
-  return(data %>% select(credit_id, gender, id, name, department, job))
-}
-
-num_batches <- 50
-batch_interval <- ceiling(nrow(credit) / num_batches)
-batch_brackets <- 0:num_batches * batch_interval
-batch_brackets[num_batches+1] <- nrow(credit)
-batch_brackets[1] <- 1
-crew_data <- data.frame()
-
-for(b_i in 1:num_batches){
-  
-  batch_data <- data.frame()
-  for(b2_i in batch_brackets[b_i]:(batch_brackets[b_i+1]-1)){
-    #print(b2_i)
-    this_crew <- parse_crew(credit$crew[b2_i])
-    if(nrow(this_crew) > 0){
-      this_crew$movie_id <- as.character(credit$id[b2_i])
-      batch_data <- rbind(batch_data, this_crew)
-    }
-  }
-  crew_data <- rbind(crew_data, batch_data)
-}
-
-crew_data %>% 
-  filter(job == "Director") %>%
-  group_by(gender) %>%
-  dplyr::summarize(number = n())
-
-crew_data <- crew_data %>%
-  mutate(
-    gender = case_when(
-    gender == 0 ~ "unknown",
-    gender == 1 ~ "female",
-    gender == 2 ~ "male",
-    TRUE ~ "NA"
-  ))
-```
-
-I created a new data frame, `female_director` that documents if a movie
-was directed by a women (women). The value in the column
-`female_director` is 1 if the movie is directed by at least one woman.
+This data look quite clean, however, I looked at the summary for sense check, then I realized that the minimum number of year is 1010, which is weird.
+"Inazuma Eleven The Movie" was released in 2010, but it seems to have been mistakenly recorded as 1010.
+So I manually corrected the data.
 
 ```{r}
-female_director <- crew_data %>% 
-  filter(job == "Director") %>%
-  group_by(id) %>%
-  dplyr::summarize(
-    n_director = n(),
-    n_female_director = sum(gender=="female")
-  ) %>%
-  mutate(
-    female_director = case_when(
-      n_female_director == 0 ~ 0,
-      TRUE ~ 1
-    )
-  )
-female_director$id <- as.double(female_director$id)
-female_director
-  
-```
+summary(bechdel)
 
-#### Making cast list
+bechdel %>% 
+  filter(year < 1800)
 
-```{r}
-#function to remove symboles
-parse_cast <- function(cast_text) {
-  text <- 
-    sub("\\£\\$\\£", "",    #drop the first one
-        gsub("\'|\"|\\[|\\]|\\{|\\}|,", "",
-             gsub("\'cast_id\':|\'character\':|\'credit_id\':|\'gender\':|\'id\':|\'name\':|\'order\':|\'profile_path\':", 
-                  "£$£", 
-                  cast_text)
-        )
-    )
-  
-  data <- data.frame(matrix(
-    trimws(unlist(
-        strsplit(text, "\\£\\$\\£")
-        )), 
-    ncol = 8, byrow = TRUE), stringsAsFactors = FALSE)
-  
-  names(data) <- c("cast_id", "character", "credit_id", "gender", "id", "name", "order", "profile_path")
-  data$order <- as.numeric(data$order)
-  
-  return(data %>% select(cast_id, character, gender, id, name, order))
-}
-
-
-num_batches <- 50
-batch_interval <- ceiling(nrow(credit) / num_batches)
-batch_brackets <- 0:num_batches * batch_interval
-batch_brackets[num_batches+1] <- nrow(credit)
-batch_brackets[1] <- 1
-
-
-cast_data <- data.frame()
-for(b_i in 1:num_batches){
-  
-  batch_data <- data.frame()
-  for(b2_i in batch_brackets[b_i]:(batch_brackets[b_i+1]-1)){
-    #print(b2_i)
-    this_cast <- parse_cast(credit$cast[b2_i])
-    if(nrow(this_cast) > 0){
-      this_cast$movie_id <- as.character(credit$id[b2_i])
-      batch_data <- rbind(batch_data, this_cast)
-    }
-  }
-  cast_data <- rbind(cast_data, batch_data)
-  
-}
-
-cast_data %>%
-  mutate(
-    gender = case_when(
-    gender == 0 ~ "unknown",
-    gender == 1 ~ "female",
-    gender == 2 ~ "male",
-    TRUE ~ "NA"
-  ))
-
-
-cast_data
+bechdel$year[bechdel$year == 1010] <- 2010
 ```
 
 ## Exploratory Analysis - Basic movie trends -
@@ -579,27 +426,6 @@ movie_clean1 %>%
 
 ## Female representation in movies -
 
-**Are more women directing movies?**
-
-The short answer is not really. As far as we can see from the data, the
-number of movies directed by woman (women) is not increasing. However,
-we should keep in mind that the `credit.csv` doesn't cover all the
-movies released or registered on Movielens/TMDb so we may be missing
-many movies that women directed.
-
-```{r}
-# join "movie" and "female_director"
-
-inner_join(female_director, movie, copy = TRUE, by = c("id" = "movielens_id")) %>%
-  group_by(year = lubridate::year(release_date), female_director) %>%
-  dplyr::summarize(n_total = n()) %>%
-  ggplot(aes(x=year, y= n_total, fill = as.character(female_director))) + geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("grey", "orange"),
-                    labels=c("only male director(s)", "at least one female director"))
-
-
-
-```
 
 **Are there more films where female characters appear?**
 
@@ -691,4 +517,4 @@ movie_bechdel_join %>%
 
 ```
 
-```{r}
+
