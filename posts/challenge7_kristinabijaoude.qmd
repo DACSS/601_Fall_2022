@@ -1,0 +1,304 @@
+---
+title: "Challenge 7 Kristin Abijaoude"
+author: "Kristin Abijaoude"
+description: "Visualizing Multiple Dimensions"
+date: "11/09/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - kristin abijaoude
+  - internet_censorship
+  - internet_shutdown
+  - household
+  - us_hh
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(stringr)
+library(summarytools)
+library(maps)
+library(RColorBrewer)
+library(sp)
+library(choroplethr)
+library(choroplethrMaps)
+library(rworldmap)
+library(sf)
+library(ggplot2)
+library(ggmap)
+library(hrbrthemes)
+library(rnaturalearth)
+library(mapsf)
+library(cartography)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+::: panel-tabset \## Internet Shutdown: Reading Data
+
+```{r}
+# pull out data
+shutdown <- read_csv("_data/#KeepItOn STOP Data 2016-2021 Make a copy and share - 2021 Data.csv")
+shutdown
+```
+
+I decided to choose a dataset outside the classroom for this challenge. Here, we have a dataset of internet censorship around the world for various reasons, such as political instability and government control, in 2021 alone. This dataset comes from Access Now, the non-profit organization that fights for digital civil rights around the world and advocates for an open and free Internet for all.
+
+I'm extremely grateful for having access to most parts of the internet, so the topic about internet censorship interests me.
+
+::: panel-tabset \## Internet Shutdown: Tiyding and Mutating Data
+
+To start with tidying, I used `select()` and `-c()` to remove repetitive, blank, or otherwise unneeded columns. There are a lot of words in each columns, which would give many of us information overload.
+
+```{r}
+# remove unneeded columns
+shutdown1 <- shutdown %>%
+  select(-c(start_date_type, decision_maker, actual_cause_details, info_source_link, telcos_involved, telco_ack, telco_ack_source, telco_ack_quote, users_target_detail, econ_impact, event, an_link, gov_just_details, legal_just, legal_method, gov_ack, gov_ack_source, gov_ack_quote, shutdown_status))
+
+# sanity check point
+shutdown1
+  
+```
+Next, I use `rename()` to change the column names. Most of these columns are characters, so I had to use the appropriate codes to get my preferred outputs. The purpose of this was to accurately name the columns to those that make sense. In other words, what does "geo_scope" mean? I used the methodology
+
+```{r}
+# name variables
+shutdown1 <- as_tibble(shutdown1)
+
+shutdown1 <- shutdown1 %>%
+  rename(
+    "Start Date" = start_date,
+    "Country" = country,
+    "Area within Country" = geo_scope,
+    "Area Name" = area_name,
+    "Internet Shutdown Method" = shutdown_type,
+    "Affected Network" = affected_network,
+    "Extent of Internet Shutdown" = shutdown_extent,
+    "Authority" = ordered_by,
+    "Reason of Internet Shutdown" = actual_cause,
+    "Source" = info_source,
+    "End Date" = end_date,
+    "Government's Justification for Internet Shutdown" = gov_justification,
+    "Was Facebook Blocked?" = facebook_affected,
+    "Was Twitter Blocked?" = twitter_affected,
+    "Was Whatsapp Blocked?"= whatsapp_affected,
+    "Was Instagram Blocked?" = instagram_affected,
+    "Was Telegram Blocked?" = telegram_affected,
+    "Other Websites or Social Media Network Blocked" = other_affected,
+    "Were SMS and Text Messaging Blocked" = sms_affected,
+    "Were Phone Calls Blocked?" = phonecall_affected,
+    "Did the Internet Shutdown During Election Time?" = election,
+    "Were There Acts of Violence During Internet Shutdown?" = violence,
+    "Were There Reports of Human Rights Abuses?" =  hr_abuse_reported,
+    "Specific Targets" = users_targeted,
+    "Were Users Notified of Internet Shutdown?" = users_notified
+  )
+
+# sanity checkpoint
+shutdown1
+```
+
+Same concept apply, but with `recode()`. The purpose of these are to tidy up data to make the information more legible.
+
+In addition, I used `replace_na()` to replace the NAs with anything I want.
+
+```{r}
+# recode values
+shutdown1 <- shutdown1 %>%
+    mutate(`Area within Country` = 
+             recode(`Area within Country`, 
+                    `It affected locations in more than one state, province, or region` = 'Nationwide', 
+                    `It affected more than one city in the same state, province, or region` = 'Regional', 
+                    `It only affected one city, county, or village` =  'Localized'))
+
+# replace 0s and NAs 
+
+# End Date
+as.character.Date(shutdown1$`End Date`)
+shutdown1$`End Date` <- shutdown1$`End Date` %>%
+  replace_na("Ongoing")
+
+# Duration of Internet Censorship
+shutdown1$Duration <- shutdown1$Duration %>%  # I replace the negative numbers with 0
+  pmax(shutdown1$Duration, 0)
+shutdown1$Duration[shutdown1$Duration == 0] <- NA   # turned 0s into NAs
+shutdown1$Duration <- shutdown1$Duration %>%    # replaced NAs with "Ongoing"
+  as.character()%>%
+  replace_na("Ongoing")
+
+# Area Name
+shutdown1$`Area Name` <- shutdown1$`Area Name` %>% 
+  replace_na("Unknown")
+
+# Other websites or social media blocked
+shutdown1$`Other Websites or Social Media Network Blocked` <- shutdown1$`Other Websites or Social Media Network Blocked`%>% 
+  replace_na("Unknown")
+
+# Specific Targets
+shutdown1$`Specific Targets` <- shutdown1$`Specific Targets` %>%
+  replace_na("No Specific Targets")
+
+# sanity check point
+shutdown1
+```
+
+::: panel-tabset \## Internet Shutdown: Visualization with Multiple Dimensions
+
+Now, we have tidied up the data. Next, we are going to visualize the dataset. In other words, show you all where Internet censorship is rife.
+
+```{r}
+# create dataframe
+
+countries <- shutdown1 %>%  # separate countries from main dataset
+  count(Country)
+countries <- countries %>%  # arrange them from highest to lowest
+  arrange(desc(n))
+
+# sanity check point
+countries 
+
+mapdata <- map_data("world") # ggplot2
+mapdata # shows longitude and latitude of countries
+
+countries <- countries %>% rename ("value" = "n",
+                                  "region" = "Country") # rename variables
+mapdata <- left_join(mapdata, countries, by = "region")
+mapdata1 <- mapdata %>% select(-c(subregion, region, order)) # remove unnecessary variables
+mapdata1[is.na(mapdata1)] <- 0
+
+# remove countries not listed on the dataset (in other words, countries that don't routinely engage in internet censorship)
+mapdata1 <- mapdata1[mapdata1$value != 0, ] 
+
+# sanity check point
+mapdata1
+
+# create map
+censorship <- ggplot(mapdata1, aes( x = long, y = lat, group = group))+
+  geom_polygon(aes(x = long, y = lat, fill = `value`), color = "black")
+
+# sanity check point
+censorship
+```
+
+As you can see, India tops the chart with the most Internet shutdowns, mostly concentrated in the Jammu and Kashmir region.
+
+In a broader perspective, the only country in the Americas that has shutdown the Internet is Cuba, and no country from either Europe nor Oceania shutdown the Internet. This form of censorship seems to be concentrated in Africa and Asia.
+
+I used this code with the hotel booking data in challenge 6. There, I showed all the countries in the world. However, I only showed the countries listed on the Internet shutdown dataset, as seen above. I did that because the countries that shut their Internet down once are in the same shade as countries that didn't shut their Internet down ever, which would be hard for us to read from. 
+
+::: panel-tabset \## US Household 1967-2019: Reading Data
+
+Another dataset I used is the US household income by race and ethnicity from 1967 to 2019, as courtesy of the US Census. 
+
+Unlike the previous datasets I used, which were comma separated values or CSV, I used an Excel sheet, where I removed unncessary rows, such as the footnotes with `cell_rows()` and used the logical `:` to state what rows to keep. In addition, I coded the variables with `col_names()`. 
+
+```{r}
+us_hh <- read_xlsx("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx",
+                   range = cell_rows(6:352),
+                   col_names = c("race", 
+                   "number by thousands", 
+                   "pct_total", 
+                   "pct_under_15k", 
+                   "pct_15k_to_24999", 
+                   "pct_25k_to_34999", 
+                   "pct_35k_to_49999",
+                   "pct_50k_to_74999",
+                   "pct_75k_to_99999",
+                   "pct_100k_to_149999",
+                   "pct_150k_to_199999",
+                   "pct_200K_or_more",
+                   "med_income",
+                   "est_med_moe",
+                   "mean_income",
+                   "est_mean_moe"))
+# sanity check point
+us_hh
+```
+::: panel-tabset \## US Household 1967-2019: Tidying and Mutating Data
+
+First, I will separate the year and race into two different columns with `str_extract()` and `mutate()`. Afterwards, I use `fill()` to fill in the NAs down the board. Those seemingly random symbols and words are regular expressions, or regexps. They help me extract whatever I want based on characteristics.
+
+```{r}
+us_hh_tidy <- us_hh %>%
+  mutate(year = str_extract(race, "(.*)"),
+         race = str_extract(race, "[:alpha:](.*)[:alpha:].")) %>%
+  fill(race, .direction = "down") 
+
+# sanity check point
+us_hh_tidy
+```
+Next, I am dropping NAs, or missing data, with `drop_na()` and the `-` negative logical.
+
+```{r}
+# drop nas
+us_hh_tidy <- drop_na(us_hh_tidy, race:year)
+
+# remove footnote
+us_hh_tidy <- us_hh_tidy %>%    # separate year and footnot into two columns
+  separate(year, into= c("Year","Footnote"), sep = " ")
+
+us_hh_tidy <- us_hh_tidy %>%
+  select(-Footnote, -pct_total) %>%
+  relocate(Year, .before = race)
+
+# sanity check point
+us_hh_tidy
+``` 
+
+For better graphing, I will make wide data long by pivoting with `pivot_longer()`.
+
+```{r}
+# pivot for easier graphing
+usa_hh <- us_hh_tidy %>%
+  pivot_longer(
+    cols = starts_with("pct"),
+    names_to = "percentage rank in class",
+    names_prefix = "pt",
+    values_to = "rank",
+    values_drop_na = TRUE) %>%
+  select(-c(`number by thousands`, `rank`))
+
+# sanity check point
+usa_hh
+```
+::: panel-tabset \## US Household 1967-2019: Visualizing Data
+
+After pivoting, let's make a violin plot with `ggplot` code `geom_violin()`. But first, create data with `case_when()` and `str_detect()` to collect similar data. 
+
+```{r}
+# create data frame
+all_income <- all_income %>%
+  mutate(all_races = case_when(str_detect(race, 'ASIAN') ~ 'ASIAN',
+            str_detect(race, 'BLACK') ~ 'BLACK',
+            str_detect(race, 'WHITE') ~ 'WHITE',
+            str_detect(race, 'HISPANIC') ~ 'HISPANIC',
+            str_detect(race, 'ALL') ~ 'ALL'))
+ 
+# Create graph
+all_income %>%
+ggplot(aes(x= all_races, y=med_income, fill = med_income)) +
+    geom_violin(fill="darkred") +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+  scale_y_continuous(labels=scales::dollar_format()) +
+    ggtitle("Median Household Income by Race and Ethnicity from 1967: to 2019") +
+    xlab("Household by Race and Ethnicity") +
+  ylab("Household Income")
+```
+
+I used the violin plot graph for the Airbnb hostings dataset in challenge 5, where I calculated the price of hostings by each NYC borough. It was a funny looking graph, so I figured I try again above. I added a color  with the fill option. 
+
+With this graph, we get to see how income is distributed by race or ethnicity. For example, Asian households vary between `$65,000` to about `$100,000`, while black households vary between `$45,000` to `$30,000`. This graph is easier to read with household income data than the Airbnb hostings because I 
+improved my graph making skills :) Also, we see how the incomes typically range, with the wider areas being the most common incomes.
