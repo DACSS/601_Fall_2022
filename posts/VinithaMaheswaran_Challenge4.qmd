@@ -1,0 +1,304 @@
+---
+title: "Challenge 4 Solutions"
+author: "Vinitha Maheswaran"
+desription: "More data wrangling: pivoting"
+date: "11/26/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+
+For this challenge I will be working with the "hotel_bookings" dataset. It is a publicly available data set containing booking transactions from a city hotel and a resort hotel in Portugal.
+
+I used the "hotel_bookings" dataset previously for the Challenge 2 and I will be using the same content for the section 1: read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc).
+
+
+```{r}
+# Reading the hotel_bookings.csv data set and storing in a data frame
+hotel_data <- read_csv("_data/hotel_bookings.csv")
+print(hotel_data)
+```
+
+
+
+### Briefly describe the data
+
+After reading the data using read_csv function, it is stored in a dataframe "hotel_data". The hotel_bookings data set contains 119390 rows (observations) and 32 columns (attributes/variables) including information such as when the booking was made, length of stay, the number of adults, children, and/or babies, the number of available parking spaces, and many others for the respective hotels. Each row/observation represents a hotel booking. Since this is a public data set, all data elements pertaining to hotel or customer identification are not included in the data set. This data set can have an important role for research and educational purposes in hotel administration, revenue management, machine learning, data mining and other fields. This data set will be helpful for (i) Tourists (people who are booking hotels) to check and understand trends of hotel price over a period of time and plan their travel accordingly within budget, learn about hotel accommodations and features before booking (ii) Hotel Management to keep track of the relevant information about themselves as well as their competitors. Understand and analyze the seasonal trend of hotel booking and accommodate different types of visitors that they have (iii) Tourist / hospitality services - (e.g. travel agency, airlines / car rental companies) to observe the times when hotels in the region are in high demand, analyze the duration of typical stays, and use the information to help plan their own services (iv)  Local Government / independent data analysts to observe the overall trend of tourist activities in the region and analyzing the different types of visitors in the hotels during different seasons.
+
+Using the "dfSummary" function from "summarytools" package we find that there are 31994 duplicates in the data. The reason for the identified duplication is that there is no unique id for each booking. It is possible that the booking was made by different tourists and the values for each attribute was exactly the same. This confusion could have been avoided by adding a Booking ID which would be unique for each booking. 66.4% of the data represents city hotel and the remaining 33.6% of the data represents resort hotel. 18.4%, 47.5% and 34.1% of the data correspondingly represents years 2015, 2016 and 2017. I wanted to check the unequal distribution in data for the 3 consecutive years. I further investigated the data and found that the data we have represents hotel bookings from the period July 2015 - August 2017.
+
+
+```{r}
+#Finding dimension of the data set
+dim(hotel_data)
+```
+
+```{r}
+#Finding column names
+colnames(hotel_data)
+```
+
+```{r}
+#Structure of hotel_data
+str(hotel_data)
+```
+
+```{r}
+#Summary of hotel_data
+summary(hotel_data)
+```
+
+```{r}
+#Summary of hotel_data
+library(summarytools)
+print(summarytools::dfSummary(hotel_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+
+```{r}
+#Check for the period of hotel booking dates
+hotel_data%>%
+  select(hotel, arrival_date_year, arrival_date_month)%>%distinct()
+```
+
+
+```{r}
+#Check for missing/null data in the hotel_data
+sum(is.na(hotel_data))
+sum(is.null(hotel_data))
+```
+
+We find that there are 4 NA's or missing values in the dataset.
+
+```{r}
+# Checking which columns have NA values
+col <- colnames(hotel_data)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(hotel_data[,c]))))
+}
+```
+
+We can see that all 4 NA's in the hotel booking dataset are from the column "Children". We can either replace the missing values with 0 or we can drop the 4 rows with NA values. I chose to drop the 4 rows as removing 4 rows from a huge dataset with 119390 observations/rows would not affect any of the statistics significantly.
+
+
+```{r}
+# Checking which columns have NULL values
+col <- colnames(hotel_data)
+for (c in col){
+  print(paste0("NULL values in ", c, ": ", sum(is.null(hotel_data[,c]))))
+}
+```
+
+
+```{r}
+# Checking which columns have character datatype and have value == "NULL"
+hotel_data_subset <- hotel_data%>%
+  select_if(is.character)
+col <- colnames(hotel_data_subset)
+for (c in col){
+    print(paste0("NULL values in ", c, ": ", sum(hotel_data[,c]=="NULL")))
+}
+```
+
+```{r}
+length(unique(hotel_data$country))
+table(hotel_data$country)
+```
+
+We can see that there are bookings from people belonging to 178 distinct countries. However, from the output of table() we can see that one country is given "NULL" as the value is unknown. Hence, we can say that there are 177 distinct countries in the hotel_bookings dataset. In future, we may have to drop the rows with "NULL" country if we plan to plot geospatial visualizations. 
+
+
+```{r}
+table(hotel_data$agent)
+```
+
+
+```{r}
+table(hotel_data$company)
+```
+
+The datatype is character for both the columns "agent" and "company" due to which the numbers are not sorted/arranged as expected. From the table() we notice that both the columns have all numerical values except for the "NULL" value which is used for the bookings which did not use an agent or a company for booking. If we change these "NULL" string values to a numerical value like -1 (as no negative values are being used in these columns), then we can change the column type to numeric.
+
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+
+As the first step of tidying the data, I dropped the rows with NA values in "children" column (4 rows to be exact).
+
+```{r}
+# Dropping the rows with NA values in "children" column
+hotel_data <- hotel_data%>%
+  subset(!is.na(children))
+hotel_data
+```
+
+
+Next, I replaced the "NULL" values with "-1" values in "agent" and "company" columns.
+
+```{r}
+# Replace the "NULL" values with "-1" in "agent" and "company" columns
+hotel_data <- hotel_data%>%
+  mutate(agent = str_replace(agent, "NULL", "-1"))%>%
+  mutate(company = str_replace(company, "NULL", "-1"))
+```
+
+
+I also checked that all values are numerical in the "agent" and "company" columns (i.e no "NULL" values).
+
+```{r}
+# Sanity check: Checking that all values are numerical in the "agent" and "company" columns (i.e no "NULL" values)
+table(hotel_data$agent)
+table(hotel_data$company)
+```
+
+
+Finally, I converted the datatype of "agent" and "company" columns from character to numeric.
+
+```{r}
+# Converting the datatype of "agent" and "company" columns from character to numeric
+hotel_data <- hotel_data%>%
+  mutate(agent = as.numeric(agent))%>%
+  mutate(company = as.numeric(company))
+```
+
+
+I verified that the the new datatype of "agent" and "company" is numeric.
+
+```{r}
+# Sanity check: Verify the new datatype of "agent" and "company" is numeric
+str(hotel_data)
+```
+
+
+
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+
+
+Document your work here.
+
+Knowing the demand i.e total guests staying in the booked hotel during a time frame would help in visualizing trends in the form of line plots. These trends would be helpful for tourists to identify the best time to visit Portugal and book the rooms earlier for a lesser price or for hotel management/travel agents to inflate the prices of the rooms according to the demand. We can calculate demand as the sum of adults, children and babies.
+
+```{r}
+# Calculate demand as the sum of adults, children and babies
+hotel_data <- hotel_data%>%
+  mutate(demand = adults+children+babies)
+hotel_data
+```
+
+```{r}
+# Interesting fact about demand
+table(hotel_data$demand)
+
+hotel_data_demand0 <- hotel_data%>%
+  subset(demand==0)
+
+table(hotel_data_demand0$reservation_status)
+```
+
+Interesting fact! After creating the "demand" attribute, I performed the table() and found that there are 180 bookings with the demand listed as 0. On checking the reservation status for these 180 rows, 155 bookings show that the reservation status is "Check-Out". According to the dataset, "Check-Out" is defined as – customer has checked in but already departed. It is surprising that the customer checked in and out but the demand is 0! Would like to know more about the reason behind this.
+
+
+```{r}
+# Combine the columns "arrival_date_year", "arrival_date_month", "arrival_date_day_of_month" to get the arrival date in a single column. 
+library(lubridate)
+hotel_data <- hotel_data%>%
+  mutate(arrival_date = ymd(paste(hotel_data$arrival_date_year, hotel_data$arrival_date_month, hotel_data$arrival_date_day_of_month, sep="/")))
+
+#Removing the columns related to date in the dataset except for the "arrival_date" mutated column
+hotel_data <- hotel_data%>%
+  select(-c(arrival_date_year, arrival_date_month, arrival_date_week_number, arrival_date_day_of_month))
+```
+
+I created a new column "arrival_date" which combined the data from "arrival_date_year", "arrival_date_month", and "arrival_date_day_of_month" to get the arrival date in a single column and removed the columns "arrival_date_year", "arrival_date_month", "arrival_date_day_of_month", and "arrival_date_week_number" as they are redundant data. The mutated "arrival_date" column will be useful to plot and analyze trends.
+
+
+```{r}
+# Find the min and max arrival_date
+min(hotel_data$arrival_date)
+max(hotel_data$arrival_date)
+```
+
+From the mutated variable "arrival_date" we can easily understand that the "hotel_bookings" dataset has data for the arrival period of "2015-07-01" to "2017-08-31".
+
+
+Currently, the data contains information about the "lead_time" (Number of days that elapsed between the date of hotel booking and the arrival date) and the "arrival_date" at the hotel. It would be useful to create visualizations between the "arrival_date", "booking_date" and "adr" for insights. For this purpose, it would be suitable if the "booking_date" was calculated from "arrival_date" and the "lead_time". This will help customers to understand the right time to book hotels and the demand.
+
+```{r}
+# Calculating "booking_date" variable from "arrival_date" and "lead_time"
+hotel_data <- hotel_data%>%
+  mutate(booking_date = arrival_date - lead_time)
+hotel_data
+```
+
+```{r}
+# Summary of booking_date
+summary(hotel_data$booking_date)
+```
+
+We can see that the earliest hotel booking for the period of arrival from "2015-07-01" to "2017-08-31" was done on the date "2013-06-24". This is a lead_time of 737 days!
+
+
+```{r}
+# Sort the dataset based on arrival_date.
+hotel_data <- hotel_data%>%
+  arrange(arrival_date)
+```
+
+The final dataset is sorted based on "arrival_date" in ascending order.
+
+Any additional comments?
+
+After tidying the data and mutating variables, we are left with a dataset of 119386 rows/observations and 32 columns/variables. We can use this dataset to perform visualizations and generate insights.
