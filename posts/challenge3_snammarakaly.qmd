@@ -1,0 +1,158 @@
+---
+title: "Challenge 3"
+author: "Siddharth Nammara Kalyana Raman"
+desription: "Tidy Data: Pivoting"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+```{r}
+#read data and name it eggs_data
+eggs_data<-read.csv('_data/eggs_tidy.csv')
+eggs_data
+
+```
+
+### Briefly describe the data
+
+Describe the data, and be sure to comment on why you are planning to pivot it to make it "tidy"
+
+```{r}
+print(dfSummary(eggs_data))
+
+
+```
+
+```{r}
+# to know the statistics of the eggs dataset
+summary(eggs_data)
+
+```
+
+```{r}
+# review the first few rows of the dataset
+head(eggs_data)
+
+```
+We can see from the rendered data frame summary that there are 6 columns and 120 rows of data, covering the years 2004 through 2013 as well as all 12 months of the year. The remaining 4 columns, with values ranging from 126-290, are large half dozen, large dozen, extra large half dozen, and extra large dozen. 
+
+## Anticipate the End Result
+
+The first step in pivoting the data is to try to come up with a concrete vision of what the end product *should* look like - that way you will know whether or not your pivoting was successful.
+
+One easy way to do this is to think about the dimensions of your current data (tibble, dataframe, or matrix), and then calculate what the dimensions of the pivoted data should be.
+
+Suppose you have a dataset with $n$ rows and $k$ variables. In our example, 3 of the variables are used to identify a case, so you will be pivoting $k-3$ variables into a longer format where the $k-3$ variable names will move into the `names_to` variable and the current values in each of those columns will move into the `values_to` variable. Therefore, we would expect $n * (k-3)$ rows in the pivoted dataframe!
+
+
+### Example: find current and future data dimensions
+
+```{r}
+#Finding the dimensions before pivoting
+#number of rows
+nrow(eggs_data)
+
+#number of columns
+ncol(eggs_data)
+```
+```{r}
+#expected dimensions after pivot
+
+#expected number of rows
+nrow(eggs_data)*(ncol(eggs_data)-2)
+
+#expected number of cols
+3+2
+```
+
+
+Or simple example has $n = 6$ rows and $k - 3 = 2$ variables being pivoted, so we expect a new dataframe to have $n * 2 = 12$ rows x $3 + 2 = 5$ columns.
+
+### Challenge: Describe the final dimensions
+
+Document your work here.
+
+Due to the fact that each size-quantity pairing will have its own row, I anticipate the eventual data set to be four times longer (rather than the initial 4 columns after month and year). Since I will delete the names of the four size-quantity columns and replace them with one column each for size, quantity, and average price, I anticipate that the overall number of columns will decrease by one. For this newly reorganized data, see below.
+
+
+Any additional comments?
+
+## Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
+
+
+```{r}
+#| tbl-cap: Pivoted Example
+
+eggs_longer<- eggs_data%>%
+  pivot_longer(cols=contains("large"),
+               names_to = c("size", "quantity"),
+               names_sep="_",
+               values_to = "amount"
+  )
+eggs_longer
+#number of rows
+nrow(eggs_longer)
+#number of cols
+ncol(eggs_longer)
+```
+
+
+### Challenge: Pivot the Chosen Data
+
+Document your work here. What will a new "case" be once you have pivoted the data? How does it meet requirements for tidy data?
+
+As expected, I now have one less column and four times as many rows (120 became 480). (6 became 5). I now have one observation for each row and am prepared to start my analysis. Depending on the nature of my study or if there are more tables to put in at some time, I might want to change the cents into dollars. The data keeps the precise decimals even when the preview tibble below rounds to whole cents.
+```{r}
+eggs_price <- mutate(eggs_longer, 
+       avg_USD = amount / 100
+       )%>%
+  select(!contains ("amount"))
+eggs_price
+
+```
+
+Any additional comments?
