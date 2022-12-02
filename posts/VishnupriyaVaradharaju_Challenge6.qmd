@@ -1,0 +1,176 @@
+---
+title: "Challenge 6 Solutions"
+author: "Vishnupriya Varadharaju"
+description: "Visualizing Time and Relationships"
+date: "11/30/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Working with the Hotel Bookings Dataset
+
+## Read in data
+
+```{r}
+# Reading in the CSV data
+h_book <- read_csv("_data/hotel_bookings.csv", show_col_types = FALSE)
+
+h_book
+```
+
+### Briefly describe the data
+
+The following dataset has 119390 observations and 32 different fields. This is basically the data from two hotels - City Hotel & Resort Hotel. Each entry corresponds to a booking made by a customer. There are various information that are recorded with each booking. It includes the arrival date, number of days of stay, meal, type of room reserved, customer type, reservation status, number of adult/children and many more. The data consists of entries from countries all over the world.
+ 
+## Tidy Data (as needed)
+
+```{r}
+# To check the number of unique values in all the columns
+rapply(h_book,function(x)length(unique(x)))
+
+# To check the unique values of hotel
+unique(h_book$hotel)
+```
+
+
+```{r}
+# in country we can see that there is a field call NULL that can be removed
+table(h_book$country)
+
+h_book <- h_book %>% 
+  filter(!(country == "NULL"))
+```
+
+In country, there are entries called NULL, which can be removed as it may not be useful for the analysis.
+
+```{r}
+# to check the different types of the fields
+head(h_book)
+
+sapply(h_book, class)
+```
+
+From the above analysis, we can see that two fields, Agents and Company have numerical values in them, but have the datatype marked as character. These NULL entries can be changed to NA and the datatype can be changed to numeric. Also, the arrival date in year, month and date can be combined into a single field called as arrival date. 
+
+```{r}
+# combining the arrival date into a single field
+# to find the total number of guests in the hotel - add adults, children and babies
+
+h_book_mut <- h_book %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_month,arrival_date_year))
+
+h_book_mut
+```
+Changing the datatype of agent and company from char to numeric
+
+```{r}
+# mutating the datatype of the agent and company field from char to numeric
+
+h_book_mut <- h_book_mut %>%
+  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+
+is.numeric(h_book_mut$agent)
+is.numeric(h_book_mut$company)
+```
+
+## Time Dependent Visualization
+
+For the time dependent visualization I want to see how many guests are arriving over a period of time on a daily basis.
+
+
+```{r}
+plot1_data <- h_book_mut %>% select(total_guests, arrival_date) %>%
+  group_by(arrival_date) %>%
+  summarise(net_guests = sum(total_guests, na.rm=TRUE))
+
+plot1_data
+
+# finding the date ranges of the arrival date of this data
+
+summary(plot1_data$arrival_date)
+```
+
+From above, we can see that the arrival dates lie between July 2015 - August 2017.
+
+
+```{r}
+p <- ggplot(plot1_data, aes(x=arrival_date, y=net_guests)) + ggtitle("Guest Count Vs. Arrival Date Trend: Jul 2015 - Jun 2016") +
+  geom_line(color="maroon") + 
+  xlab("") + theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  scale_x_date(date_labels = "%Y %b %d", date_minor_breaks = "1 month", limit=c(as.Date("2015-07-01"),as.Date("2016-07-01")))
+
+p
+```
+
+Here, I am visualizing the trends for a period of one year from Jul 2015 - Jul 2016 by using a line graph as it can precisely be used to see trends for time series data. In the above visualization we can see the total guests who have arrived on a particular day. Furthermore, we can see the monthly breaks as well. The influx of guests peaked during the first week of December 2015 and dipped sharply the following week. During the months of summer i.e. April, May, June, the number of incoming guests seem to be consistent. This can be because of the vacation that many families might take during the summer break.
+
+
+## Visualizing Part-Whole Relationships
+
+For visualizing part-whole relationship, I want to see the proportion of guests who have chosen different categories for meal. Firstly, I want need to group-by to get the count of each meal category.
+
+```{r}
+unique(h_book_mut$meal)
+```
+
+There are 5 meal categories here.
+BB - 'Bed & Breakfast'
+FB - 'Full Board' - Breakfast, Lunch, Dinner
+HB - 'Half Board' - Breakfast & Dinner
+SC - 'Self-Catering' - No meals included
+Undefined - which can be ignored
+
+I want to gather arrival date data of one year from Jul 2015 to Jun 2016 and exclude reservation status which says canceled. 
+
+```{r}
+plot2_data <- h_book_mut %>% 
+  filter(reservation_status != 'Canceled', arrival_date >= as.Date("2015-07-01") & arrival_date < as.Date("2016-07-01")) %>%
+  select(meal) %>%
+  group_by(meal) %>%
+  summarise(total_count = n(), .groups = 'drop') %>%
+  filter(meal != "Undefined")
+
+plot2_data
+```
+
+Plotting the above data using a tree map.
+
+```{r}
+treemap(plot2_data,
+            index="meal",
+            vSize="total_count",
+            type="index",
+            title = "Meal Cateogries :Jul 2015 - Jun 2016",
+            palette = "Set3",
+            border.lwds = 1.5
+            )
+```
+
+The most preferred meal scheme was BB, followed by HB, SC and finally FB. The reason for choosing a treemap is to give an easy overview of which category is the most preferred in the meal type. This can help with the initial analysis and we can further dive deep into why BB is preferred most, in which countries and by which demography. Maybe guests who have children tend to choose that option or guests who are just staying only for a night, etc. 
+
