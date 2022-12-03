@@ -1,0 +1,133 @@
+---
+title: "Challenge 4 Instructions"
+author: "Siddharth Nammara Kalyana Raman"
+desription: "More data wrangling: pivoting"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+#read the data
+hotel_booking_data <- read.csv("_data/hotel_bookings.csv")
+
+hotel_booking_data
+
+```
+```{r}
+# find the unique values in all the columns
+rapply(hotel_booking_data,function(x)length(unique(x)))
+
+```
+### Briefly describe the data
+
+The following dataset comprises 32 distinct fields and 119390 observations. Each record relates to a reservation that a client has made. With each booking, numerous pieces of information are recorded. It contains information such as arrival date, length of stay, meals, kind of reserved accommodation, client type, reservation status, number of adults/children, and many other things. Entries in the data come from many countries throughout the world.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+```{r}
+# in order to check whether there are NULL fields
+table(hotel_booking_data$country)
+```
+
+
+```{r}
+#removing the null entries found above
+hotel_booking_data <- hotel_booking_data %>% 
+  filter(!(country == "NULL"))
+
+```
+
+```{r}
+#in order to know the data type of each field
+sapply(hotel_booking_data, class)
+```
+
+We can observe from the analysis above that two fields, Agents and Company, both have numerical values but are tagged as character datatypes. This is because it has NULL values in it. We can remove the NULL values converting it NA and alter the datatype to numeric. This change will help us for easier analysis. A single field named arrival date can also be used to combine the arrival date in year, month, and date formats.
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+h_book_mut <- hotel_booking_data %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_month,arrival_date_year))
+
+h_book_mut
+
+```
+```{r}
+# to find the range of the arrival date
+summary(h_book_mut$arrival_date)
+```
+
+The dates of arrival, as seen from above, range from July 2015 to August 2017.
+
+The lead time indicates the beginning of the entire hotel reservation. By deducting the lead time from the arrival date, one may determine the booking date.
+
+```{r}
+h_book_mut <- h_book_mut %>%
+  mutate(booking_date = arrival_date - lead_time)
+
+h_book_mut
+```
+```{r}
+unique(hotel_booking_data$reservation_status)
+```
+
+```{r}
+h_book_mut <- h_book_mut %>%
+  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+
+is.numeric(h_book_mut$agent)
+```
+```{r}
+is.numeric(h_book_mut$company)
+```
