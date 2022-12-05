@@ -1,0 +1,157 @@
+---
+title: "Challenge 3"
+author: "Nikita Masanagi"
+desription: "Tidy Data: Pivoting"
+date: "09/17/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - usa_households
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+The first three rows have information regarding the data in this file. This data is provides the household incomes of various races throughout the years from 1967-2019. The percentage distribution (out of 100) for different ranges in income, along with the median and mean income was also in the given dataset. There are 12 categories of the races. There are some overlaps between these categories as well (“All Races” category) and all the years are not present for some of the races.
+
+
+
+```{r}
+# Reading in the USA Households dataset
+# Removing the total column as information is redundant
+h_income <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx",
+         skip=5, n_max = 351, col_names=c("year", "hnumber", "total","level1", "level2",
+                                          "level3","level4","level5","level6","level7","level8",
+                                          "level9","median_income","median_error",
+                                    "mean_income","mean_error") ) %>% select(-total)
+
+income_vals <- c("level1","level2","level3","level4","level5","level6","level7","level8","level9")
+income_levels <- c("Under $15000","$15000 to $29000","$25000 to $34999","$35000 to $49999","$50000 to $74999","$75000 to $99999","$100000 to $149999","1500000 to $199999","$200000 and over")
+h_income
+
+
+```
+
+### Briefly describe the data
+
+In the above data, we have the necessary household income values for various throughout different years. The levels of the income range have also been named accordingly and the mapping is found in the vector ‘income_levels’. 
+
+There is a need to pivot this data in order to get the the races corresponding to each year. Currently, the races are only present atop each section of data. Pivoting will help in grouping the data and making calculations easier against different categories of race.
+
+
+
+## Cleaning the data
+
+ We can add the category of race as a new column for all the rows. Here, we get all the categories of race. There are some numeric characters also present in them which can be removed.
+
+```{r}
+library(stringr)
+
+# Creating a new column named race_cat + removing the rows with string only 
+# race category
+h_income_race <- h_income %>% mutate(race_cat = case_when(
+  str_detect(year, "[A-Za-z]") ~ year,
+  TRUE ~ NA_character_
+)) %>% fill(race_cat) %>% filter(!str_detect(year, "[A-Za-z]"))
+
+# Removing the notes number from the year and race_cat columns
+
+h_income_race <- h_income_race %>% separate(year, c("year","notes"), sep = " ") %>% select(-notes)
+h_income_race$race_cat <- gsub('[0-9]+', '', h_income_race$race_cat)
+
+# Detected some non numeric characters in the numeric fields. So need to remove them
+h_income_race <- h_income_race %>%
+    mutate(across(c(hnumber, starts_with("level"), starts_with("me")),~ replace(.,str_detect(., "[A-Za-z]"), NA))) %>% mutate_at(vars(hnumber, starts_with("me"), starts_with("level")), as.numeric)
+
+class(h_income_race$hnumber)
+```
+
+
+## Pivot the Data
+
+The data needs to be pivoted such that for each race category the household income numbers are viewed under each year (as columns) this can help summarise the data for each race. However with the current data we can see that there are many overlapping instances of the categories of races. It will be easier to group them into a larger group for further analysis and pivoting. The data is then summarised across the numeric columns by calculating their sum.
+
+The data is then pivoted into a wider form, wherein the rows are transformed into columns. This new table only consists of the household income numbers for the different categories of race across various years from 2000-2019. This data can further be used to find the mean or median for a particular year and particular race category.
+
+
+
+```{r}
+# Further clean the data
+clean_h_income <- h_income_race %>% mutate(
+  gp_race_cat = case_when(
+    grepl("BLACK", race_cat, fixed=TRUE) ~ "grp_black",
+    grepl("ASIAN", race_cat, fixed=TRUE) ~ "grp_asian",
+    grepl("WHITE", race_cat, fixed=TRUE) ~ "grp_white",
+    grepl("HISPANIC", race_cat, fixed=TRUE) & !grepl("NOT", race_cat, fixed=TRUE) ~ "grp_hisp",
+    grepl("ALL", race_cat, fixed=TRUE) ~ "grp_all",
+  )
+) %>% filter(!is.na(gp_race_cat)) %>%
+  group_by(year, gp_race_cat) %>% 
+  summarise(across(c(starts_with("level"),starts_with("me"),
+                     "hnumber"), 
+                   ~sum(.x, na.rm=TRUE)))
+
+head(clean_h_income)
+```
+
+
+
+```{r}
+
+# Pivot the data only containing household income numbers
+clean_h_income %>% select(gp_race_cat, hnumber, year) %>%
+  pivot_wider(values_from=hnumber, names_from=year) %>% select(c(gp_race_cat, starts_with("20")))
+```
+
+The cleaned data can also be pivoted by length, wherein there are more rows and lesser number of columns. Here, we can expand the income distribution range for different races through the years.
+
+```{r}
+# Pivoting the data
+pivot_data <- clean_h_income %>% ungroup() %>%
+  select(c(year, gp_race_cat, starts_with("level"),hnumber,)) %>%
+  pivot_longer(cols=starts_with("level"), names_to="IncomeRange", values_to="percent")
+
+# Replacing the income range levels
+pivot_data$IncomeRange <- str_replace_all(pivot_data$IncomeRange, setNames(income_levels,income_vals))
+
+# Calculating the number of household incomes for each income range distribution
+pivot_data_longer <- pivot_data %>% mutate(
+  range_household_number = round((hnumber*percent)/100)
+)
+
+pivot_data_longer
+```
+From this table we can see that the data has been pivoted and increased in length, wherein for each income range, it’s percentage distribution and corresponding household income level for the different races across different years is present.
+
+```{r}
+pivot_data_longer %>% 
+  group_by(IncomeRange, year) %>%
+  summarise(across(c(range_household_number),~sum(.x, na.rm=TRUE))) %>% 
+  arrange(desc(range_household_number))
+```
+
+This data can be further grouped by income range and year and then arranged in descending order by the range_household_number. This can tell us the income range and the year for which the household income numbers were the highest or the lowest.
