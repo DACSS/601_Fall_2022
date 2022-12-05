@@ -1,0 +1,141 @@
+---
+title: "Challenge 6"
+author: "Aleacia Messiah"
+description: "Visualizing Time and Relationships"
+date: "12/04/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - Aleacia Messiah
+  - tidyverse
+  - ggplot2
+  - summarytools
+  - lubridate
+  - treemap
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(lubridate)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - debt  ⭐
+  - fed_rate ⭐⭐
+  - abc_poll ⭐⭐⭐
+  - usa_hh ⭐⭐⭐
+  - hotel_bookings ⭐⭐⭐⭐
+  - AB_NYC ⭐⭐⭐⭐⭐
+
+  
+
+```{r}
+# read in hotel data
+hotel_orig <- read_csv("_data/hotel_bookings.csv")
+# view hotel data
+hotel_orig
+# view summary of hotel data
+dfSummary(hotel_orig)
+```
+
+### Briefly describe the data
+
+This dataset is about the details of hotel bookings of a city hotel and resort hotel, consisting of 119,390 observations (customers/bookings) with 32 variables (`hotel`, `arrival_date_year`, `adults`, `children`, `babies`, `deposit_type`, `assigned_room_type`, etc). There are no missing values except four missing in the `children` column. This dataset also measures bookings for each day of the month, each week, and each month for years 2015 to 2017. Based on the summary output, the highest number of bookings occurs in August with 13,877 observations (11.6% of the data) with July (12,661 observations) and May (11,791 observations) following behind. This makes sense since May through August are summer months and most people are on vacation during this time. 
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+This data is mostly tidy so the only thing that needs to be done is to combine the `arrival_date_year`, `arrival_date_month`, and `arrival_date_day_of_month` variables into one column as the `arrival_date`, similar to the date format of `reservation_status_date`. 
+
+```{r}
+hotel <- hotel_orig %>% 
+  # combine the date columns into one column
+  unite(arrival_date_year, arrival_date_month, arrival_date_day_of_month,
+        col = arrival_date, sep = "-")
+# view new hotel data
+hotel
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+There are several variables (`hotel`, `meal`, `reserved_room_type`, etc.) that need to be converted into factors and `arrival_date` needs to be converted into a date format. 
+
+```{r}
+hotel <- hotel %>% 
+  # convert hotel, is_canceled, etc., columns to factors
+  mutate(across(c(hotel, is_canceled, meal:is_repeated_guest, reserved_room_type:assigned_room_type, deposit_type:company, 
+                  customer_type, reservation_status), factor)) 
+# convert arrival_date into date format
+hotel$arrival_date <- ymd(hotel$arrival_date)
+# view new hotel dataset
+hotel
+```
+
+## Time Dependent Visualization
+
+```{r}
+# create a time series graph of adr vs. arrival_date
+ggplot(hotel, aes(`arrival_date`, `adr`, color = `hotel`)) +
+  geom_line()
+```
+
+I chose a time series graph because it best portrays the change of `adr` over time as `arrival_date` increases. It appears that `adr` is relatively stable over time with the exception of the adr between January 2016 and July 2016, which may be an outlier. `adr` also doesn't vary much depending on the type of hotel but there are a few peaks where the resort hotel has a higher adr than the city hotel. 
+
+## Visualizing Part-Whole Relationships
+
+```{r}
+# create a bar graph based on deposit_type
+ggplot(hotel, aes(`deposit_type`, fill = `hotel`)) +
+  geom_bar()
+# create hotel_new dataset with summarized counts of assigned_room_type by hotel
+hotel_new <- hotel %>% 
+  group_by(hotel, assigned_room_type) %>% 
+  summarize(n = n())
+# create a treemap based on hotel and assigned_room_type
+treemap(hotel_new,
+       index = c("hotel", "assigned_room_type"),
+       vSize = "n",
+       type = "index")
+```
+
+I chose a bar graph based on `deposit_type` because it best depicts the different deposit types and shows the count of each one based on the type of hotel. This graph clearly displays that a majority of bookings from both hotels do not require a deposit beforehand. If there is a deposit prior to booking, the city hotel has more non-refundable deposits than the resort hotel and the resort hotel has a small amount of refundable deposits. 
+
+I chose a treemap based on `hotel` and `assigned_room_type` because this helps visualize the counts of each assigned room type in a better way by illustrating different blocks of various sizes corresponding to the number of assigned room types. This treemap shows the resort hotel has more room types than the city hotel but the city hotel has the largest amount of "A" assigned room types. The city hotel square is larger than the resort hotel square, meaning there are more assigned rooms in the city hotel than the resort hotel. 
