@@ -13,68 +13,147 @@ format:
 
 ```{r}
 library(dplyr) 
-```
-The columns of the dataset are :
-```{r}
-data_country <- read_csv('_data/FAOSTAT_livestock.csv')
-colnames(data_country)
-data_country
-```
-The columns/features are of the following type:
-1. Domain.Code - categorical variable, related to the Domain
-2. Domain - categorical variable
-3. Area.Code - Categorical/Ordinal, related to the Area
-4. Area - categorical variable
-5. Element.Code - Categorical variable related to the element
-6. Element - Categorical variable
-7. Item.Code - Categorical variable related to the Item
-8. Item - Categorical variable
-9. Year.Code  - Categorical variable related to the Year (it is similar to the Year)
-10. Year - Categorical variable
-11. Unit - categorical
-12. Value - Continuous variable
-13. Flag - categorical related to Flag.Description
-14. Flag Description - Categorical
-
-As, we can see some columns are related to each other we can choose certain columns from it, to reduce complexity.
-We are taking a small subset of the data by extracting some columns of use.
-```{r}
-data_country_subset <- data_country[c('Domain','Area','Element','Item','Year','Unit','Value','Flag.Description','Flag')]
-data_country_subset
+library(ggplot2)
 ```
 
-The summary of the columns in the dataset are shown below:
+#Read Dataset
+We will load the hotel_bookings dataset.
 ```{r}
-
-#install.packages( pkgs = "summarytools" )
-summary(data_country)
+hotel_data <- read.csv('_data/hotel_bookings.csv')
+hotel_data
+```
+```{r}
+colnames(hotel_data)
 ```
 
-From the code below, we can see only one element is present.
+The dataset contains 32 columns and 119,390 observations. The columns are shown above. 
+Some of the categorical columns are : hotel, deposit_type, company, customer_type
+The columns related to time are : "lead_time" ,"arrival_date_year" , "arrival_date_month"     "arrival_date_week_number" ,"arrival_date_day_of_month" ,"stays_in_weekend_nights", "stays_in_week_nights"
+The target column according to this dataset is : "is_cancelled"
+
+#Summary of the dataset
 ```{r}
-date_country_groups<-group_by(data_country,Element)
-abc_data.d_by_product<-summarise(date_country_groups,
-          n=n())
-abc_data.d_by_product
+summary(hotel_data)
+```
+As, we can see this dataset is well-defined in terms of rows and columns, thus, they need no pivoting.
+
+```{r}
+unique(hotel_data$hotel)
+unique(hotel_data$deposit_type)
+unique(hotel_data$customer_type)
+```
+There are two types of hotels : "Resort Hotel", "City Hotel", three types of Deposits : "No Deposit" ,"Refundable" ,"Non Refund", and four types of customers in this dataset : "Transient","Contract","Transient-Party","Group".
+
+#Dataset Cleaning
+Using the code below to see the null values
+```{r}
+sapply(hotel_data, function(x) sum(is.na(x)))
+```
+
+As, we just have null values in one column i.e. Children. We can substitue those 4 values with the values in babies columns, as they mean the same or are giving same context.
+```{r}
+n <- length(hotel_data$children)
+for (i in 1:n) {
+  if (is.na(hotel_data$children[i]))
+    hotel_data$children[i] <- hotel_data$babies[i]
+}
+```
+
+Now, we will look at one column which does not clearly define itself : "adr". It should be "average daily rate". According to the summary, the maximum value is very high while the mean lies in 100s. We will look at how many records are actually in the high range.
+```{r}
+hotel_data%>%
+  filter(adr>2000)
+```
+```{r}
+hotel_data%>%
+  filter(adr>1000)
+```
+We can see, there is only one record which can be an outlier, so we can replace the value by mean of the column "adr".
+
+```{r}
+hotel_data = hotel_data%>%
+  mutate(adr = replace(adr, adr>1000, mean(adr)))
+```
+
+#Dataset Analysis
+
+```{r}
+ggplot(data = hotel_data, aes(x = hotel)) +
+  geom_bar(stat = "count",fill='lightblue') +
+  labs(title = "Booking by Hotel type",
+       x = "Hotel type",
+       y = "No. of bookings") 
+```
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(hotel, deposit_type) %>% 
+                group_by( hotel, deposit_type) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(deposit_type, n), n, fill = hotel)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(hotel, customer_type) %>% 
+                group_by( hotel, customer_type) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(customer_type, n), n, fill = hotel)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+We can summarize the following from the plots above:
+1. The number of bookings for Resorts are half the number of bookings for the City Hotels.
+2. Majority of the City Hotels have No Deposit for the booking, while there are 0 City Hotels asking for Refundable Deposits.
+3. Majority of customers booking the City Hotels are Transient, followed by Transient-Party.
+
+Now, we will look at the distribution of hotels per country
+```{r}
+hotel_data%>%
+  group_by(country)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+
+As, "is_canceled" is our target variable, let us see the cancelations per country.
+```{r}
+hotel_data %>% 
+  select(country, is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled)) %>% 
+  head(n=10)
+```
+
+The maximum bookings are made in : PRT,GBR,FRA,ESP,DEU
+The maximum cancelations are made in : PRT,GBR,ESP,FRA,ITA
+
+As seen, FRA has higher bookings than ESP, and the cancelations are less as compared the ESP. Thus, the hit rate i.e. the probability for booking to happen is high in FRA.
+
+```{r}
+hotel_data %>% 
+  select(country, stays_in_week_nights) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(stays_in_week_nights)) %>% 
+  head(n=10)
 ```
 
 ```{r}
-date_country_groups<-group_by(data_country,Item)
-abc_data.d_by_product<-summarise(date_country_groups,
-          n=n())
-abc_data.d_by_product
+hotel_data %>% 
+  select(country, stays_in_weekend_nights) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(stays_in_weekend_nights)) %>% 
+  head(n=10)
 ```
+Also, we can see the stay in week nights and weekend nights follow almost similar pattern in terms of the countries, with FRO and SEN being the top 2.
 
-There is only one domain present in the dataset.
-```{r}
-date_countryg<-group_by(data_country,Domain)
-abc_data.d_by_product<-summarise(date_countryg,
-          n=n())
-abc_data.d_by_product
-```
+
 Research Question: 
-1. Which area has higher number of livestocks, what are the median, mean and mode values for the same? 
-2. Across which years were the count of livestocks the highest? 
-3. What is the unit type across areas and which one is the highest in numbers?
-4. How is flag affecting the livestock value count?
+1. Does the cancellation of booking depend upon the dates of stays?
+2. Do the number of adults and number of children affect the stay length?
+3. Does the deposit type have any impact on the cancellation rate?
+4. Does parking space affect the number of bookings made in the hotel?
+5. How does the market segment affect the bookings?
 
