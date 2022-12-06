@@ -1,0 +1,159 @@
+---
+title: "Challenge 7"
+author: "Aleacia Messiah"
+description: "Visualizing Multiple Dimensions"
+date: "12/06/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - Aleacia Messiah
+  - tidyverse
+  - ggplot2
+  - summarytools
+  - lubridate
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+
+-   Explain why you choose the specific graph type
+
+5)  If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualization.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   eggs ⭐
+
+-   abc_poll ⭐⭐
+
+-   australian_marriage ⭐⭐
+
+-   hotel_bookings ⭐⭐⭐
+
+-   air_bnb ⭐⭐⭐
+
+-   us_hh ⭐⭐⭐⭐
+
+-   faostat ⭐⭐⭐⭐⭐
+
+    ::: callout-note
+    ## Note
+
+    Please note that since this challenge is to recreate my graphs from previous challenges, I will be using the same dataset (hotel_bookings.csv) to recreate my graphs from Challenge 6, hence why my code for reading in, tidying, and mutating the dataset will also be the same.
+    :::
+
+```{r}
+# read in hotel data
+hotel_orig <- read_csv("_data/hotel_bookings.csv")
+# view hotel data
+hotel_orig
+# view summary of hotel data
+dfSummary(hotel_orig)
+```
+
+### Briefly describe the data
+
+This dataset is about the details of hotel bookings of a city hotel and resort hotel, consisting of 119,390 observations (customers/bookings) with 32 variables (`hotel`, `arrival_date_year`, `adults`, `children`, `babies`, `deposit_type`, `assigned_room_type`, etc). There are no missing values except four missing in the `children` column. This dataset also measures bookings for each day of the month, each week, and each month for years 2015 to 2017. Based on the summary output, the highest number of bookings occurs in August with 13,877 observations (11.6% of the data) with July (12,661 observations) and May (11,791 observations) following behind. This makes sense since May through August are summer months and most people are on vacation during this time.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+This data is mostly tidy so the only thing that needs to be done is to combine the `arrival_date_year`, `arrival_date_month`, and `arrival_date_day_of_month` variables into one column as the `arrival_date`, similar to the date format of `reservation_status_date`.
+
+```{r}
+hotel <- hotel_orig %>% 
+  # combine the date columns into one column
+  unite(arrival_date_year, arrival_date_month, arrival_date_day_of_month,
+        col = arrival_date, sep = "-")
+# view new hotel data
+hotel
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+There are several variables (`hotel`, `meal`, `reserved_room_type`, etc.) that need to be converted into factors and `arrival_date` needs to be converted into a date format.
+
+```{r}
+hotel <- hotel %>% 
+  # convert hotel, is_canceled, etc., columns to factors
+  mutate(across(c(hotel, is_canceled, meal:is_repeated_guest, reserved_room_type:assigned_room_type, deposit_type:company, 
+                  customer_type, reservation_status), factor)) 
+# convert arrival_date into date format
+hotel$arrival_date <- ymd(hotel$arrival_date)
+# view new hotel dataset
+hotel
+```
+
+## Visualization with Multiple Dimensions
+
+```{r}
+# create a time series graph of adr vs. arrival_date in a facet grid with a least-squares fitted line and labels
+ggplot(hotel, aes(`arrival_date`, `adr`, color = `hotel`)) +
+  geom_line() +
+  facet_grid(rows = vars(`hotel`)) +
+  geom_smooth(color = "black") +
+  labs(x = "Arrival Date",
+       y = "Average Daily Rate (ADR)",
+       title = "Average Daily Rate vs. Arrival Date",
+       caption = "Data: hotel_bookings.csv"
+  )
+# zoom in on the time series graphs within the facet grid
+ggplot(hotel, aes(`arrival_date`, `adr`, color = `hotel`)) +
+  geom_line() +
+  facet_grid(rows = vars(`hotel`)) +
+  geom_smooth(color = "black") +
+  labs(x = "Arrival Date",
+       y = "Average Daily Rate (ADR)",
+       title = "Average Daily Rate vs. Arrival Date",
+       caption = "Data: hotel_bookings.csv"
+  ) +
+  coord_cartesian(ylim = c(0,600))
+# create a bar graph based on number of bookings vs. deposit type faceted by is_repeated_guest
+ggplot(hotel, aes(`deposit_type`, fill = `hotel`)) +
+  geom_bar() +
+  facet_grid(cols = vars(`is_repeated_guest`)) +
+  labs(x = "Deposit Type",
+       y = "Number of Bookings",
+       title = "Number of Bookings vs. Deposit Type",
+       caption = "Data: hotel_bookings.csv",
+       subtitle = "Is the booking a repeated guest? \n0 = No \n1 = Yes"
+  ) +
+  guides(x = guide_axis(n.dodge = 2))
+```
+
+I used the same graphs as I did in Challenge 6 but I added faceting to make each hotel's data stand out more. For the time series graphs, with the outlier in the city hotel graph, it is difficult to tell how the average daily rate (ADR) varies over time, even with the least-squares fitted line. I decided to use zooming to get a closer look at the area below $600 ADR. It seems like the resort hotel ADR varies more over the span of two years compared to the city hotel ADR. There are also more peaks in ADR over the summer months for the resort hotel. In contrast, the city hotel ADR remains steady or slowly increasing over the years. 
+
+For the bar graphs, I added the `is_repeated_guest` variable to determine whether there is a difference between the deposit type of a first-time guest or regular guest. For first-time guests, there are more bookings without deposits compared to regular guests, with the city hotel having a larger quantity than the resort hotel. This is also reflected with non-refundable deposits. However, there are more refundable deposits for first-time guests than regular guests, especially with the resort hotel. Overall, since there is a larger amount of first-time guests versus repeated guests, we can't be absolutely certain that there is a difference in deposit type for different types of guests, but the graphs illustrate first-time guests are about as likely to not have to pay a deposit as repeated guests, so there is no special treatment or benefits for being a regular guest. 
