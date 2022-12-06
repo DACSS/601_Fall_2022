@@ -1,0 +1,176 @@
+---
+title: "Challenge 6 "
+author: "Tejaswini_Ketineni"
+description: "Visualizing Time and Relationships"
+date: "12/04/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+---
+
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+```
+
+```{r}
+#loading all the required libraries
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(lubridate)
+library(summarytools)
+library(skimr)
+```
+
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - debt  ⭐
+  - fed_rate ⭐⭐
+  - abc_poll ⭐⭐⭐
+  - usa_hh ⭐⭐⭐
+  - hotel_bookings ⭐⭐⭐⭐
+  - AB_NYC ⭐⭐⭐⭐⭐
+
+  
+
+{r}
+```{r}
+library(readxl)
+debt_in_trillions <- read_excel("_data/debt_in_trillions.xlsx")
+```
+
+
+### Briefly describe the data
+```{r}
+#we will use library fun modeling to get variable distribution
+library(funModeling)
+plot_num(debt_in_trillions)
+
+```
+
+
+```{r}
+summary(debt_in_trillions)  
+```
+```{r}
+#The dataset gave us information on different types of loan through different years (2003-2021) and quarters. There are 74 rows and 8 columns, of which 1 is character type(which is Year and Quarter) and rest of the 7 are numeric. There aren’t any missing values in the columns.
+#the unit ranges for these values dont look like they are on the same scale
+#some are left skewed and some are right skewed except Student Loan and HE Revolving
+
+```
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+```{r}
+# assigning column names following standard convention
+colnames(debt_in_trillions) <- c('year_quarter','mortgage','he_revolving','auto_loan',
+'credit_card', 'student_loan','other','total')
+```
+
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+# tsibble: tidy temporal data frames and tools
+#library(tsibble) --> installed
+```
+
+```{r}
+#all the numerical variables are independent in nature and need no further manipulation
+#year_quarter can be further divided into year and quarter columns for ease of visualizations
+debt_in_trillions$year = as.integer(substring(debt_in_trillions$year_quarter, first=1, last=2))
+debt_in_trillions$quarter = substring(debt_in_trillions$year_quarter, first=4, last=5)
+head(debt_in_trillions)
+#we added now two new columns --> year(integer) and quarter 
+```
+
+## Time Dependent Visualization
+```{r}
+#lets check how the total loan is spread of the years
+ggplot(debt_in_trillions) +
+  geom_point(aes(x=year, y=total)) + labs(title = "Debt trend with time", x = "Time", y = "Total Debt") + theme_minimal()
+
+#it increased till 2006 and then dropped(maybe due to 2008 recession? and then increased
+#after 2011
+
+```
+
+## Visualizing Part-Whole Relationships
+
+
+```{r}
+#the dataset is in wide format
+#before doing any further visualizations, if we convert into long format, it will be easier
+
+debt_in_trillions_long<-debt_in_trillions%>%pivot_longer(cols = mortgage:other, names_to = "loan_type", values_to = "totals")%>%select(-total)%>%mutate(loan_type = as.factor(loan_type))
+
+```
+
+```{r}
+head(debt_in_trillions_long)
+```
+
+```{r}
+
+color_values = c("aquamarine", "azure", "cornsilk", "coral1", "darkorange", 
+                 "darkgoldenrod1")
+ggplot(debt_in_trillions_long, aes(x=year, y=totals, fill=loan_type)) +
+  geom_bar(position="stack", stat="identity") + labs(title = "Distribution of Loan Types")+
+  scale_y_continuous(labels = scales::label_number(suffix = " Trillion"))+
+  theme(legend.position = "top") +
+  guides(fill = guide_legend(nrow = 1)) +
+  scale_fill_manual(labels=
+                      str_replace(levels(debt_in_trillions_long$loan_type), " ", "\n"),
+                      values=color_values)
+
+```
+
+```{r}
+library(dplyr)
+
+df <- debt_in_trillions_long %>%
+  select(loan_type,totals) %>%
+  group_by(loan_type) %>%
+  summarise(loantotal = sum(totals)) %>%
+  mutate(total_perc = (loantotal/sum(loantotal))*100) %>% 
+  arrange(total_perc)
+```
+
+#for the below graph, it totals works, labels can use the value total_perc to display
+#total percentage
+```{r}
+ggplot(df, aes(x="", y=total_perc, fill=loan_type)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) + labs(title = "Proportion of Loan Types") + theme_void() + scale_fill_brewer(palette="PiYG") + geom_text(aes(x = 1.6, label = paste0(round(total_perc), "%")), position = position_stack(vjust = 0.5))
+```
