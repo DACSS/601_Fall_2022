@@ -1,0 +1,88 @@
+---
+title: "Challenge 2 Instructions"
+author: "Siddharth Nammara Kalyana Raman"
+desription: "Data wrangling: using group() and summarise()"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+data<-read.csv('_data/hotel_bookings.csv')
+data
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+library('summarytools')
+print(dfSummary(data))
+```
+
+From the above summary we know that, the dataset contains data from 2015 and 2017, and as can be seen from the summary, there are two unique values: resort and city. We can also see from the is canceled column portion of the summary that about 37% of the reservations have been canceled. The dataset has a large number of category values, and we can easily comprehend how these categorical values might be spread throughout the data set to provide an in-depth analysis.
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+grouped_data_marketSegment <- data %>%
+  group_by(market_segment)
+
+grouped_data_marketSegment %>%
+  summarise(
+    average_stays_in_week_nights = mean(stays_in_week_nights, nr.rm = TRUE),
+    average_stays_in_weekend_nights = mean(stays_in_weekend_nights, nr.rm = TRUE)
+  )
+```
+
+```{r}
+prop.table(table(select(grouped_data_marketSegment, reservation_status))) %>% 
+  `*`(100) %>% 
+  round(2)
+```
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+We gain insight from the table's market segment groupings, where the market segment bookings section provides information on bookings made on weekends and how weekday bookings are structured. This will assist in selecting how to plan or organize the activities that are being targeted by a certain segment at this time.
+
+The table that displays the percentages of reservations for each segment that were rescheduled, were canceled due to no-shows, or were checked out. This information will aid hotels in determining which market segments experience the most number of cancellations and which experience the fewest. We may also come up with a number of strategies to lessen the number of cancellations that are directed at a specific market.
