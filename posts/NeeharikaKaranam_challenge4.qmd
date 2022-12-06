@@ -1,0 +1,136 @@
+---
+title: "Challenge 4"
+author: "Neeharika Karanam"
+desription: "More data wrangling: pivoting"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+-   hotel_bookings.csv⭐⭐⭐⭐
+
+
+```{r}
+# Reading in the hotels booking data
+hotels_booking <- read_csv("_data/hotel_bookings.csv", show_col_types = FALSE)
+
+hotels_booking
+```
+
+In order to check the different unique values in all of the columns I have used the lubridate package.
+
+```{r}
+rapply(hotels_booking,function(x)length(unique(x)))
+```
+
+### Briefly describe the data
+
+From the above dataset I have observed that the hotel bookings dataset has 119390 rows and 31 columns also consisting of data from mainly two different hotels called the City Hotel and the Resort Hotel. Each row in the dataset corresponds to the hotel bookings made by each of the customer and it also has a lot of additional information like the arrival date, stay days, meal, type of the room, customer, type, reservation status, number of the adult/children/babies in the room, previous cancellations, if there is a car parking space and lots more information and this data is from different parts of the world.
+
+## Tidy Data (as needed)
+
+I would like to tidy the data in the following way.
+
+```{r}
+
+table(hotels_booking$country)
+```
+
+From the above we can observe that there is a NULL value in the country column and we can remove this value because this information will not help us in futher analysis.
+
+```{r}
+hotels_booking <- hotels_booking %>% 
+  filter(!(country == "NULL"))
+
+```
+
+```{r}
+#To understand the class for each of the columns in the dataset.
+sapply(hotels_booking, class)
+```
+
+We can now understand that there are 2 different fields called the agents and the company which have numerical values in them but has their class described as character. Therefore, these NULL values can be modified from NULL to NA and we can change the type of the column to numeric. We can also combine the arrival date in year, month and the date into one single field and name it as the arrival date.
+
+## Identify variables that need to be mutated
+
+I have identified the various variables that can be mutated and have performed the mutation.
+
+```{r}
+#Mutating the arrival date into a single field and also mutate the adults, babies and children in order to get the total guests in the hotel.
+
+hotels_booking_mutate <- hotels_booking %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_month,arrival_date_year))
+
+hotels_booking_mutate
+```
+After the mutation now lets find the range of the arrival date of the different bookings of the data
+
+```{r}
+summary(hotels_booking_mutate$arrival_date)
+```
+
+We can now observe that the arrival dates now lie between the July 2015 - August 2017. Also, the lead time will help us in understanding when the total hotel reservation has been started and we can also calculate the booking date by subtracting the lead time from the arrival date.
+
+```{r}
+hotels_booking_mutate <- hotels_booking_mutate %>%
+  mutate(booking_date = arrival_date - lead_time)
+
+hotels_booking_mutate
+```
+```{r}
+unique(hotels_booking$reservation_status)
+```
+
+```{r}
+#We can find the number of days after booking when the status was changed to cancelled
+hotel_booking_cancellation <- hotels_booking_mutate %>%
+  filter(reservation_status == 'Canceled') %>%
+  mutate(canc_time = booking_date - reservation_status_date)
+
+hotel_booking_cancellation %>%
+  summarise(min = min(canc_time), max = max(canc_time), mean = mean(canc_time), median = median(canc_time))
+```
+
+Now we can change the class of the column of the agent and the company from character to numeric.
+
+```{r}
+#Mutating the class of the agent and company field from character to numeric
+
+hotels_booking_mutate <- hotels_booking_mutate %>%
+  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+
+is.numeric(hotels_booking_mutate$agent)
+```
+
+```{r}
+is.numeric(hotels_booking_mutate$company)
+```

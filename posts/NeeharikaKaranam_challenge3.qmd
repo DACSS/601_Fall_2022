@@ -1,0 +1,140 @@
+---
+title: "Challenge 3"
+author: "Neeharika Karanam"
+desription: "Tidy Data: Pivoting"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   animal_weights.csv ⭐
+-   eggs_tidy.csv ⭐⭐ or organiceggpoultry.xls ⭐⭐⭐
+-   australian_marriage\*.xls ⭐⭐⭐
+-   USA Households\*.xlsx ⭐⭐⭐⭐
+-   sce_labor_chart_data_public.xlsx 🌟🌟🌟🌟🌟
+
+I have chosen the dataset eggs_tidy.csv to perform my analysis and help pivot the dataset as required.
+
+```{r}
+#Read the eggs dataset and then print the data.
+eggs_dataset <- read_csv("_data/eggs_tidy.csv")
+
+eggs_dataset
+
+```
+
+### Briefly describe the data
+
+Now, let us describe the dataset and perform the analysis.
+
+```{r}
+summary(eggs_dataset)
+
+```
+
+```{r}
+head(eggs_dataset)
+
+```
+
+From the summary of the dataset we can clearly understand that there are 120 rows and 6 columns which consists of the data from 2004-2013 for each and every month of the year(12 months/year). The first two columns gives us the month and the year whereas the rest 4 columns gives us the average price of the size and quantity of the eggs combined. The column names are a combination of the size and the quanity like large_half_dozen, extra_large_half_dozen, large_dozen, extra_large_dozen. I have observed that the average price ranges from 126-290 cents.  
+
+## Anticipate the End Result
+
+The first step in pivoting the data is to try to come up with a concrete vision of what the end product *should* look like - that way you will know whether or not your pivoting was successful.
+
+One easy way to do this is to think about the dimensions of your current data (tibble, dataframe, or matrix), and then calculate what the dimensions of the pivoted data should be.
+
+Suppose you have a dataset with $n$ rows and $k$ variables. In our example, 3 of the variables are used to identify a case, so you will be pivoting $k-3$ variables into a longer format where the $k-3$ variable names will move into the `names_to` variable and the current values in each of those columns will move into the `values_to` variable. Therefore, we would expect $n * (k-3)$ rows in the pivoted dataframe!
+
+```{r}
+#existing rows/cases in the eggs dataset
+nrow(eggs_dataset)
+
+#existing columns/cases in the eggs dataset
+ncol(eggs_dataset)
+
+#expected rows/cases in the eggs dataset after pivoting
+nrow(eggs_dataset) * (ncol(eggs_dataset)-2)
+
+# expected columns in the eggs dataset after pivoting
+3 + 2
+```
+
+### Description of the final dimensions
+
+In the dataset I have observed that the dataset has 120 rows and 6 columns and I expect the dataset after pivoting to have the month, year, size of the egg and the quanity of the eggs. In the process of arranging the data in this way it will be extremely easy to observe the changes which are made throughout the year and also the changes during the range of 2004-2013. This will also help understand the differences between the large, extra large eggs as well as whether they were being sold in dozens or half-dozens.
+
+After pivoting I expect the resulting dataset to have 4 times longer data than it is at the moment as I want to separate the size-quantity pairing and have individual columns for each and also the size-quantity pairing will have it's own row instead of 4 columns after month and year. I anticipate the total number of columns to be decreased by 1 because I want to remove the 4 size-quantity pairings names and replace them with month, year, size, quantity, average price.
+
+## Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above.
+
+```{r}
+
+eggs_longer <- eggs_dataset%>%
+  pivot_longer(cols=contains("large"),
+               names_to = c("size", "quantity"),
+               names_sep="_",
+               values_to = "cost"
+  )
+
+eggs_longer
+```
+
+```{r}
+#existing rows/cases after the pivot
+nrow(eggs_longer)
+
+#existing columns/cases after the pivot
+ncol(eggs_longer)
+```
+
+### Conclusion
+
+As anticipated, I can observe that the data is 4 times longer than it was and changed from 120 -> 480 and the number of columns has been reduced by 1 from 6 -> 5. This makes us have a single observation per row and helps in easily understand the data and work for the future analysis. I would now like to mutate the cost of the eggs from cents to dollars for better understand ability. The table below gives us the cost of the eggs in dollars very precisely.
+
+```{r}
+#Mutate the cost of the eggs from cents to dollars.
+
+eggs_USD <- mutate(eggs_longer, 
+       avg_USD = cost / 100
+       )%>%
+  select(!contains ("price"))
+eggs_USD
+```
