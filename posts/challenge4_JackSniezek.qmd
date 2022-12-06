@@ -1,0 +1,84 @@
+---
+title: "Challenge 4"
+author: "Jack Sniezek"
+desription: "More data wrangling: pivoting"
+date: "12/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+-   FedFundsRate.csv⭐⭐⭐
+
+```{r}
+
+fed_rates_orig <- read_csv("_data/FedFundsRate.csv")
+fed_rates_orig
+summary(fed_rates_orig)
+
+```
+
+## Briefly describe the data
+
+The Federal Funds Rate dataset contains columns for year, month, and day, as well as 4 federal funds rate columns, GDP, unemployment rate, and the inflation rates collected from 1954 into 2017. There is a lot of missing data, but I noticed that there was a reason for a lot of it. GDP was collected quarterly, so the same 4 months each year contained GDP data while the rest were empty. The target federal funds rate was replaced by the upper and lower target rates beginning in 2009. Inflation was not collected until 1958. Target federal funds rate wasn't collected until the end of 1982. Lastly, any date that did not correspond to the first of each month did not have data for the effective federal funds rate, GDP, inflation rate, or unemployment rate.
+
+## Tidy Data (as needed)
+
+My plan is to try to filter out the dates that do not correspond to the first of the month, as those dates only have data for the target federal funds rate and nothing else.
+
+```{r}
+fed_rates_clean <- filter(fed_rates_orig, `Day` == 1)
+fed_rates_clean
+```
+
+
+
+## Identify variables that need to be mutated
+
+I will be mutating the date variables into one variable. This will make it easier to visualize in a graph or table. I will also mutate the upper and lower target federal funds rates to fill in the rest of the target federal funds rate column, which I will be able to use instead of having three separate target rates. This should leave me with 6 columns, with one being a date column and the other five being different rates.
+
+```{r}
+fed_rates_new <- fed_rates_clean%>%
+  mutate(Date = make_date(Year, Month, Day), .before = `Federal Funds Target Rate`)
+
+fed_rates_new <- fed_rates_new%>%
+  mutate(`Federal Funds Target Rate` = ifelse(is.na(`Federal Funds Target Rate`), (`Federal Funds Upper Target`+ `Federal Funds Lower Target`)/2, `Federal Funds Target Rate`))
+
+fed_rates_new <- select(fed_rates_new, -c("Year", "Month", "Day", contains("Upper"), contains("Lower")))
+fed_rates_new
+
+```
+
+The data matches what I was trying to accomplish. 
