@@ -1,0 +1,311 @@
+---
+title: "Challenge 3"
+author: "Theresa Szczepanski"
+desription: "Tidy Data: Pivoting"
+date: "09/22/2022"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Theresa_Szczepanski
+  - challenge_3
+  - animal_weights
+# - eggs
+  - australian_marriage
+#  - usa_households
+#  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readr)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+::: panel-tabset
+## Animal Weights ⭐
+
+
+### Read in data
+
+```{r}
+animal_weights<-read_csv("_data/animal_weight.csv")
+# used spec() to get a list of the column variables and see that the 16 different
+# types of animals need to be grouped under a variable
+
+# spec(animal_weights)
+```
+
+
+::: callout-tip
+### Data Summaries
+For this class, should I try to have a separate analysis file? I left the code of my walkthrough mental process here, but commented it out. Also, would it be appropriate to create an "appendix" as the second "tab" on this html file; i.e., 2 tabs per data set (one for the write up and an appendix tab)?
+:::
+```{r}
+
+
+animal_weights
+
+# Use this, if there were many more rows in the original file and identifying the number of areas were difficult
+# animal_weights%>%
+#  select(`IPCC Area`)%>%
+#  n_distinct(.)
+
+```
+
+### Briefly describe the data
+
+From inspection, we can see that the data consists of the weights (in kilograms) of 16 different types of (domesticated/farmed) animals in one of the 9 given [Intergovernmental Panel on Climate Change (IPCC)](https://www.ipcc.ch/) regions in the world.
+
+### Anticipate the End Result
+
+To tidy our data, we need to introduce a new grouping variable, `animal`, and then the 2 variables
+`IPCC Area` and `animal` (our `names_to` variable in our pivot) will identify a unique case and the third column `weight_kg` (our `value_to` variable in our pivot) will store the value for a given case.
+
+
+
+
+### Challenge: Describe the final dimensions
+
+Our tidied dataframe will consist of $3$ columns and $9 * 16 = 144$ rows, i.e., a $144 \times 3$ dataframe, where the $16$ variable names for animals will move into the `animal` variable and the current values in those columns will move into the `weight_kg` variable to create our new dataframe.
+
+
+```{r}
+#existing rows/cases
+nrow(animal_weights)
+
+#existing columns/cases
+ncol(animal_weights)
+
+#expected rows/cases
+nrow(animal_weights) * (ncol(animal_weights)-1)
+
+# expected columns 
+ncol(animal_weights)-16 + 2
+
+```
+
+
+
+### Challenge: Pivot the Chosen Data
+
+Here is our checklist for a tidy dataframe:
+
+- In our tidied dataframe, a new **case** is given by an animal and IPCC region.
+- Each variable: `IPCC Area`, `animal`and `weight_kg` has its own column.
+- Each case has a corresponding value that appears in the `weight_kg` column.
+- Each observation has its own row with the first two entries in the row determining
+the case and the last entry in the row being the unique cell for the value of `weight_kg`.
+
+
+
+```{r}
+#| tbl-cap: Pivoted animal_weights
+animal_weights <-tibble(animal_weights)
+# Was line 155 needed? When do I need this?
+animal_weights<-animal_weights %>%
+    pivot_longer(c(2:17), names_to = "animal", values_to = "weight_kg")
+  # pivot_longer(c(`Cattle - dairy`,`Cattle - non-dairy`,
+  # Buffaloes,`Swine - market`,
+  # `Swine - breeding`,
+  # `Chicken - Broilers`,
+  # `Chicken - Layers`,
+  # Ducks,
+  # Turkeys,
+  # Sheep,
+  # Goats,
+  # Horses,
+  # Asses,
+  # Mules,
+  # Camels,
+  # Llamas), names_to = "animal", values_to = "weight_kg")
+animal_weights
+
+```
+
+
+::: callout-tip
+### Pivot using gather vs. pivot_longer
+
+I also attempted to pivot using `gather` as seen in the tutorial video. However I received the error
+**object Cattle - dairy not found **. I thought that my column names were incorrect, however, I copied the text from my `gather` call and was able to use it in a `select` call without an issue. I was able to use the column numbers rather than the names to fix it but am still not sure why I was having the issue. 
+
+Assuming that I can use either `gather` or `pivot_longer`, are there cases where one should use `pivot` as opposed to `gather` and vice-versa?
+:::
+
+```{r}
+ animal_weights_gather_test <-read_csv("_data/animal_weight.csv")
+
+animal_weights_gather_test<- animal_weights_gather_test %>%
+  gather(c(2:17), key = "animals", value = "weight_kg")
+animal_weights_gather_test
+```
+
+
+
+Any additional comments?
+
+
+## Australian Marriage ⭐⭐⭐
+### Read in data
+
+When examining the Excel file, I noticed that there were 4 sheets, 2 of which contained a table of contents and notes about the data collected and 2 of which contained data. When reading the notes and inspecting the sheets, I could see that that the third sheet contains all of the data by Australian Federal Election Divisions, while the second sheet contains the data by Australian States/Territories. Since Federal Election Divisions do not cross State/Territory borders, the second sheet can be reproduced using the data from the third sheet. Therefore in the read in phase I:
+
+- Read in only the 3rd sheet with data by Australian Federal Election divisions
+- Removed the heading rows that were not labeling data
+- Deleted all of the columns that could be recreated by performing calculations on other columns in the data frame, i.e., `%` and `Total` columns.
+- Filtered out all of the aggregrate rows (totals by division)
+
+
+```{r}
+library(readxl)
+# importing required packages
+library(readxl)
+
+# read in only sheet 3 "Table 2" since "Table 1" is numerical summaries of the information in "Table 2" and remove white space, headings, and aggregate summaries that appear in rows.
+
+australian_marriage<-read_excel("_data/australian_marriage_law_postal_survey_2017_-_response_final.xls", sheet = 3, skip = 7, col_names= c("Division", "Clear_Yes", "Delete", "Clear_No", "Delete", "Delete","Delete", "Delete", "Delete", "Delete", "Unclear_Response", "Delete", "Non_Responding", "Delete", "Delete", "Delete") )%>%
+   select(!contains("Delete"))%>%
+    filter(!str_detect(Division, " Divisions"))%>%
+    filter(!str_detect(Division, "Total"))
+australian_marriage
+
+```
+- Removed the Australian aggregate info and notes from the bottom `tail` of the dataframe
+
+```{r}
+# tail(australian_marriage, 10)
+# Eliminate the notes and aggregate Australia totals at the bottom of the sheet
+australian_marriage <-head(australian_marriage, -7)
+tail(australian_marriage)
+
+# Determine the number of rows to eliminate from the EOF and see if all Division names are unique
+# tail(australian_marriage, 10)
+# australian_marriage %>%
+#   select(Division)%>%
+#   n_distinct(.)
+# nrow(australian_marriage)
+```
+
+- Created a new variable, `State_Territory`, so that it would be possible to calculate the summary statistics in Sheet 2 of the original file and populated the `State_Territory` by using the row indices and `case_when()`.
+
+::: callout-tip
+### Read in with a mutation and case_when()
+Is there a better way to produce this? Could I have taken advantage of the alphabetical ordering? Is there a built in function that converts a string to its value in alphabetical order?
+:::
+```{r}
+# Create a temporary row index column, and then use the indices to populate the state column
+australian_marriage$index <- 1:nrow(australian_marriage)
+
+# Create the variable, State_Terr,assign appropriate values using case when
+australian_marriage <-mutate(australian_marriage, State_Terr = case_when(
+    index >=1 & index <= 47 ~ "New South Wales",
+    index > 47 & index <= 84 ~ "Victoria",
+    index > 84 & index <= 114 ~ "Queensland",
+    index > 114 & index <= 125 ~ "South Australia",
+    index > 125 & index <= 141 ~ "Western Australia",
+    index > 141 & index <= 146 ~ "Tasmania",
+    index > 146 & index <= 148 ~ "Northern Territory",
+    index > 148 & index <= 150 ~ "Australian Capital Territory"
+))
+  
+# Remove the index column that is no longer needed
+  australian_marriage<-select(australian_marriage,!contains("index"))
+  
+```
+
+### Describe the data
+
+The australian_marriage dataframe from the [Australian Bureau of Labor and Statistics](https://www.abs.gov.au/) contains return results from a 2017 [Australian Marriage Law Postal Survey](https://en.wikipedia.org/wiki/Australian_Marriage_Law_Postal_Survey), a national survey designed to gauge support for the legalization of same sex marriage in Australia. A survey response could be classified as:
+
+- `Clear_yes`: a respondent voted yes
+- `Clear_no`: a respondent voted no
+- `Unclear_response`: a respondent returned the survey but the responses were not clear. This includes (but is not limited to) forms where both boxes have been ticked, where there are no marks on the form (blank response) or where the question has been changed to make the answer unclear.
+- `Non_Responding`: the eligible voter did not return the survey.
+
+The values for `Clear_yes`, `Clear_no`, `Unclear_Response`, and `Non_Responding` for a given `Division` represent the total number of eligible voters in a given Australian Federal Election `Division` who responded with those respective replies to the survey.
+
+```{r}
+
+australian_marriage
+
+```
+
+
+
+:::callout-note
+Is it more appropriate to refer to `State_Terr` as a second value for a `Division` and `response_type` case?
+
+### Challenge Anticipate the End Result/Define a Case
+
+To tidy our data, we need to introduce a new grouping variable, `response_type`, and then the variables` Division`, `State_Terr`, and `response_type` (our `names_to` variable in our pivot) will identify a unique case and the `No_of_Responses` (our `value_to` variable in our pivot) will store the value for a given case.
+
+:::
+
+
+### Challenge: Describe the final dimensions
+
+Our tidied dataframe will consist of $5-4+2 = 3$ columns and $4 * 150 = 600$ rows, i.e., a $600 \times 3$ dataframe, where the $4$ variable names for response types will become values in the `response_type` variable and the current values in those columns will move into the `No_of_Resonses` variable to create our new dataframe.
+
+
+### Challenge: Pivot the Chosen Data
+
+Here is our checklist for a tidy dataframe:
+
+- In our tidied dataframe, a new **case** is given by a `Division` and `response_type`
+- Each variable: `Division`, `Response_Type`, `No_of_Responses`, and `State_Terr` has its own column.
+- Each case has a corresponding value that appears in the `No_of_Responses` column.
+- Each observation has its own row with a unique cell for the value of `No_of_Responses`.
+
+
+
+```{r}
+#| tbl-cap: Pivoted animal_weights
+australian_marriage <-tibble(australian_marriage)
+# When do I need this?
+australian_marriage<-australian_marriage %>%
+    pivot_longer(c(2:5), names_to = "response_type", values_to = "No_of_Responses")
+
+australian_marriage
+
+```
+
+### Summary Stats
+
+There were many summary statistics included in the original excel file. Here is some practice of using `group_by` to replicate some of those summary tables/stats. I need to come back and practice more of these to get comfortable/efficient with `group_by`
+```{r}
+australian_marriage%>%
+  group_by(State_Terr, response_type)%>%
+  summarise(total_response_by_type = sum(No_of_Responses))%>%
+          
+  arrange(desc(State_Terr))
+
+# t1<-australian_marriage%>%
+#   group_by(State_Terr, response_type) %>%
+#   summarise(State_Terr_Total = sum(No_of_Responses, na.rm=TRUE))%>%
+#   
+#   pivot_wider(names_from = State_Terr, values_from = c(response_Type, State_Terr_Total))
+
+
+```
+
+:::

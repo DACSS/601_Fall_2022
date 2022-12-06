@@ -1,0 +1,497 @@
+---
+title: "Challenge 4"
+author: "Theresa Szczepanski"
+desription: "More data wrangling: pivoting"
+date: "9/30/2022"
+format:
+  html:
+    df-print: paged
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Theresa_Szczepanski
+  - challenge_4
+  - abc_poll
+ # - fed_rates
+#  - hotel_bookings
+#  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Approach
+
+To address today's challenge I tried to:
+
+1)  read in a data set, and describe the data set using both words and any 
+supporting information (e.g., tables, etc)
+2)  Used summary on my data frame and examined the spreadsheet itself to 
+describe the data
+3) tidied the data (as needed, including sanity checks)
+3)  Identified variables to be mutated
+4)  Mutate all ordinal variables using `factor`
+5) Create a _Codebook_ key for all of my variables
+7) Make note of my questions about my process and inefficienct coding practices.
+
+
+
+
+##  abc_poll.csv ⭐
+
+::: panel-tabset
+### Read in data
+To read in the data, I used the following process:
+
+- Examine the summary
+- Identify information to filter out on the read in
+- Identify variables to rename on the read in
+- Identify variables to mutate on the read in to simplify values
+- Identify variable values to mutate on the read in to fix data type issues.
+
+::: panel-tabset
+### Examine the Summary
+
+```{r}
+#Read in the abc_poll data and use the summary to decide how to best set up
+# the our data frame
+
+ abc_poll<-read_csv("_data/abc_poll_2021.csv")
+ print(summarytools::dfSummary(abc_poll,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+
+### Filter, Rename, and Mutate on Read in
+
+
+After examining the summary, I chose to 
+
+**Filter**:
+
+- `id`: this info won't be used in an analysis
+- `complete_status`: everyone was qualified
+- `ppeducat`: this categorizing of `ppeduc5` can be done in the data frame
+using a `case_when()`
+- `ABCAGE`: this qualitative age range variable can be replicated by using the
+data in the `ppage` variable and a `case_when`; one might want to examine 
+different ranges of ages.
+
+- `weights_pid` variable, since this is calculated using percentages of
+ respondents relative to their representation to the general population and can
+ be calculated using data within our data frame.
+ 
+ 
+ 
+__Rename__
+
+- I renamed all of the variables corresponding to 
+_demographic characteristics of the poll participant_ 
+to begin with `pp_`.
+
+- I renamed all of the variables corresponding to _survey question responses_
+from the participants to begin with `Q`
+
+- If a variable had a fixed number of possible responses (which I could see from
+the summary), e.g., `pp_marital` had 5 possible responses, 
+I included the number of "categories" or possible responses
+in the variable name preceded by an underscore, `pp_marital_5`
+
+__Mutate__
+ 
+ - I replaced the `pp_hhsize_6` value of "6 or more" with 6, so that it could
+ be of double data type
+ 
+ - I mutated the `pp_educ5` column to remove the
+ apostrophes from "Bachelor's" and "Master's" that were producing the "\\x92"'s 
+ in the values on read in.
+ 
+ - If a _nominal_ variable had lengthy values, I reduced them to the key info 
+ using `mutate`, `str_sub`, and `case_when`
+
+
+```{r}
+#Filter, rename variables, and mutate values of variables on read-in
+
+abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,  
+                   col_names= c("delete",  "pp_Language_2",  "delete","pp_age", 
+                                "pp_educ_5", "delete", "pp_gender_2", 
+                                "pp_ethnicity_5", "pp_hhsize_6", "pp_inc_7", 
+                                "pp_marital_5", "pp_metro_cat_2", "pp_region_4",
+                                "pp_housing_3", "pp_state", 
+                                "pp_working_arrangement_9", 
+                                "pp_employment_status_3", "Q1a_3", "Q1b_3", 
+                                "Q1c_3",  "Q1d_3","Q1e_3", "Q1f_3","Q2ConcernLevel_4",
+                                "Q3_3", "Q4_5",  "Q5Optimism_3", 
+                                "pp_political_id_5", "delete", "pp_contact_2",  
+                                  "delete"))%>%
+  select(!contains("delete"))%>%
+  
+  #replace "6 or more" in pp_hhsize_6 to the value of 6 so that the column can be
+  # of double data type.
+     mutate(pp_hhsize_6 = ifelse(pp_hhsize_6 == "6 or more", "6", pp_hhsize_6)) %>%
+    transform( pp_hhsize_6 = as.numeric(pp_hhsize_6))%>%
+  
+  #fix the issue with apostrophes in pp_educ_5 values on read in
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5,"Bachelor"), 
+                           "Bachelor", pp_educ_5))%>%
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5, "Master"), "Master", pp_educ_5))
+
+  # reduce lengthy responses to necessary info in nominal variables
+
+  abc_poll$pp_Language_2 = substr(abc_poll$pp_Language_2,1,2)
+  #mutate(pp_Language_2 = (str_sub(abc_poll,pp_Language_2, 1, 2)))
+  abc_poll$pp_gender_2 = substr(abc_poll$pp_gender_2,1,1)
+  abc_poll$pp_contact_2 = substr(abc_poll$pp_contact_2,1,1)
+  
+  #reduce lengthy responses of nominal variables using Case When
+  #pp_ethnicity_5
+  abc_poll <-mutate(abc_poll, pp_ethnicity_5 = case_when(
+    pp_ethnicity_5 == "2+ Races, Non-Hispanic" ~ "2+NH",
+    pp_ethnicity_5 == "Black, Non-Hispanic" ~ "BlNH",
+    pp_ethnicity_5 == "Hispanic" ~ "H",
+    pp_ethnicity_5 == "Other, Non-Hispanic" ~ "OtNH",
+    pp_ethnicity_5 == "White, Non-Hispanic" ~ "WhNH"
+
+))
+  
+  #pp_metro_cat_2
+  abc_poll <-mutate(abc_poll, pp_metro_cat_2 = case_when(
+    pp_metro_cat_2 == "Metro area" ~ "M",
+    pp_metro_cat_2 == "Non-metro area" ~ "NM"
+))
+ 
+  #pp_political_id_5 
+ abc_poll <-mutate(abc_poll, pp_political_id_5  = case_when(
+    pp_political_id_5 == "A Democrat" ~ "Dem",
+    pp_political_id_5 == "A Republican" ~ "Rep",
+    pp_political_id_5 == "An Independent" ~ "Ind",
+    pp_political_id_5 == "Something else" ~ "Other",
+    pp_political_id_5 == "Skipped" ~ "DNR"
+))
+ 
+ #pp_housing_3
+abc_poll <-mutate(abc_poll, pp_housing_3 = case_when(
+    pp_housing_3 == "Occupied without payment of cash rent" ~ "NonP_Occupied",
+    pp_housing_3 == "Rented for cash"~ "P_Rent",
+    pp_housing_3 == "Owned or being bought by you or someone in your household" ~ "P_Own"))
+
+  #pp_region_4 
+ abc_poll <-mutate(abc_poll, pp_region_4  = case_when(
+    pp_region_4 == "MidWest" ~ "MW",
+    pp_region_4 == "NorthEast" ~ "NE",
+    pp_region_4 == "South" ~ "S",
+    pp_region_4 == "West" ~ "W",
+    
+))
+  #pp_marital_5 
+ abc_poll <-mutate(abc_poll, pp_marital_5 = case_when(
+   pp_marital_5 == "Never married" ~ "NM",
+   pp_marital_5 == "Now Married" ~ "M",
+   pp_marital_5 == "Separated" ~ "S",
+   pp_marital_5 == "Divorced" ~ "D",
+   pp_marital_5 == "Widowed" ~ "W"))
+ 
+# pp_working_arrangement_9
+ abc_poll <-mutate(abc_poll, pp_working_arrangement_9 = case_when(
+          pp_working_arrangement_9 == "Other" ~ "Other",
+          pp_working_arrangement_9 =="Retired" ~ "Retired",
+          pp_working_arrangement_9 == "Homemaker" ~ "Homemaker",
+          pp_working_arrangement_9 == "Student" ~ "Student",
+          pp_working_arrangement_9 == "Currently laid off" ~ "Laid Off",
+          pp_working_arrangement_9 == "On furlough"~ "Furlough",
+          pp_working_arrangement_9 == "Employed part-time (by someone else)" ~ "Emp_PT",
+          pp_working_arrangement_9 =="Self-employed" ~ "Emp_Self",
+          pp_working_arrangement_9 == "Employed full-time (by someone else)"~ "Emp_FT"))
+ 
+
+  #Q3_3 What is the best "coding for variables that are like "Booleans"?
+ # abc_poll <-mutate(abc_poll, Q3_3 = case_when(
+ #                                   Q3_3 ==  "Yes" ~ 1,
+ #                                   Q3_3 ==  "No" ~ 0,
+ #                                     Q3_3 ==  "Skipped" ~ 1))
+ 
+ #Q5Optimism_3
+ # abc_poll <-mutate(abc_poll, Q5Optimism_3 = case_when(
+ #                                    Q5Optimism_3 == "Pessimistic"~ 0,
+ #                                    Q5Optimism_3 == "Optimistic" ~ 1,
+ #                                    Q5Optimism_3 == "Skipped" ~ -1))
+ 
+ 
+  
+  abc_poll
+  
+
+```
+## Question
+
+- Is there a way to not be writing a mutate line for each variable the way I did 
+on the read in?
+
+:::
+
+
+### Briefly describe the data
+
+
+
+:::panel-tabset
+### Broad Summary
+
+From our `abc_poll` data frame summary, we can see that this data set
+contains polling results from 527 respondents to an ABC news political poll. 
+The results consist of information for two broad categories
+
+
+- *Demographic characteristics* of 
+the respondents themselves (e.g., language of the poll given to the respondent
+(Spanish or English), age, educational attainment, ethnicity, household size,
+ethnic make up, gender, income range, Marital status, Metro category, 
+Geographic region, Rental status, State, Employment status, 
+Working characteristics, Willingness to have a follow up interview)
+
+- *The responses that the individuals gave* to 10
+questions (there are 5 broad questions Q1-Q5, but Q1 consists of 6 
+sub questions, a-f).
+
+
+ Now when we examine our summary, we can see that 
+ 
+- each categorical variable is of character data type with the number of 
+distinct categories included in the variable name
+
+- some of these categorical variables are _ordinal_ and will need the ordering 
+of their values coded in as `factor`s.
+
+- each variable has 527 observations partitioned among the possible values
+
+- each _discrete_ numerical variable is of `double` data type.
+
+### Post Read in Variable Summary
+
+
+```{r}
+print(summarytools::dfSummary(abc_poll,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE,
+                        style        = "grid",
+                        graph.magnif = 0.70,
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+:::
+
+### Tidy Data (as needed)
+
+In order to have tidy data, each row should be a unique observation. A unique 
+case therefore should consist of all of the demographic information about the 
+polled person and their response for one of the questions.
+
+- The demographic characteristics (our `pp_` variables) and the specific `Question`
+variable define a _case_.
+- The _value_ for each case is the poll participants `Response`.
+
+
+```{r}
+abc_poll<-abc_poll %>%
+    pivot_longer(c(starts_with("Q1")), names_to = "Question 1 part", values_to = "Q1 Response")
+
+abc_poll
+```
+## Questions
+
+- When examining the data, I noticed nominal, ordinal, discrete, and continuous
+ variables. 
+ 
+ - Does `arrange` sort your `ordinal` data by the factors or use something else?
+
+- Should you ever pivot variables of different levels of measurement into the 
+same column? In the `abc_poll` case, I could imagine pivoting all of the questions 
+names into a column and all of the responses into a response column. But some of the 
+questions had response values that were clearly ordinal and others that were 
+not. Is there a "best practice" for this?
+
+
+
+### Identify Desired Variable Mutations
+:::panel-tabset
+
+When examining our variables there are two issues to address
+
+
+
+- Some of the variable are _ordinal_ and will need the ordering coded in
+
+- Some of the ordinal variable values are very long and fill up too much space 
+in our table making it unpleasant to read through
+
+
+
+::: panel-tabset
+
+
+### Factoring of Ordinal Variables
+There are several _ordinal_ variables where we need to code in the ordering of
+ the categories.
+```{r}
+
+
+# use factoring to put an ordering to all ordinal variables
+                         
+             
+# Why couldn't I use a levels vector!                 
+ # pp_inc_7_levels <- c(
+ #    "Less than $10,000", "$10,000 to $24,999",  "$25,000 to $49,999",  
+ #    "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999",  
+ #    "150,000 or more")
+
+  
+ abc_poll <-mutate(abc_poll, pp_inc_7 = recode_factor(pp_inc_7, 
+                                   "Less than $10,000" = "I1", 
+                                   "$10,000 to $24,999" = "I2",  
+                                   "$25,000 to $49,999" = "I3", 
+                                   "$50,000 to $74,999"= "I4", 
+                                   "$75,000 to $99,999"= "I5", 
+                                   "$100,000 to $149,999" = "I6",
+                                   "$150,000 or more" = "I7",
+                                  .ordered = TRUE))
+ #pp_educ_5
+ 
+ abc_poll <-mutate(abc_poll, pp_educ_5 = recode_factor(pp_educ_5,
+        "No high school diploma or GED" = "E1",
+        "High school graduate (high school diploma or the equivalent GED)"
+                                     = "E2",
+  "Some college or Associate degree" = "E3",
+                          "Bachelor"= "E4",
+                            "Master"= "E5",
+                          .ordered = TRUE))
+ 
+
+#pp_employment_status_3
+ abc_poll <-mutate(abc_poll, pp_employment_status_3 = recode_factor(pp_employment_status_3,
+                                     "Not working" = "ES1",
+                                 "Working part-time"= "ES2",
+                               "Working full-time" = "ES3",
+                                     .ordered = TRUE))
+ 
+ 
+ 
+
+ 
+ 
+ ######## I know that Q2 concern level Q4 have "ordinal" responses,
+ ###Can I order a subset of the "Response" column?
+ ### Should I order these variables before the pivot? (can a column be of mixed type?)
+ ###Would it be better to have Nominal Questions Separated from Ordinal Questions?
+ #Q2ConcernLevel_4
+ ##I used the code below when I only pivoted the parts of Q1 under a Q1 column and
+ # left the other questions as individual columns
+ 
+ # abc_poll <-mutate(abc_poll, Q2ConcernLevel_4 = 
+ #                     recode_factor(Q2ConcernLevel_4 ,
+ #                                     "Not concerned at all" = "C0",
+ #                                     "Not so concerned" = "C1",
+ #                                     "Somewhat concerned" = "C2",
+ #                                      "Very Concerned" = "C3",
+ #                                     .ordered = TRUE))
+ # 
+
+
+#Q4_5
+# abc_poll <-mutate(abc_poll, Q4_5 =
+#                     recode_factor(Q4_5 ,
+#                                     "Poor" = 0,
+#                                     "Not so good" = 1,
+#                                    "Good" = 2,
+#                                   "Excellent" = 3,
+#                                     "Skipped" = -1,
+#                                     .ordered = TRUE))
+#  
+
+ abc_poll
+ 
+ ##Is the data frame arranged "alphabetically" or "ordinally?"
+ abc_poll%>%
+  arrange(desc(pp_educ_5))
+
+
+
+```
+We can see that all of our _ordinal_ variables now are of type `ord`, our 
+_nominal_ variables are of type `char`, and our _discrete_ variables are of type
+`double`.
+
+## Questions
+
+- What other tips are there for making smart names for variables based on their 
+level of measurement?
+
+
+- What mutations should be done on the read in and what should be saved for post
+ read in?
+
+
+### Codebook for ABC Variables
+Here I would complete a key for all of the variables that are included in my table.
+Is there a better template for this?
+
+
+`pp_educ_5`, _ordinal_: The reported educational attainment of the respondent.
+
+
+| value | Key|
+| ----------- |--------|
+|No high school diploma or GED  | E1     | 
+|high school diploma or the equivalent GED | E2     | 
+| Some college or Associate degree   | E3     |
+|Bachelor | E4     | 
+|Masteror Higher | E5     | 
+
+`pp_inc_7`, _ordinal_: the reported annual income level of the respondent.
+
+
+| value | Key|
+| ----------- |--------|
+|Less than $10,000 | I1     | 
+|$10,000 to $24,999 | I2     | 
+|$25,000 to $49,999  | I3     |
+|$50,000 to $74,999 | I4     | 
+|$75,000 to $99,999 | I5     | 
+| $100,000 to $149,999 | I6     | 
+|$150,000 or more | I7     | 
+
+## Questions
+
+
+- Is this an ok template for a _codebook_?
+
+
+:::
+
+:::
+
+
+
+
+
+:::
+
+
+

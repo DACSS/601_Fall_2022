@@ -1,0 +1,1164 @@
+---
+title: "Challenge 7"
+author: "Theresa Szczepanski"
+description: "Visualizing Multiple Dimensions"
+date: "10/31/2022"
+format:
+   html:
+    toc: true
+    code-copy: true
+    code-tools: true
+    df-print: paged
+    code-fold: true
+categories:
+  - challenge_7
+ # - hotel_bookings
+  #- air_bnb
+  #- fed_rate
+  #- debt
+  #- usa_households
+  - abc_poll
+  - public_schools
+  - Theresa_Szczepanski
+---
+
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+
+::: panel-tabset
+## Public School Characteristics ⭐⭐⭐⭐ 
+
+::: panel-tabset
+### Read in the Data
+
+On the read in, I deleted:
+
+  - duplicates of the latitute/longitudinal coordinates `X`, `Y`
+ 
+  - `SURVYEAR` since we are only examining 2017-2018 survey
+  
+   - __I thought I should delete__: aggregate information that could be 
+   replicated: `TOTFRL`, `TOTMENR` `TOTFENR`, `TOTAL`, `Member`; 
+   __HOWEVER__, inspection of the median, range, and distribution of numeric 
+   variables in the summary indicates there are possibly several mis-entries, (for example:
+   student to teacher ratio: `STUTERATIO` has a min = 0, med = 15.3, and max=22350. There are some instances where the  `STUTERATIO` exceeds the total number of students.
+- Some of the aggregate categories might help me check for mis-entries.
+
+On the read in, I factored the ordinal variables:
+
+  - `GSHI`, `GSLO`, `SCHOOL_LEVEL`, and `ULOCALE`
+  
+```{r}
+#Work done to determine what to filter/recode on read in
+ # PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+ #  select(-c("X", "Y","OBJECTID" ,"SURVYEAR"))
+
+#Aggregate variables I would have filtered if I wasn't concerned about mis-entries:
+#"TOTFRL", "TOTMENROL", "TOTFENROL", "MEMBER", "TOTAL"
+
+# Identify Levels for Factoring Ordinal Variables
+# #ULOCALE
+# PublicSchools_2017%>%
+#   select(ULOCALE)%>%
+#   unique()
+# #GSLO
+# PublicSchools_2017%>%
+#   select(GSLO)%>%
+#   unique()
+# #GSLHI
+# PublicSchools_2017%>%
+#   select(GSHI)%>%
+#   unique()
+# #SCHOOL_LEVEL
+# PublicSchools_2017%>%
+#   select(SCHOOL_LEVEL)%>%
+#   unique()
+
+#Recode all ordinal variable as factors
+
+PublicSchools_2017<-read_csv("_data/Public_School_Characteristics_2017-18.csv")%>%
+  select(-c("X", "Y","OBJECTID" ,"SURVYEAR")) %>%
+  mutate(ULOCALE = recode_factor(ULOCALE,
+                                   "11-City: Large" = "City: Large",
+                                    "12-City: Mid-size" = "City: Mid-size",
+                                    "13-City: Small" = "City: Small",
+                                    "21-Suburb: Large"= "Suburb: Large",
+                                   "22-Suburb: Mid-size"= "Suburb: Mid-size",
+                                   "23-Suburb: Small" = "Suburb: Small",
+                                   "31-Town: Fringe" = "Town: Fringe",
+                                   "32-Town: Distant" = "Town: Distant",
+                                   "33-Town: Remote" = "Town: Remote",
+                                   "41-Rural: Fringe" = "Rural: Fringe",
+                                   "42-Rural: Distant" = "Rural: Distant",
+                                   "43-Rural: Remote" = "Rural: Remote",
+                                  .ordered = TRUE))%>%
+    mutate(SCHOOL_LEVEL = recode_factor(SCHOOL_LEVEL,
+                                   "Prekindergarten" = "Prekindergarten",
+                                    "Elementary" = "Elementary",
+                                    "Middle" = "Middle",
+                                    "Secondary"= "Secondary",
+                                   "High"= "High",
+                                   "Ungraded" = "Ungraded",
+                                   "Other" = "Other",
+                                   "Not Applicable" = "Not Applicable",
+                                   "Not Reported" = "Not Reported",
+                                  .ordered = TRUE))%>%
+    mutate(GSLO = recode_factor(GSLO,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))%>%
+    mutate(GSHI = recode_factor(GSHI,
+                                "PK" = "PK",
+                                "KG" = "KG",
+                                "01" = "01",
+                                "02" = "02",
+                                "03" = "03",
+                                "04" = "04",
+                                "05" = "05",
+                                "M" = "M",
+                                "06" = "06",
+                                "07" = "07",
+                                "08" = "08",
+                                "09" = "09",
+                                "10" = "10",
+                                "11" = "11",
+                                "12" = "12",
+                                "13" = "13",
+                                "AE" = "AE",
+                                "UG" = "UG",
+                                "N" = "N",
+                                .ordered = TRUE))
+  
+  
+  PublicSchools_2017
+  
+  
+    
+```
+
+::: panel-tabset
+### Briefly describe the data
+The `PublicSchools_2017` data frame consists of data from selected questions 
+from the [2017-208 National Teachers and Principals Survey](https://nces.ed.gov/surveys/ntps/question1718.asp)
+conducted by the United States Census Board and is "a system of related 
+questionnaires that provide descriptive data on the context of public and 
+private elementary and secondary education in addition to giving local, state, 
+and national policymakers a variety of statistics on the condition of education 
+in the United States."
+
+Our data frame consists of a subset of the items surveyed from 100729 schools across 
+the United States. The 75 variables contain information from the following categories:
+
+Geographic Location of the School
+
+- State, town, and address
+- Level of Urbanization (rural, town, city, etc.)
+
+
+Characteristics of the School design:
+
+- Charter, Magnet, Traditional Public, 
+- Virtual/non
+- Highest and Lowest Grade levels served and number of students per grade level.
+- Level of School: Elementary, Middle, Secondary, Adult Ed., etc.
+- Type of School: Alternative, Regular school, Special education school, or
+ Vocational school
+ - Status of the school when surveyed (new, change of leadership, operational, etc.)
+- Student to Teacher Ratio
+- If the school has Title 1 status
+
+
+Demographic Characteristics of the student body:
+
+- Number of students of given ethnic backgrounds by gender (M/F only)
+
+Socioeconomic Characteristics of the student body:
+
+- Number of students qualifying for free or reduced lunch.
+
+## Questions for Further Review
+
+What are the following variables?
+
+  - `G13`
+  - `AS`
+  - `UG`: Ungraded (School level)
+  - `AE`: Adult Education (School level)
+  - `FTE`
+  - `STATUS`
+  
+Why did the original `Member` have 2944 distinct values while `total` had 2944?
+
+### Data Summary
+
+```{r}
+
+# examine the summary to decide how to best set up our data frame
+
+ print(summarytools::dfSummary(PublicSchools_2017,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+:::
+
+### Tidy Data (MUCH WORK LEFT HERE for Other Variables)
+
+Because we have survey data, we will have a relatively wide data frame, and will 
+have to make use of `select` and `group by` when making summaries or 
+visualizations.
+
+The `ULOCALE` variable needed to be recoded as an ordinal variable with levels 
+in order to have the bars appear in the appropriate order for our visualization.
+
+Upon closer inspection, it turns out that there are several numeric variables with
+data mis-entered:
+
+- The number of students with Free or Reduced lunch cannot be negative
+
+- Student to Teacher Ratio cannot exceed the number os students in a school (yet there entries that do)
+
+- How should these values be recoded, so we can still use the information for a given 
+school but not throw off our summary statistics or visual representations?
+
+- The min, median, max values are suspicious for several of the numeric entries. 
+If I had more time, I would consider each variable, what I know about it in context, 
+and take advantage of mean/sd or median and IQR to replace likely mis-entries with N/A
+
+- I used the code below to remove the most extreme cases from our calculations based 
+on the logical bounds of a ratio and count of students.
+
+
+```{r}
+
+
+PublicSchools_2017<-PublicSchools_2017%>%
+  mutate(FRELCH = replace(FRELCH, which(FRELCH<0), NA))%>%
+  mutate(REDLCH = replace(REDLCH, which(REDLCH<0), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO>45), NA))%>%
+  mutate(STUTERATIO = replace(STUTERATIO, which(STUTERATIO<1), NA))
+           
+
+  
+
+```
+
+
+### Revised Univariate Visualizations
+
+I chose to visualize the `ULOCALE` using a `geom_bar` since it was an ordinal 
+variable. Before, creating the bar chart, I factored and ordered the values 
+for each of the urbanization classifications from the survey. Because the variable
+names were rather long, I "flipped" the orientation of the chart to horizontal in 
+order to make the names easier to read.
+
+- To improve on last time, I used color to group all of the bars from the same broad
+urbanization level, and mutated the variable names.
+
+- Here is my bar chart from Challenge 5
+
+
+```{r}
+
+
+# Bar Chart School Level
+
+Urbanization <-PublicSchools_2017%>%
+  select(ULOCALE)%>%
+   mutate(UrbBroad = case_when(
+        str_detect(ULOCALE,"Rural") ~ "Rural",
+        str_detect(ULOCALE, "Town")  ~"Town",
+        str_detect(ULOCALE, "Suburb")~"Suburb", 
+        str_detect(ULOCALE, "City") ~ "City",
+        
+        ))%>%
+    mutate(UrbBroad = recode_factor(UrbBroad,
+                                  "Rural" = "Rural",
+                                  "Town" = "Town",
+                                  "Suburb" = "Suburb",
+                                  "City" = "City",
+                                  .ordered = TRUE))#%>%
+
+
+ # Urbanization
+
+
+ggplot(Urbanization, aes(ULOCALE)) + 
+  geom_bar(fill="#404080", color="#e8ecef", alpha=0.9) +
+  #geom_bar(stat="identity", width=2) + 
+  scale_fill_manual("legend", values = c("City: Large" = "blue", 
+                                         "City: Mid-Size" = "blue", 
+                                         "City: Small" = "blue")) +
+  #theme_minimal() +
+  labs(title = "Urbanization Level",
+       subtitle = "Before",
+       caption = "US Teacher and Principals Survey SY2017-2018", 
+       y = "Number of Schools", 
+       x = "Urbanization Level") +
+  coord_flip()
+
+
+```
+
+Edits made for Challenge 7
+
+- Coloring by `UrbBroad`
+- Include Legend
+- BUT Y-axis is still pretty cluttered...
+
+
+```{r}
+# Bar Broader Urbanization Level
+ ggplot(Urbanization, aes(x = `ULOCALE`, fill = UrbBroad)) + 
+  geom_bar(alpha=0.9) +
+  #geom_text(stat='count', aes(label=..count..), vjust=-1)+
+  
+  labs(title = "Urbanization Level",
+       subtitle = "After V1",
+       caption = "US Teacher and Principals Survey 2017-2018",
+       #fill = "Urbanization Level"
+       y = "Number of Schools", 
+       x = "Urbanization Level") + 
+ 
+ coord_flip()
+
+```
+Some more tweaks for Challenge 7
+
+- Still color by `UrbBroad`
+
+- Mutate values of ULOCALE to declutter y-axis labels
+
+```{r}
+Urbanization2 <-PublicSchools_2017%>%
+  select(ULOCALE)
+Urbanization2[c('UrbBroad', 'Urbanization Level')] <-
+  str_split_fixed(Urbanization$ULOCALE, ":", 2)
+Urbanization2<-mutate(Urbanization2, UrbBroad = recode_factor(UrbBroad,
+                                  "Rural" = "Rural",
+                                  "Town" = "Town",
+                                  "Suburb" = "Suburb",
+                                  "City" = "City",
+                                  .ordered = TRUE))%>%
+    
+              mutate(ULOCALE = recode_factor(ULOCALE,
+                "City: Large" = "C:Large",
+                 "City: Mid-size" = "C:Mid-Size",
+                  "City: Small" = "C:Small",
+                  "Suburb: Large" = "S:Large",
+                  "Suburb: Mid-size"= "S:Mid-Size",
+                    "Suburb: Small"= "S:Small",
+                    "Town: Fringe" = "T:Fringe",
+                    "Town: Distant"= "T:Distant",
+                    "Town: Remote" = "T:Remote",
+                    "Rural: Fringe" = "R:Fringe",
+                    "Rural: Distant" = "R:Distant",
+                    "Rural: Remote" = "R:Remote",
+                      .ordered = TRUE))
+
+  
+#Urbanization2
+ 
+  
+
+# Color by Broader Urbanization Level
+ ggplot(Urbanization2, aes(x = `ULOCALE`, fill = UrbBroad)) + 
+  geom_bar(alpha=0.9) +
+  
+   
+  
+  labs(title = "Urbanization Level",
+       subtitle = "After V2",
+       caption = "US Teacher and Principals Survey 2017-2018",
+       color = "Urbanization Level",
+       y = "Number of Schools", 
+       x = "Urbanization Level") + 
+ 
+ coord_flip()
+ 
+ # Bar Broader Urbanization Level
+```
+ 
+ - Tweaked Broader Urbanization Level Chart from Challenge 5 to add Labels 
+ on the Bars and make the legend visible
+ 
+```{r}
+
+#Collapsed by UrbBroad
+
+ggplot(Urbanization, aes(UrbBroad, fill = UrbBroad)) + 
+  geom_bar( color="#e8ecef", alpha=0.9) +
+  geom_text(stat='count', aes(label=..count..), vjust=0)+
+  labs(title = "Broad Urbanization Level",
+       subtitle = "After",
+       caption = "US Teacher and Principals Survey 2017-2018",
+       y = "Number of Schools", 
+       x = "Broad Urbanization Level") 
+```
+
+I decided to revise my histograms from Challenge 5 to to visualize the distribution of the student to teacher ratio in schools across the country. 
+- I switched to density plots based on feedback from the instructor. 
+- From the summary, I can see that even after removing implausible STUTERATIO values 
+that there are still some values that are well above the upper fence.
+
+ 
+```{r}
+
+
+print(summarytools::dfSummary(select(PublicSchools_2017, STUTERATIO),
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+
+
+
+
+```
+ 
+ 
+
+
+```{r}
+
+ggplot(PublicSchools_2017, aes(x = STUTERATIO)) +
+  geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.9) +
+  theme_minimal() +
+
+  labs(title = "Student to Teacher Ratio US Teacher and Principals Survey",
+       subtitle = "Revised Challenge 5",
+        caption = "SY2017-2018",
+       y = "Density",
+       x = "Student to Teacher Ratio")
+
+
+```
+ One might consider if the distribution of the student to teacher ratio is different
+ based on the urbanization level of a school. I would like to produce a more advanced plot, where I see 4 density side by side where I group this data by Rural/Town/Suburban/City Urban level.
+ 
+ 
+```{r}
+
+Urban_Ratio <-PublicSchools_2017%>%
+  select(ULOCALE, STUTERATIO)%>%
+   mutate(UrbBroad = ifelse(str_detect(ULOCALE,"Rural"), 
+                           "Rural", 
+                      ifelse(str_detect(ULOCALE, "Town"),"Town", 
+                      ifelse(str_detect(ULOCALE, "Suburb"),"Suburb",       
+                      ifelse(str_detect(ULOCALE, "City"),"City",     
+                             ULOCALE)))))%>%
+  mutate(UrbBroad = recode_factor(UrbBroad,
+                                  "Rural" = "Rural",
+                                  "Town" = "Town",
+                                  "Suburb" = "Suburb",
+                                  "City" = "City",
+                                  .ordered = TRUE))
+  
+  
+   
+   
+ #Urban_Ratio
+
+ggplot(Urban_Ratio, aes(x = STUTERATIO, color = UrbBroad, fill = UrbBroad)) + 
+  geom_density( color="#e9ecef", alpha=0.9) +
+  labs(title = "Student to Teacher Ratio US Teacher and Principals Survey",
+       subtitle = "Revised Challenge 5",
+       y = "Density",
+       x = "Student to Teacher Ratio",
+       caption = "SY2017-2018") + 
+  theme_minimal() +
+  facet_wrap(vars(UrbBroad))
+
+```
+
+Selecting a new data set with just the outliers using Upper Fence and Lower Fence.
+
+
+ 
+```{r}
+
+      
+ medianUR <-median(Urban_Ratio$STUTERATIO,na.rm=TRUE)
+ medianUR
+ IQRUR <-IQR(Urban_Ratio$STUTERATIO, na.rm=TRUE)
+ 
+ IQRUR
+ 
+ q1 <- quantile(Urban_Ratio$STUTERATIO, 0.25, na.rm=TRUE)
+ q1
+ q3 <- quantile(Urban_Ratio$STUTERATIO, 0.75, na.rm=TRUE)
+q3
+ Upper_Fence = q3+1.5*IQRUR
+ Upper_Fence
+ 
+ Lower_Fence = q1- 1.5*IQRUR
+ Lower_Fence
+  Urban_Ratio_HighOutlier <- Urban_Ratio%>%
+    mutate(STUTERATIO_OutH = case_when(
+      STUTERATIO >Upper_Fence ~ STUTERATIO
+      #STUTERATIO < Lower_Fence ~ STUTERATIO
+    ))
+  Urban_Ratio_HighOutlier
+ 
+ggplot(Urban_Ratio_HighOutlier, aes(x = STUTERATIO_OutH, color = UrbBroad, fill = UrbBroad)) + 
+  geom_density( color="#e9ecef", alpha=0.9) +
+  labs(title = "Student to Teacher Ratio Upper Outliers",
+       subtitle = "Revised Challenge 5",
+       y = "Density",
+       x = "Student to Teacher Ratio",
+       caption = "SY2017-2018") + 
+  theme_minimal() +
+  facet_wrap(vars(UrbBroad))
+
+ Urban_Ratio_LowOutlier <- Urban_Ratio%>%
+    mutate(STUTERATIO_OutL = case_when(
+      #STUTERATIO >Upper_Fence ~ STUTERATIO
+      STUTERATIO < Lower_Fence ~ STUTERATIO
+    ))
+  Urban_Ratio_LowOutlier
+ 
+ggplot(Urban_Ratio_LowOutlier, aes(x = STUTERATIO_OutL, color = UrbBroad, fill = UrbBroad)) + 
+  geom_density( color="#e9ecef", alpha=0.9) +
+  labs(title = "Student to Teacher Ratio Low Outliers",
+       subtitle = "Revised Challenge 5",
+       y = "Density",
+       x = "Student to Teacher Ratio",
+       caption = "SY2017-2018") + 
+  theme_minimal() +
+  facet_wrap(vars(UrbBroad))
+
+```
+
+
+
+## Questions
+
+- Is there a way to make the "legend label" be different from the name of the "fill variable"?
+
+- What variables are better visualized with a density plot vs. as histogram?
+
+
+
+
+
+
+:::
+
+## abc_poll ⭐⭐⭐
+
+::: panel-tabset
+
+### Read in the data
+::: panel-tabset
+
+### Briefly describe the data
+
+From our `abc_poll` data frame summary, we can see that this data set
+contains polling results from 527 respondents to an ABC news political poll. 
+The results consist of information for two broad categories
+
+
+- *Demographic characteristics* of 
+the respondents themselves (e.g., language of the poll given to the respondent
+(Spanish or English), age, educational attainment, ethnicity, household size,
+ethnic make up, gender, income range, Marital status, Metro category, 
+Geographic region, Rental status, State, Employment status, 
+Working characteristics, Willingness to have a follow up interview)
+
+- *The responses that the individuals gave* to 11
+questions (there are 5 broad questions Q1-Q5, but Q1 consists of 6 
+sub questions, a-f).
+
+
+
+
+
+  
+
+```{r}
+
+
+#Filter, rename variables, and mutate values of variables on read-in
+
+abc_poll<-read_csv("_data/abc_poll_2021.csv", skip = 1,  
+                   col_names= c("pp_id",  "pp_Language_2",  "delete","pp_age", 
+                                "pp_educ_5", "delete", "pp_gender_2", 
+                                "pp_ethnicity_5", "pp_hhsize_6", "pp_inc_7", 
+                                "pp_marital_5", "pp_metro_cat_2", "pp_region_4",
+                                "pp_housing_3", "pp_state", 
+                                "pp_working_arrangement_9", 
+                                "pp_employment_status_3", "Q1a_3", "Q1b_3", 
+                                "Q1c_3",  "Q1d_3","Q1e_3", "Q1f_3","Q2ConcernLevel_4",
+                                "Q3_3", "Q4_5",  "Q5Optimism_3", 
+                                "pp_political_id_5", "delete", "pp_contact_2",  
+                                  "weights_pid"))%>%
+  select(!contains("delete"))%>%
+  
+  #replace "6 or more" in pp_hhsize_6 to the value of 6 so that the column can be
+  # of double data type.
+     mutate(pp_hhsize_6 = ifelse(pp_hhsize_6 == "6 or more", "6", pp_hhsize_6)) %>%
+    transform( pp_hhsize_6 = as.numeric(pp_hhsize_6))%>%
+  
+  #fix the issue with apostrophes in pp_educ_5 values on read in
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5,"Bachelor"), 
+                           "Bachelor", pp_educ_5))%>%
+    mutate(pp_educ_5 = ifelse(str_starts(pp_educ_5, "Master"), "Master", pp_educ_5))
+
+  # reduce lengthy responses to necessary info in nominal variables
+
+  abc_poll$pp_Language_2 = substr(abc_poll$pp_Language_2,1,2)
+ 
+  abc_poll$pp_gender_2 = substr(abc_poll$pp_gender_2,1,1)
+  abc_poll$pp_contact_2 = substr(abc_poll$pp_contact_2,1,1)
+  
+  #reduce lengthy responses of nominal variables using Case When
+  
+ #pp_political_id_5 
+ abc_poll<-mutate(abc_poll, pp_political_id_5  = case_when(
+    pp_political_id_5 == "A Democrat" ~ "Dem",
+    pp_political_id_5 == "A Republican" ~ "Rep",
+    pp_political_id_5 == "An Independent" ~ "Ind",
+    pp_political_id_5 == "Something else" ~ "Other",
+    pp_political_id_5 == "Skipped" ~ "Skipped"
+))%>%
+ 
+ #pp_housing_3
+mutate(pp_housing_3 = case_when(
+    pp_housing_3 == "Occupied without payment of cash rent" ~ "NonPayment_Occupied",
+    pp_housing_3 == "Rented for cash"~ "Payment_Rent",
+    pp_housing_3 == "Owned or being bought by you or someone in your household" ~ "Payment_Own"))%>%
+
+ 
+ 
+# pp_working_arrangement_9
+ mutate(pp_working_arrangement_9 = case_when(
+          pp_working_arrangement_9 == "Other" ~ "Other",
+          pp_working_arrangement_9 =="Retired" ~ "Retired",
+          pp_working_arrangement_9 == "Homemaker" ~ "Homemaker",
+          pp_working_arrangement_9 == "Student" ~ "Student",
+          pp_working_arrangement_9 == "Currently laid off" ~ "Laid Off",
+          pp_working_arrangement_9 == "On furlough"~ "Furlough",
+          pp_working_arrangement_9 == "Employed part-time (by someone else)" ~ "Employed_PT",
+          pp_working_arrangement_9 =="Self-employed" ~ "Emp_Self",
+          pp_working_arrangement_9 == "Employed full-time (by someone else)"~ "Employed_FT"))%>%
+   
+    #pp_ethnicity_5
+  mutate( pp_ethnicity_5 = case_when(
+    pp_ethnicity_5 == "2+ Races, Non-Hispanic" ~ "2+ \n NH",
+    pp_ethnicity_5 == "Black, Non-Hispanic" ~ "Bl \n NH",
+    pp_ethnicity_5 == "Hispanic" ~ "Hisp",
+    pp_ethnicity_5 == "Other, Non-Hispanic" ~ "Ot \n NH",
+    pp_ethnicity_5 == "White, Non-Hispanic" ~ "Wh \n NH"
+
+))
+ 
+
+
+ 
+  
+  abc_poll
+  
+View(abc_poll)
+```
+
+### Post Read in Data Summary
+```{r}
+print(summarytools::dfSummary(abc_poll,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+```
+:::
+
+On the read in, I chose to 
+
+**Filter**:
+
+- `complete_status`: everyone was qualified
+- `ppeducat`: this categorizing of `ppeduc5` can be done in the data frame
+using a `case_when()` and factoring
+- `ABCAGE`: this qualitative age range variable can be replicated by using the
+data in the `ppage` variable and a `case_when`; one might want to examine 
+different ranges of ages.
+
+ 
+ 
+
+__Rename__
+
+- I renamed all of the variables corresponding to 
+_demographic characteristics of the poll participant_ 
+to begin with `pp_`.
+
+- I renamed all of the variables corresponding to _survey question responses_
+from the participants to begin with `Q`
+
+- If a variable had a fixed number of possible responses (which I could see from
+the summary), e.g., `pp_marital` had 5 possible responses, 
+I included the number of "categories" or possible responses
+in the variable name preceded by an underscore, `pp_marital_5`
+
+__Mutate__
+ 
+ - I replaced the `pp_hhsize_6` value of "6 or more" with 6, so that it could
+ be of double data type
+ 
+ - I mutated the `pp_educ5` column to remove the
+ apostrophes from "Bachelor's" and "Master's" that were producing the "\\x92"'s 
+ in the values on read in.
+ 
+ - If a _nominal_ variable had lengthy values, I reduced them to the key info 
+ using `mutate`, `str_sub`, and `case_when`
+
+
+
+
+
+
+
+### Tidy/Mutate Data (as needed)
+
+Because our data frame is poll data, our frame will stay relatively wide. Each
+polled person `pp_id` represents a unique case and the values for the case are
+
+- the demographic characteristics of the polled person and
+- the individual's responses to a given survey question
+
+To tidy our data, I factored the following ordinal variables:
+
+- `pp_inc_7`: The income level of the polled person
+- `pp_educ_5`: The educational attainment level of the polled person
+- `pp_employment_status_3`: The employment status of the polled person 
+(not working, working part time, working full time)
+
+```{r}
+
+abc_poll <-mutate(abc_poll, pp_inc_7 = recode_factor(pp_inc_7, 
+                                   "Less than $10,000" = "<10,000", 
+                                   "$10,000 to $24,999" =  "10,000-\n 24,999",  
+                                   "$25,000 to $49,999" = "25,000- \n 49,999", 
+                                   "$50,000 to $74,999"= "50,00- \n 74,999", 
+                                   "$75,000 to $99,999"= "75,000- \n 99,999", 
+                                   "$100,000 to $149,999" = "100,000- \n 149,999",
+                                   "$150,000 or more" = "$150,000 +",
+                                  .ordered = TRUE))
+ #pp_educ_5
+ 
+ abc_poll <-mutate(abc_poll, pp_educ_5 = recode_factor(
+   pp_educ_5,
+   "No high school diploma or GED" = "No HS",
+   "High school graduate (high school diploma or the equivalent GED)" = "HS/GED",
+   "Some college or Associate degree" = "Some College",
+   "Bachelor"= "Bachelor",
+   "Master"= "Master+",
+   .ordered = TRUE))
+ 
+ ##pp_political_id_5
+ abc_poll <- mutate(abc_poll, pp_political_id_5 = recode_factor(
+   pp_political_id_5,
+        "Dem" = "Dem",
+        "Rep" = "Rep",
+        "Ind" = "Ind",
+        "Other" = "Other",
+        "Skipped"="Skipped",
+        .ordered = TRUE))
+ 
+
+#pp_employment_status_3
+ abc_poll <-mutate(abc_poll, pp_employment_status_3 =recode_factor(
+   pp_employment_status_3,
+   "Not working" = "Not working",
+   "Working part-time"= "Working part-time",
+   "Working full-time" = "Working full-time",
+   .ordered = TRUE))
+ 
+ abc_poll <-mutate(abc_poll, Q2ConcernLevel_4 = recode_factor(
+   Q2ConcernLevel_4 ,
+   "Not concerned at all" = "Not at all",
+   "Not so concerned" = "Not so concerned",
+   "Somewhat concerned" = "Somewhat",
+   "Very concerned" = "Very concerned",
+   .ordered = TRUE))
+
+
+
+#Q4_5
+abc_poll <-mutate(abc_poll, Q4_5 = recode_factor(
+  Q4_5 ,
+  "Poor" = "Poor",
+  "Not so good" = "Not so good",
+  "Good" = "Good",
+  "Excellent" = "Excellent",
+  "Skipped" = "Skipped",
+  .ordered = TRUE))
+
+
+ abc_poll
+ 
+ ##Is the data frame arranged "alphabetically" or "ordinally?"
+ abc_poll%>%
+  arrange(desc(pp_educ_5))
+
+
+
+```
+
+### Mutated Summary
+
+```{r}
+  print(summarytools::dfSummary(abc_poll,
+                         varnumbers = FALSE,
+                         plain.ascii  = FALSE,
+                         style        = "grid",
+                         graph.magnif = 0.70,
+                        valid.col    = FALSE),
+       method = 'render',
+       table.classes = 'table-condensed')
+
+```
+
+
+
+
+### Revised Visualizing Part-Whole Relationships
+There were many variables from the `abc_poll` that I could imagine visualizing 
+proportional relationships and proportional relationships by groups.
+
+I explored multiple versions of bar charts to visualize the part-whole relationship
+of a respondents political identification and stated level of concern in poll 
+question 2.
+
+- Edits from Challenge 6 (I had copied over a `pivot_longer` from Tidying in 
+challenge 4, that threw off my counts; so I commented out the Q1 pivot)
+
+- From feedback, I learned that a Social Scientist would rather `fill` by `Political Id`, 
+so I made versions of the same graphs where I switched the `fill`.
+
+
+```{r}
+
+
+
+ #Gather/Group the values of the Categorical Variables (pp_political_id_5 and
+ #Q2ConcernLevel_4
+
+abc_poll_pp_id_q2 <- abc_poll %>%
+   group_by(pp_political_id_5, Q2ConcernLevel_4) %>%
+   #mutate(pp_political_id_5 = na_if(pp_political_id_5, "Skipped"))%>%
+   summarise(count = n())
+
+ abc_poll_pp_id_q2
+
+```
+
+- The __grouped bar chart__ shows each of the concern levels broken down by the 
+respondent's political id. You can see that many respondents are `somewhat concerned`
+
+```{r}
+
+
+##Grouped Bar Chart political id and concern level
+
+abc_poll_pp_id_q2%>%  
+  ggplot(aes(fill=pp_political_id_5, y=count, x=Q2ConcernLevel_4)) + 
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="Grouped Bar Chart" ,
+       y = "Number of Respondents",
+       x= "Concern Level",
+       title = "Q2 Concern Level by Political Id",
+      caption = "ABC News Political Poll")+
+  coord_flip()
+## Grouped Bar Chart Flipped Political ID
+abc_poll_pp_id_q2%>%  
+  ggplot(aes(fill=Q2ConcernLevel_4, y=count, x=pp_political_id_5)) + 
+    geom_bar(position="dodge", stat="identity") +
+  labs(subtitle ="Revised Grouped Bar Chart" ,
+       y = "Number of Respondents",
+       x= "Concern Level",
+       title = "Q2 Concern Level by Political Id",
+      caption = "ABC News Political Poll")+
+  coord_flip()
+
+
+
+```
+- The __stacked bar chart__ gives an easier to digest view of the comparative level 
+of concern and the part of each concern level that comes from respondents from each 
+political party.
+
+```{r}
+## Stacked bar 
+
+abc_poll_pp_id_q2%>%  
+  ggplot(aes(fill=pp_political_id_5, y = count, x=Q2ConcernLevel_4)) + 
+    geom_bar(position="stack", stat="identity")+
+  labs(subtitle = "Stacked Bar Chart",
+       y = "Number of Respondents",
+       x= "Concern Level",
+       title = "Q2 Concern Level by Political Id",
+      caption = "ABC News Political Poll") +
+  coord_flip()
+
+## Revised Stacked bar
+ggplot(abc_poll, aes(x = `pp_political_id_5`, fill = Q2ConcernLevel_4)) + 
+  geom_bar(alpha=0.9)+
+
+labs(subtitle = "Revised Stacked Bar Chart",
+       y = "Number of Respondents",
+       x= "Concern Level",
+       title = "Q2 Concern Level by Political Id",
+      caption = "ABC News Political Poll") +
+  coord_flip()
+
+
+```
+
+- The __percent stacked bar chart__ allows us to very quickly see the proportion of 
+respondents from each political party that make up a given concern level. This allows
+us to see how strongly the level of concern seems to relate to political party.
+
+```{r}
+# Percent Stacked bar
+
+abc_poll_pp_id_q2%>%  
+  ggplot(aes(fill=pp_political_id_5, y=count, x=Q2ConcernLevel_4)) + 
+    geom_bar(position="fill", stat="identity")+
+  labs(subtitle ="Percent Stacked Bar Chart" ,
+       y = "Percentage of Respondents",
+       x= "Concern Level",
+       title = "Q2 Proportionate Concern Level by Political Id",
+      caption = "ABC News Political Poll",
+      color = "Political ID") 
+  
+
+# Revised Percent Stacked bar
+
+abc_poll_pp_id_q2%>%  
+  ggplot(aes(fill=Q2ConcernLevel_4, y=count, x=pp_political_id_5)) + 
+    geom_bar(position="fill", stat="identity")+
+  labs(subtitle ="Revised Percent Stacked Bar Chart" ,
+       y = "Percentage of Respondents",
+       x= "Concern Level",
+       title = "Q2 Proportionate Concern Level by Political Id",
+      caption = "ABC News Political Poll",
+      color = "Political ID") 
+
+
+```
+- The __donut chart__  is a visual of the distribution of political identification of the
+poll respondents. I read that donut charts and pie charts are not recommended. In something with only 3 groups, I thought it could be ok, although it doesn't allow one to 
+see subtle differences between the size of groups like one would see in a "lollipop" or
+ a "bar chart".
+
+```{r}
+
+
+# Facet Wrap with Doughnut (Facet wrap didn't work...would have to fix this)
+ 
+# Compute percentages
+abc_poll_pp_id_q2$fraction = abc_poll_pp_id_q2$count / sum(abc_poll_pp_id_q2$count)
+
+# Compute the cumulative percentages (top of each rectangle)
+abc_poll_pp_id_q2$ymax = cumsum(abc_poll_pp_id_q2$fraction)
+
+# Compute the bottom of each rectangle
+abc_poll_pp_id_q2$ymin = c(0, head(abc_poll_pp_id_q2$ymax, n=-1))
+ 
+# Compute label position
+abc_poll_pp_id_q2$labelPosition <- (abc_poll_pp_id_q2$ymax + abc_poll_pp_id_q2$ymin) / 2
+
+# Compute a good label
+abc_poll_pp_id_q2$label <- paste0(abc_poll_pp_id_q2$pp_political_id_5, "\n value: ", abc_poll_pp_id_q2$count)
+# Make the plot
+ggplot(abc_poll_pp_id_q2, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=pp_political_id_5)) +
+     geom_rect() +
+ # geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
+     coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
+     xlim(c(2, 4)) +
+  theme_void() +
+  theme(legend.position = "right") +
+  
+  labs(subtitle = "Political ID of Respondents",
+       title = "Donut Chart",
+      caption = "ABC News Political Poll",
+      ) 
+
+
+  #facet_wrap(vars(Q2ConcernLevel_4))
+
+
+
+  
+
+
+```
+## Questions
+
+- How do I change the label of the legend from the name of the "fill" variable?
+
+- In what situations, if any, is a pie/donut chart appropriate?
+
+### Revised Visualizing Flow Relationship
+
+I chose to visualize a "flow relationship", between a respondent's reported level of optimism reported in question 5 and several other demographic variables. I found the "skipped" responses to Question 5 to be difficult to read in a flow chart in a way
+ that they weren't with stacked bar charts or pie charts, so I removed them from 
+these visualizations.
+```{r}
+flow_region_educ <- abc_poll %>% 
+  select(pp_region_4, Q5Optimism_3)%>%
+  mutate(Q5Optimism_3 = na_if(Q5Optimism_3, "Skipped"))
+
+#flow_region_educ
+
+```
+
+I revised my previous __chord diagram__ by fixing the error in the pivot longer. 
+Now the values of my __origin__ and __destination__ variables are accurate
+
+
+```{r}
+# Chord Diagrams 
+# Charge the circlize library
+library(circlize)
+```
+
+- Political ID to Q5 Optimism Level showed a clear "flow" of Republican and Other 
+party to pessimistic responses and a strong "flow" of Democratic party ID to optimistic
+responses.
+```{r}
+#Q5 Optimism Status vs Political ID
+# Gather the "edges" for our flow: origin: Political ID, destination: Q5 Optimism level
+flow_pol_id_optimism <- abc_poll %>% 
+  select(pp_political_id_5, Q5Optimism_3)%>%
+  mutate(Q5Optimism_3 = na_if(Q5Optimism_3, "Skipped"))%>%
+  mutate(pp_political_id_5 = na_if(pp_political_id_5, "Skipped"))%>%
+  with(table(pp_political_id_5, Q5Optimism_3))%>%
+ 
+# Make the circular plot
+ chordDiagram(transparency = 0.5)
+title(main = "Revised Political ID to Q5 Optimism Level", sub = "ABC News Political Poll")
+
+
+
+```
+
+- Geographic Region to Q5 Optimism Level showed a simple "flow" however it was not 
+so easy to discern a distinction in the proportion of optimismtic and pessimistic responses by region.
+```{r}
+#Q5 Optimism Status vs Geographic Region
+# Gather the "edges" for our flow: origin: Q5 Optimism, destination: Geographic Region
+flow_region_educ <- abc_poll %>% 
+  select(pp_region_4, Q5Optimism_3)%>%
+  mutate(Q5Optimism_3 = na_if(Q5Optimism_3, "Skipped"))%>%
+  
+  with(table(Q5Optimism_3, pp_region_4))%>%
+
+# Make the circular plot
+ chordDiagram(transparency = 0.5)
+title(main = "Revised Q5 Optimism Level to Geographic Region", sub = "ABC News Political Poll")
+```
+
+
+
+
+
+
+
+
+## Questions/ Future To-Do's
+
+- I would like to explicitly specify colorings
+
+- Why do the colors of my chord diagram change each time I run the chunk?
+
+
+- How do I fix the labels around the circle (other than using "newline")?
+
+- Other than traffic/shipping/migration patterns, what are examples of ideas that 
+are well represented by  chord charts?
+
+
+### Attempt at a Multidimensional Balloon Plot with Faceting
+
+I noticed balloon plots as a way to have multidimensional, qualitative variables. So I tried to produce one. The story here, doesn't seem to be to interesting though.
+
+Source: [R graphics Cookbook](https://r-graphics.org/recipe-scatter-balloon)
+
+```{r}
+balloon_pol_id_optimism_gender <- abc_poll %>% 
+  select(pp_political_id_5, Q5Optimism_3, pp_gender_2)%>%
+  mutate(Q5Optimism_3 = na_if(Q5Optimism_3, "Skipped"))%>%
+  mutate(pp_political_id_5 = na_if(pp_political_id_5, "Skipped"))%>%
+  group_by(pp_political_id_5, Q5Optimism_3, pp_gender_2)%>%
+  summarise(count = n())
+
+  ggplot(balloon_pol_id_optimism_gender, aes(x = pp_political_id_5, y = Q5Optimism_3, color = pp_gender_2)) +
+  geom_point(aes(size = count, fill = pp_gender_2), shape = 21, colour = "black") +
+  scale_size_area(max_size = 20, guide = FALSE) +
+  geom_text(aes(
+    y = as.numeric(as.factor(Q5Optimism_3)) - sqrt(count)/34, label = count),
+    vjust = 1.3,
+    colour = "grey60",
+    size = 4
+  )  +
+    facet_wrap(vars(pp_gender_2))
+balloon_pol_id_optimism_gender
+  
+
+````
+
+
+
+:::
+
+
+:::
+
+
+
+
+
