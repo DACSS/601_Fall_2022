@@ -1,0 +1,157 @@
+---
+title: "Challenge 7"
+author: "Owen Tibby"
+description: "Visualizing Multiple Dimensions"
+date: "11/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - australian_marriage
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+
+-   Explain why you choose the specific graph type
+
+5)  If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   eggs ⭐
+-   abc_poll ⭐⭐
+-   australian_marriage ⭐⭐
+-   hotel_bookings ⭐⭐⭐
+-   air_bnb ⭐⭐⭐
+-   us_hh ⭐⭐⭐⭐
+-   faostat ⭐⭐⭐⭐⭐
+
+```{r Data Import}
+australian_marriage_tidy <- read_csv("~/Github/601_Fall_2022/posts/_data/australian_marriage_tidy.csv")
+
+table2 <- australian_marriage_law_postal_survey_2017_response_final <- read_excel("~/Github/601_Fall_2022/posts/_data/australian_marriage_law_postal_survey_2017_-_response_final.xls", 
+    sheet = "Table 1", col_names = FALSE, 
+    skip = 4)
+
+
+df <- australian_marriage_tidy
+
+
+```
+
+### Briefly describe the data
+
+The Australian marriage data set represents data gathered from a November 2017 postal survey of Australian public opinion on the legality of same-sex marriage. The survey was administered to registered voters across all 150 Federal Electoral Divisions in Australian states/territories . Respondents received one question to which an answer was either yes, no or response not clear.
+
+## Tidy Data (as needed)
+
+As seen below, the data is tidy and only contains 16 observations of 4 variables (16 x 4).
+
+```{r}
+summary(df)
+
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r Pivot and Recoding Variables}
+
+#Pivoting responses to be independent variables
+df <- df %>%
+  pivot_wider(names_from = resp, values_from = c(percent,count)) %>% 
+  mutate(`Total responses`= (`count_yes` + `count_no`))
+
+#Recoding names of the Australian Territories
+df$territory <-  recode(df$territory, `New South Wales`= "NSW", `Northern Territory(b)` = "N. Ter(b)", `Australian Capital Territory(c)`= "Cap. Ter(c)", `Western Australia`= "W. Aus", `South Australia`= "S. Aus", `Victoria`= "Vict.", `Queensland`= "Qnld", `Tasmania`= "Tas")
+
+print(df)
+
+```
+
+## Visualization with Multiple Dimensions
+
+```{r Graph 1.1}
+
+#Respondents to postal survey by province
+ggplot(df, aes(x =reorder(territory, -`Total responses`), y = `Total responses`)) +
+geom_bar(stat = "identity", fill= "dark blue") +
+labs(x= " Austrailian Territory", y= "Total Respondents" )+
+ggtitle("Graph 1.1: Respondents by Territory")
+  
+
+
+```
+
+```{r Graph 1.2}
+
+#Respondents Not in Favor of Same-Sex Marriage
+ggplot(df, aes(x =reorder(territory, -`percent_no`), y =`count_no`)) +
+geom_bar(stat = "identity", fill= "dark red") +
+labs(x= " Austrailian Territory", y= "Number of Respondents" )+
+ggtitle("Graph 1.2: Respondents Not in Favour of Same-Sex Marriage")
+
+
+```
+
+```{r Graph 1.3}
+#Co-relation between Approval percentage and Number of respondents
+ggplot(df, aes(x =`percent_no`, y= `Total responses`, colour=territory )) +
+geom_point() +
+geom_smooth(color= 'blue',method='lm', formula= y~x)+
+labs(x= " Disapproval %", y= "Number of Respondents", colour= "Territory" )+
+ggtitle("Graph 1.3: Total Respondents vs Disapproval %")
+```
+
+```{r}
+
+
+  #Recoding names of the Australian Territories
+
+
+australian_marriage_tidy$territory <-  recode(australian_marriage_tidy$territory, `New South Wales`= "NSW", `Northern Territory(b)` = "N. Ter", `Australian Capital Territory(c)`= "Cap. Ter", `Western Australia`= "W. Aus", `South Australia`= "S. Aus", `Victoria`= "Vict.", `Queensland`= "Qnld", `Tasmania`= "Tas")
+
+#Approval/ Disapproval of same-sex marriage by Australian Territory
+australian_marriage_tidy %>% 
+  ggplot() + aes(x=territory, y= percent, fill= resp)+
+  geom_bar(stat="identity", color= "blue")+
+  facet_wrap(vars(resp))+
+  ggtitle("Graph 1.4: Approval % by Australian Territory")+
+  labs(y= "Percentage", x= "Australian Territory", fill= "Response")
+
+
+
+```
+
