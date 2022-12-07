@@ -1,0 +1,460 @@
+---
+title: "Challenge 8: Joining Data"
+author: "Christa Bonney"
+description: "Joining Data: Debt and Fed_rate Datasets"
+date: "12/03/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+
+###Read In First Data Set and Summarize
+
+####Read In Fed Rate Dataset
+
+```{r}
+#read in 2 data sets
+
+fed_rate <- read.csv("~/GIT/601_Fall_2022/posts/_data/FedFundsRate.csv")
+
+```
+
+```{r}
+#confirm dataset read in properly
+print(fed_rate)
+```
+
+####Summary Fed Rate Dataset
+
+```{r}
+#get dimensions
+dim(fed_rate)
+```
+
+```{r}
+#get column names
+colnames(fed_rate)
+```
+
+```{r}
+#get year range for data collection
+table(select(fed_rate, Year))
+```
+The Federal Funds Rate dataset is comprised of 10 variables with 904 rows. The variables consist of:
+
+"Year": This is a qualitative nominal variable, with observations ranging from the year 1955 to 2017
+
+"Month": This is a qualitative nominal variable, with months corresponding to numerical calendar order (January = 1, February = 2, March = 3...)
+
+"Day": This is a qualitative nominal variable, with observations corresponding to the day of the month for that particular year that the data of interest was collected/observed
+
+"Federal.Funds.Target.Rate": This is a continuous quantitative variable, and is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks.
+
+"Federal.Funds.Upper.Target": This is a continuous quantitative variable, and is the calculated upper target percentage of the federal funds rate target range.
+
+"Federal.Funds.Lower.Target": This is a continuous quantitative variable, and is the calculated lower target percentage of the federal funds rate target range.
+
+"Effective.Federal.Funds.Rate":
+
+"Real.GDP..Percent.Change": this is a continuous variable, it is the percentage that the real gross domestic product (GDP) (an inflation-adjusted version of GDP calculated by the Bureau of Economic Analysis) changed relative to the real gross domestic product from the previous year(3)
+
+"Unemployment.Rate": this is a continuous variable, it is the national unemployment rate
+
+"Inflation.Rate": this is a continuous variable, it is the rate of economic inflation
+
+
+The federal funds target rate is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks. These depository institutes have reserve balances (reserve requirement) with the Federal Reserve bank, and these accounts hold a certain percentage of their deposits to be utilized for lending to other banks as excess capital (excess over their required reverse). Commercial banks borrow and lend their excess reserves to each other overnight, generally based upon this target rate, though interest rates may vary as negotiated. A bank (borrower) whose account falls below their required reserve amount may borrow from another bank (lender) that exceeds their required reserves. The target rate is regularly set eight times each year, and changes in its percentage are determined by prevailing economic conditions. This measure is meant to promote economic growth.(1,2)
+
+The economy is influenced by the federal funds target rate, too-low rates can influence towards excessive economic growth and inflation, and too-high rates can slow inflation and return growth to more sustainable levels. So while the federal funds rate is determined by the FOMC, the effective federal funds rate is the weighted average of all rates charged by the banks for lending to other banks across the country. These two rates do not strictly mirror each other, and the Federal Reserve is able to buy or sell US Treasury securities (among other means) to adjust any significant discrepancies between the federal funds target rate and the effective federal funds rate.(1,2)
+
+
+####Tidy and Wrangle Fed Rate Dataset
+
+As the data set that will be joined with this only contains data from 2003 onwards, this dataset will be pruned of any data preceding the year of 2003. This should streamline the dataset for joining and analysis.
+
+```{r}
+#subset to remove month and day columns, subset fed funds upper and lower target variables as they are only NA values for 2003-2017
+fed_rate <- subset(fed_rate, select = -c(Month, Day))
+```
+
+```{r}
+fed_rate <- subset(fed_rate, select = -c(Federal.Funds.Upper.Target, Federal.Funds.Lower.Target))
+```
+
+```{r}
+#check work
+print(fed_rate)
+```
+
+```{r}
+#want to compare in year range for 2003 to 2017
+#filter all data for values within that range of time
+
+fed_rate_2003 <- filter(fed_rate, grepl("2003", Year))
+fed_rate_2004 <- filter(fed_rate, grepl("2004", Year))
+fed_rate_2005 <- filter(fed_rate, grepl("2005", Year))
+fed_rate_2006 <- filter(fed_rate, grepl("2006", Year))
+fed_rate_2007 <- filter(fed_rate, grepl("2007", Year))
+fed_rate_2008 <- filter(fed_rate, grepl("2008", Year))
+fed_rate_2009 <- filter(fed_rate, grepl("2009", Year))
+fed_rate_2010 <- filter(fed_rate, grepl("2010", Year))
+fed_rate_2011 <- filter(fed_rate, grepl("2011", Year))
+fed_rate_2012 <- filter(fed_rate, grepl("2012", Year))
+fed_rate_2013 <- filter(fed_rate, grepl("2013", Year))
+fed_rate_2014 <- filter(fed_rate, grepl("2014", Year))
+fed_rate_2015 <- filter(fed_rate, grepl("2015", Year))
+fed_rate_2016 <- filter(fed_rate, grepl("2016", Year))
+fed_rate_2017 <- filter(fed_rate, grepl("2017", Year))
+```
+
+```{r}
+#check work
+print(fed_rate_2003)
+```
+
+```{r}
+#get annual averages for each year, each column
+
+fed_avgs_2003 <- summarize_all(select(fed_rate_2003, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2004 <- summarize_all(select(fed_rate_2004, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2005 <- summarize_all(select(fed_rate_2005, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2006 <- summarize_all(select(fed_rate_2006, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2007 <- summarize_all(select(fed_rate_2007, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2008 <- summarize_all(select(fed_rate_2008, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2009 <- summarize_all(select(fed_rate_2009, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2010 <- summarize_all(select(fed_rate_2010, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2011 <- summarize_all(select(fed_rate_2011, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2012 <- summarize_all(select(fed_rate_2012, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2013 <- summarize_all(select(fed_rate_2013, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2014 <- summarize_all(select(fed_rate_2014, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2015 <- summarize_all(select(fed_rate_2015, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2016 <- summarize_all(select(fed_rate_2016, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+fed_avgs_2017 <- summarize_all(select(fed_rate_2017, Federal.Funds.Target.Rate:Inflation.Rate), mean, na.rm = TRUE)
+```
+
+```{r}
+#check work
+print(fed_avgs_2003)
+```
+
+```{r}
+#vertically merge fed_avgs_2003:17 data sets with rbind()
+
+fed_rate_avgs <- rbind(fed_avgs_2003, fed_avgs_2004, fed_avgs_2005, fed_avgs_2006, fed_avgs_2007, fed_avgs_2008, fed_avgs_2009, fed_avgs_2010, fed_avgs_2011, fed_avgs_2012, fed_avgs_2013, fed_avgs_2014, fed_avgs_2015, fed_avgs_2016, fed_avgs_2017)
+
+```
+
+```{r}
+#check work
+print(fed_rate_avgs)
+```
+
+```{r}
+#make tibble of years 2003-2017
+Year <- as_tibble_col(c('2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017'))
+
+```
+
+```{r}
+#rename 'value' column as 'Year'
+Year <- rename(Year, "Year" = 'value')
+```
+
+```{r}
+#check rename with print
+print(Year)
+```
+
+
+```{r}
+#join new year tibble column to avg_debt to match years
+annual_avg_fedrate <- cbind(Year, fed_rate_avgs)
+
+```
+
+```{r}
+#check work
+print(annual_avg_fedrate)
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+fed_avgs_2003
+
+```
+
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+fed_avgs_2010
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+fed_avgs_2017
+```
+
+This data set has been determined to be fully prepared for binding with the Debt data set.
+
+###Read In Second Dataset and Summarize
+
+####Read In Debt Dataset
+
+```{r}
+debt <- read_excel("~/GIT/601_Fall_2022/posts/_data/debt_in_trillions.xlsx")
+
+```
+
+```{r}
+#print debt dataset to confirm successful import
+print(debt)
+```
+
+
+```{r}
+#get debt dataset dimension
+dim(debt)
+```
+
+```{r}
+#get column names
+colnames(debt)
+```
+
+
+```{r}
+#table of 'year and quater' column to get range of years data was collected
+table(select(debt, 'Year and Quarter'))
+
+```
+The debt_in_trillions dataset is composed of 8 variables (columns) and 74 rows. The variables consist of:
+
+"Year and Quarter": this is a nominal qualitative variable of Years spanning from 2003 to 2021, with each year further split into quarters
+
+"Mortgage": This is a continuous quantitative variable, measured in of trillions of dollars, likely for home mortgage debt
+
+"HE Revolving": This is a continuous quantitative variable, measured in of trillions of dollars, likely for revolving loan debt
+
+"Auto Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for automotive debt
+
+"Credit Card": This is a continuous quantitative variable, measured in of trillions of dollars, likely for credit card debt
+
+"Student Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for student loan debt
+
+"Other": This is a continuous quantitative variable, measured in of trillions of dollars, likely as a catch-all category to account for miscellaneous sources of debts that are still somewhat common, if less so than the other types of loan debts
+
+"Total": This is a continuous quantitative variable, measured in of trillions of dollars, quantifying the total accrued debt across that particular year-quarter
+
+For this dataset it may be surmised that this it is a catalog of commonly accrued debts, measured each annual quarter for a series of years, by citizens in a nation that has a dollar-based currency system. This does narrow down the potential countries, though it may be the United States or another nation that does provide reduced or no-cost higher education, due to the presence and amount of student loan debt accrued quarterly.
+
+###Tidying Data of Debt Dataset
+
+The fed_rate dataset does not have information past the year 2017, so data will be removed from this data set (past the year of 2017) to streamline it for joining with the fed_rate data set and further analysis.
+
+
+```{r}
+debt2 <- rename(debt, "Year_and_Quarter" = 'Year and Quarter', "HE_Revolving" = 'HE Revolving', "Auto_Loan" = 'Auto Loan', "Credit_Card" = 'Credit Card', "Student_Loan" = 'Student Loan')
+              
+```
+
+```{r}
+#average data per quarter into annual averages, can filter by "03:"... to isolate quarterly values by year
+#Do this for one column, then can copy and edit code for other columns (only do desired columns want to work with to complete the challenge)
+
+#for 'part-whole' graph - could get total of all debts, and compare one column of debt against total debt ('part' of the 'whole' debt) - possibly with color-fill for 1 variable out of all in 1 graph - maybe histogram
+```
+
+```{r}
+#filter with grepl to get quartly values for each year
+values_2003 <- dplyr::filter(debt2, grepl("03:Q", Year_and_Quarter))
+values_2004 <- dplyr::filter(debt2, grepl("04:Q", Year_and_Quarter))
+values_2005 <- dplyr::filter(debt2, grepl("05:Q", Year_and_Quarter))
+values_2006 <- dplyr::filter(debt2, grepl("06:Q", Year_and_Quarter))
+values_2007 <- dplyr::filter(debt2, grepl("07:Q", Year_and_Quarter))
+values_2008 <- dplyr::filter(debt2, grepl("08:Q", Year_and_Quarter))
+values_2009 <- dplyr::filter(debt2, grepl("09:Q", Year_and_Quarter))
+values_2010 <- dplyr::filter(debt2, grepl("10:Q", Year_and_Quarter))
+values_2011 <- dplyr::filter(debt2, grepl("11:Q", Year_and_Quarter))
+values_2012 <- dplyr::filter(debt2, grepl("12:Q", Year_and_Quarter))
+values_2013 <- dplyr::filter(debt2, grepl("13:Q", Year_and_Quarter))
+values_2014 <- dplyr::filter(debt2, grepl("14:Q", Year_and_Quarter))
+values_2015 <- dplyr::filter(debt2, grepl("15:Q", Year_and_Quarter))
+values_2016 <- dplyr::filter(debt2, grepl("16:Q", Year_and_Quarter))
+values_2017 <- dplyr::filter(debt2, grepl("17:Q", Year_and_Quarter))
+```
+
+```{r}
+#get means of quarterly values for all years
+annual_avgs_2003 <- summarize_all(select(values_2003, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2004 <- summarize_all(select(values_2004, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2005 <- summarize_all(select(values_2005, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2006 <- summarize_all(select(values_2006, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2007 <- summarize_all(select(values_2007, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2008 <- summarize_all(select(values_2008, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2009 <- summarize_all(select(values_2009, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2010 <- summarize_all(select(values_2010, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2011 <- summarize_all(select(values_2011, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2012 <- summarize_all(select(values_2012, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2013 <- summarize_all(select(values_2013, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2014 <- summarize_all(select(values_2014, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2015 <- summarize_all(select(values_2015, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2016 <- summarize_all(select(values_2016, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2017 <- summarize_all(select(values_2017, Mortgage:Total), mean, na.rm = TRUE)
+```
+
+```{r}
+#check work
+print(annual_avgs_2003)
+```
+
+```{r}
+#vertically merge annual_avgs_2003:21 data sets with rbind()
+avg_debt <- rbind(annual_avgs_2003, annual_avgs_2004, annual_avgs_2005, annual_avgs_2006, annual_avgs_2007, annual_avgs_2009, annual_avgs_2010, annual_avgs_2011, annual_avgs_2012, annual_avgs_2013, annual_avgs_2014, annual_avgs_2015, annual_avgs_2016, annual_avgs_2017)
+
+```
+
+```{r}
+#check work with print
+print(avg_debt)
+
+```
+
+```{r}
+#make tibble of years 2003-2017
+Year <- as_tibble_col(c('2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2012', '2013', '2014', '2015', '2016', '2017'))
+
+```
+
+```{r}
+#rename 'value' column as 'Year'
+Year <- rename(Year, "Year" = 'value')
+
+#check rename with print
+print(Year)
+```
+
+
+```{r}
+#join new year tibble column to avg_debt to match years
+annual_avg_debt <- cbind(Year, avg_debt)
+
+```
+
+```{r}
+#check work
+print(annual_avg_debt)
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2003
+
+```
+
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2010
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2017
+```
+
+It has been determined that this data set is now prepared to be joined with the Federal Funds Rate data set.
+
+###Joining Datasets
+
+```{r}
+#left join annual average fed rate and debt data sets
+debt_and_fedrate <- left_join(annual_avg_debt, annual_avg_fedrate)
+```
+
+```{r}
+#check work
+print(debt_and_fedrate)
+```
+The joining of the two datasets appears to have been successful.
+
+###Analyzing Joined Dataset
+
+For some basic analysis I will generate a few graphs to compare some of the variables of the newly generated debt_and_fedrate dataset.
+
+```{r}
+#rename 'total' variable to 'total debt' for clarity in analysis
+
+debt_and_fedrate <- rename(debt_and_fedrate, "Total_Debt" = 'Total')
+```
+
+```{r}
+#check renaming
+print(debt_and_fedrate)
+```
+
+```{r}
+ggplot(debt_and_fedrate, aes(x = Year, y = Total_Debt)) + geom_point(aes(x = Year, y = Inflation.Rate), color = 'red') + geom_jitter() + theme_minimal()
+```
+
+From this model we can observe that total debt may have some trending pattern to Inflation rate.
+
+
+
+###Citations
+
+
+1.
+Federal Funds Rate: What It Is, How It’s Determined, and Why It’s Important. Investopedia. Published 2022. Accessed November 30, 2022. https://www.investopedia.com/terms/f/federalfundsrate.asp
+
+2.
+Corporate Finance Institute. Federal Funds Rate. Corporate Finance Institute. Published January 11, 2020. Accessed November 30, 2022. https://corporatefinanceinstitute.com/resources/economics/federal-funds-rate/
+
+3.
+USAFacts. Annual percent change in real GDP - USAFacts. USAFacts. Published 2021. Accessed November 30, 2022. https://usafacts.org/data/topics/economy/economic-indicators/gdp/annual-change-real-gdp/
+‌
+‌
+‌‌
+
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+
+
