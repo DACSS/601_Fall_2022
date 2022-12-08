@@ -1,0 +1,92 @@
+---
+title: "Challenge 7 "
+author: "Sanjana Jhaveri"
+description: "Visualizing Multiple Dimensions"
+date: "08/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - australian_marriage
+  - air_bnb
+  - eggs
+  - abc_poll
+  - faostat
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+   - Explain why you choose the specific graph type
+5) If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - eggs ⭐
+  - abc_poll ⭐⭐
+  - australian_marriage ⭐⭐
+  - hotel_bookings ⭐⭐⭐
+  - air_bnb  ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - faostat ⭐⭐⭐⭐
+
+```{r}
+faostat <- read_csv("_data/FAOSTAT_livestock.csv",
+                          skip = 1,
+                          col_names = c("delete", "domain", "delete", "area", "delete", "delete", "animal code", "type", "delete", "year",
+"unit", "value", "flag", "delete")) %>%
+  select(!starts_with("delete")) %>%
+  na_if("Skipped")
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+I tidied the data by deleting some of the columns that were not needed or I thought wouldn't be useful in visualizing the data. For example, I deleted the year code column because the values there were the same values as the year column. I deleted the element and element code column because I didn't see what value those provided in visualizing the data. 
+
+
+```{r}
+  ggplot(faostat, aes(year, value, color = type)) + 
+  geom_point()
+```
+
+## Visualization with Multiple Dimensions
+
+```{r}
+faostat %>%
+  filter(year >= 2010) %>%
+   ggplot(aes(unit, value, color = type)) + 
+   geom_point()  +
+  facet_wrap("year")
+```
+It seems that cattle have the most value for each head in the most recent years. Pigs and goats heads are also listed at a pretty high value. Conversely, sheep's heads are at the lowest value. Most of the recent years have basically the same  data on each animal type's value.
