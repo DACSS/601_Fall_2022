@@ -1,0 +1,198 @@
+---
+title: "Challenge 8 Instructions"
+author: "Tejaswini_Ketineni"
+description: "Joining Data"
+date: "12/06/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readr)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+The required data is initially read.
+
+```{r}
+library(readr)
+egg_chicken <- read_csv("_data/FAOSTAT_egg_chicken.csv")
+cattle_dairy <- read_csv("_data/FAOSTAT_cattle_dairy.csv")
+livestock <- read_csv("_data/FAOSTAT_livestock.csv")
+```
+
+### Briefly describe the data
+
+While we make efforts to understand the data, we see all the column names present, the sample head of the three datasets.
+
+```{r}
+colnames(egg_chicken)
+
+```
+
+
+```{r}
+colnames(cattle_dairy)
+```
+```{r}
+colnames(livestock)
+```
+
+```{r}
+head(cattle_dairy)
+```
+```{r}
+head(egg_chicken)
+```
+```{r}
+head(livestock)
+```
+
+```{r}
+table(egg_chicken$Item)
+```
+```{r}
+table(cattle_dairy$Item)
+```
+
+```{r}
+table(livestock$Item)
+```
+
+we observe that only in live stock table we have multiple items.
+
+```{r}
+all(egg_chicken$Year==egg_chicken$`Year Code`)
+```
+
+
+```{r}
+all(cattle_dairy$Year==cattle_dairy$`Year Code`)
+```
+
+
+```{r}
+all(livestock$Year==livestock$`Year Code`)
+```
+
+we observe duplicated columns in the data sets.
+
+```{r}
+sapply(egg_chicken,function(x)sum(is.na(x)))
+```
+
+we see that there are 40 missing values of value and 7548 missing values of flag description.
+
+```{r}
+sapply(cattle_dairy,function(x)sum(is.na(x)))
+```
+
+
+```{r}
+sapply(livestock,function(x)sum(is.na(x)))
+```
+
+In live_stock there are 1301 missing values in values and 38270 missing values in flags 
+
+```{r}
+print(summarytools::dfSummary(egg_chicken,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+print(summarytools::dfSummary(livestock,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+print(summarytools::dfSummary(cattle_dairy,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+### Tidy the data
+First we need to remove the duplicate columns from each of the data set
+```{r}
+cattle_diary_new <- subset(cattle_dairy,select= -c(`Year Code`))
+```
+
+```{r}
+head(cattle_diary_new)
+```
+```{r}
+livestock_new <- subset(livestock,select= -c(`Year Code`))
+egg_new <- subset(egg_chicken,select= -c(`Year Code`))
+```
+
+```{r}
+cattle_diary_new<- cattle_diary_new%>%
+  mutate(Item=str_replace_all(Item,"Milk, whole fresh cow", "Milk"))
+egg_new <- egg_new%>%
+  mutate(Item=str_replace_all(Item,"Eggs, hen, in shell","Poultry"))
+table(cattle_diary_mutate$Item)
+table(egg_new$Item)
+```
+
+Now that we have renamed the columns, now we perform a join on the tidied data.
+
+
+## Join Data
+
+we have same columns in cattle, diary and live stock tables. so when we join them the final data must have the rows summated together in all the tables.
+
+```{r}
+cattle_egg <- full_join(egg_new,cattle_diary_new)
+joined_data <- full_join(cattle_egg,livestock_new)
+```
+
+```{r}
+dim(joined_data)
+```
+
+we now confirm that they are all joined together.
+
+## Visualizations
+```{r}
+ggplot(joined_data,aes(x=Item))+geom_bar(fill = "lightpink") +
+  labs(title = "Item and count", x = "Item", 
+     y = "Count")+geom_text(stat='count', aes(label=..count..), vjust=1)
+```
+
+Now, we have understood that we can perform visualizations too on joined data.
+
+
