@@ -1,0 +1,147 @@
+---
+title: "Challenge 7"
+author: "Tejaswini_Ketineni"
+description: "Visualizing Multiple Dimensions"
+date: "12/02/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+
+```{r}
+library(readr)
+hotel_bookings <- read_csv("_data/hotel_bookings.csv")
+```
+
+### Briefly describe the data
+The data has about 119390 rows and 32 columns.It has 13 categorical variables and 18 numeric variables and a date column.
+## Tidy Data (as needed)
+In order to tidy the data, first we need to understand the data.
+
+```{r}
+head(hotel_bookings)
+```
+
+Document your work here.
+
+```{r}
+colnames(hotel_bookings)
+```
+
+```{r}
+library(funModeling)
+plot_num(hotel_bookings)
+```
+```{r}
+dfSummary(hotel_bookings)
+```
+
+```{r}
+sapply(hotel_bookings,function(x)sum(is.na(x)))
+```
+We see that there are no missing values.
+
+```{r}
+sapply(hotel_bookings,function(x)sum(is.null(x)))
+```
+
+There are no null values as such 
+
+```{r}
+unique(hotel_bookings$country)
+```
+If we observe the country names, in the first column there is a country null.Now we should observe the attributes present, so that we will validate if we need data in null or not.
+
+```{r}
+filter(hotel_bookings,country == "NULL")
+```
+we see that the data is populated , so only when we are doing country wise analysis, we can choose to exclude the data of NULL, else we can store it.
+
+```{r}
+hotel_bookings_mutate <- hotel_bookings%>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="-"),arrival_date = dmy(arrival_date))
+```
+We now format the date column and view them
+```{r}
+head(hotel_bookings_mutate$arrival_date)
+```
+we convert the format of the arrival date
+
+
+```{r}
+hotel_bookings_mutate <- hotel_bookings_mutate%>% 
+  mutate(child_guests = children + babies)%>%
+  select(-c(children,babies))
+```
+We can also add few other variables to find out the advanced bookings made.
+
+```{r}
+hotel_bookings_mutate <- hotel_bookings_mutate%>% 
+  mutate(date_of_booking = arrival_date-lead_time)
+head(hotel_bookings_mutate)
+```
+```{r}
+hotel_bookings_mutate <- hotel_bookings_mutate%>% 
+  mutate(stay_in_nights = stays_in_week_nights+stays_in_weekend_nights)
+head(hotel_bookings_mutate)
+```
+here we are adding an extra column which we would be using in visualization.
+
+## Visualization with Multiple Dimensions
+
+
+```{r}
+ggplot(hotel_bookings_mutate, aes(x = hotel)) +
+  geom_bar(fill = "lightblue") +
+  labs(title = "Hotel type and count", x = "Hotel_type", 
+     y = "Count")+geom_text(stat='count', aes(label=..count..), vjust=1)
+```
+
+I have learned to add the number tips to the graphs
+
+```{r}
+ggplot(hotel_bookings_mutate, aes(x = market_segment, fill = hotel)) + 
+  geom_bar(bins = 25) + 
+  labs(title = "Market_Wise_booking", x = "market_segment", y = "Frequency", 
+     fill = guide_legend("hotel_type")) +scale_fill_manual(values = c("navyblue","red"))
+```
+I have newly found a way to modify the color of the plots.
+
+```{r}
+ggplot(hotel_bookings_mutate, aes(x=adults,y=stay_in_nights,color=hotel))+
+  geom_point(alpha=1)+labs(title = "scatter plot of stay in nights and adult guests")
+```
+
+```{r}
+ggplot(hotel_bookings_mutate,aes(factor(is_canceled)))+
+  geom_bar( col='black', fill="lightpink", alpha = 1) +
+  facet_wrap(~hotel) +
+  scale_x_discrete("Canceled_tag",labels = c("No","Yes"))+geom_text(stat='count', aes(label=..count..), vjust=-0.25)
+```
+```{r}
+ggplot(hotel_bookings_mutate, aes(x=arrival_date_month, y=days_in_waiting_list, group=1)) + stat_summary(fun="mean", geom="line", col="black") + labs(title = "avg waitlist", x = "month", y = "waitlist_days")
+  
+```
+Highest wait times are observed in may and october.
+
+
