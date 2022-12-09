@@ -1,0 +1,167 @@
+---
+title: "Challenge 2 Instructions"
+author: "Meredith Rolfe"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+## Railroad dataset(railroad\*.csv)-
+
+```{r}
+data <- read_csv('_data/railroad_2012_clean_county.csv')
+data
+```
+
+it shows state, county and total number of employees for a given dataset.
+
+It's group by state and county.
+
+```{r}
+data %>% group_by(county,state) %>%
+  summarize_at(c('total_employees'),mean)
+```
+
+Now let's see the mean of the data set group by county.
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),mean)
+```
+
+let's see the mean of the data set group by state.
+
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),mean)
+```
+
+The median of the data set group by state.
+
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),median)
+```
+
+The median of the data set group by county.
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),median)
+```
+
+CT, AZ, and DC all three are compared to check the difference in mean of the total_employees present in the data set.
+
+```{r}
+result <- c("CT")
+filter(data, state %in% result) %>% 
+  summarize_at(c('total_employees'),mean)
+```
+
+```{r}
+result <- c("AZ")
+filter(data, state %in% result) %>% 
+  summarize_at(c('total_employees'),mean)
+```
+
+```{r}
+result <- c("DC")
+filter(data, state %in% result) %>% 
+  summarize_at(c('total_employees'),mean)
+```
+
+The mean value vary a lot i.e. for CT it's 324, AZ is 210.2 and DC is 279.
+
+Now let's see the Standard Deviation of the data set group by state and also by county.
+
+```{r}
+data %>% group_by(county) %>%
+  summarize_at(c('total_employees'),sd)
+
+```
+
+```{r}
+data %>% group_by(state) %>%
+  summarize_at(c('total_employees'),sd)
+```
+
+If we see CA then CT had the highest SD but if we look at the mean then it's 324 and 238 which is a huge difference.
+
+## Bird dataset(birds.csv)-
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+birds <- read_csv("_data/birds.csv")%>%
+  select(-c(contains("Code"), Element, Domain, Unit))
+birds
+```
+
+This data set has many variables like Area, Item, year, value, flag, and flag description.
+
+```{r}
+summary(birds)
+```
+
+Let's take a look at average and median stock values by year.
+
+```{r}
+birds%>%
+    group_by(Year)%>%
+     summarise(mean(Value, na.rm=TRUE),median(Value, na.rm=TRUE))
+```
+
+```{r}
+birds%>%
+     filter(Area == "Americas")%>%
+     group_by(Item,Year)%>%
+     summarise(average = mean(Value, na.rm=TRUE))%>%
+     pivot_wider(names_from = Year, values_from = (average))
+```
+
+From the analysis I can see that the average stock value has increased over the years and it has increased almost every year for every stock.

@@ -51,54 +51,6 @@ railroad<-read_csv("_data/railroad_2012_clean_county.csv")
 railroad
 ```
 
-# Railroad Dataset-
-
-```{r}
-railroad%>%
-  select(county)%>%
-  n_distinct(.)
-```
-
-```{r}
-railroad%>%
-  select(county)%>%
-  distinct()
-```
-
-```{r}
-railroad%>%
-  select(state)%>%
-  n_distinct(.)
-```
-
-```{r}
-railroad%>%
-  select(state)%>%
-  distinct()
-```
-
-```{r}
-railroad%>%
-  select(total_employees)%>%
-  n_distinct(.)
-```
-
-```{r}
-railroad%>%
-  select(total_employees)%>%
-  distinct()
-```
-
-# Birds Dataset-
-
-```{r}
-library(readxl)
-birds<-read_csv("_data/birds.csv")
-birds
-```
-
-Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
-
 ## Describe the data
 
 Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
@@ -108,4 +60,147 @@ Using a combination of words and results of R commands, can you provide a high l
 #| label: summary
 #| 
 
+```
+
+# Railroad Dataset(railroad_2012_clean_county.csv)-
+
+There are total three variables- state, county, and total employees. We will write R commands to see how many states, county and total employees unique employees are there and we will observe the dataset accordingly.
+
+```{r}
+railroad%>%
+  select(county)%>%
+  n_distinct(.)
+```
+
+```{r}
+railroad%>%
+  select(county)%>%
+  distinct()
+```
+
+```{r}
+railroad%>%
+  select(state)%>%
+  n_distinct(.)
+```
+
+```{r}
+railroad%>%
+  select(state)%>%
+  distinct()
+```
+
+```{r}
+railroad%>%
+  select(total_employees)%>%
+  n_distinct(.)
+```
+
+```{r}
+railroad%>%
+  select(total_employees)%>%
+  distinct()
+```
+
+# Birds Dataset(FAOstat\*.csv)-
+
+There are total three variables- state, county, and total employees. We will write R commands to see how many states, county and total employees unique employees are there and we will observe the birds dataset accordingly.
+
+```{r}
+library(readxl)
+birds<-read_csv("_data/birds.csv")
+birds
+```
+
+```{r}
+chickens<-read_csv("_data/FAOSTAT_egg_chicken.csv")
+chickens
+```
+
+```{r}
+birds.sm<-birds%>%
+  select(-contains("Code"))
+birds.sm
+```
+
+# Wild Birds Dataset(wild_bird_data.csv)-
+
+```{r}
+wildbirds<-read_excel("_data/wild_bird_data.xlsx")
+wildbirds
+```
+
+```{r}
+wildbirds <- read_excel("_data/wild_bird_data.xlsx", skip = 1)
+wildbirds
+```
+
+Here we can see wet body weight and population size, now we will clean up the dataset little bit.
+
+```{r}
+wildbirds <- read_excel("_data/wild_bird_data.xlsx", skip = 2, col_names = c("weight", "pop_size"))
+wildbirds
+```
+
+# Railroad Dataset(wild_bird_data.csv)-
+
+There are total three variables- state, county, and employees. We will write R commands to see how many states, county and employees unique employees are there and we will observe the wild_bird_data dataset accordingly.
+
+```{r}
+read_excel("_data/StateCounty2012.xls",skip = 3)
+```
+
+Let's delete the unwanted columns and make it clean and select the on which we need in the use. Then we will filter out the total rows and remove any notes if necessary.
+
+```{r}
+read_excel("_data/StateCounty2012.xls",skip = 4,col_names= c("State", "delete", "County", "delete", "Employees"))%>%
+  select(!contains("delete"))
+```
+
+```{r}
+railroad<-read_excel("_data/StateCounty2012.xls", skip = 4,col_names= c("State", "delete", "County", "delete", "Employees"))%>%
+  select(!contains("delete"))%>%
+  filter(!str_detect(State, "Total"))
+railroad
+```
+
+```{r}
+railroad <-head(railroad, -2)
+tail(railroad, 10)
+```
+
+```{r}
+railroad%>%
+  select(State)%>%
+  distinct()
+```
+
+```{r}
+railroad%>%
+  select(State)%>%
+  n_distinct(.)
+```
+
+```{r}
+railroad%>%
+  select(County)%>%
+  distinct()
+```
+
+```{r}
+railroad%>%
+  select(County)%>%
+  n_distinct(.)
+```
+
+```{r}
+railroad%>%
+  select(Employees)%>%
+  distinct()
+```
+
+```{r}
+railroad%>%
+  select(Employees)%>%
+  n_distinct(.)
 ```
