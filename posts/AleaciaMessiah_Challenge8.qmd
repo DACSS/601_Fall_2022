@@ -1,0 +1,131 @@
+---
+title: "Challenge 8"
+author: "Aleacia Messiah"
+description: "Joining Data"
+date: "12/08/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - Aleacia Messiah
+  - snl
+  - tidyverse
+  - ggplot2
+  - summarytools
+  - lubridate
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(summarytools)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   military marriages ⭐⭐
+-   faostat ⭐⭐
+-   railroads ⭐⭐⭐
+-   fed_rate ⭐⭐⭐
+-   debt ⭐⭐⭐
+-   us_hh ⭐⭐⭐⭐
+-   snl ⭐⭐⭐⭐⭐
+
+```{r}
+# read in snl actors dataset
+actors_orig <- read_csv("_data/snl_actors.csv")
+# read in snl casts dataset
+casts_orig <- read_csv("_data/snl_casts.csv")
+# read in snl seasons dataset
+seasons_orig <- read_csv("_data/snl_seasons.csv")
+# view datasets
+actors_orig
+casts_orig
+seasons_orig
+# view summaries of datasets
+dfSummary(actors_orig)
+dfSummary(casts_orig)
+dfSummary(seasons_orig)
+```
+
+### Briefly describe the data
+
+These datasets consist of the actors, casts, and seasons of Saturday Night Live (SNL) from 1975 to 2020. There are 2,306 observations and 4 variables (`aid`, `url`, `type`, `gender`) in the actors dataset, 614 observations and 8 variables (`aid`, `sid`, `featured`, `first_epid`, `last_epid`, `update_anchor`, `n_episodes`, `season_fraction`) in the casts dataset, and 46 observations and 5 variables (`sid`, `year`, `first_epid`, `last_epid`, `n_episodes`) in the seasons dataset. Within 46 seasons, there are records of the date of each actor's (`aid`) first episode (`first_epid`) and last episode (`last_epid`) along with the date of the beginning (`first_epid`) and ending (`last_epid`) of each season. There is also `sid` which represents the season ID and `featured` which says whether the cast member was featured or not.
+
+The mean number of episodes from the `n_episodes` variable is 19.7 per season and 18.7 per cast member. Out of all the cast members in the casts dataset, Kenan Thompson was involved in SNL the most often at 18 times with Darrell Hammond (14 times) and Seth Meyers (13 times) following after him.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+::: callout-note
+## Note
+
+These datasets are pretty tidy and organized well, so there's not much to do here.
+:::
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+There are a few variables that require mutation: `type` and `gender` need to be converted into factors and `first_epid` and `last_epid` need to be converted to date format.
+
+```{r}
+# convert type and gender variables into factors
+actors <- actors_orig %>% 
+  mutate(across(3:4, factor))
+# create a new data frame named casts
+casts <- casts_orig
+# convert first_epid into date format
+casts$first_epid <- ymd(casts$first_epid)
+# convert last_epid into date format
+casts$last_epid <- ymd(casts$last_epid)
+# create a new data frame named seasons
+seasons <- seasons_orig
+# convert first_epid into date format
+seasons$first_epid <- ymd(seasons$first_epid)
+# convert last_epid into date format
+seasons$last_epid <- ymd(seasons$last_epid)
+```
+
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+```{r}
+# join actors and casts into one data frame
+ac <- full_join(actors, casts, by = "aid")
+# create a jitter plot of gender vs. type with color based on whether the actor was featured or not
+ggplot(ac, aes(`type`, `gender`)) +
+  geom_jitter(aes(color = `featured`)) +
+  labs(x = "Group Actor Belongs To",
+       y = "Gender of Actor",
+       title = "Jitter Plot of Gender of Actor vs. Group Actor Belongs To",
+       subtitle = "The legend shows whether the actor was featured or not",
+       caption = "Data: snl_actors.csv & snl_casts.csv")
+```
+
+I decided to analyze the actors and casts datasets combined to compare the `type` of group the actor is in to the `gender` of the actor, with an aesthetic added to convey whether the actor was featured or not (`featured`). As illustrated by the jitter plot, the majority of featured actors are part of the cast, which is to be expected. However, there are a few that are part of the unknown group. Shown by the large concentration of points in the area, there is a large number of male, female, and unknown gender guests and more male cast members than female cast members. Although the crew is smaller than the number of cast members, most of the crew members are male like the cast. There is a `gender` factor called "andy" in this dataset which is hard to determine what it actually means. Although my first thought is that "andy" means non-binary or "enby," looking through the guests that have this gender do not use non-binary pronouns or consider themselves non-binary. I would guess it either means androgynous or a placeholder for an unknown gender, but if it's the latter, why not use "unknown"? Overall, I found this combined dataset interesting, especially the larger concentrations of points in the guests column.   
