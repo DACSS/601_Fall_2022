@@ -1,8 +1,8 @@
 ---
-title: "Sarah McAlpine - Homework 3"
+title: "Sarah McAlpine - Final Project (DRAFT)"
 author: "Sarah McAlpine"
-desription: "Homework #3"
-date: "11/26/2022"
+desription: "Final Project"
+date: "12/5/2022"
 format:
   html:
     toc: true
@@ -28,7 +28,7 @@ library(summarytools)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ## Data Summary
-A software company has gathered qualitative and quantitative feedback from XX client organizations using three surveys at different stages of the client relationship: purchase decision, launch, and early results. At most, three individual people from each institution has responded to at least one survey, two people responded to two surveys, and no one person responded to all three surveys. Given the small sample size of only XX respondents across the 3 surveys, and given the overlap in feedback across the three surveys, this analysis will combine all available data into a single set for an initial analysis. At the outset, it should be noted that the conclusions drawn from this data will be limited due to the small sample size. The value of this analysis, therefore, aims to find strong trends and to determine what changes, if any, to the surveys would yield more business intelligence.
+A software company has gathered qualitative and quantitative feedback from 24 client organizations using three surveys at different stages of the client relationship: purchase decision, launch, and early results. At most, three individual people from each institution has responded to at least one survey, two people responded to two surveys, and no one person responded to all three surveys. Given the small sample size of only 31 respondents across the 3 surveys, and given the overlap in feedback across the three surveys, this analysis will combine all available data into a single set for an initial analysis. At the outset, it should be noted that the conclusions drawn from this data will be limited due to the small sample size. The value of this analysis, therefore, aims to find strong trends and to determine what changes, if any, to the surveys would yield more business intelligence.
 
 ## Read In & Join
 The data has been sanitized to protect the privacy of those involved. Client email addresses are replaced with a new variable, `UserID`, where the letter corresponds to an organization and the number corresponds to the respondent from that organization. To illustrate, R1, R2, R3 are three different people from the same organization. This will allow analysis of individuals and organization-based feedback. 
@@ -57,7 +57,7 @@ joinedsurveys_orig <- survey2_orig %>%
   full_join(survey3_orig, by = "UserID")
 ```
 ## Cleaning
-As with most surveys, the questions are too long for column names, so each is renamed with the simplest phrasing possible. The new names contain prefixes and suffixes that will help with sorting later. The full text of each question is listed in the APPENDIXXXXXXX.
+As with most surveys, the questions are too long for column names, so each is renamed with the simplest phrasing possible. The new names contain prefixes and suffixes that will help with sorting later. The full text of each question is listed in the APPENDIX.
 
 ```{r}
 #| label: renaming
@@ -175,18 +175,17 @@ surveys_clean <- deduped_questions %>%
 
 ```
 ## Data Questions
-With a richer data set, it's possible that significant correlations could be found between client characteristics and the feedback they give, such as length of time with the software, staff size, usage categories, etc. However, this analysis seeks to identify broad trends across aspects of performance and the effort required to implement the software, and so the primary focus will be on those performance and effort variables rather than trends among organizations or respondents.
+With a richer data set, it's possible that significant correlations could be found between client characteristics and the feedback they give, such as length of time with the software, staff size, usage categories, etc. However, this analysis seeks to identify broad trends across aspects of performance and the effort required to implement the software, and so the primary focus will be on those performance and effort variables rather than trends among organizations or respondents. 
 
 ## Plotting Ideas
 * compare quantitative ratings
 * word cloud or other qualitative analysis
 
-###Quantitative Analysis
+### Quantitative Analysis
 A total of XX questions asked respondents to rate feedback on a scale of 1-5 (as noted in XX, those on a scale of 1-10 were recalculated). A simple boxplot with a point overlay of individual ratings gives a general idea of the quantitative data. A "jitter" on the geom_point helps make it easier to see how many responses and generally where they were.
 
 In the plot below, the range and density of responses are easy to see. With this view, it is clear that only one person responded to the "interpret needs" question, about 5-6 responded to "launch effort" questions, and a much larger sample responded to "benefit" questions. The one person who responded regarding how well the software company interpreted their needs during set (XX check question wording) responded with the most positive possible rating. The launch effort and benefit questions require further plotting to analyze, as neither tells a clear story from this noisy plot.
 
-IDEA: Stacked bars?
 ```{r}
 #| label: plot all quantative q's
 
@@ -213,12 +212,11 @@ IDEA: Stacked bars?
 # boxplot with jitter point 
 ratings2 %>% 
   ggplot(aes(question, rating)) +
-  geom_boxplot() +
+  geom_boxplot(fill = "#fde725") +
   coord_flip() +
     geom_point(alpha = .4,
              size = .2,   
-             position = "jitter"
-             )
+             position = "jitter")
 ```
 ## Benefits: Quantitative Analysis
 What is the best way to see what benefits are being most realized for clients?
@@ -246,21 +244,6 @@ benefits2 <- surveys_clean %>%
 ```
 
 ```{r}
-# NOT GREAT > plot on violin with points
-# benefits2 %>% 
-#   arrange() %>%
-#   ggplot(aes(question, rating)) +
-#   geom_violin(width=.5, 
-#               size=0.8, 
-#               color = "#fcb900", 
-#               fill = "#fcb900") +
-#   geom_point(position = "jitter",
-#              alpha = .3,
-#              size = 5,
-#              color = "#ff6900") +
-#   coord_flip() +
-#   labs(title = "Degree of Benefits Experienced")
-
 #try geom_jtter
 benefits2 %>% 
   arrange() %>%
@@ -268,8 +251,7 @@ benefits2 %>%
   geom_jitter(width = .1,
               height = .1,
               alpha = .2,
-              size = 10,
-              binwidth = 1) +
+              size = 10,) +
   coord_flip() +
   labs(title = "Degree of Benefits Experienced")
 
@@ -280,24 +262,18 @@ benefits2 %>%
            geom_density(alpha = .5) +
   facet_wrap("question")
 
+# boxplot
+benefits2 %>%
+   group_by(question) %>%
+  arrange(mean(rating)) %>%
+   ggplot(aes(rating, question )) +
+   geom_boxplot(fill = "#5ec962") +
+  scale_y_discrete(limits = c("gift officer productivity", "increased gifts", "cost savings", "time savings", "improved donor engagement")) +
+  labs(title = "Degree of Product Benefits Experienced", x = "Client Rating (low to high)" , y = NULL)
 ```
-```{r}
-#| label: summary of benefit scores
+From this boxplot, arranged by decreasing means top to bottom, it is clear that improved donor engagement and time savings are the benefits most strongly reported. Cost savings has the broadest span with a mean in the center of the rating options. Both increased gifts and gift officer productivity are on the lower end of benefits experienced, since both have means greater than the minimum rating, it is safe to interpret that these benefits have been seen to some degree. It is notable that cost savings, increased gifts, and gift officer productivity all have significant responses at the minimum rating; the software company should pay attention to those who are reporting none of these benefits.
 
-# find the mean score for each benefit and arrange in descending order
-summary_benefits <- benefits2 %>%
-  group_by(question) %>%
-  summarize(mean(rating), as.double = TRUE) %>%
-  arrange("mean(rating)")
-
-# why doesn't this show the values rather than the count?
-# START HERE
-summary_benefits %>%
-  ggplot(aes(x = question)) + 
-  geom_bar() +
-  coord_flip()
-
-```
+Notably, one qualitative question on the survey regarding internal staff metrics (nearly synonymous with gift officer productivity), all four respondents to that free text question indicated they had not looked at the internal analytics. Therefore, it is possible that these benefits may be going unnoticed. The software company may wish to increase attention to that feature. It should be noted that no person gave feedback on both the gift officer productivity rating AND the internal analytics question. Nonetheless, the strong trends of each group indicate a possible gap that the software company should note.
 
 ```{r}
 #set up launch data 
@@ -314,21 +290,17 @@ launch <- surveys_clean %>%
                values_to = "rating",
                values_drop_na = TRUE) 
 
-# plot on violin with points
+# plot on boxplot, in increasing order
 launch %>% 
   arrange() %>%
   ggplot(aes(question, rating)) +
-  geom_violin(width=.5, 
-              size=0.8, 
-              color = "#fcb900", 
-              fill = "#fcb900") +
-  geom_point(position = "jitter",
-             size = .5,
-             color = "#ff6900") +
+  geom_boxplot(fill = "#21918c") +
   coord_flip() +
-  labs(title = "Degree of Effort Required for Launch", subtitle = "(More data needed; only 6 responses available)")
-
-
+  scale_x_discrete(limits = c("generate content" , "staff adoption" , "retasking staff" , "IT/technical staff")) +
+  labs(title = "Degree of Effort Required for Launch", 
+       subtitle = "*based on only 6 responses",
+       y = "Client rating (low to high)",
+       x = NULL)
 ```
 
 
@@ -361,7 +333,9 @@ launch %>%
 #                names_pattern = "(.+)_(.)")
 
 ```
-
+## Qualitative Analysis
+*Word cloud to illustrate client concerns
+*turn selection questions into tidy data
 
 ## Appendix: Renaming Notes
 ```{r}
@@ -369,165 +343,159 @@ launch %>%
 #| warning: false
 
 #  [1] "Timestamp.x"                                             
-#reorder timestamps together                                     
 
 #  [2] "UserID"                                               
 
 #  [3] "What size sweatshirt would you like (we are out of mediums, sorry!)?.x"             
-# delete                                                         
+#  renamed: delete                                                         
 
 #  [4] "What address should we ship the sweatshirt to?.x"        
-# delete                                                         
+#  renamed: delete                                                         
 
 #  [5] "What prompted your adoption of O?.x"                     
-# prompted_adoption                                              
+# renamed:prompted_adoption                                              
 
 #  [6] "What is your annual fundraising goal, and how many constituents do you reach out to with O?.x"
-# goal_constituents                                              
+# renamed:goal_constituents                                              
 
 #  [7] "Outside of your user base, how many individuals support processes within O and what are their individual roles? If possible, please estimate what percentage of their time is O focused..x"  
-# launcheffort_staffrolestime                                    
+# renamed: launcheffort_staffrolestime                                    
 
 #  [8] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Retasking of staff].x"           
-# launcheffort_retaskstaff                                       
+# renamed: launcheffort_retaskstaff                                       
 
 #  [9] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Generating content].x"           
-# launcheffort_generatecontent                                   
+# renamed: launcheffort_generatecontent                                   
 
 # [10] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Tech/Interface with IT].x"       
-# launcheffort_techIT                                            
+# renamed: launcheffort_techIT                                            
 
 # [11] "Please indicate the scale of effort required for launching the various aspects of O (1 = Low level of effort; 5 = High level of effort). [Challenges with staff adoption and comfort].x"
-# launcheffort_staffadoption                                     
+# renamed: launcheffort_staffadoption                                     
 
 # [12] "Please add any comments or details that would help us understand your ratings better....12.x"                        
-# launcheffort_detail                                            
+# renamed: launcheffort_detail                                            
 
 # [13] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Improved number or quality of donor engagement touches (whether measured or anecdotal)].x" 
-# benefit_donorengagement                                        
+# renamed: benefit_donorengagement                                        
 
 # [14] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increase in financial contributions].x"
-# benefit_increasedgifts
+# renamed: benefit_increasedgifts
 
 # [15] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Cost savings].x"                    
-# benefit_costsavings                                            
+# renamed: benefit_costsavings                                            
 
 # [16] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Time savings].x"                    
-# benefit_timesavings                                         
+# renamed: benefit_timesavings                                         
 
-# [17] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increased gift officer productivity].x"         
-# benefit_GOproductivity   
+# [17] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increased gift officer productivity].x" 
+# renamed: benefit_GOproductivity   
 
 # [18] "Please add any comments or details that would help us understand your ratings better....18.x"                        
-# benefit_detail           
+# renamed: benefit_detail           
 
 # [19] "How did you manage philanthropic communications before O?.x"                        
-# donor_commsbefore 
+# renamed: donor_commsbefore 
 
 # [20] "What is your process for developing content, and how do you know what content to feed to each donor as youâ€™re personalizing sites/reports? To what extent is this decided/produced by gift officers versus other team members?.x"
-# process_content 
+# renamed: process_content 
 
 # [21] "What challenges of donor relationship-building is O helping to solve for you?.x"    
-# donor_relationship                                             
+# renamed: donor_relationship                                             
 
 # [22] "How has O changed, facilitated, or limited your interaction with donors?.x"         
-# donor_interaction                                              
+# renamed: donor_interaction                                              
 
 # [23] "What has been the donor response to hyper-personalized communications?.x"          
-# donor_response                                                 
+# renamed: donor_response                                                 
 
 # [24] "What have you learned from looking at the end-donor use data O provides?.x"         
-# donor_analytics                                               
+# renamed: donor_analytics                                               
 
 # [25] "What have you learned about your internal team through the aggregate analytics module?.x"                               
-# team_analytics                                                
+# renamed: team_analytics                                                
 
 # [26] "How would you rate SA/Oâ€™s implementation and support?.x"                          
-# rateO_implementationsupport 
+# renamed: rateO_implementationsupport 
 
 # [27] "Is there anything you would like to expand upon regarding your selection above?.x"                
-# rateO_support_detail 
+# renamed: rateO_support_detail 
 
 # [28] "What could have been handled better?.x"
-# O_lacking
+# renamed: O_lacking
 
 # [29] "What is the biggest O-facilitated success your organization can point to (either with an individual donor relationship or in the aggregate)?.x"                            
-# biggest_success
+# renamed: biggest_success
 
 # [30] "How was the reality of O different from your expectations (both positive and negative)?.x"                                 
-# reality_vs_expectations
+# renamed: reality_vs_expectations
 
 # [31] "What advice would you have for future O users?.x"        
-# client_advice
+# renamed: client_advice
 
 # [32] "How can O improve (in big and small ways)? Your complete candor would be much appreciated..x"                             
-# O_improve
+# renamed: O_improve
 
 # [33] "Timestamp.y"                                             
-# reorder to beginning
+# renamed: reorder to beginning
 
 # [34] "What prompted your adoption of O?.y"                     
-# prompted_adoption2
+# renamed: prompted_adoption2
 
 # [35] "Why did you choose O over other platforms you were exploring?"
-# O_over_competitors
+# renamed: O_over_competitors
 
-# [36] "If \"unique product features\" was selected in the above question, can you please elaborate?"                             # feature_detail 
+# [36] "If \"unique product features\" was selected in the above question, can you please elaborate?" 
+# renamed: feature_detail 
 
 # [37] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Improved number or quality of donor engagement touches (whether measured or anecdotal)].y"
-# benefit_donorengagement2
+# renamed: benefit_donorengagement2
 
 # [38] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increase in financial contributions].y"  
-# benefit_increasedgifts2
+# renamed: benefit_increasedgifts2
 
 # [39] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Cost savings].y"
-# benefit_costsavings2 
+# renamed: benefit_costsavings2 
 
 # [40] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Time savings].y"                    
-# benefit_timesavings2  
+# renamed: benefit_timesavings2  
 
 # [41] "Please indicate the degree to which you have experienced the following benefits from O (1 = To a small degree; 5 = To a great degree). [Increased gift officer productivity].y"
-# benefit_GOproductivity2
+# renamed: benefit_GOproductivity2
 
 # [42] "Please share any other factors your team considered before selecting O (if applicable)."               
-# choice_factors              
+# renamed: choice_factors              
 
 # [43] "Timestamp"                                               
-# reorder together 
+
 
 # [44] "Overall, how did the onboarding process go for you?"     
-# onboard_overall 
+# renamed: onboard_overall 
 
 # [45] "What part of the onboarding process could O have handled better?"                   
-# onboard_lacking
+# renamed: onboard_lacking
 
 # [46] "Please expand on your selections above:...5"             
-# onboard_lacking_detail
+# renamed: onboard_lacking_detail
 
-# [47] "What part of the onboarding process did O handle especially well?"                   
-# onboard_wentwell
+# [47] "What part of the onboarding process did O handle especially well?"                  
+# renamed: onboard_wentwell
 
 # [48] "Please expand on your selections above:...7"             
-# onboard_wentwell_detail
+# renamed: onboard_wentwell_detail
 
 # [49] "How effectively did we communicate during the onboarding process?"
-# onboard_communication 
+# renamed: onboard_communication 
 
 # [50] "Please expand on your selections above:...9"          
-# onboard_communication_detail
+# renamed: onboard_communication_detail
 
-# [51] "How effectively did we interpret your needs during the onboarding process?"          
-# onboard_interpretneeds
+# [51] "How effectively did we interpret your needs during the onboarding process?"         
+# renamed: onboard_interpretneeds
 
 # [52] "Please expand on your selections above:...11"  
-# onboard_interpretneeds_detail 
+# renamed: onboard_interpretneeds_detail 
 
 # [53] "Are you willing to talk about your onboarding experience with future O clients?"
-# onboard_shareexperience
-
-
-# how many duplicate questions are there? 8
-      #dupe_questions <- surveys_clean %>% 
-      #select(contains("2"))
-
+# renamed: onboard_shareexperience
 ```
