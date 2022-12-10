@@ -58,10 +58,9 @@ On the Read in I have:
 #| warning: false
 #| message: false
 #Read in Excel Data
-transactions_9_22_2022_10_5_2022_orig <- read_excel("_data/Inventory Transactions 9_22_2022-10_5_2022.xlsx", 
+transactions_9_22_2022_10_20_2022_orig <- read_excel("Inventory Transactions 9_22_2022-10_20_2022.xlsx", 
     skip = 5,
-    col_names = c("pos_id","product","delete","patient_name","transaction_date","qty_sold","daily_allottment_oz","weight_grams","cost","price","owner_name","owner_location","vendor","sold_by","receipt_no","delete","delete","delete","delete","delete"))
-transactions_9_22_2022_10_5_2022 <- transactions_9_22_2022_10_5_2022_orig%>%
+    col_names = c("pos_id","product","delete","patient_name","transaction_date","qty_sold","daily_allottment_oz","weight_grams","cost","price","owner_name","owner_location","vendor","sold_by","receipt_no","delete","delete","delete","delete","delete"))%>%
   select(!contains("delete"))
 
 ```
@@ -82,7 +81,7 @@ Here I am mutating several variables:
 #| warning: false
 #| message: false
 #mutating date field and formatting as a date
-transactions_9_22_2022_10_5_2022 <- transactions_9_22_2022_10_5_2022%>%
+transactions_9_22_2022_10_20_2022 <- transactions_9_22_2022_10_20_2022_orig%>%
   mutate(
     date = as.Date(transaction_date),
     hour = hour(transaction_date),
@@ -98,17 +97,18 @@ transactions_9_22_2022_10_5_2022 <- transactions_9_22_2022_10_5_2022%>%
   )%>%
   mutate(
     category_names = case_when(
-      category == "FLO" ~ "Flower",
+      category == "FLO" | category == "Flo" ~ "Flower",
       category == "PRJ" ~ "Joint",
       category == "EDI" ~ "Edible",
       category == "MIP" ~ "Marijuana Infused Product",
-      category == "CON" ~ "Concentrate",
-      category == "VAP" ~ "Vaporizer",
-      category == "ACC" | category == "Pax" | category == "Hig" | category == "Bov" ~ "Accessories",
+      category == "CON" | category == "Con" ~ "Concentrate",
+      category == "VAP" | category == "Vap" ~ "Vaporizer",
+      category == "ACC" | category == "Pax" | category == "PAX" | category == "Hig" | category == "Bov" ~ "Accessories",
       category == "CLO" | category == "Res" ~ "Clothing",
       category == "HTC" ~ "HTCC Promotion",
       category == "SAM" ~ "Samples",
-      category == "TOP" ~ "Topical")
+      category == "TOP" ~ "Topical",
+      category == "REW" ~ "Rewards")
   )
 ```
 
@@ -117,8 +117,8 @@ transactions_9_22_2022_10_5_2022 <- transactions_9_22_2022_10_5_2022%>%
 
 ```{r}
 #ensuring that the category, and category names columns contain no NA values and are accurately coded
-unique(transactions_9_22_2022_10_5_2022$category_names)
-unique(transactions_9_22_2022_10_5_2022$category)
+unique(transactions_9_22_2022_10_20_2022$category_names)
+unique(transactions_9_22_2022_10_20_2022$category)
 ```
 
 ### Data Summary
@@ -126,7 +126,7 @@ unique(transactions_9_22_2022_10_5_2022$category)
 #| label: Data Summary
 #| warning: false
 #| message: false
-print(summarytools::dfSummary(transactions_9_22_2022_10_5_2022,
+print(summarytools::dfSummary(transactions_9_22_2022_10_20_2022,
                         varnumbers = FALSE,
                         plain.ascii  = FALSE, 
                         style        = "grid", 
@@ -145,7 +145,7 @@ In this farily simple univariate visualization, we can see the number of sales b
 #| warning: false
 #| message: false
 #univariate visualization of the categories
-ggplot(data = transactions_9_22_2022_10_5_2022, mapping = aes(category_names, fill = category_names), size = 1) +
+ggplot(data = transactions_9_22_2022_10_20_2022, mapping = aes(category_names, fill = category_names), size = 1) +
   geom_bar() +
   ylim(0, NA) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
@@ -160,11 +160,11 @@ In our first Bivariate visualization we can see the volume of sales by category 
 #| label: Volume Sales by Date
 #| warning: false
 #| message: false
-ggplot(data = transactions_9_22_2022_10_5_2022, mapping = aes(x = date, y = category_names), size = 1) +
+ggplot(data = transactions_9_22_2022_10_20_2022, mapping = aes(x = date, y = category_names), size = 1) +
   geom_violin() +
   theme(legend.title=element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5)) +
   ylab("Cannabis Categories") +
-  scale_x_date(date_labels="%b %d", breaks = unique(transactions_9_22_2022_10_5_2022$date)) +
+  scale_x_date(date_labels="%b %d", breaks = unique(transactions_9_22_2022_10_20_2022$date)) +
   ggtitle("Categorical Volume Sales by date")
 ```
 In this second Bivariate Visualization I chose a scatterplot to compare the Average price by product to the quantity sold. I was able to gain the following inside:
@@ -179,10 +179,10 @@ In this second Bivariate Visualization I chose a scatterplot to compare the Aver
 #| message: false
 
 #creating a flower transactions dataframe
-sold_by_price <- transactions_9_22_2022_10_5_2022%>%
+sold_by_price <- transactions_9_22_2022_10_20_2022%>%
   group_by(product)%>%
-  mutate(avg_price = mean(price))%>%
-  mutate(products_sold = sum(qty_sold))%>%
+  mutate(avg_price = mean(price),
+         products_sold = sum(qty_sold))%>%
   select(-qty_sold)%>%
   distinct()%>%
   ggplot(aes(x = avg_price, y = products_sold, color = category_names)) +
@@ -192,7 +192,7 @@ sold_by_price <- transactions_9_22_2022_10_5_2022%>%
   labs(title =  "Quantity of Products sold by Average Price")+
   xlab("Average Price") +
   ylab("Quantity Sold") +
-  theme_minimal()
+  theme(legend.title=element_blank(),axis.text.x = element_text(angle = 45, vjust = 0.5) )
 
 sold_by_price 
 

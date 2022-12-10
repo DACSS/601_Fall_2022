@@ -1,0 +1,67 @@
+---
+title: "Homework 2"
+author: "Michaela Bowen"
+desription: ""
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - Michaela Bowen
+  - dataset
+  - ggplot2
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readr)
+library(summarytools)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+:::panel-tabset
+### Read In Data
+This is the current cannabis inventory. This is including products that have been sold out or contain 0 quantities in order to have the THC and expiration date information for products that have already been sold out.
+
+Below I have read in the current cannabis inventory. There are 6741 instances of 12 variables, meaning these current products are on the Sales Floor Room, Quarantine room, or vault. I have renamed "ID" columns `sku`, and `product ID` to "delete" and selected relevant columns. I have separated the THC column into the numeric value and a column that contains the unit of that value. For some non-cannabis items, "expiration date" is unnecessary and those values of "invalid date" have been changed to `NA`. I then arranged the data by room, category and product. The last column, `isCannabis` has been categorized and ordered as a boolean because it is a yes or no variable. The `price`, `cost`, and `thc` columns are numeric. The expiration date column was separated and formated according to the date and date. All other columns are character columns
+```{r, message = FALSE, warning= FALSE}
+Current_Inventory <- read_csv("../posts/2022-11-16 Export inventory.csv",
+                                         skip = 1,
+                                         col_names = c("delete","product","package ID","batch","available","room","price","cost","category","expiration_date","thc","isCannabis"))%>%
+  select(!contains("delete"))%>%
+  separate(col = "thc", into = c("thc","unit_thc (%/mg)"), sep = " ")%>%
+  mutate(thc = as.numeric(thc),
+        isCannabis = case_when(
+           isCannabis == "Yes" ~ TRUE,
+           isCannabis == "No" ~ FALSE
+         ))%>%
+  mutate(expiration_date = na_if(expiration_date, "Invalid date"),
+         expiration_date = mdy(expiration_date))%>%
+  mutate(
+    date = as.Date(expiration_date),
+    day = day(expiration_date))%>%
+  mutate(
+    format_date = format(date, "%m/%d/%Y")
+  )%>%
+  arrange(desc(room), category, product)
+
+```
+:::
+
+
+
+
+
+
+
+

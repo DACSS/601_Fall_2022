@@ -47,7 +47,6 @@ Today's challenge is to:
 ::: {.panel-tabset}
 ## Read in data
 
-  
 
 ```{r, message = FALSE, warning= FALSE}
 transactions_9_22_2022_10_20_2022_orig <- read_excel("Inventory Transactions 9_22_2022-10_20_2022.xlsx",
@@ -70,6 +69,9 @@ n_distinct(transactions_9_22_2022_10_20_2022_orig$receipt_no)
 
 #number of employees
 n_distinct(transactions_9_22_2022_10_20_2022_orig$sold_by)
+
+#number of customers
+n_distinct(transactions_9_22_2022_10_20_2022_orig$patient_name)
 
 ```
 
@@ -110,17 +112,18 @@ transactions_sept22_oct20_working <- transactions_9_22_2022_10_20_2022_orig%>%
 #changing the abbreviations into full category names
   mutate(
     category_names = case_when(
-      category == "FLO" ~ "Flower",
+      category == "FLO" | category == "Flo" ~ "Flower",
       category == "PRJ" ~ "Joint",
       category == "EDI" ~ "Edible",
       category == "MIP" ~ "Marijuana Infused Product",
-      category == "CON" ~ "Concentrate",
-      category == "VAP" ~ "Vaporizer",
-      category == "ACC" | category == "Pax" | category == "Hig" | category == "Bov" ~ "Accessories",
+      category == "CON" | category == "Con" ~ "Concentrate",
+      category == "VAP" | category == "Vap" ~ "Vaporizer",
+      category == "ACC" | category == "Pax" | category == "PAX" | category == "Hig" | category == "Bov" ~ "Accessories",
       category == "CLO" | category == "Res" ~ "Clothing",
       category == "HTC" ~ "HTCC Promotion",
       category == "SAM" ~ "Samples",
-      category == "TOP" ~ "Topical")
+      category == "TOP" ~ "Topical",
+      category == "REW" ~ "Rewards")
   )%>%
 #created a logical variable to determine if flower was in house, or 3rd party
   mutate(
@@ -204,22 +207,15 @@ Here my goal was to complete the average sales, by employee, by day of the week.
 total_sales_weekday <-transactions_sept22_oct20_working %>%
   group_by(weekdayLabel,FirstName)%>%
   mutate(total_sales = sum(price),
-         avg_sales = case_when(
-           weekdayLabel == "Sun" ~ total_sales/((n_distinct(week(date)))-1),
-           weekdayLabel == "Mon" ~ total_sales/((n_distinct(week(date)))-1),
-           weekdayLabel == "Tue" ~ total_sales/((n_distinct(week(date)))-1),
-           weekdayLabel == "Wed" ~ total_sales/((n_distinct(week(date)))-1),
-           weekdayLabel == "Thu" ~ total_sales/(n_distinct(week(date))),
-           weekdayLabel == "Fri" ~ total_sales/((n_distinct(week(date)))-1),
-           weekdayLabel == "Sat" ~ total_sales/((n_distinct(week(date)))-1)
-  ))%>%
+         avg_sales = total_sales/n_distinct(week(date))
+  )%>%
   select(weekdayLabel, FirstName,avg_sales, total_sales)%>%
   distinct()%>%
 ggplot( mapping = aes(x = weekdayLabel, y = avg_sales, color = FirstName), size = 3,) +
   geom_point() + 
   scale_color_viridis(discrete = TRUE, "A") +
   theme(legend.title=element_blank(),axis.text.x = element_text(angle = 45, vjust = 0.5) ) +
-  scale_y_continuous(labels = dollar, limits = c(0,8000)) +
+  scale_y_continuous(labels = dollar, limits = c(0,5000)) +
   ylab("Average Sales ($)") +
   xlab("Weekday") +
   ggtitle("Average Sales by Budtender by Weekday")
