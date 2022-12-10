@@ -1,0 +1,117 @@
+---
+title: "Challenge 5"
+author: "Jack Sniezek"
+description: "Introduction to Visualization"
+date: "12/06/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - cereal
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+
+
+```{r}
+
+cereal <- read_csv("_data/cereal.csv")
+cereal
+summary(cereal)
+
+```
+
+## Briefly describe the data
+
+The cereal dataset is made up of 4 variables: Cereal, Sodium content, Sugar content, and Type(Adult or Child). There are 20 cereal types.
+
+## Tidy Data (as needed)
+
+The data appears to be tidy already, there is no missing data.
+
+## Univariate Visualizations
+
+My first visualization is to put the sugar levels of Children's cereals into a bar graph. I felt like a bar graph was the best way to view which cereals had the most/least sugar as well as which ones were similar.
+
+The second visualization I did was to use a bar graph showing the sodium levels of all cereals. Again, I thought this was the best type of graph to show visually which cereals were similar and different.
+```{r}
+
+cereal %>%
+  filter(Type == "C") %>% 
+  arrange(Sugar) %>%   
+  mutate(Cereal=factor(Cereal, levels=Cereal)) %>%
+ggplot(aes(x=Cereal, y=Sugar)) + 
+  geom_bar(stat = "identity", fill = "darkorchid") +
+  theme_minimal() +
+  coord_flip() +
+    ggtitle("Sugar Level of Children's Cereals")
+
+
+
+cereal %>%
+  mutate(Cereal = factor(Cereal))%>%
+  ggplot(aes(x=Cereal, y = Sugar)) +
+  geom_bar(stat = "identity", fill = "dodgerblue") +
+  theme_light() +
+  coord_flip() +
+  ggtitle("Sodium Levels of Cereals") +
+  labs(y = "Sugar Content", x = "Sodium Content")
+```
+
+## Bivariate Visualization(s)
+
+My Bivariate visualization was comparing the sugar content of cereals to the sodium content of cereals. I did this by using a scatterplot to represent the data points with Sugar as the y axis and Sodium as the x axis. I felt like this was the best way to compare cereals and view the similarities and differences in each cereal.
+
+```{r}
+cereal%>%
+  ggplot(aes(x = Sugar,y = Sodium)) +
+  geom_point(color = "green") +
+  ggtitle("Sugar Compared to Sodium Levels in Cereals") +
+  labs(y = "Sugar Content", x = "Sodium Content")
+
+```
+
+Additional Thoughts:
+
+1. When I work on the next challenges I want to think about labeling the data within the chart, such as the scatterplot points and maybe even the bars in a bar graph if it is fitting.
+
+2. I want to think about making data points different colors and adding a legend in the next challenges
+
+3. Surprised that Raisin Bran is the worst cereal for both categories, its not even a great tasting cereal
