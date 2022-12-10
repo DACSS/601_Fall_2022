@@ -1,0 +1,388 @@
+---
+title: "Homework 3"
+author: "Emma Narkewicz"
+description: "Conducting further analysis  Medicaid Spending by Drug data set"
+date: "12/06/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw3
+  - emma_narkewicz
+  - medicaid_spending_by_drug
+  - centers_for_medicare_and_medicaid_services
+  
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+::: panel-tabset
+
+#Introduction to Medicaid Drug Spending by Drug Data Set
+
+The Medicaid Drug Spending by Drug Data set details national spending on outpatient, over the counter drugs in the US paid for by the Medicaid system between 2016-2020. 
+
+The data set includes state and federal Medicaid drug spending for 4237 unique brand names of drugs, 2473 unique generic names of drugs, and 905 unique drug manufacturers. Data was collected on total Medicaid spending, total number of Medicaid claims, and total Dosage Units for each of the 2473  generic drugs covered by Medicaid between 2016-2020. The data set is designed to monitor changes in the total average weighted Medicaid drug spending per dosage unit over time.
+
+The average weighted cost per dosage unit for a specific brand name, generic drug, by a manufacturer, in a specific year is calculated to take into account variations in the spending, dosage, and number of claims based on variations in drug strength, the dosage form, and the route of administration for a drug (i.e. a oral pill vs. a vaccine administered by needle). 
+ 
+ The strength, dosage, and route of brand name drugs is not included in the original Medicaid data set, and comes from administrative Medicaid data not available to the public (thus it can't be recreated)
+ 
+More information on how average weighted cost per dosage unit was calculated information can  be found in **Appendix A**
+
+The original data set contained outlier flags for years when the inclusion of potential incorrect data significantly impacted the average cost per drug dosage unit. An outlier was determined by being IQR +/- 1.5(IQR) of average cost per dosage unit. Overall weighted average cost per drug units were calculated with and without outliers, and if the inclusion of an outlier changed the weighted average cost per drug unit by more than 10% or $1, it is noted by a 1 in the outlier flag column. 30% of cases are flagged as having their average spending per dosage unit weighted in that year being impacted by outliers.
+
+
+## Read in Data
+
+Columns containing the average spending per claim,  changes in average spending per claim over time, and the constant average change in spending per dosage unit over time (from compound annual growth return CAGR) were deleted on the read in, as they can be recreated.
+
+The 36 remaining columns were renamed according to the convention Measurement_Year to facilitate future cleaning and tidying of the data.
+ 
+
+
+```{r}
+#Read In the Data
+Medicaid_Drug_Data <- read_csv("/Users/Emma/Desktop/Koding is Kewl/Medicaid_Spending_by_Drug_2020.csv") %>%
+  select(!contains("Avg_Spnd_Per_Clm")) %>%
+  select(!contains("Chg")) %>% 
+  select(!contains("CAGR")) %>%
+  rename("Mftrs_Count" = "Tot_Mftr", 
+         "TotSpndng_2016" = "Tot_Spndng_2016", 
+         "TotDsgUnts_2016" = "Tot_Dsg_Unts_2016", 
+         "TotClms_2016" = "Tot_Clms_2016",
+         "AvgSpndPerDsgUntWghtd_2016"= "Avg_Spnd_Per_Dsg_Unt_Wghtd_2016",
+         "OutlierFlag_2016" =  "Outlier_Flag_2016", 
+         "TotSpndng_2017" = "Tot_Spndng_2017",
+         "TotDsgUnts_2017" = "Tot_Dsg_Unts_2017", 
+         "TotClms_2017" = "Tot_Clms_2017", 
+         "AvgSpndPerDsgUntWghtd_2017" = "Avg_Spnd_Per_Dsg_Unt_Wghtd_2017",
+         "OutlierFlag_2017" =  "Outlier_Flag_2017",
+         "TotSpndng_2018" = "Tot_Spndng_2018",
+         "TotDsgUnts_2018" = "Tot_Dsg_Unts_2018",
+         "TotClms_2018" = "Tot_Clms_2018",
+         "AvgSpndPerDsgUntWghtd_2018"= "Avg_Spnd_Per_Dsg_Unt_Wghtd_2018",
+         "OutlierFlag_2018" =  "Outlier_Flag_2018", 
+         "TotSpndng_2019" = "Tot_Spndng_2019",
+         "TotDsgUnts_2019" = "Tot_Dsg_Unts_2019", 
+         "TotClms_2019" = "Tot_Clms_2019",
+         "AvgSpndPerDsgUntWghtd_2019"= "Avg_Spnd_Per_Dsg_Unt_Wghtd_2019",
+         "OutlierFlag_2019" =  "Outlier_Flag_2019", 
+         "TotSpndng_2020" = "Tot_Spndng_2020", 
+         "TotDsgUnts_2020" = "Tot_Dsg_Unts_2020",
+         "TotClms_2020" = "Tot_Clms_2020", 
+         "AvgSpndPerDsgUntWghtd_2020"= "Avg_Spnd_Per_Dsg_Unt_Wghtd_2020", 
+         "OutlierFlag_2020" =  "Outlier_Flag_2020")
+
+
+  Medicaid_Drug_Data
+  
+```
+
+## Clean & Tidy the Data Set
+Prior to cleaning the Medicaid data set has 29 columns and 15,972 rows. Currently some rows contain data for "Overall" Manufacturer Name, which has information about all 4395 unique combinations of Brand Names and Generic name. For brand name and generic name drugs with only 1 manufacturer, these rows contain duplicate information.  In the  "Mftrs_count" column, the total number of manufacturers for any given drug is only contained in the "Overall row", with a Mftrs_count of 1 for every individual manufacturer row.
+
+Prior to pivoting the data, I want to replace the Manufacturers Count column with a column that actually contains the total number of manufacturers for a drug. I also want to remove all of the "Overall" rows from the data. 
+
+To accomplish this I created a new column called "Number_Mftrs" that contained manufacturer count whenever the manufacturer column contained "Overall". I then filled the number of manufacturers, so for every drug you can see the total number of manufacturers. I then removed the original Mftrs_Count column using select() and the Overall rows using filter().
+
+
+```{r}
+#Separate the Overall from Mftr to Its Own Column of Total Number of Manufacturers 
+Medicaid_Data <- Medicaid_Drug_Data%>%
+  mutate(Number_Mftrs = case_when(
+    str_detect(Mftr_Name, "Overall") ~ Mftrs_Count)) %>%
+    relocate(`Number_Mftrs`, .before= Mftrs_Count)%>%
+#Fill down total_mftrs
+  fill(Number_Mftrs)%>%
+  #Remove the Mftrs_Count Columns  
+  select(!ends_with("Count"))
+
+
+#Remove the overall rows 
+Medicaid_Data <- filter(Medicaid_Data, !str_detect(`Mftr_Name`,"Overall"))
+Medicaid_Data
+
+
+```
+
+There are now 25 columns that contain a Measurement_Year. I want there to be 5 unique columns for each of the measurements and the outlier column:
+  - Total Spending
+  - Total Dosage Units
+  - Total Claims
+  - Average Spending Per Dosage Unit Weighted
+  - Outlier Flag
+  
+To compare the change in values over time graphically, I will  also want to create a column containing years. 
+
+To do this, I pivoted longer and combined the 25 columns containing total spending, total dosage units, total claims, average spending per dosage unit weighted, and outlier flags for the years 2016 - 2020 under a column named "Measurement_year" and the values under Value. I then separated out the year from the measurements to created a column of years. 
+
+This new "Year" column is categorical, but dates are ordinal variables. I used as.factor() to convert the years to a factor, and then recoded the years to an ordinal variable using recode_factor().
+
+```{r}
+
+
+#Pivot longer to consolidate, Year, Values, and Manufacturing 
+Medicaid_Data_Tidy<- Medicaid_Data %>%
+  pivot_longer(cols = contains("_20"),
+               names_to = "Measurement_Year",
+               values_to = "Value")%>%
+#seperate out year
+  separate("Measurement_Year", c("Measurement", "Year"), sep = "_")%>%
+#Convert Year from categorical to factor to ordinal
+  mutate("Year" = as.factor(Year)) %>%
+  mutate("Year" = recode_factor(Year,
+                                "2016" = "2016",
+                                "2017" = "2017",
+                                "2018" = "2018",
+                                "2019" = "2019",
+                                "2020" = "2020",
+                                .ordered = TRUE))
+
+Medicaid_Data_Tidy
+```
+
+Pivoting longer allowed for the separation of measurements from year and re-coding of the years as a factor. However, having total spending, claims, and dosage units all in one Measurement column limited future analysis and graphing. By pivoting wider, each measurement is in its own column, while years remains in its own column from the original pivot_longer().
+
+
+```{r}
+#Pivot wider 
+Medicaid_Drug_DF <- pivot_wider(Medicaid_Data_Tidy, names_from = "Measurement", values_from = "Value")
+
+Medicaid_Drug_DF
+
+```
+
+##Research Questions
+
+My revised research questions are:
+
+1) How has Medicaid spending on drugs changed between 2016-2020?
+2) Does Medicaid drug spending vary by manufacturer? If so, how?
+
+
+## Research Q1 How has Medicaid Spending on Drugs Changed from 2016-2020
+
+No single brand name drug or generic name drug accounts for even 1% of all cases. The most common drug manufacturer in the data set is Mylan, which represents 2.8% of all cases. The number of manufacturers for a drug  ranges from 1 to 42, with a median of 7 manufacturers and a mode of 1 manufacturer.
+
+To answer my research questions, I wanted to see descriptive statistics grouped by 1) Year & 2) Manufacturers. 
+
+
+```{r}
+#Mean & median & sd of Total Spending Grouped by Year
+TotSpnding_by_Year <- Medicaid_Drug_DF%>%
+  group_by(Year)%>%
+  select(Year, TotSpndng) %>%
+  summarise(Mean_TotSpending= mean(TotSpndng, na.rm=TRUE), Median_TotSpending = median(TotSpndng, na.rm = TRUE), sd_TotSpending = sd(TotSpndng, na.rm = TRUE))
+
+TotSpnding_by_Year
+
+```
+
+Looking at the mean and median total Medicaid spending on a drug by year, I was surprised to see that the mean and median of total Medicaid per drug spending consistently decreased from 2016 to 2020. In 2016 the mean total Medicaid spending on any drug was $9,131,003, and in 2020 this the mean total Medicaid spending for any drug fell to $6,315,899. Based on inflation, I would have expected mean total Medicaid spending per drug to increase over time not decrease. However, looking at mean and median total spending alone does not factor in changes in dosage units and number of claims between years, which might explain some of these differences.
+
+To look at this, I will now look at the mean and median of average Medicaid spending per dosage unit weighted by number of claims for each year between 2016-2020.
+
+
+```{r}
+#Mean & median of Average Spending per dosage unit by year
+AvgSpndingPerDsgUnitWghted_by_Year <- Medicaid_Drug_DF%>%
+  group_by(Year)%>%
+  select(Year, AvgSpndPerDsgUntWghtd) %>%
+  summarise(Mean_AvgSpndPerDsgUntWghtd= mean(AvgSpndPerDsgUntWghtd, na.rm=TRUE), Median_AvgSpndPerDsgUntWghtd = median(AvgSpndPerDsgUntWghtd, na.rm = TRUE), sd_AvgSpndPerDsgUntWghtd = sd(AvgSpndPerDsgUntWghtd, na.rm = TRUE))
+AvgSpndingPerDsgUnitWghted_by_Year
+
+```
+
+The mean average Medicaid spending per dosage unit weighted by number of claims for a drug steadily increased from $88 a dosage unit in 2016 to $262 in 2020. The median Medicaid average weighted Medicaid spending per dosage unit weight is vastly different from the mean, and are all around $1.5 per dosage unit. The mean average spending per dosage unit weighted by number of claims being so much lower than the median suggests that outliers in price for some drugs greatly impact the mean average spending per dosage unit weighted by claims.
+
+
+Looking at just the mean and median total spending and average spending per dosage unit weighted for any drug does not tell me what I want to know. So instead I will look at the sum of the total spending and average spending per dosage unit weighted by number of claims for each Brand name drug, of a generic, with a manufacturer for each year. The sum of all spending and weighted average spending for all drugs (Brand Name, Generic Name, Manufacturers Name) will let me compare the total spending & average weighted spending per dosage unit between years without being as influenced by outliers as a mean or median.
+
+
+```{r}
+#Summing Total Spending
+SumTotSpnding_by_Year <- Medicaid_Drug_DF%>%
+  group_by(Year)%>%
+  select(Year, TotSpndng) %>%
+  summarise(Sum_TotSpending= sum(TotSpndng, na.rm=TRUE))
+
+SumTotSpnding_by_Year
+
+
+```
+
+
+```{r}
+#summed Total Spending by Year per Unique Drug
+ggplot(SumTotSpnding_by_Year, aes(x=Year, y = `Sum_TotSpending`, fill =Year)) + 
+    geom_bar(stat="identity") + ggtitle("Figure 1: Sum of Annual Total Medicaid Spending For all Drugs for 2016-2020") + labs (x="Year", y="Sum of Total Medicaid Spending per Drug($)")
+
+```
+Looking at the sum of all total Medicaid drug spending in the above Figure 1 for each year, one can see how the combined total Medicaid drug spending for all covered drugs steadily increased over time between 2016-2020.
+
+
+```{r}
+#summed  averaged weighted Medicaid spending per dosage unit 
+SumAvgWghtedSpndingPerDsgUnt_Year <- Medicaid_Drug_DF%>%
+  group_by(Year)%>%
+  select(Year, AvgSpndPerDsgUntWghtd) %>%
+  summarise(Sum_AvgSpndPerDsgUntWghtd= sum(AvgSpndPerDsgUntWghtd, na.rm=TRUE))
+
+SumAvgWghtedSpndingPerDsgUnt_Year
+
+```
+
+
+```{r}
+#summed  averaged weighted Medicaid spending per dosage unit 
+ggplot(SumAvgWghtedSpndingPerDsgUnt_Year , aes(x=Year, y = Sum_AvgSpndPerDsgUntWghtd, fill =Year)) + 
+    geom_bar(stat="identity") + ggtitle("Figure 2: Sum of Annual Average Weighted Medicaid Spending Per Dosage Unit For all Drugs for 2016-2020") + labs (x="Year", y="Sum of Average Weighted Medicaid Spending per Dosage Unit($)")
+
+```
+Figure 2 above shows the sum of the average weighted Medicaid spending by dosage unit graphed vs year. Compared to Figure 1, the increase in the sum of the weighted Medicaid spending per dosage unit increased by nearly 6x between 2016-2020, with a significant spike in average weighted Medicaid spending by dosage unit starting in 2019. Unlike the sum of the total Medicaid spending per drug, Figure 2 takes into account the number of Medicaid Claims, the total dosage units, and the form, strength, and route of all drugs. Taking these factors into account, relative Medicaid drug spending significantly increased between 2016-2020, answering RQ1.
+
+
+## Research Q2 Does Medicaid drug spending vary by manufacturer?
+
+To answer the second research question, I calculated the mean, median, and standard deviation for the total spending and average weighted spending per dosage unit grouped by Manufacturer, descending by Mean Total Spending.
+
+```{r}
+#Mean & median & sd of Total Spending by Manufacturer
+TotSpnding_by_Mfctr <- Medicaid_Drug_DF%>%
+  group_by(Mftr_Name)%>%
+  select(Mftr_Name, TotSpndng) %>%
+  summarise(Mean_TotSpendingMfctr = mean(TotSpndng, na.rm=TRUE), Median_TotSpendingMfctr = median(TotSpndng, na.rm = TRUE), sd_TotSpendingMfctr = sd(TotSpndng, na.rm = TRUE)) %>%
+  arrange(desc(Mean_TotSpendingMfctr))
+
+TotSpnding_by_Mfctr
+
+```
+Based on this, the Manufacturer with the highest per drug mean Medicaid spending in 2016-2020 was Otsuka America, with an average per drug total spending  of  $470,559,700. This is based on the mean total spending per drug for any unique manufacturer. In descending order, the manufacturers with the next highest per drug mean Medicaid spending in 2016-2020 were:
+
+ - Janssen Biotech
+ - Indivior Inc. 
+ - Medimmune
+ - Gilead Sciences
+
+The mean total spending per per drug for each manufacturer ranged from $14.1 - $470,559,672, with a median value of $934,886. 
+
+```{r}
+#remove scientific notation
+options(scipen = 999)
+
+#Graphing Mean Total Spending Against Manufacturer
+ggplot(TotSpnding_by_Mfctr, aes(Mean_TotSpendingMfctr))  + 
+    geom_histogram() + ggtitle("Figure 3: Mean Total Medicaid Per Drug Spending for a Manufacturer 2016-2020") + labs (x="Mean Total Medicaid Per Drug Spending for a Manufacturer ($)", y="Count") 
+
+```
+
+
+Figure 3 above shows mean Medicaid per Drug spending from 2016-2020 for any manufacturer ($) and the count of manufacturers on the y. The graph shows while a handful of manufacturers have exceptionally Medicaid high spending in the order of hundreds of millions of dollars, the histogram is incredibly left skewed. Most manufacturers have mean Medicaid per drug spending of less than 5 million dollars. These could be outliers or a case of certain manufacturers only making a few, very expensive drugs, bringing up the mean. Therefor I looked at the sum of total spending by drug for each manufacturer.
+
+```{r}
+#Summing Per Drug Total Spending by Manufacturer
+SumTotSpnding_by_Mftr <- Medicaid_Drug_DF%>%
+  group_by(Mftr_Name)%>%
+  select(Mftr_Name, TotSpndng) %>%
+  summarise(Sum_TotSpendingbyMftr = sum(TotSpndng, na.rm=TRUE)) %>%
+    arrange(desc(Sum_TotSpendingbyMftr))
+  
+SumTotSpnding_by_Mftr 
+```
+
+While Otsuka America had the highest mean per drug Medicaid spending between 2016-2020 of any manufacturer, Gilead Sciences was the manufacturer that Medicaid spent the most cumulatively on between 2016-2020 on all drugs covered by Medicaid, at over $22 billion dollars. The other top 5 manufacturers with the most cumulative Medicaid drug spending were:
+
+ - Abbvie US LLC
+ - Novo Nordisk
+ - Eli Lilly & Col.
+ - Genentech Inc.
+ 
+ Gilead Sciences was the only manufacturer with in the top 5 of manufacturers both for mean average Medicaid spending per drug and cumulative Medicaid drug spending between 2016-2020.
+ 
+ 
+```{r}
+#remove scientific notation
+options(scipen = 999)
+
+#Graphing Sum Total Spending per Drug by Manufacturer
+ggplot(SumTotSpnding_by_Mftr, aes(Sum_TotSpendingbyMftr))  + 
+    geom_histogram() + ggtitle("Figure 4: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020") + labs (x="Sum Total Medicaid Per Drug Spending for a Manufacturer ($)", y="Count")
+```
+ 
+Figure 4 above shows that the distribution of sums of total Medicaid per drug spending between 2016-2020 for each manufacturers closely resembles the heavily left skewed left distribution in Figure 3, with the majority of manufacturers having cumulative Medicaid drug spending under 2.5 billion dollars, with a few manufacturers with uniquely high cumulative Medicaid spending.
+
+On the current histogram it is challenging to interpret what the cumulative Medicaid spending for each manufacturer, as it is somewhere between $0 & $2.5 billion dollars. Therefore I created a final histogram with only a portion of the x-axis to better visualize the distribution of the cumulative Medicaid drug spending for manufacturers.
+
+```{r}
+#Graphing Sum Total Spending per Drug by Manufacturer, Zoomed in X
+ggplot(SumTotSpnding_by_Mftr, aes(Sum_TotSpendingbyMftr))  + 
+    geom_histogram() + ggtitle("Figure 5: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020 (X Lim = 0-500000") + labs (x="Sum Total Medicaid Per Drug Spending for a Manufacturer ($)", y="Count") + xlim(0, 500000)
+
+
+```
+Figure 5 shows the same information as Figure 4, except with the x-axis set to show only manufacturers with cumulative Medicaid drug spending between 2016-2020 between $0 - $500,000. In Figure 5 its easier to see the distribution of cumulative total Medicaid Per Drug Spending for a Manufacturer than in Figure 4. You can see the mode cumulative Medicaid per drug spending for a manufacturer is below $100,000, which is much more clear than in Figure 4 where the mode look likes somewhere between $0 & $2.5 billion dollars. 
+
+Overall while some manufacturers made hundreds of billions of dollars off of Medicaid drug spending between 2016-2020, the majority of manufacturers made under $500,000 from cumulative Medicaid drug spending over the past 5 years. These visualizations suggest that for RQ2 Medicaid spending does vary by manufacturer, with a select number of manufacturers, such as Gilead Sciences and Otsuka America, making tens of billions of cumulative dollars on drugs purchased through Medicaid. 
+
+## Limitations and Next Steps
+A key area for future research to expand upon is to re-run the visualizations with all drug values flagged as being outliers removed, to see if this impacted the distribution of the data as well as the answer to my research questions. Based on time limitations and the fact that this data set is not being used for my final project, examining outliers is not something I am going to attempt to do today.
+
+Another interesting future step would be to look at the drugs that had the most Medicaid Spending, and see if there are any trends in terms of the types of drugs that are most commonly taken, such as pain killers, antibiotics, insulin etc.
+
+An overall limitation of this analysis was my lack of familiarity with the data set. Even after reading the methods and data dictionary it was hard to conceptualize the averages, totals, and sums of averages and totals. My struggle with this data set pushed me to use a different data set for the final that I am familiar with using through my work. A key to a good analysis is truly understanding your data set and what you want to do with it, so I look forward to showcasing that in my final.
+
+
+## Appendix A Calculating Weighted Average Spending per Dosage Unit ##
+The average weighted cost per dosage unit incorporates 6 variables:
+
+ - The total spending on a brand name drug* 
+ - The total number Medicaid claims on a brand name drug*
+ - The total dosage units of a brand name drug*
+ - The specific strength of a brand name drug*
+ - The dosage form of a brand name drug*
+ - The route of administration for a brand name drug*
+ 
+ * = of a specific generic name, by a specific manufacturer, in a specific year
+ 
+ The strength, dosage, and route of brand name drugs is not included in the original  data set, and comes from administrative Medicaid data.
+ 
+
+"Since drugs are available in multiple strengths and dosage forms, the average spending per dosage unit at the brand name and generic name level is weighted to account for variation in claims volume for specific brand name, generic name, strength, dosage form, routes of administration, and manufacturer levels.The overall brand name/generic name claim weighted spending per unit is calculated by first summarizing each drug to specific strength, form, route of administration, and manufacture levels. For each unique level, spending is divided by the number of units and multiplied by its proportion of total claims, so that claims volume becomes the weight.
+The claim-weighted average spending per dosage unit at the overall brand name/generic name level is then calculated by summarizing across the strength, form, route, and manufacturer levels. A similar approach was used to calculate average spending per unit for specific manufacturers" - CMS, 2022
+
+
+For example, a drug could be administered in the 2 following combinations of forms, strengths, and routes:
+
+ - Form = Vial, Strength = 80MG/4ML, Route = Intravenous
+ - Form = Syringe, Strength = 162MG/0.9, Route = Subcutaneous
+ 
+For each unique combination of drug form/strength/route, a weighted drug cost per unit was calculated by:
+
+**(Cost of Drug/Units of Drug) * Number of Claims**
+
+The total number of claims, total number of dosage units, the total cost of drugs, and the total weighted cost per unit were calculated by summing the information from each combination of of drug form/strength/route of administration.
+
+The final drug weighted average cost per unit is calculated by:
+
+**Total Weighted Cost Per Unit / Total Claims **
+
+
+
+## Citations
+
+Centers for Medicare and Medicaid Services. *Medicaid Spending By Drug*. (Data file and code book). Baltimore, MD: Data.CMS.gov, 2022. Web. 18 Oct 2022. https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-medicaid-spending-by-drug/medicaid-spending-by-drug
+
+Grolemund, Garrett, and Hadley Wickham. R for Data Science. O’Reilly Media, 2017.
+
+:::
