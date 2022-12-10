@@ -20,6 +20,7 @@ categories:
 #| warning: false
 
 library(tidyverse)
+library(readxl)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -35,7 +36,8 @@ For this Homework I decided to use the dataset I plan to work with for the final
 
 data<- read_csv("_data/MA_Public_Schools_2017.csv",show_col_types = FALSE)
 
-head(data, 10)
+
+head(data,10)
 
 
 ```
@@ -43,11 +45,48 @@ head(data, 10)
 
 The first step is to read in the data. I printed out the first 10 lines of data to look through and see what we have to work with.
 
-The dataset has 302 columns, which is great. We might not need all of them though, specifically the MCAS scores for different grades accross different skill areas. These might be useful to us in future assignments or in the final project, but for now, I think I'm more interested in High School statistics.
+The dataset has 302 columns, which is great. We might not need all of them though, specifically the MCAS scores for different grades accross different skill areas. We also don't necessarily need all of the information about each specific school and breakdowns by grades.
+
+## Cleaning the Data
+
+There are a handful of steps I'd like to take to clean the data into the most useable state. To start, I will reduce the 301 columns just the columns which I am interested in. Simultaneously, I will restrict my dataset to just schools which report graduation data, which will remove schools which did not report and remove primary and middle schools, since the focus our of research will be high schools and graduation related data,
+
+```{r}
+
+keeps <- c(1,2,10,13,14,15,26,27,28,29,30,31,32,34,36,38,40,42,43,44,45,46,47,48,49,50,51,53,55,62,64,68,70,71,72,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97)
+
+hs <- data[keeps]%>% 
+      subset(! is.na(data$`% Graduated`))
+
+hs
+
+```
+
+Next, let's mutate the data to get totals for each racial group. It will be useful to have the specific totals for each group on hand as we will be breaking them up into districts with different levels of spending, teach salary, and class size.
+
+```{r}
+  hs <- mutate(hs,
+              `African American Students` = round((`% African American`/100)*`Number of Students`),
+              `Asian Students` = round((`% Asian`/100)*`Number of Students`),
+              `Hispanic Students` = round((`% Hispanic`/100)*`Number of Students`),
+              `White Students` = round((`% White`/100)*`Number of Students`),
+              `Native American Students` = round((`% Native American`/100)*`Number of Students`),
+              `Native Hawaiian, Pacific Islander` = round((`% Native Hawaiian, Pacific Islander`/100)*`Number of Students`),
+              `Multi-Race, Non-Hispanic` = round((`% Multi-Race, Non-Hispanic`/100)*`Number of Students`),
+              `Male Students` = round((`% Males`/100)*`Number of Students`),
+              `Female Students` = round((`% Females`/100)*`Number of Students`)
+               )
+
+hs
+```
+
+The data is a lot easier to work with now. In the future, we may want to add a variable breaking up salary and expenditures into brackets to see socioeconomic makeup on schools in each bracket, but for now, the data is clean.
+
+
 
 ## Narrative
 
-This is a comprehensive dataset of every state funded public school in Massachusetts for the fiscal year 2017. Each row of data represents a school and each school has a large variety of useful data. Below is a breakdown of that data.
+This is a comprehensive dataset of every state funded public school in Massachusetts for the fiscal year 2017. Each row of data represents a school and each school has a large variety of useful data ranging for finances, socioeconomic makeup, test scores, enrollment data, and high school outcomes. Below is a breakdown of that data.
 
 
   * Financial Data
@@ -70,6 +109,8 @@ This is a comprehensive dataset of every state funded public school in Massachus
     + Graduation Rate
     + Dropout Rate
     + Rate of Secondary Education
+    
+
     
 It's important to discuss some limitations that this dataset has. 
 
