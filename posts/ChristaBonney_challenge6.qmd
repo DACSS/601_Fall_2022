@@ -1,0 +1,262 @@
+---
+title: "Challenge 6 Instructions"
+author: "Meredith Rolfe"
+description: "Visualizing Time and Relationships"
+date: "08/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+  
+###Read In Data
+
+```{r}
+debt <- read_excel("~/GIT/601_Fall_2022/posts/_data/debt_in_trillions.xlsx")
+
+```
+
+```{r}
+#print debt dataset to confirm successful import
+print(debt)
+```
+
+###Data Summary
+
+```{r}
+#get debt dataset dimension
+dim(debt)
+```
+
+```{r}
+#get column names
+colnames(debt)
+```
+
+```{r}
+#table of 'year and quater' column to get range of years data was collected
+table(select(debt, 'Year and Quarter'))
+
+```
+
+The debt_in_trillions dataset is composed of 8 variables (columns) and 74 rows. The variables consist of:
+
+"Year and Quarter": this is a nominal qualitative variable of Years spanning from 2003 to 2021, with each year further split into quarters
+
+"Mortgage": This is a continuous quantitative variable, measured in of trillions of dollars, likely for home mortgage debt
+
+"HE Revolving": This is a continuous quantitative variable, measured in of trillions of dollars, likely for revolving loan debt
+
+"Auto Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for automotive debt
+
+"Credit Card": This is a continuous quantitative variable, measured in of trillions of dollars, likely for credit card debt
+
+"Student Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for student loan debt
+
+"Other": This is a continuous quantitative variable, measured in of trillions of dollars, likely as a catch-all category to account for miscellaneous sources of debts that are still somewhat common, if less so than the other types of loan debts
+
+"Total": This is a continuous quantitative variable, measured in of trillions of dollars, quantifying the total accrued debt across that particular year-quarter
+
+For this dataset it may be surmised that this it is a catalog of commonly accrued debts, measured each annual quarter for a series of years, by citizens in a nation that has a dollar-based currency system. This does narrow down the potential countries, though it may be the United States or another nation that does provide reduced or no-cost higher education, due to the presence and amount of student loan debt accrued quarterly.
+
+##Tidying/Wrangling Data
+
+```{r}
+debt2 <- rename(debt, "Year_and_Quarter" = 'Year and Quarter', "HE_Revolving" = 'HE Revolving', "Auto_Loan" = 'Auto Loan', "Credit_Card" = 'Credit Card', "Student_Loan" = 'Student Loan')
+              
+```
+
+```{r}
+#average data per quarter into annual averages, can filter by "03:"... to isolate quarterly values by year
+#Do this for one column, then can copy and edit code for other columns
+```
+
+```{r}
+#filter with grepl to get quarterly values for each year
+values_2003 <- dplyr::filter(debt2, grepl("03:Q", Year_and_Quarter))
+values_2004 <- dplyr::filter(debt2, grepl("04:Q", Year_and_Quarter))
+values_2005 <- dplyr::filter(debt2, grepl("05:Q", Year_and_Quarter))
+values_2006 <- dplyr::filter(debt2, grepl("06:Q", Year_and_Quarter))
+values_2007 <- dplyr::filter(debt2, grepl("07:Q", Year_and_Quarter))
+values_2008 <- dplyr::filter(debt2, grepl("08:Q", Year_and_Quarter))
+values_2009 <- dplyr::filter(debt2, grepl("09:Q", Year_and_Quarter))
+values_2010 <- dplyr::filter(debt2, grepl("10:Q", Year_and_Quarter))
+values_2011 <- dplyr::filter(debt2, grepl("11:Q", Year_and_Quarter))
+values_2012 <- dplyr::filter(debt2, grepl("12:Q", Year_and_Quarter))
+values_2013 <- dplyr::filter(debt2, grepl("13:Q", Year_and_Quarter))
+values_2014 <- dplyr::filter(debt2, grepl("14:Q", Year_and_Quarter))
+values_2015 <- dplyr::filter(debt2, grepl("15:Q", Year_and_Quarter))
+values_2016 <- dplyr::filter(debt2, grepl("16:Q", Year_and_Quarter))
+values_2017 <- dplyr::filter(debt2, grepl("17:Q", Year_and_Quarter))
+values_2018 <- dplyr::filter(debt2, grepl("18:Q", Year_and_Quarter))
+values_2019 <- dplyr::filter(debt2, grepl("19:Q", Year_and_Quarter))
+values_2020 <- dplyr::filter(debt2, grepl("20:Q", Year_and_Quarter))
+values_2021 <- dplyr::filter(debt2, grepl("21:Q", Year_and_Quarter))
+```
+
+```{r}
+#get means of quarterly values for all years
+annual_avgs_2003 <- summarize_all(select(values_2003, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2004 <- summarize_all(select(values_2004, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2005 <- summarize_all(select(values_2005, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2006 <- summarize_all(select(values_2006, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2007 <- summarize_all(select(values_2007, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2008 <- summarize_all(select(values_2008, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2009 <- summarize_all(select(values_2009, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2010 <- summarize_all(select(values_2010, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2011 <- summarize_all(select(values_2011, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2012 <- summarize_all(select(values_2012, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2013 <- summarize_all(select(values_2013, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2014 <- summarize_all(select(values_2014, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2015 <- summarize_all(select(values_2015, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2016 <- summarize_all(select(values_2016, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2017 <- summarize_all(select(values_2017, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2018 <- summarize_all(select(values_2018, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2019 <- summarize_all(select(values_2019, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2020 <- summarize_all(select(values_2020, Mortgage:Total), mean, na.rm = TRUE)
+annual_avgs_2021 <- summarize_all(select(values_2021, Mortgage:Total), mean, na.rm = TRUE)
+```
+
+```{r}
+#check work
+print(annual_avgs_2003)
+```
+
+```{r}
+#vertically merge annual_avgs_2003:21 data sets with rbind()
+avg_debt <- rbind(annual_avgs_2003, annual_avgs_2004, annual_avgs_2005, annual_avgs_2006, annual_avgs_2007, annual_avgs_2009, annual_avgs_2010, annual_avgs_2011, annual_avgs_2012, annual_avgs_2013, annual_avgs_2014, annual_avgs_2015, annual_avgs_2016, annual_avgs_2017, annual_avgs_2018, annual_avgs_2019, annual_avgs_2020, annual_avgs_2021)
+
+```
+
+```{r}
+#check work with print
+print(avg_debt)
+
+```
+
+```{r}
+#make tibble of years 2003-2021
+Year <- as_tibble_col(c('2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021'))
+
+```
+
+```{r}
+#rename 'value' column as 'Year'
+Year <- rename(Year, "Year" = 'value')
+
+#check rename with print
+print(Year)
+```
+
+```{r}
+#join new year tibble column to avg_debt to match years
+annual_avg_debt <- cbind(Year, avg_debt)
+
+```
+
+```{r}
+#check work
+view(annual_avg_debt)
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2003
+
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2010
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2015
+```
+
+```{r}
+#check avgs match date by test with of annual avgs
+
+annual_avgs_2021
+```
+
+###Graphing: Evolution
+
+```{r}
+#plot student loan debt over time
+ggplot(annual_avg_debt, aes(x = Year, y = Student_Loan)) + geom_point()
+```
+
+I wanted to see if student loan debt increased or decreased in its annually accumulated amounts over time, at this juncture it may be noted that the amount of each yearly accumulation did not decrease at any point from 2003 to 2021.
+
+```{r}
+
+```
+
+###Graphing: Part of Whole
+
+```{r}
+#pivot_longer for ability to graph info with color key, condense values in Mortgage:Other columns to 1 of dollar values and 1 of names
+pivoted_data <- pivot_longer(annual_avg_debt, Mortgage:Total, names_to = "Debt_Type", values_to = "Dollar_Amount")
+
+#sanity check: started with 18 rows and 8 columns
+dim(annual_avg_debt)
+
+#sanity check: (8-7) + 2 = 3 columns
+#18*7 = 126 rows
+dim(pivoted_data)
+```
+
+```{r}
+#check work
+
+print(pivoted_data)
+```
+
+```{r}
+#pivot to arrange data into more plotable format
+ggplot(pivoted_data, aes(x = Year, y = Dollar_Amount)) + geom_point(aes(color = Debt_Type))
+```
+
+I chose a scatterplot to display the different debt amounts as averaged through the years and how each varied over time in comparison and as a part of the total amount. The plot allowed me to use fill to denote each type of debt by color, and this distinction clearly displays each debt in comparison against the much greater total.
+

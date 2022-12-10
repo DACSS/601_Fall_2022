@@ -1,0 +1,315 @@
+---
+title: "Data Wrangling: Pivoting and Mutating"
+author: "Christa Bonney"
+desription: "More data wrangling: pivoting and mutating with poultry_tidy data set"
+date: "11/9/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data and Observations
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+#read in organic_egg_poultry data
+
+poultry_data <- read_excel("~/GIT/601_Fall_2022/posts/_data/poultry_tidy.xlsx")
+
+```
+
+```{r}
+view(poultry_data)
+```
+
+```{r}
+#get poultry data dimensions
+dim(poultry_data)
+
+#preview poultry data
+colnames(poultry_data)
+```
+
+
+```{r}
+#preview poultry data
+head(poultry_data)
+```
+
+
+```{r}
+#use tables to get summary of values for 'product' and 'year' columns to get range of values
+
+table(select(poultry_data, "Product"))
+
+table(select(poultry_data, "Year"))
+
+```
+
+The poultry_tidy data set consists of 4 variables with 600 rows of values. The variables are:
+
+"Product": qualitative nominal variable consisting of a range of character values consisting of: 'B/S Breast', 'Bone-in Breast', 'Thighs', 'Whole', or 'Whole Legs'.
+
+"Year": this is a qualitative ordinal variable, with values ranging from 2004 - 2013. 
+
+"Month": this is a qualitative nominal variable, with values ranging from 'January' to 'December'.
+
+"Price_Dollar": This is a quantitative continuous variable, with values noted to be measured in dollar amounts.
+
+Looking at the variables it can be surmised that this data set is likely a log of total sales values, tallied each month, per year (2004 - 2013) of various cuts of meat. It is likely chicken, due to widespread availability.
+
+Will utilize newly learned functions to tidy and wrangle data to better perform analysis to the goal of observing how average annual sale prices per cut of chicken change over the observed period.
+
+
+```{r}
+#pivot wider to get separate columns for each product category 
+
+#new columns = (4-2) + 5  = 7
+
+# new rows = 600/5 = 120
+
+#this will take it from 600 rows and 4 columns to 
+
+cuts_price <- pivot_wider(poultry_data, names_from = "Product", values_from = "Price_Dollar")
+
+#sanity check with dim()
+
+dim(cuts_price)
+```
+
+```{r}
+#rearrange values in 'Year' column to re-order for 2004 to 2013 (currently 2013 - 2004)
+
+ cuts_price2 <- arrange(cuts_price, select(cuts_price, "Year"))
+```
+
+```{r}
+#use view() to check changes were successful
+
+#view(cuts_price2)
+```
+
+```{r}
+#replace NA values to 0.00 for Bone-in Breast and Thighs columns
+cuts_price3 <- replace_na(cuts_price2, list("Bone-in Breast" = 0.00, "Thighs" = 0.00))
+
+```
+
+```{r}
+#rename variables to be able to calculate the means
+
+cuts_price3A <- rename(cuts_price3, "B_S_Breast" = 'B/S Breast', "Bone_In_Breast" = 'Bone-in Breast', "Whole_Legs" = 'Whole Legs')
+
+#pivot wider 'Year' column against cuts columns to get cut values per year isolated
+
+#new columns = (7 - 6) + (5x10) = 51
+
+#new rows = 120/10 = 12
+
+cuts_price3B <- pivot_wider(cuts_price3A, names_from = "Year", values_from = c("Whole", "B_S_Breast", "Bone_In_Breast", "Whole_Legs", "Thighs"))
+
+#use dim() function to perform sanity check on cuts_price3B data frame
+
+dim(cuts_price3B)
+```
+
+```{r} 
+#use subset to get rid of 'Month' column
+
+cuts_price4 <- subset(cuts_price3B, select = -Month)
+```
+
+```{r}
+#then mutate to get means per year generated into new columns per each cut
+
+#Thought to see if I could mutate multiple columns with the annual means for each cut
+
+#this did not work, the row numbers would be offset by -2 in the generated columns (dataframe originally 12 rows)
+
+#could try to replace existing columns, but seems more practical (cleaner) to construct a new dataframe from vectors of means
+
+#this string is unedited from when a retro-active column name-change was initiated after the string was deemed unusable
+
+new <- mutate(cuts_price4, Average_Annual_Price_Whole = c(mean(cuts_price4$Whole_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2013, na.rm = TRUE)),
+      Average_Annual_Price_B/S_Breast = c(mean(cuts_price4$B/S Breast_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$B/S Breast_2013, na.rm = TRUE)),
+      Average_Annual_Price_Bone-in_Breast = c(mean(cuts_price4$Bone-in Breast_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone-in Breast_2013, na.rm = TRUE)),
+       Average_Annual_Price_Whole_Legs = c(mean(cuts_price4$Whole Legs_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole Legs_2013, na.rm = TRUE)),
+       Average_Annual_Price_Thighs = c(mean(cuts_price4$Thighs_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2013, na.rm = TRUE)))
+```
+
+
+```{r}
+#generate annual average price per cut columns by calculating means from monthly values
+
+ Average_Annual_Price_Whole <- c(mean(cuts_price4$Whole_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_2013, na.rm = TRUE))
+
+Average_Annual_Price_BS_Breast <- c(mean(cuts_price4$B_S_Breast_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$B_S_Breast_2013, na.rm = TRUE))
+
+ Average_Annual_Price_Bone_In_Breast <- c(mean(cuts_price4$Bone_In_Breast_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Bone_In_Breast_2013, na.rm = TRUE))
+ 
+  Average_Annual_Price_Whole_Legs <- c(mean(cuts_price4$Whole_Legs_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Whole_Legs_2013, na.rm = TRUE))
+  
+  Average_Annual_Price_Thighs = c(mean(cuts_price4$Thighs_2004, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2005, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2006, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2007, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2008, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2009, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2010, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2011, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2012, na.rm = TRUE),
+                                                   mean(cuts_price4$Thighs_2013, na.rm = TRUE))
+ 
+```
+
+```{r}
+#create year vector
+
+Year <- c('2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013')
+```
+
+```{r}
+#join vectors into a data frame
+
+Average_Annual_Sale_Prices_per_Cut_of_Chicken <- data.frame(Year, Average_Annual_Price_Whole,
+                                                            Average_Annual_Price_BS_Breast,
+                                                            Average_Annual_Price_Bone_In_Breast,
+                                                            Average_Annual_Price_Whole_Legs,
+                                                            Average_Annual_Price_Thighs)
+```
+
+```{r}
+# preview Average_Annual_Sale_Prices_per_Cut_of_Chicken data frame
+
+head(Average_Annual_Sale_Prices_per_Cut_of_Chicken)
+```
+
+```{r}
+#change number of decimal places to just have 2 and print data frame
+options(digits = 3)
+
+print(Average_Annual_Sale_Prices_per_Cut_of_Chicken)
+```
+
+##Conclusions
+
+From the new Average_Annual_Sale_Prices_per_Cut_of_Chicken data set we see that all cuts of chicken rose in price over the 10year period from 2004 to 2013. It can be seen that 3 cuts saw a brief price decline in 2011 (Whole, B/S Breast, and Thighs) while the others remained same. 2 cuts, Bone-in Breast and Whole Legs, began at below $2.00 in 2004 and in 2005 increased over this once, to $3.90 and $2.04 respectively, and then remained the same price from 2005-2013. The greatest price increase happened with the Bone-in Breast cut, increasing for $1.95 in 2004 to $3.90 in 2005 (up to 2013).
+
