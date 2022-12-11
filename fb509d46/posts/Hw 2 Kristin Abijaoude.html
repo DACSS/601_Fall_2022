@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Kristin Abijaoude">
+<meta name="dcterms.date" content="2022-10-09">
+<meta name="description" content="More data wrangling: pivoting">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - HW 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - HW 2">
+<meta name="twitter:description" content="More data wrangling: pivoting">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">HW 2</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-are-we-looking-at-today" id="toc-what-are-we-looking-at-today" class="nav-link active" data-scroll-target="#what-are-we-looking-at-today">What are we looking at today?</a></li>
+  <li><a href="#tidy-the-data" id="toc-tidy-the-data" class="nav-link" data-scroll-target="#tidy-the-data">Tidy the Data</a>
+  <ul class="collapse">
+  <li><a href="#rename-variables" id="toc-rename-variables" class="nav-link" data-scroll-target="#rename-variables">Rename Variables</a></li>
+  <li><a href="#remove-unneeded-variables" id="toc-remove-unneeded-variables" class="nav-link" data-scroll-target="#remove-unneeded-variables">Remove Unneeded Variables</a></li>
+  <li><a href="#recode-continent" id="toc-recode-continent" class="nav-link" data-scroll-target="#recode-continent">Recode Continent</a></li>
+  <li><a href="#is-voting-compulsory-in-your-country-does-you-country-enforce-compulsory" id="toc-is-voting-compulsory-in-your-country-does-you-country-enforce-compulsory" class="nav-link" data-scroll-target="#is-voting-compulsory-in-your-country-does-you-country-enforce-compulsory">Is Voting compulsory in your country? Does you country enforce compulsory?</a></li>
+  <li><a href="#recode-voter-id-type-laws" id="toc-recode-voter-id-type-laws" class="nav-link" data-scroll-target="#recode-voter-id-type-laws">Recode Voter ID Type laws</a></li>
+  <li><a href="#types-of-voter-registration" id="toc-types-of-voter-registration" class="nav-link" data-scroll-target="#types-of-voter-registration">Types of voter registration</a></li>
+  </ul></li>
+  <li><a href="#explain-the-data" id="toc-explain-the-data" class="nav-link" data-scroll-target="#explain-the-data">Explain the Data</a></li>
+  <li><a href="#questions-to-ask-ourselves" id="toc-questions-to-ask-ourselves" class="nav-link" data-scroll-target="#questions-to-ask-ourselves">Questions to Ask Ourselves</a></li>
+  <li><a href="#visualize-the-data" id="toc-visualize-the-data" class="nav-link" data-scroll-target="#visualize-the-data">Visualize the Data</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">HW 2</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">hw2</div>
+    <div class="quarto-category">kristin_abijaoude</div>
+    <div class="quarto-category">voteridlaws</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    More data wrangling: pivoting
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Kristin Abijaoude </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 9, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching packages
+───────────────────────────────────────
+tidyverse 1.3.2 ──</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>✔ ggplot2 3.4.0     ✔ purrr   0.3.5
+✔ tibble  3.1.8     ✔ stringr 1.4.1
+✔ tidyr   1.2.1     ✔ forcats 0.5.2
+✔ readr   2.1.3     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.2.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="what-are-we-looking-at-today" class="level1">
+<h1>What are we looking at today?</h1>
+<p>Today, we are looking at Voter ID laws by country, as well as US States. I downloaded the dataset from Mr.&nbsp;Tom Barton PhD of the Department of Politics, International Relations, and Philosophy in the University of London, Royal Holloway, courtesy of archival website called Data is Plural.</p>
+<p>To open the CSV dataset, we will use read_csv() command, as demonstrated below in the chunk.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/dataverse_files/cvil_22_09_08.csv"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 16
+   cntry     cntry…¹ id_type id_ty…² num_id exhaust min_id law_yr cmp_vt cmp_enf
+   &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Afghanis… AFG           3 Photo …    1         1      1   2016      0       0
+ 2 Albania   ALB           3 Photo …    2         1      1   2012      0       0
+ 3 Algeria   DZA           3 Photo …    1.5       0      1   2012      0       0
+ 4 Andorra   AND           3 Photo …    1.5       0      1   2014      0       0
+ 5 Angola    AGO           2 Non Ph…    1         1      1   2004      0       0
+ 6 Anguilla  AIA           1 Basic …    0         1      0   2019      0       0
+ 7 Antigua … ATG           3 Photo …    1         1      1   2001      0       0
+ 8 Argentina ARG           3 Photo …    5         1      1   2012      1       1
+ 9 Armenia   ARM           3 Photo …    3         1      1   2016      0       0
+10 Aruba     ABW           3 Photo …    4         1      2   1987      0       0
+# … with 239 more rows, 6 more variables: us_dum &lt;dbl&gt;, reg_dev &lt;dbl&gt;,
+#   reg_law &lt;dbl&gt;, reg_lab &lt;chr&gt;, continent &lt;dbl&gt;, cmp_id &lt;chr&gt;, and
+#   abbreviated variable names ¹​cntry_cd, ²​id_type_lab</code></pre>
+</div>
+</div>
+<p>Voter ID laws differ wherever you go; we analyize voting laws from around the globe, from our commonwealth to Afghanistan to Norway to Zimbabwe. We get a glimpse of the dimensions of the dataset, as well as the name of the columns, in which we will fix. We have 249 rows, with each row representing a country or a US state, and 16 columns representing each voter law, from compulsory ID laws to voter ID requirements.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Components of the Dataset</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(Voter_ID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 249</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(Voter_ID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 16</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(Voter_ID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 249  16</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Voter_ID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "cntry"       "cntry_cd"    "id_type"     "id_type_lab" "num_id"     
+ [6] "exhaust"     "min_id"      "law_yr"      "cmp_vt"      "cmp_enf"    
+[11] "us_dum"      "reg_dev"     "reg_law"     "reg_lab"     "continent"  
+[16] "cmp_id"     </code></pre>
+</div>
+</div>
+</section>
+<section id="tidy-the-data" class="level1">
+<h1>Tidy the Data</h1>
+<p>To begin the tidying process, we will rename the columns. When I downloaded the dataset as a ZIP file, it came with a PDF with a list of the columns and their respective labels. I will use that PDF as my guide as I tidy the data.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(Voter_ID)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    cntry             cntry_cd            id_type      id_type_lab       
+ Length:249         Length:249         Min.   :1.000   Length:249        
+ Class :character   Class :character   1st Qu.:2.000   Class :character  
+ Mode  :character   Mode  :character   Median :3.000   Mode  :character  
+                                       Mean   :2.581                     
+                                       3rd Qu.:3.000                     
+                                       Max.   :3.000                     
+                                       NA's   :3                         
+     num_id          exhaust           min_id           law_yr    
+ Min.   : 0.000   Min.   :0.0000   Min.   :0.0000   Min.   :1918  
+ 1st Qu.: 1.000   1st Qu.:0.0000   1st Qu.:1.0000   1st Qu.:1998  
+ Median : 1.500   Median :1.0000   Median :1.0000   Median :2006  
+ Mean   : 2.935   Mean   :0.7353   Mean   :0.9076   Mean   :2004  
+ 3rd Qu.: 3.375   3rd Qu.:1.0000   3rd Qu.:1.0000   3rd Qu.:2013  
+ Max.   :54.000   Max.   :1.0000   Max.   :2.0000   Max.   :2021  
+ NA's   :11       NA's   :11       NA's   :11       NA's   :24    
+     cmp_vt          cmp_enf            us_dum          reg_dev      
+ Min.   :0.0000   Min.   :0.00000   Min.   :0.0000   Min.   : 0.000  
+ 1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.0000   1st Qu.: 0.000  
+ Median :0.0000   Median :0.00000   Median :0.0000   Median : 0.000  
+ Mean   :0.1084   Mean   :0.05622   Mean   :0.2008   Mean   : 5.723  
+ 3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.0000   3rd Qu.: 0.000  
+ Max.   :1.0000   Max.   :1.00000   Max.   :1.0000   Max.   :53.000  
+                                                                     
+    reg_law        reg_lab            continent       cmp_id         
+ Min.   :1.000   Length:249         Min.   :1.00   Length:249        
+ 1st Qu.:1.000   Class :character   1st Qu.:2.00   Class :character  
+ Median :3.000   Mode  :character   Median :2.00   Mode  :character  
+ Mean   :2.167                      Mean   :2.53                     
+ 3rd Qu.:3.000                      3rd Qu.:4.00                     
+ Max.   :3.000                      Max.   :5.00                     
+ NA's   :4                                                           </code></pre>
+</div>
+</div>
+<section id="rename-variables" class="level2">
+<h2 class="anchored" data-anchor-id="rename-variables">Rename Variables</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Country Name"</span> <span class="ot">=</span> cntry,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Country ID"</span> <span class="ot">=</span> cntry_cd,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Voter ID Law Type"</span> <span class="ot">=</span> id_type,</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Number of Different IDs Allowed to Prove Identity"</span> <span class="ot">=</span> num_id,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the electoral law provide an exhaustive list of different IDs voters can present?"</span> <span class="ot">=</span> exhaust,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Minimum Number of IDs Required by Law"</span> <span class="ot">=</span> min_id,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Year of Current Law Enforced"</span> <span class="ot">=</span> law_yr,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country have compulsory voting?"</span> <span class="ot">=</span> cmp_vt,</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country enforce compulsory voting?"</span> <span class="ot">=</span> cmp_enf,</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country have compulsory national ID cards?"</span> <span class="ot">=</span> cmp_id,</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Registration Type Law"</span> <span class="ot">=</span> reg_law,</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Continent"</span> <span class="ot">=</span> continent)</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 16
+   Country Nam…¹ Count…² Voter…³ id_ty…⁴ Numbe…⁵ Does …⁶ Minim…⁷ Year …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Afghanistan   AFG           3 Photo …     1         1       1    2016       0
+ 2 Albania       ALB           3 Photo …     2         1       1    2012       0
+ 3 Algeria       DZA           3 Photo …     1.5       0       1    2012       0
+ 4 Andorra       AND           3 Photo …     1.5       0       1    2014       0
+ 5 Angola        AGO           2 Non Ph…     1         1       1    2004       0
+ 6 Anguilla      AIA           1 Basic …     0         1       0    2019       0
+ 7 Antigua and … ATG           3 Photo …     1         1       1    2001       0
+ 8 Argentina     ARG           3 Photo …     5         1       1    2012       1
+ 9 Armenia       ARM           3 Photo …     3         1       1    2016       0
+10 Aruba         ABW           3 Photo …     4         1       2    1987       0
+# … with 239 more rows, 7 more variables:
+#   `Does the country enforce compulsory voting?` &lt;dbl&gt;, us_dum &lt;dbl&gt;,
+#   reg_dev &lt;dbl&gt;, `Registration Type Law` &lt;dbl&gt;, reg_lab &lt;chr&gt;,
+#   Continent &lt;dbl&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​id_type_lab, …</code></pre>
+</div>
+</div>
+<p>Now, notice that I did not rename every variable because some are mere repeats of other variables. Therefore, I will remove them because they’re unnecessary to keep. The command I will use is ‘select()’, with another command ‘-c()’ inside the ‘select()’ command, and type in the variables that I will remove.</p>
+</section>
+<section id="remove-unneeded-variables" class="level2">
+<h2 class="anchored" data-anchor-id="remove-unneeded-variables">Remove Unneeded Variables</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(id_type_lab, us_dum, reg_dev, reg_lab))</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Afghanistan   AFG           3     1         1       1    2016       0       0
+ 2 Albania       ALB           3     2         1       1    2012       0       0
+ 3 Algeria       DZA           3     1.5       0       1    2012       0       0
+ 4 Andorra       AND           3     1.5       0       1    2014       0       0
+ 5 Angola        AGO           2     1         1       1    2004       0       0
+ 6 Anguilla      AIA           1     0         1       0    2019       0       0
+ 7 Antigua and … ATG           3     1         1       1    2001       0       0
+ 8 Argentina     ARG           3     5         1       1    2012       1       1
+ 9 Armenia       ARM           3     3         1       1    2016       0       0
+10 Aruba         ABW           3     4         1       2    1987       0       0
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;dbl&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Next, we will recode the values in the dataset so we won’t be confused by what those numbers mean. We will go through certain variables that need recoding using the mutate () and recode () commands. Let’s start off with continents.</p>
+</section>
+<section id="recode-continent" class="level2">
+<h2 class="anchored" data-anchor-id="recode-continent">Recode Continent</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Continent=</span><span class="fu">recode</span>(Continent, </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Africa"</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Americas"</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Asia"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Europe"</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Oceania"</span>))</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Afghanistan   AFG           3     1         1       1    2016       0       0
+ 2 Albania       ALB           3     2         1       1    2012       0       0
+ 3 Algeria       DZA           3     1.5       0       1    2012       0       0
+ 4 Andorra       AND           3     1.5       0       1    2014       0       0
+ 5 Angola        AGO           2     1         1       1    2004       0       0
+ 6 Anguilla      AIA           1     0         1       0    2019       0       0
+ 7 Antigua and … ATG           3     1         1       1    2001       0       0
+ 8 Argentina     ARG           3     5         1       1    2012       1       1
+ 9 Armenia       ARM           3     3         1       1    2016       0       0
+10 Aruba         ABW           3     4         1       2    1987       0       0
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Next, we will recode the values in compulsory voting laws.</p>
+</section>
+<section id="is-voting-compulsory-in-your-country-does-you-country-enforce-compulsory" class="level2">
+<h2 class="anchored" data-anchor-id="is-voting-compulsory-in-your-country-does-you-country-enforce-compulsory">Is Voting compulsory in your country? Does you country enforce compulsory?</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country have compulsory voting?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country have compulsory voting?</span><span class="st">`</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country enforce compulsory voting?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country enforce compulsory voting?</span><span class="st">`</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span><span class="ot">=</span><span class="st">"Yes"</span>))</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG           3     1         1       1    2016 No      No     
+ 2 Albania       ALB           3     2         1       1    2012 No      No     
+ 3 Algeria       DZA           3     1.5       0       1    2012 No      No     
+ 4 Andorra       AND           3     1.5       0       1    2014 No      No     
+ 5 Angola        AGO           2     1         1       1    2004 No      No     
+ 6 Anguilla      AIA           1     0         1       0    2019 No      No     
+ 7 Antigua and … ATG           3     1         1       1    2001 No      No     
+ 8 Argentina     ARG           3     5         1       1    2012 Yes     Yes    
+ 9 Armenia       ARM           3     3         1       1    2016 No      No     
+10 Aruba         ABW           3     4         1       2    1987 No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Here, we figure out what type of voting laws there are to prove one’s identity. In this dataset, there are three categories: basic personal information, non-photo ID required or requested, and photo ID required.</p>
+</section>
+<section id="recode-voter-id-type-laws" class="level2">
+<h2 class="anchored" data-anchor-id="recode-voter-id-type-laws">Recode Voter ID Type laws</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Basic Personal Details"</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Non-Photo ID Required or Requested"</span>,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Photo ID Required"</span>))</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Photo …     1         1       1    2016 No      No     
+ 2 Albania       ALB     Photo …     2         1       1    2012 No      No     
+ 3 Algeria       DZA     Photo …     1.5       0       1    2012 No      No     
+ 4 Andorra       AND     Photo …     1.5       0       1    2014 No      No     
+ 5 Angola        AGO     Non-Ph…     1         1       1    2004 No      No     
+ 6 Anguilla      AIA     Basic …     0         1       0    2019 No      No     
+ 7 Antigua and … ATG     Photo …     1         1       1    2001 No      No     
+ 8 Argentina     ARG     Photo …     5         1       1    2012 Yes     Yes    
+ 9 Armenia       ARM     Photo …     3         1       1    2016 No      No     
+10 Aruba         ABW     Photo …     4         1       2    1987 No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Another question regarding voting ID is whether a country provides an exhaustive, or a really comprehensive, list of types of ID to prove one’s identity. In other words, can you use just about anything to prove your identity in order to vote?</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>))</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Photo …     1   Yes           1    2016 No      No     
+ 2 Albania       ALB     Photo …     2   Yes           1    2012 No      No     
+ 3 Algeria       DZA     Photo …     1.5 No            1    2012 No      No     
+ 4 Andorra       AND     Photo …     1.5 No            1    2014 No      No     
+ 5 Angola        AGO     Non-Ph…     1   Yes           1    2004 No      No     
+ 6 Anguilla      AIA     Basic …     0   Yes           0    2019 No      No     
+ 7 Antigua and … ATG     Photo …     1   Yes           1    2001 No      No     
+ 8 Argentina     ARG     Photo …     5   Yes           1    2012 Yes     Yes    
+ 9 Armenia       ARM     Photo …     3   Yes           1    2016 No      No     
+10 Aruba         ABW     Photo …     4   Yes           2    1987 No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Next, does the country have compulsory national ID laws? In countries where you must show some form of ID, some provide national ID cards that can be used when showing up at the booth.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country have compulsory national ID cards?</span><span class="st">`</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country have compulsory national ID cards?</span><span class="st">`</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>,</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"#N/A"</span> <span class="ot">=</span> <span class="st">"No Data"</span>))</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Photo …     1   Yes           1    2016 No      No     
+ 2 Albania       ALB     Photo …     2   Yes           1    2012 No      No     
+ 3 Algeria       DZA     Photo …     1.5 No            1    2012 No      No     
+ 4 Andorra       AND     Photo …     1.5 No            1    2014 No      No     
+ 5 Angola        AGO     Non-Ph…     1   Yes           1    2004 No      No     
+ 6 Anguilla      AIA     Basic …     0   Yes           0    2019 No      No     
+ 7 Antigua and … ATG     Photo …     1   Yes           1    2001 No      No     
+ 8 Argentina     ARG     Photo …     5   Yes           1    2012 Yes     Yes    
+ 9 Armenia       ARM     Photo …     3   Yes           1    2016 No      No     
+10 Aruba         ABW     Photo …     4   Yes           2    1987 No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;dbl&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>Lastly, let’s recode voter registration, which is in three categories:</p>
+<ol type="1">
+<li>Laissez-Faire: registering to vote is optional</li>
+<li>Assisted: you can register to vote through utilizing public services</li>
+<li>Automatic: you are automatically registered to vote once you’ve reached voting age</li>
+</ol>
+</section>
+<section id="types-of-voter-registration" class="level2">
+<h2 class="anchored" data-anchor-id="types-of-voter-registration">Types of voter registration</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Laissez-Faire Registration"</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Assisted Registration"</span>,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Automatic Registration"</span>))</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity Check</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Photo …     1   Yes           1    2016 No      No     
+ 2 Albania       ALB     Photo …     2   Yes           1    2012 No      No     
+ 3 Algeria       DZA     Photo …     1.5 No            1    2012 No      No     
+ 4 Andorra       AND     Photo …     1.5 No            1    2014 No      No     
+ 5 Angola        AGO     Non-Ph…     1   Yes           1    2004 No      No     
+ 6 Anguilla      AIA     Basic …     0   Yes           0    2019 No      No     
+ 7 Antigua and … ATG     Photo …     1   Yes           1    2001 No      No     
+ 8 Argentina     ARG     Photo …     5   Yes           1    2012 Yes     Yes    
+ 9 Armenia       ARM     Photo …     3   Yes           1    2016 No      No     
+10 Aruba         ABW     Photo …     4   Yes           2    1987 No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;chr&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<p>I will replace NAs with the label “no data”</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>no_data <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"No Data"</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Number of Different IDs Allowed to Prove Identity</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Number of Different IDs Allowed to Prove Identity</span><span class="st">`</span>)] <span class="ot">&lt;-</span>no_data</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Minimum Number of IDs Required by Law</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Minimum Number of IDs Required by Law</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Year of Current Law Enforced</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Year of Current Law Enforced</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>)] <span class="ot">&lt;-</span>no_data</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Voter…³ Numbe…⁴ Does …⁵ Minim…⁶ Year …⁷ Does …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Photo … 1       Yes     1       2016    No      No     
+ 2 Albania       ALB     Photo … 2       Yes     1       2012    No      No     
+ 3 Algeria       DZA     Photo … 1.5     No      1       2012    No      No     
+ 4 Andorra       AND     Photo … 1.5     No      1       2014    No      No     
+ 5 Angola        AGO     Non-Ph… 1       Yes     1       2004    No      No     
+ 6 Anguilla      AIA     Basic … 0       Yes     0       2019    No      No     
+ 7 Antigua and … ATG     Photo … 1       Yes     1       2001    No      No     
+ 8 Argentina     ARG     Photo … 5       Yes     1       2012    Yes     Yes    
+ 9 Armenia       ARM     Photo … 3       Yes     1       2016    No      No     
+10 Aruba         ABW     Photo … 4       Yes     2       1987    No      No     
+# … with 239 more rows, 3 more variables: `Registration Type Law` &lt;chr&gt;,
+#   Continent &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`,
+#   ³​`Voter ID Law Type`, ⁴​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁵​`Does the electoral law provide an exhaustive list of different IDs voters can present?`,
+#   ⁶​`Minimum Number of IDs Required by Law`, …</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> <span class="fu">relocate</span>(Voter_ID, <span class="st">"Continent"</span>, <span class="at">.after =</span> <span class="st">"Country ID"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>Voter_ID</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 249 × 12
+   Country Nam…¹ Count…² Conti…³ Voter…⁴ Numbe…⁵ Does …⁶ Minim…⁷ Year …⁸ Does …⁹
+   &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+ 1 Afghanistan   AFG     Asia    Photo … 1       Yes     1       2016    No     
+ 2 Albania       ALB     Europe  Photo … 2       Yes     1       2012    No     
+ 3 Algeria       DZA     Africa  Photo … 1.5     No      1       2012    No     
+ 4 Andorra       AND     Europe  Photo … 1.5     No      1       2014    No     
+ 5 Angola        AGO     Africa  Non-Ph… 1       Yes     1       2004    No     
+ 6 Anguilla      AIA     Americ… Basic … 0       Yes     0       2019    No     
+ 7 Antigua and … ATG     Americ… Photo … 1       Yes     1       2001    No     
+ 8 Argentina     ARG     Americ… Photo … 5       Yes     1       2012    Yes    
+ 9 Armenia       ARM     Asia    Photo … 3       Yes     1       2016    No     
+10 Aruba         ABW     Americ… Photo … 4       Yes     2       1987    No     
+# … with 239 more rows, 3 more variables:
+#   `Does the country enforce compulsory voting?` &lt;chr&gt;,
+#   `Registration Type Law` &lt;chr&gt;,
+#   `Does the country have compulsory national ID cards?` &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Country Name`, ²​`Country ID`, ³​Continent,
+#   ⁴​`Voter ID Law Type`, ⁵​`Number of Different IDs Allowed to Prove Identity`,
+#   ⁶​`Does the electoral law provide an exhaustive list of different IDs voters can present?`, …</code></pre>
+</div>
+</div>
+<p>Finally, we have finished tidying up the data!</p>
+</section>
+</section>
+<section id="explain-the-data" class="level1">
+<h1>Explain the Data</h1>
+<p>Mr.&nbsp;Tom Barton PhD, a Politics postgraduate student at the University of London, Royal Holloway, compiled voter ID laws by country, as well as US states. Voter ID laws, in this sense, refer to laws regarding requirements for voters to prove their identity in order to vote. Some countries and states don’t require any form of ID asides from basic personal information, such as Massachusetts, Dominica, and New Zealand, while others are relatively restrictive with required photo IDs, such as Wisconsin, Texas, and Yemen. Most of the columns presented are thankfully self-explanatory.</p>
+<p>In territories where IDs are required to vote, this dataset lists out those that offer more ways to show ID, hence the column “Number of Different IDs Allowed to Prove One’s Identity”. According to Barton, that was an open-ended question, as you can see that some answers are not rounded to the full amount. Also, in the same column, the territories that don’t require IDs to vote are assigned to the value 0; in other words, a voter doesn’t need to bring an ID to the polls.</p>
+<p>Lastly, there are three categories of voter registrations. Laissez-Faire Registration states that registering to vote is optional; Assisted Registration states that one can register to vote through various means, such as utilizing public services (i.e.&nbsp;Massachusetts); and Automatic Registration states that when the voter reaches voting age (mostly 18), they are automatically registered to vote.</p>
+</section>
+<section id="questions-to-ask-ourselves" class="level1">
+<h1>Questions to Ask Ourselves</h1>
+<p>What do you think is the best way to prevent voter fraud?</p>
+<p>Do you think more voter ID laws would protect democracy and the integrity of elections?</p>
+<p>Do you think more voter ID laws would stifle civic participation and harm democracy?</p>
+<p>Do you think fewer voter ID laws would increase voter turnout?</p>
+<p>Do you think fewer voter ID laws would increase the chances of voter fraud?</p>
+<p>What do you think is the best way to increase voter turnout?</p>
+</section>
+<section id="visualize-the-data" class="level1">
+<h1>Visualize the Data</h1>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  `Registration Type Law`        n
+  &lt;chr&gt;                      &lt;int&gt;
+1 Assisted Registration         30
+2 Automatic Registration       128
+3 Laissez-Faire Registration    87
+4 No Data                        4</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Voter_Reg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Voter.Registration.Law =</span><span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"Lassiez Faire Registration"</span>,<span class="st">"Automatic Registration"</span>,<span class="st">"Assisted Registration"</span>)),  </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Countries.And.Territories=</span><span class="fu">c</span>(<span class="dv">87</span>,<span class="dv">123</span>,<span class="dv">30</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>Voter_Reg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Voter.Registration.Law Countries.And.Territories
+1 Lassiez Faire Registration                        87
+2     Automatic Registration                       123
+3      Assisted Registration                        30</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>Voter_Reg, <span class="fu">aes</span>(<span class="at">x=</span> Voter.Registration.Law, <span class="at">y=</span>Countries.And.Territories)) <span class="sc">+</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Hw-2-Kristin-Abijaoude_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  `Voter ID Law Type`                    n
+  &lt;chr&gt;                              &lt;int&gt;
+1 Basic Personal Details                36
+2 No Data                                3
+3 Non-Photo ID Required or Requested    31
+4 Photo ID Required                    179</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>Voter_ID_Type <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Voter.ID.Type =</span><span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"Basic Personal Details"</span>,<span class="st">"Non-Photo ID Required or Requested"</span>,<span class="st">"Photo ID Required"</span>)),  </span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Countries.And.Territories=</span><span class="fu">c</span>(<span class="dv">36</span>,<span class="dv">31</span>,<span class="dv">179</span>)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>Voter_ID_Type</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Voter.ID.Type Countries.And.Territories
+1             Basic Personal Details                        36
+2 Non-Photo ID Required or Requested                        31
+3                  Photo ID Required                       179</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>Voter_ID_Type, <span class="fu">aes</span>(<span class="at">x=</span> Voter.ID.Type, <span class="at">y=</span>Countries.And.Territories)) <span class="sc">+</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Hw-2-Kristin-Abijaoude_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb54" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "HW 2 "</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Kristin Abijaoude"</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "More data wrangling: pivoting"</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "10/09/2022"</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - hw2</span></span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - kristin_abijaoude</span></span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - voteridlaws</span></span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb54-31"><a href="#cb54-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-32"><a href="#cb54-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb54-33"><a href="#cb54-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-34"><a href="#cb54-34" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb54-35"><a href="#cb54-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-36"><a href="#cb54-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-37"><a href="#cb54-37" aria-hidden="true" tabindex="-1"></a><span class="fu"># What are we looking at today?</span></span>
+<span id="cb54-38"><a href="#cb54-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-39"><a href="#cb54-39" aria-hidden="true" tabindex="-1"></a>Today, we are looking at Voter ID laws by country, as well as US States. I downloaded the dataset from Mr. Tom Barton PhD of the Department of Politics, International Relations, and Philosophy in the University of London, Royal Holloway, courtesy of archival website called Data is Plural. </span>
+<span id="cb54-40"><a href="#cb54-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-41"><a href="#cb54-41" aria-hidden="true" tabindex="-1"></a>To open the CSV dataset, we will use read_csv() command, as demonstrated below in the chunk.</span>
+<span id="cb54-42"><a href="#cb54-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-45"><a href="#cb54-45" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-46"><a href="#cb54-46" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/dataverse_files/cvil_22_09_08.csv"</span>)</span>
+<span id="cb54-47"><a href="#cb54-47" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-48"><a href="#cb54-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-49"><a href="#cb54-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-50"><a href="#cb54-50" aria-hidden="true" tabindex="-1"></a>Voter ID laws differ wherever you go; we analyize voting laws from around the globe, from our commonwealth to Afghanistan to Norway to Zimbabwe. We get a glimpse of the dimensions of the dataset, as well as the name of the columns, in which we will fix. We have 249 rows, with each row representing a country or a US state, and 16 columns representing each voter law, from compulsory ID laws to voter ID requirements.</span>
+<span id="cb54-51"><a href="#cb54-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-54"><a href="#cb54-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-55"><a href="#cb54-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Components of the Dataset</span></span>
+<span id="cb54-56"><a href="#cb54-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-57"><a href="#cb54-57" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(Voter_ID)</span>
+<span id="cb54-58"><a href="#cb54-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-59"><a href="#cb54-59" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(Voter_ID)</span>
+<span id="cb54-60"><a href="#cb54-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-61"><a href="#cb54-61" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(Voter_ID)</span>
+<span id="cb54-62"><a href="#cb54-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-63"><a href="#cb54-63" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Voter_ID)</span>
+<span id="cb54-64"><a href="#cb54-64" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-65"><a href="#cb54-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-66"><a href="#cb54-66" aria-hidden="true" tabindex="-1"></a><span class="fu"># Tidy the Data</span></span>
+<span id="cb54-67"><a href="#cb54-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-68"><a href="#cb54-68" aria-hidden="true" tabindex="-1"></a>To begin the tidying process, we will rename the columns. When I downloaded the dataset as a ZIP file, it came with a PDF with a list of the columns and their respective labels. I will use that PDF as my guide as I tidy the data.</span>
+<span id="cb54-69"><a href="#cb54-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-72"><a href="#cb54-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-73"><a href="#cb54-73" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(Voter_ID)</span>
+<span id="cb54-74"><a href="#cb54-74" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-75"><a href="#cb54-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-76"><a href="#cb54-76" aria-hidden="true" tabindex="-1"></a><span class="fu">## Rename Variables</span></span>
+<span id="cb54-77"><a href="#cb54-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-80"><a href="#cb54-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-81"><a href="#cb54-81" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-82"><a href="#cb54-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Country Name"</span> <span class="ot">=</span> cntry,</span>
+<span id="cb54-83"><a href="#cb54-83" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Country ID"</span> <span class="ot">=</span> cntry_cd,</span>
+<span id="cb54-84"><a href="#cb54-84" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Voter ID Law Type"</span> <span class="ot">=</span> id_type,</span>
+<span id="cb54-85"><a href="#cb54-85" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Number of Different IDs Allowed to Prove Identity"</span> <span class="ot">=</span> num_id,</span>
+<span id="cb54-86"><a href="#cb54-86" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the electoral law provide an exhaustive list of different IDs voters can present?"</span> <span class="ot">=</span> exhaust,</span>
+<span id="cb54-87"><a href="#cb54-87" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Minimum Number of IDs Required by Law"</span> <span class="ot">=</span> min_id,</span>
+<span id="cb54-88"><a href="#cb54-88" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Year of Current Law Enforced"</span> <span class="ot">=</span> law_yr,</span>
+<span id="cb54-89"><a href="#cb54-89" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country have compulsory voting?"</span> <span class="ot">=</span> cmp_vt,</span>
+<span id="cb54-90"><a href="#cb54-90" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country enforce compulsory voting?"</span> <span class="ot">=</span> cmp_enf,</span>
+<span id="cb54-91"><a href="#cb54-91" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Does the country have compulsory national ID cards?"</span> <span class="ot">=</span> cmp_id,</span>
+<span id="cb54-92"><a href="#cb54-92" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Registration Type Law"</span> <span class="ot">=</span> reg_law,</span>
+<span id="cb54-93"><a href="#cb54-93" aria-hidden="true" tabindex="-1"></a>         <span class="st">"Continent"</span> <span class="ot">=</span> continent)</span>
+<span id="cb54-94"><a href="#cb54-94" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-95"><a href="#cb54-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-96"><a href="#cb54-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-97"><a href="#cb54-97" aria-hidden="true" tabindex="-1"></a>Now, notice that I did not rename every variable because some are mere repeats of other variables. Therefore, I will remove them because they're unnecessary to keep. The command I will use is 'select()', with another command '-c()' inside the 'select()' command, and type in the variables that I will remove.</span>
+<span id="cb54-98"><a href="#cb54-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-99"><a href="#cb54-99" aria-hidden="true" tabindex="-1"></a><span class="fu">## Remove Unneeded Variables</span></span>
+<span id="cb54-100"><a href="#cb54-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-103"><a href="#cb54-103" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-104"><a href="#cb54-104" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-105"><a href="#cb54-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(id_type_lab, us_dum, reg_dev, reg_lab))</span>
+<span id="cb54-106"><a href="#cb54-106" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-107"><a href="#cb54-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-108"><a href="#cb54-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-109"><a href="#cb54-109" aria-hidden="true" tabindex="-1"></a>Next, we will recode the values in the dataset so we won't be confused by what those numbers mean. We will go through certain variables that need recoding using the mutate () and recode () commands. Let's start off with continents. </span>
+<span id="cb54-110"><a href="#cb54-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-111"><a href="#cb54-111" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recode Continent</span></span>
+<span id="cb54-112"><a href="#cb54-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-115"><a href="#cb54-115" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-116"><a href="#cb54-116" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-117"><a href="#cb54-117" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Continent=</span><span class="fu">recode</span>(Continent, </span>
+<span id="cb54-118"><a href="#cb54-118" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Africa"</span>,</span>
+<span id="cb54-119"><a href="#cb54-119" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Americas"</span>,</span>
+<span id="cb54-120"><a href="#cb54-120" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Asia"</span>,</span>
+<span id="cb54-121"><a href="#cb54-121" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">4</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Europe"</span>,</span>
+<span id="cb54-122"><a href="#cb54-122" aria-hidden="true" tabindex="-1"></a>                            <span class="st">`</span><span class="at">5</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Oceania"</span>))</span>
+<span id="cb54-123"><a href="#cb54-123" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-124"><a href="#cb54-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-125"><a href="#cb54-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-126"><a href="#cb54-126" aria-hidden="true" tabindex="-1"></a>Next, we will recode the values in compulsory voting laws.</span>
+<span id="cb54-127"><a href="#cb54-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-128"><a href="#cb54-128" aria-hidden="true" tabindex="-1"></a><span class="fu">## Is Voting compulsory in your country? Does you country enforce compulsory?</span></span>
+<span id="cb54-131"><a href="#cb54-131" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-132"><a href="#cb54-132" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-133"><a href="#cb54-133" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country have compulsory voting?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country have compulsory voting?</span><span class="st">`</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>))</span>
+<span id="cb54-134"><a href="#cb54-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-135"><a href="#cb54-135" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-136"><a href="#cb54-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country enforce compulsory voting?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country enforce compulsory voting?</span><span class="st">`</span>, <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>, <span class="st">`</span><span class="at">1</span><span class="st">`</span><span class="ot">=</span><span class="st">"Yes"</span>))</span>
+<span id="cb54-137"><a href="#cb54-137" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-138"><a href="#cb54-138" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-139"><a href="#cb54-139" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-140"><a href="#cb54-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-141"><a href="#cb54-141" aria-hidden="true" tabindex="-1"></a>Here, we figure out what type of voting laws there are to prove one's identity. In this dataset, there are three categories: basic personal information, non-photo ID required or requested, and photo ID required.</span>
+<span id="cb54-142"><a href="#cb54-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-143"><a href="#cb54-143" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recode Voter ID Type laws</span></span>
+<span id="cb54-146"><a href="#cb54-146" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-147"><a href="#cb54-147" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-148"><a href="#cb54-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span> </span>
+<span id="cb54-149"><a href="#cb54-149" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>,</span>
+<span id="cb54-150"><a href="#cb54-150" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Basic Personal Details"</span>,</span>
+<span id="cb54-151"><a href="#cb54-151" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Non-Photo ID Required or Requested"</span>,</span>
+<span id="cb54-152"><a href="#cb54-152" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Photo ID Required"</span>))</span>
+<span id="cb54-153"><a href="#cb54-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-154"><a href="#cb54-154" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-155"><a href="#cb54-155" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-156"><a href="#cb54-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-157"><a href="#cb54-157" aria-hidden="true" tabindex="-1"></a>Another question regarding voting ID is whether a country provides an exhaustive, or a really comprehensive, list of types of ID to prove one's identity. In other words, can you use just about anything to prove your identity in order to vote?</span>
+<span id="cb54-158"><a href="#cb54-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-161"><a href="#cb54-161" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-162"><a href="#cb54-162" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-163"><a href="#cb54-163" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span></span>
+<span id="cb54-164"><a href="#cb54-164" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>,</span>
+<span id="cb54-165"><a href="#cb54-165" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>,</span>
+<span id="cb54-166"><a href="#cb54-166" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>))</span>
+<span id="cb54-167"><a href="#cb54-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-168"><a href="#cb54-168" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-169"><a href="#cb54-169" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-170"><a href="#cb54-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-171"><a href="#cb54-171" aria-hidden="true" tabindex="-1"></a>Next, does the country have compulsory national ID laws? In countries where you must show some form of ID, some provide national ID cards that can be used when showing up at the booth.</span>
+<span id="cb54-172"><a href="#cb54-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-175"><a href="#cb54-175" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-176"><a href="#cb54-176" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-177"><a href="#cb54-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Does the country have compulsory national ID cards?</span><span class="st">`</span></span>
+<span id="cb54-178"><a href="#cb54-178" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Does the country have compulsory national ID cards?</span><span class="st">`</span>,</span>
+<span id="cb54-179"><a href="#cb54-179" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">0</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"No"</span>,</span>
+<span id="cb54-180"><a href="#cb54-180" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Yes"</span>,</span>
+<span id="cb54-181"><a href="#cb54-181" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"#N/A"</span> <span class="ot">=</span> <span class="st">"No Data"</span>))</span>
+<span id="cb54-182"><a href="#cb54-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-183"><a href="#cb54-183" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-184"><a href="#cb54-184" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-185"><a href="#cb54-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-186"><a href="#cb54-186" aria-hidden="true" tabindex="-1"></a>Lastly, let's recode voter registration, which is in three categories:</span>
+<span id="cb54-187"><a href="#cb54-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-188"><a href="#cb54-188" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Laissez-Faire: registering to vote is optional</span>
+<span id="cb54-189"><a href="#cb54-189" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Assisted: you can register to vote through utilizing public services</span>
+<span id="cb54-190"><a href="#cb54-190" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Automatic: you are automatically registered to vote once you've reached voting age</span>
+<span id="cb54-191"><a href="#cb54-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-192"><a href="#cb54-192" aria-hidden="true" tabindex="-1"></a><span class="fu">## Types of voter registration</span></span>
+<span id="cb54-195"><a href="#cb54-195" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-196"><a href="#cb54-196" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-197"><a href="#cb54-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(Voter_ID, <span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span></span>
+<span id="cb54-198"><a href="#cb54-198" aria-hidden="true" tabindex="-1"></a>         <span class="ot">=</span> <span class="fu">recode</span>(<span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>,</span>
+<span id="cb54-199"><a href="#cb54-199" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Laissez-Faire Registration"</span>,</span>
+<span id="cb54-200"><a href="#cb54-200" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Assisted Registration"</span>,</span>
+<span id="cb54-201"><a href="#cb54-201" aria-hidden="true" tabindex="-1"></a>                  <span class="st">`</span><span class="at">3</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Automatic Registration"</span>))</span>
+<span id="cb54-202"><a href="#cb54-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-203"><a href="#cb54-203" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity Check</span></span>
+<span id="cb54-204"><a href="#cb54-204" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-205"><a href="#cb54-205" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-206"><a href="#cb54-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-207"><a href="#cb54-207" aria-hidden="true" tabindex="-1"></a>I will replace NAs with the label "no data"</span>
+<span id="cb54-208"><a href="#cb54-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-211"><a href="#cb54-211" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-212"><a href="#cb54-212" aria-hidden="true" tabindex="-1"></a>no_data <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"No Data"</span>)</span>
+<span id="cb54-213"><a href="#cb54-213" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb54-214"><a href="#cb54-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-215"><a href="#cb54-215" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Number of Different IDs Allowed to Prove Identity</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Number of Different IDs Allowed to Prove Identity</span><span class="st">`</span>)] <span class="ot">&lt;-</span>no_data</span>
+<span id="cb54-216"><a href="#cb54-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-217"><a href="#cb54-217" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Does the electoral law provide an exhaustive list of different IDs voters can present?</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb54-218"><a href="#cb54-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-219"><a href="#cb54-219" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Minimum Number of IDs Required by Law</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Minimum Number of IDs Required by Law</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb54-220"><a href="#cb54-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-221"><a href="#cb54-221" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Year of Current Law Enforced</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Year of Current Law Enforced</span><span class="st">`</span>)] <span class="ot">&lt;-</span> no_data</span>
+<span id="cb54-222"><a href="#cb54-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-223"><a href="#cb54-223" aria-hidden="true" tabindex="-1"></a>Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>[<span class="fu">is.na</span>(Voter_ID<span class="sc">$</span><span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>)] <span class="ot">&lt;-</span>no_data</span>
+<span id="cb54-224"><a href="#cb54-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-225"><a href="#cb54-225" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-226"><a href="#cb54-226" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-227"><a href="#cb54-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-230"><a href="#cb54-230" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-231"><a href="#cb54-231" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="ot">&lt;-</span> <span class="fu">relocate</span>(Voter_ID, <span class="st">"Continent"</span>, <span class="at">.after =</span> <span class="st">"Country ID"</span>)</span>
+<span id="cb54-232"><a href="#cb54-232" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-233"><a href="#cb54-233" aria-hidden="true" tabindex="-1"></a>Voter_ID</span>
+<span id="cb54-234"><a href="#cb54-234" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-235"><a href="#cb54-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-236"><a href="#cb54-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-237"><a href="#cb54-237" aria-hidden="true" tabindex="-1"></a>Finally, we have finished tidying up the data! </span>
+<span id="cb54-238"><a href="#cb54-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-239"><a href="#cb54-239" aria-hidden="true" tabindex="-1"></a><span class="fu"># Explain the Data</span></span>
+<span id="cb54-240"><a href="#cb54-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-241"><a href="#cb54-241" aria-hidden="true" tabindex="-1"></a>Mr. Tom Barton PhD, a Politics postgraduate student at the University of London, Royal Holloway, compiled voter ID laws by country, as well as US states. Voter ID laws, in this sense, refer to laws regarding requirements for voters to prove their identity in order to vote. Some countries and states don't require any form of ID asides from basic personal information, such as Massachusetts, Dominica, and New Zealand, while others are relatively restrictive with required photo IDs, such as Wisconsin, Texas, and Yemen. Most of the columns presented are thankfully self-explanatory.</span>
+<span id="cb54-242"><a href="#cb54-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-243"><a href="#cb54-243" aria-hidden="true" tabindex="-1"></a>In territories where IDs are required to vote, this dataset lists out those that offer more ways to show ID, hence the column "Number of Different IDs Allowed to Prove One's Identity". According to Barton, that was an open-ended question, as you can see that some answers are not rounded to the full amount. Also, in the same column, the territories that don't require IDs to vote are assigned to the value 0; in other words, a voter doesn't need to bring an ID to the polls. </span>
+<span id="cb54-244"><a href="#cb54-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-245"><a href="#cb54-245" aria-hidden="true" tabindex="-1"></a>Lastly, there are three categories of voter registrations. Laissez-Faire Registration states that registering to vote is optional; Assisted Registration states that one can register to vote through various means, such as utilizing public services (i.e. Massachusetts); and Automatic Registration states that when the voter reaches voting age (mostly 18), they are automatically registered to vote.</span>
+<span id="cb54-246"><a href="#cb54-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-247"><a href="#cb54-247" aria-hidden="true" tabindex="-1"></a><span class="fu"># Questions to Ask Ourselves</span></span>
+<span id="cb54-248"><a href="#cb54-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-249"><a href="#cb54-249" aria-hidden="true" tabindex="-1"></a>What do you think is the best way to prevent voter fraud?</span>
+<span id="cb54-250"><a href="#cb54-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-251"><a href="#cb54-251" aria-hidden="true" tabindex="-1"></a>Do you think more voter ID laws would protect democracy and the integrity of elections?</span>
+<span id="cb54-252"><a href="#cb54-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-253"><a href="#cb54-253" aria-hidden="true" tabindex="-1"></a>Do you think more voter ID laws would stifle civic participation and harm democracy?</span>
+<span id="cb54-254"><a href="#cb54-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-255"><a href="#cb54-255" aria-hidden="true" tabindex="-1"></a>Do you think fewer voter ID laws would increase voter turnout?</span>
+<span id="cb54-256"><a href="#cb54-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-257"><a href="#cb54-257" aria-hidden="true" tabindex="-1"></a>Do you think fewer voter ID laws would increase the chances of voter fraud?</span>
+<span id="cb54-258"><a href="#cb54-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-259"><a href="#cb54-259" aria-hidden="true" tabindex="-1"></a>What do you think is the best way to increase voter turnout?</span>
+<span id="cb54-260"><a href="#cb54-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-261"><a href="#cb54-261" aria-hidden="true" tabindex="-1"></a><span class="fu"># Visualize the Data</span></span>
+<span id="cb54-262"><a href="#cb54-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-263"><a href="#cb54-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-266"><a href="#cb54-266" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-267"><a href="#cb54-267" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-268"><a href="#cb54-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="st">`</span><span class="at">Registration Type Law</span><span class="st">`</span>)</span>
+<span id="cb54-269"><a href="#cb54-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-270"><a href="#cb54-270" aria-hidden="true" tabindex="-1"></a>Voter_Reg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb54-271"><a href="#cb54-271" aria-hidden="true" tabindex="-1"></a>  <span class="at">Voter.Registration.Law =</span><span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"Lassiez Faire Registration"</span>,<span class="st">"Automatic Registration"</span>,<span class="st">"Assisted Registration"</span>)),  </span>
+<span id="cb54-272"><a href="#cb54-272" aria-hidden="true" tabindex="-1"></a>  <span class="at">Countries.And.Territories=</span><span class="fu">c</span>(<span class="dv">87</span>,<span class="dv">123</span>,<span class="dv">30</span>)</span>
+<span id="cb54-273"><a href="#cb54-273" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb54-274"><a href="#cb54-274" aria-hidden="true" tabindex="-1"></a>Voter_Reg</span>
+<span id="cb54-275"><a href="#cb54-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-276"><a href="#cb54-276" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>Voter_Reg, <span class="fu">aes</span>(<span class="at">x=</span> Voter.Registration.Law, <span class="at">y=</span>Countries.And.Territories)) <span class="sc">+</span></span>
+<span id="cb54-277"><a href="#cb54-277" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>)</span>
+<span id="cb54-278"><a href="#cb54-278" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-279"><a href="#cb54-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-282"><a href="#cb54-282" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-283"><a href="#cb54-283" aria-hidden="true" tabindex="-1"></a>Voter_ID <span class="sc">%&gt;%</span></span>
+<span id="cb54-284"><a href="#cb54-284" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="st">`</span><span class="at">Voter ID Law Type</span><span class="st">`</span>)</span>
+<span id="cb54-285"><a href="#cb54-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-286"><a href="#cb54-286" aria-hidden="true" tabindex="-1"></a>Voter_ID_Type <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb54-287"><a href="#cb54-287" aria-hidden="true" tabindex="-1"></a>  <span class="at">Voter.ID.Type =</span><span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"Basic Personal Details"</span>,<span class="st">"Non-Photo ID Required or Requested"</span>,<span class="st">"Photo ID Required"</span>)),  </span>
+<span id="cb54-288"><a href="#cb54-288" aria-hidden="true" tabindex="-1"></a>  <span class="at">Countries.And.Territories=</span><span class="fu">c</span>(<span class="dv">36</span>,<span class="dv">31</span>,<span class="dv">179</span>)</span>
+<span id="cb54-289"><a href="#cb54-289" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb54-290"><a href="#cb54-290" aria-hidden="true" tabindex="-1"></a>Voter_ID_Type</span>
+<span id="cb54-291"><a href="#cb54-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-292"><a href="#cb54-292" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>Voter_ID_Type, <span class="fu">aes</span>(<span class="at">x=</span> Voter.ID.Type, <span class="at">y=</span>Countries.And.Territories)) <span class="sc">+</span></span>
+<span id="cb54-293"><a href="#cb54-293" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>)</span>
+<span id="cb54-294"><a href="#cb54-294" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

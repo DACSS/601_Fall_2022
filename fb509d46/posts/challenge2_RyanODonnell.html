@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Ryan O’Donnell">
+<meta name="dcterms.date" content="2022-09-20">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2 Solution</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2 Solution">
+<meta name="twitter:description" content="Today’s challenge is to">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 2 Solution</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#read-in-the-data" id="toc-read-in-the-data" class="nav-link" data-scroll-target="#read-in-the-data">Read in the Data</a></li>
+  <li><a href="#describe-the-data" id="toc-describe-the-data" class="nav-link" data-scroll-target="#describe-the-data">Describe the data</a></li>
+  <li><a href="#provide-grouped-summary-statistics" id="toc-provide-grouped-summary-statistics" class="nav-link" data-scroll-target="#provide-grouped-summary-statistics">Provide Grouped Summary Statistics</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 2 Solution</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_2</div>
+    <div class="quarto-category">railroads</div>
+    <div class="quarto-category">faostat</div>
+    <div class="quarto-category">hotel_bookings</div>
+    <div class="quarto-category">ryan_odonnell</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Ryan O’Donnell </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 20, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to</p>
+<ol type="1">
+<li>read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)</li>
+<li>provide summary statistics for different interesting groups within the data, and interpret those statistics</li>
+</ol>
+</section>
+<section id="read-in-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-the-data">Read in the Data</h2>
+<p>Read in one (or more) of the following data sets, available in the <code>posts/_data</code> folder, using the correct R package and command.</p>
+<ul>
+<li>railroad*.csv or StateCounty2012.xls ⭐</li>
+<li>FAOstat*.csv or birds.csv ⭐⭐⭐</li>
+<li>hotel_bookings.csv ⭐⭐⭐⭐</li>
+</ul>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in data and set up initial objects</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>bookings <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/hotel_bookings.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.</p>
+</section>
+<section id="describe-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="describe-the-data">Describe the data</h2>
+<p>Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(bookings)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [119,390 × 32] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ hotel                         : chr [1:119390] "Resort Hotel" "Resort Hotel" "Resort Hotel" "Resort Hotel" ...
+ $ is_canceled                   : num [1:119390] 0 0 0 0 0 0 0 0 1 1 ...
+ $ lead_time                     : num [1:119390] 342 737 7 13 14 14 0 9 85 75 ...
+ $ arrival_date_year             : num [1:119390] 2015 2015 2015 2015 2015 ...
+ $ arrival_date_month            : chr [1:119390] "July" "July" "July" "July" ...
+ $ arrival_date_week_number      : num [1:119390] 27 27 27 27 27 27 27 27 27 27 ...
+ $ arrival_date_day_of_month     : num [1:119390] 1 1 1 1 1 1 1 1 1 1 ...
+ $ stays_in_weekend_nights       : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ stays_in_week_nights          : num [1:119390] 0 0 1 1 2 2 2 2 3 3 ...
+ $ adults                        : num [1:119390] 2 2 1 1 2 2 2 2 2 2 ...
+ $ children                      : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ babies                        : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ meal                          : chr [1:119390] "BB" "BB" "BB" "BB" ...
+ $ country                       : chr [1:119390] "PRT" "PRT" "GBR" "GBR" ...
+ $ market_segment                : chr [1:119390] "Direct" "Direct" "Direct" "Corporate" ...
+ $ distribution_channel          : chr [1:119390] "Direct" "Direct" "Direct" "Corporate" ...
+ $ is_repeated_guest             : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ previous_cancellations        : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ previous_bookings_not_canceled: num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ reserved_room_type            : chr [1:119390] "C" "C" "A" "A" ...
+ $ assigned_room_type            : chr [1:119390] "C" "C" "C" "A" ...
+ $ booking_changes               : num [1:119390] 3 4 0 0 0 0 0 0 0 0 ...
+ $ deposit_type                  : chr [1:119390] "No Deposit" "No Deposit" "No Deposit" "No Deposit" ...
+ $ agent                         : chr [1:119390] "NULL" "NULL" "NULL" "304" ...
+ $ company                       : chr [1:119390] "NULL" "NULL" "NULL" "NULL" ...
+ $ days_in_waiting_list          : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ customer_type                 : chr [1:119390] "Transient" "Transient" "Transient" "Transient" ...
+ $ adr                           : num [1:119390] 0 0 75 75 98 ...
+ $ required_car_parking_spaces   : num [1:119390] 0 0 0 0 0 0 0 0 0 0 ...
+ $ total_of_special_requests     : num [1:119390] 0 0 0 0 1 1 0 1 1 0 ...
+ $ reservation_status            : chr [1:119390] "Check-Out" "Check-Out" "Check-Out" "Check-Out" ...
+ $ reservation_status_date       : Date[1:119390], format: "2015-07-01" "2015-07-01" ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   hotel = col_character(),
+  ..   is_canceled = col_double(),
+  ..   lead_time = col_double(),
+  ..   arrival_date_year = col_double(),
+  ..   arrival_date_month = col_character(),
+  ..   arrival_date_week_number = col_double(),
+  ..   arrival_date_day_of_month = col_double(),
+  ..   stays_in_weekend_nights = col_double(),
+  ..   stays_in_week_nights = col_double(),
+  ..   adults = col_double(),
+  ..   children = col_double(),
+  ..   babies = col_double(),
+  ..   meal = col_character(),
+  ..   country = col_character(),
+  ..   market_segment = col_character(),
+  ..   distribution_channel = col_character(),
+  ..   is_repeated_guest = col_double(),
+  ..   previous_cancellations = col_double(),
+  ..   previous_bookings_not_canceled = col_double(),
+  ..   reserved_room_type = col_character(),
+  ..   assigned_room_type = col_character(),
+  ..   booking_changes = col_double(),
+  ..   deposit_type = col_character(),
+  ..   agent = col_character(),
+  ..   company = col_character(),
+  ..   days_in_waiting_list = col_double(),
+  ..   customer_type = col_character(),
+  ..   adr = col_double(),
+  ..   required_car_parking_spaces = col_double(),
+  ..   total_of_special_requests = col_double(),
+  ..   reservation_status = col_character(),
+  ..   reservation_status_date = col_date(format = "")
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+</div>
+<p>“hotel_bookings.csv” contains 119,390 observations of 32 variables. The data appears to be tracking the details of reservations at some hotels. There is a lot of information recorded for each reservation. The arrival date is stored across 3 columns, 4 if you count the week number. Some of the columns have codes in them but there is not a key to fully understand these codes.</p>
+</section>
+<section id="provide-grouped-summary-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="provide-grouped-summary-statistics">Provide Grouped Summary Statistics</h2>
+<p>Conduct some exploratory data analysis, using dplyr commands such as <code>group_by()</code>, <code>select()</code>, <code>filter()</code>, and <code>summarise()</code>. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter out cancelation and create object that is grouped by hotel</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>by_hotel_no_cancel <span class="ot">&lt;-</span> bookings <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="st">`</span><span class="at">is_canceled</span><span class="st">`</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># summarize adults, children, and babies for each hotel</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_hotel_no_cancel, <span class="st">"Avg Adults"</span><span class="ot">=</span><span class="fu">mean</span>(adults), <span class="st">"Med Adults"</span><span class="ot">=</span><span class="fu">median</span>(adults), <span class="st">"Avg Children"</span><span class="ot">=</span><span class="fu">mean</span>(children), <span class="st">"Med Children"</span><span class="ot">=</span><span class="fu">median</span>(children), <span class="st">"Avg Babies"</span><span class="ot">=</span><span class="fu">mean</span>(babies), <span class="st">"Med Babies"</span><span class="ot">=</span><span class="fu">median</span>(babies))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  hotel        `Avg Adults` `Med Adults` `Avg Children` Med Ch…¹ Avg B…² Med B…³
+  &lt;chr&gt;               &lt;dbl&gt;        &lt;dbl&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+1 City Hotel           1.83            2         0.0999        0 0.00710       0
+2 Resort Hotel         1.83            2         0.106         0 0.0156        0
+# … with abbreviated variable names ¹​`Med Children`, ²​`Avg Babies`,
+#   ³​`Med Babies`</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_hotel_no_cancel, <span class="at">Adults=</span><span class="fu">quantile</span>(adults), <span class="at">Children=</span><span class="fu">quantile</span>(children), <span class="at">Babies=</span><span class="fu">quantile</span>(babies))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 4
+# Groups:   hotel [2]
+   hotel        Adults Children Babies
+   &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+ 1 City Hotel        0        0      0
+ 2 City Hotel        2        0      0
+ 3 City Hotel        2        0      0
+ 4 City Hotel        2        0      0
+ 5 City Hotel        4        3     10
+ 6 Resort Hotel      0        0      0
+ 7 Resort Hotel      2        0      0
+ 8 Resort Hotel      2        0      0
+ 9 Resort Hotel      2        0      0
+10 Resort Hotel      4        3      2</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create columns that includes the total stay length, % of stay that is weekend, and % of stay that is weeknight, remove stays that are 0 days</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>stays_expanded_by_hotel <span class="ot">&lt;-</span> by_hotel_no_cancel <span class="sc">%&gt;%</span> <span class="fu">select</span>(hotel, stays_in_weekend_nights, stays_in_week_nights) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Total Stay"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"% Weekend"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">/</span> (<span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">"% Weeknight"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span> <span class="sc">/</span> (<span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span> <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># look at the central tendencies of stays </span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(stays_expanded_by_hotel, <span class="st">"Avg Stay"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span>), <span class="st">"Med Stay"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span>), <span class="st">"Avg % Wknd"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">% Weekend</span><span class="st">`</span>), <span class="st">"Med % Wknd"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">% Weekend</span><span class="st">`</span>), <span class="st">"Avg % Wknt"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">% Weeknight</span><span class="st">`</span>), <span class="st">"Med % Wknt"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">% Weeknight</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  hotel        `Avg Stay` `Med Stay` `Avg % Wknd` `Med % Wknd` Avg % W…¹ Med %…²
+  &lt;chr&gt;             &lt;dbl&gt;      &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 City Hotel         2.94          3        0.262        0.25      0.738   0.75 
+2 Resort Hotel       4.20          3        0.259        0.286     0.741   0.714
+# … with abbreviated variable names ¹​`Avg % Wknt`, ²​`Med % Wknt`</code></pre>
+</div>
+</div>
+<p>First, I wondered a bit about differences between who stayed at the City Hotel and who stayed at the Resort Hotel. I filtered out canceld bookings since they didn’t end up staying. At both hotels, most groups are two adults with no children or babies. Slightly more children and babies stay at the Resort Hotel over the City Hotel. It looks like sometimes bookings include no people, but at this time I don’t think I have enough information about this data to understand why.</p>
+<p>I also looked at how long customers tended to stay at either hotel and whether more of their stay tends to be weekends or weeknights, but the central tendencies were pretty close for both!</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: explore 2</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># group by cancelation, removing customers who are not repeat customers</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>by_canceled <span class="ot">&lt;-</span> bookings <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="st">`</span><span class="at">is_repeated_guest</span><span class="st">`</span> <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(<span class="st">`</span><span class="at">is_canceled</span><span class="st">`</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># See if the statistics show if people who have canceled before are more likely to have canceled their current reservation</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_canceled, <span class="st">"Avg Previous Cancelations"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">previous_cancellations</span><span class="st">`</span>), <span class="st">"Avg Repeat Booking Not Canceled"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">previous_bookings_not_canceled</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  is_canceled `Avg Previous Cancelations` `Avg Repeat Booking Not Canceled`
+        &lt;dbl&gt;                       &lt;dbl&gt;                             &lt;dbl&gt;
+1           0                       0.335                              3.96
+2           1                       1.27                               1.38</code></pre>
+</div>
+</div>
+<p>One other thing I noticed they were tracking is whether or not the customer had previous cancelations so I wanted to see if whether or not those who had canceled their reservation were more likely to have canceled previous bookings. The customers who had canceled their booking had a higher average number of previous cancelations than those who kept their reservation. I also looked at the average repeated booking not canceled to see if people who had canceled a lot of bookings were just making more bookings, but that doesn’t seem to be the case.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 2 Solution"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Ryan O'Donnell"</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="an">desription:</span><span class="co"> "Data wrangling: using group() and summarise()"</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "09/20/2022"</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_2</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - railroads</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - faostat</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - hotel_bookings</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - ryan_odonnell</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>Today's challenge is to</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>2)  provide summary statistics for different interesting groups within the data, and interpret those statistics</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in the Data</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>Read in one (or more) of the following data sets, available in the <span class="in">`posts/_data`</span> folder, using the correct R package and command.</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>railroad<span class="sc">\*</span>.csv or StateCounty2012.xls ⭐</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>FAOstat<span class="sc">\*</span>.csv or birds.csv ⭐⭐⭐</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>hotel_bookings.csv ⭐⭐⭐⭐</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: load_in</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="co"># read in data and set up initial objects</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>bookings <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/hotel_bookings.csv"</span>)</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.</span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="fu">## Describe the data</span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: summary</span></span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(bookings)</span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a>"hotel_bookings.csv" contains 119,390 observations of 32 variables. The data appears to be tracking the details of reservations at some hotels. There is a lot of information recorded for each reservation. The arrival date is stored across 3 columns, 4 if you count the week number. Some of the columns have codes in them but there is not a key to fully understand these codes.</span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a><span class="fu">## Provide Grouped Summary Statistics</span></span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a>Conduct some exploratory data analysis, using dplyr commands such as <span class="in">`group_by()`</span>, <span class="in">`select()`</span>, <span class="in">`filter()`</span>, and <span class="in">`summarise()`</span>. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.</span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: explore 1</span></span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a><span class="co"># filter out cancelation and create object that is grouped by hotel</span></span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>by_hotel_no_cancel <span class="ot">&lt;-</span> bookings <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="st">`</span><span class="at">is_canceled</span><span class="st">`</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)</span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a><span class="co"># summarize adults, children, and babies for each hotel</span></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_hotel_no_cancel, <span class="st">"Avg Adults"</span><span class="ot">=</span><span class="fu">mean</span>(adults), <span class="st">"Med Adults"</span><span class="ot">=</span><span class="fu">median</span>(adults), <span class="st">"Avg Children"</span><span class="ot">=</span><span class="fu">mean</span>(children), <span class="st">"Med Children"</span><span class="ot">=</span><span class="fu">median</span>(children), <span class="st">"Avg Babies"</span><span class="ot">=</span><span class="fu">mean</span>(babies), <span class="st">"Med Babies"</span><span class="ot">=</span><span class="fu">median</span>(babies))</span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_hotel_no_cancel, <span class="at">Adults=</span><span class="fu">quantile</span>(adults), <span class="at">Children=</span><span class="fu">quantile</span>(children), <span class="at">Babies=</span><span class="fu">quantile</span>(babies))</span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a><span class="co"># create columns that includes the total stay length, % of stay that is weekend, and % of stay that is weeknight, remove stays that are 0 days</span></span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>stays_expanded_by_hotel <span class="ot">&lt;-</span> by_hotel_no_cancel <span class="sc">%&gt;%</span> <span class="fu">select</span>(hotel, stays_in_weekend_nights, stays_in_week_nights) <span class="sc">%&gt;%</span></span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Total Stay"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>,</span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a>         <span class="st">"% Weekend"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">/</span> (<span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>),</span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a>         <span class="st">"% Weeknight"</span> <span class="ot">=</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span> <span class="sc">/</span> (<span class="st">`</span><span class="at">stays_in_weekend_nights</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">stays_in_week_nights</span><span class="st">`</span>)</span>
+<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb13-98"><a href="#cb13-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span> <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb13-99"><a href="#cb13-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a><span class="co"># look at the central tendencies of stays </span></span>
+<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(stays_expanded_by_hotel, <span class="st">"Avg Stay"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span>), <span class="st">"Med Stay"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">Total Stay</span><span class="st">`</span>), <span class="st">"Avg % Wknd"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">% Weekend</span><span class="st">`</span>), <span class="st">"Med % Wknd"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">% Weekend</span><span class="st">`</span>), <span class="st">"Avg % Wknt"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">% Weeknight</span><span class="st">`</span>), <span class="st">"Med % Wknt"</span><span class="ot">=</span><span class="fu">median</span>(<span class="st">`</span><span class="at">% Weeknight</span><span class="st">`</span>))</span>
+<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>First, I wondered a bit about differences between who stayed at the City Hotel and who stayed at the Resort Hotel. I filtered out canceld bookings since they didn't end up staying. At both hotels, most groups are two adults with no children or babies. Slightly more children and babies stay at the Resort Hotel over the City Hotel. It looks like sometimes bookings include no people, but at this time I don't think I have enough information about this data to understand why.</span>
+<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a>I also looked at how long customers tended to stay at either hotel and whether more of their stay tends to be weekends or weeknights, but the central tendencies were pretty close for both!</span>
+<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: explore 2</span></span>
+<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a><span class="co"># group by cancelation, removing customers who are not repeat customers</span></span>
+<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a>by_canceled <span class="ot">&lt;-</span> bookings <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="st">`</span><span class="at">is_repeated_guest</span><span class="st">`</span> <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(<span class="st">`</span><span class="at">is_canceled</span><span class="st">`</span>)</span>
+<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a><span class="co"># See if the statistics show if people who have canceled before are more likely to have canceled their current reservation</span></span>
+<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(by_canceled, <span class="st">"Avg Previous Cancelations"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">previous_cancellations</span><span class="st">`</span>), <span class="st">"Avg Repeat Booking Not Canceled"</span><span class="ot">=</span><span class="fu">mean</span>(<span class="st">`</span><span class="at">previous_bookings_not_canceled</span><span class="st">`</span>))</span>
+<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a>One other thing I noticed they were tracking is whether or not the customer had previous cancelations so I wanted to see if whether or not those who had canceled their reservation were more likely to have canceled previous bookings. The customers who had canceled their booking had a higher average number of previous cancelations than those who kept their reservation. I also looked at the average repeated booking not canceled to see if people who had canceled a lot of bookings were just making more bookings, but that doesn't seem to be the case.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

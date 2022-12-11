@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christa Bonney">
+<meta name="dcterms.date" content="2022-08-16">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2: Data Wrangling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2: Data Wrangling">
+<meta name="twitter:description" content="Based on the current data provided it can be surmised that what is being catalogued is agricultural data, specifically livestock - poultry (chickens, ducks, geese, etc.">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 2: Data Wrangling</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
+<!-- main -->
+<main class="content column-page-right" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 2: Data Wrangling</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_2</div>
+    <div class="quarto-category">railroads</div>
+    <div class="quarto-category">faostat</div>
+    <div class="quarto-category">hotel_bookings</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christa Bonney </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 16, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modeest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in library(modeest): there is no package called 'modeest'</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read in birds.csv data</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>birds_data <span class="ot">&lt;-</span> (<span class="fu">read.csv</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/birds.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in file(file, "rt"): cannot open the connection</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get data dimensions</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(birds_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'birds_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names (variables)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(birds_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'birds_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#preview data</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(birds_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in head(birds_data): object 'birds_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#view birds_data data set</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(birds_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in view(birds_data): object 'birds_data' not found</code></pre>
+</div>
+</div>
+<p>Based on the current data provided it can be surmised that what is being catalogued is agricultural data, specifically livestock - poultry (chickens, ducks, geese, etc.) and their FAO estimated monetary value per 1000 birds, for various countries/areas, from the years 1961 to 2018. Since all of the observations fall under the “Live Animal” ‘Domain’, I believe that the ‘element code’ pertains to the category that the associated ‘item code’ would fall under (ex. ‘stocks’ of ‘chickens’). Altogether we are looking at 30977 observations across 14 variables. Of the 14 variables there are:</p>
+<p>“Domain.Code”: consisting of qualitative ordinal values</p>
+<p>“Domain”: consisting of qualitative ordinal values</p>
+<p>“Area.Code”: consisting of qualitative ordinal values</p>
+<p>“Area”: consisting of qualitative ordinal values</p>
+<p>“Element.Code”: consisting of qualitative ordinal values</p>
+<p>“Element”: consisting of qualitative ordinal values</p>
+<p>“Item.Code”: consisting of qualitative ordinal values</p>
+<p>“Item”: consisting of qualitative ordinal values</p>
+<p>“Year.Code”: consisting of qualitative ordinal values</p>
+<p>“Year”: consisting of qualitative ordinal values</p>
+<p>“Unit”: consisting of qualitative ordinal values</p>
+<p>“Value”: consisting of quantitative continuous values</p>
+<p>“Flag”: consisting of qualitative ordinal values</p>
+<p>“Flag.Description”:consisting of qualitative ordinal values</p>
+<p>The various variables are considered ordinal assuming the organization tracking this information has a curated selection of options for data input per each category.</p>
+<p>For this assignment the focus will be on the “Area”, “Item”, “Year” and “Value” variables to generate information to examine global changes in the value per 1000 head of chickens in the years 2008 and 2018.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Area' column to get variety of countries featured in data set</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Area"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(birds_data, "Area"): object 'birds_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Item' column to get variety of poultry species featured in dataset</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Item"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(birds_data, "Item"): object 'birds_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Year' column to get range of years featured in data set</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(birds_data, "Year"): object 'birds_data' not found</code></pre>
+</div>
+</div>
+<p>From these tables we can see that a large variety of countries and general geographical areas such as Yemen, Mainland China, Eastern Europe, and Saint Lucia, etc., have contributed agricultural data pertaining to their poultry production fields with data gathered from 1961 to 2018. The categorical selection options range from ‘chickens’ to ‘ducks’, ‘geese’, ‘turkeys’, and ‘pigeons (and related fowl)’.</p>
+<div class="cell">
+
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#select out desired columns to create a condensed data set</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(<span class="fu">select</span>(birds_data, <span class="st">"Item"</span>, <span class="st">"Value"</span>, <span class="st">"Area"</span>, <span class="st">"Year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(birds_data, "Item", "Value", "Area", "Year"): object 'birds_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename "Value" column to 'Value per 1000 Head Chickens' to reflect units of measurement for poultry</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="ot">&lt;-</span> <span class="fu">rename</span>(select_bird_data, <span class="st">'Value per 1000 Head Chickens'</span> <span class="ot">=</span> <span class="st">'Value'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rename(select_bird_data, `Value per 1000 Head Chickens` = "Value"): object 'select_bird_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co">#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="sc">%&gt;%</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2018'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(., Item == "Chickens" &amp; Year == "2018"): object 'select_bird_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co">#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co">#repeat steps to generate comparable data for 2008</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>chickens_2018 <span class="ot">&lt;-</span> (<span class="fu">filter</span>(select_bird_data, Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2018'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(select_bird_data, Item == "Chickens" &amp; Year == "2018"): object 'select_bird_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#could not generate ordered results with arrange() and 'sort', values stayed out of order regardless of the way filtering and grouping functions were ordered in the script</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co">#several attempts were made to generate centralizing data with summarize(): filtering, na.omit(), na.rm = TRUE, etc</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="co">#resorted to finding alternate function, summary(), to get desired results</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in summary(chickens_2018, "Value per 1000 Head Chickens"): object 'chickens_2018' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create function to calculate mode</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>getmode <span class="ot">&lt;-</span> <span class="cf">function</span>(v) {</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>   uniqv <span class="ot">&lt;-</span> <span class="fu">unique</span>(v)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>   uniqv[<span class="fu">which.max</span>(<span class="fu">tabulate</span>(<span class="fu">match</span>(v, uniqv)))]</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create 2018 chickens value vector from column</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">select</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(chickens_2018, "Value per 1000 Head Chickens"): object 'chickens_2018' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the mode using mode function.</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">getmode</span>(v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in unique(v): object 'v' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(result): object 'result' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#the printed results return the values in the whole column</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co">#not a successful effort to calculate the mode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#could not get method of creating a mode function to work</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co">#installed 'modeest' package, and used mlv(Mysamples, method = "mfv") to attempt to calculate mode for value of chickens per 1000 head in 2018 (global)</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co">#initially did not work</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="co">#had to convert column data 'Value per 1000 Head Chickens' into a matrix, then into a vector, to be able to apply the mlv() function</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co">#got return of NA  - since data included a missing/NA value - so also used na.rm = TRUE to get numerical values </span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>chix_2018V <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">as.matrix</span>(<span class="fu">select</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(chickens_2018, "Value per 1000 Head Chickens"): object 'chickens_2018' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mlv</span>(chix_2018V, <span class="at">method =</span> <span class="st">"mfv"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mlv(chix_2018V, method = "mfv", na.rm = TRUE): could not find function "mlv"</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate Standard Deviation</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(chix_2018V, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'chix_2018V' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for global chicken value data for only year 2008</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>chickens_2008 <span class="ot">&lt;-</span> (<span class="fu">filter</span>(select_bird_data, Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2008'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(select_bird_data, Item == "Chickens" &amp; Year == "2008"): object 'select_bird_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use 'summary' function to generate centralizing and other data</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(chickens_2008, <span class="st">'Value per 1000 Head Chickens'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in summary(chickens_2008, "Value per 1000 Head Chickens"): object 'chickens_2008' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate mode for 2008 global chicken value data</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>chix_2008V <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">as.matrix</span>(<span class="fu">select</span>(chickens_2008, <span class="st">'Value per 1000 Head Chickens'</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(chickens_2008, "Value per 1000 Head Chickens"): object 'chickens_2008' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mlv</span>(chix_2008V, <span class="at">method =</span> <span class="st">"mfv"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mlv(chix_2008V, method = "mfv", na.rm = TRUE): could not find function "mlv"</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate Standard Deviation</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(chix_2008V, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'chix_2008V' not found</code></pre>
+</div>
+</div>
+<p>Value per 1000 Head Chickens in 2008:</p>
+<p>mean: 318818 median: 16025 mode: 5, 18, 878</p>
+<p>standard deviation: 1910971 min: 4 max: 18969655 1st quantile: 2282 3rd quantile: 107146</p>
+<p>Value per 1000 Head Chickens in 2018:</p>
+<p>mean: 396772 median: 19374 mode: 40</p>
+<p>standard deviation: 1533739 min: 4 max: 23707134 1st quantile: 2900 3rd quantile: 123910</p>
+<p>The desire was to compare the reported global values per 1000 head chickens between 2008 and 2018 to see if the overall value had increased with the 10yr interlude, or had decreased. From this information we can see that the ranges in reported global values per 1000 head chickens for both the 2008 and 2018 data sets is quite substantial, evidenced by the minimum, maximum, and SD values for each. The minimum reported global values differ little, being 4 for each. While the maximum values (2008: 18,969,655; 2018: 23,707,134) and mean values (2008: 318,818; 2018: 396,772) indicate a significant increase in the global values for 1000 head chickens in the 10 year period.</p>
+
+
+<!-- -->
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb53" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 2: Data Wrangling"</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Christa Bonney"</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="an">desription:</span><span class="co"> "Data wrangling: using group() and summarise()"</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "08/16/2022"</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_2</span></span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - railroads</span></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - faostat</span></span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - hotel_bookings</span></span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb53-23"><a href="#cb53-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb53-24"><a href="#cb53-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb53-25"><a href="#cb53-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-26"><a href="#cb53-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb53-27"><a href="#cb53-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modeest)</span>
+<span id="cb53-28"><a href="#cb53-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-29"><a href="#cb53-29" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb53-30"><a href="#cb53-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-31"><a href="#cb53-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-32"><a href="#cb53-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-35"><a href="#cb53-35" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-36"><a href="#cb53-36" aria-hidden="true" tabindex="-1"></a><span class="co">#read in birds.csv data</span></span>
+<span id="cb53-37"><a href="#cb53-37" aria-hidden="true" tabindex="-1"></a>birds_data <span class="ot">&lt;-</span> (<span class="fu">read.csv</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/birds.csv"</span>))</span>
+<span id="cb53-38"><a href="#cb53-38" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-39"><a href="#cb53-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-42"><a href="#cb53-42" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-43"><a href="#cb53-43" aria-hidden="true" tabindex="-1"></a><span class="co">#get data dimensions</span></span>
+<span id="cb53-44"><a href="#cb53-44" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(birds_data)</span>
+<span id="cb53-45"><a href="#cb53-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-46"><a href="#cb53-46" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names (variables)</span></span>
+<span id="cb53-47"><a href="#cb53-47" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(birds_data)</span>
+<span id="cb53-48"><a href="#cb53-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-49"><a href="#cb53-49" aria-hidden="true" tabindex="-1"></a><span class="co">#preview data</span></span>
+<span id="cb53-50"><a href="#cb53-50" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(birds_data)</span>
+<span id="cb53-51"><a href="#cb53-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-52"><a href="#cb53-52" aria-hidden="true" tabindex="-1"></a><span class="co">#view birds_data data set</span></span>
+<span id="cb53-53"><a href="#cb53-53" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(birds_data)</span>
+<span id="cb53-54"><a href="#cb53-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-55"><a href="#cb53-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-56"><a href="#cb53-56" aria-hidden="true" tabindex="-1"></a>Based on the current data provided it can be surmised that what is being catalogued is agricultural data, specifically livestock - poultry (chickens, ducks, geese, etc.) and their FAO estimated monetary value per 1000 birds, for various countries/areas, from the years 1961 to 2018. Since all of the observations fall under the "Live Animal" 'Domain', I believe that the 'element code' pertains to the category that the associated 'item code' would fall under (ex. 'stocks' of 'chickens'). Altogether we are looking at 30977 observations across 14 variables. Of the 14 variables there are:</span>
+<span id="cb53-57"><a href="#cb53-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-58"><a href="#cb53-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-59"><a href="#cb53-59" aria-hidden="true" tabindex="-1"></a>"Domain.Code": consisting of qualitative ordinal values</span>
+<span id="cb53-60"><a href="#cb53-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-61"><a href="#cb53-61" aria-hidden="true" tabindex="-1"></a>"Domain": consisting of qualitative ordinal values</span>
+<span id="cb53-62"><a href="#cb53-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-63"><a href="#cb53-63" aria-hidden="true" tabindex="-1"></a>"Area.Code": consisting of qualitative ordinal values</span>
+<span id="cb53-64"><a href="#cb53-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-65"><a href="#cb53-65" aria-hidden="true" tabindex="-1"></a>"Area": consisting of qualitative ordinal values</span>
+<span id="cb53-66"><a href="#cb53-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-67"><a href="#cb53-67" aria-hidden="true" tabindex="-1"></a>"Element.Code": consisting of qualitative ordinal values</span>
+<span id="cb53-68"><a href="#cb53-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-69"><a href="#cb53-69" aria-hidden="true" tabindex="-1"></a>"Element": consisting of qualitative ordinal values</span>
+<span id="cb53-70"><a href="#cb53-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-71"><a href="#cb53-71" aria-hidden="true" tabindex="-1"></a>"Item.Code": consisting of qualitative ordinal values</span>
+<span id="cb53-72"><a href="#cb53-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-73"><a href="#cb53-73" aria-hidden="true" tabindex="-1"></a>"Item": consisting of qualitative ordinal values </span>
+<span id="cb53-74"><a href="#cb53-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-75"><a href="#cb53-75" aria-hidden="true" tabindex="-1"></a>"Year.Code": consisting of qualitative ordinal values  </span>
+<span id="cb53-76"><a href="#cb53-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-77"><a href="#cb53-77" aria-hidden="true" tabindex="-1"></a>"Year": consisting of qualitative ordinal values</span>
+<span id="cb53-78"><a href="#cb53-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-79"><a href="#cb53-79" aria-hidden="true" tabindex="-1"></a>"Unit": consisting of qualitative ordinal values</span>
+<span id="cb53-80"><a href="#cb53-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-81"><a href="#cb53-81" aria-hidden="true" tabindex="-1"></a>"Value": consisting of quantitative continuous values</span>
+<span id="cb53-82"><a href="#cb53-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-83"><a href="#cb53-83" aria-hidden="true" tabindex="-1"></a>"Flag": consisting of qualitative ordinal values</span>
+<span id="cb53-84"><a href="#cb53-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-85"><a href="#cb53-85" aria-hidden="true" tabindex="-1"></a>"Flag.Description":consisting of qualitative ordinal values</span>
+<span id="cb53-86"><a href="#cb53-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-87"><a href="#cb53-87" aria-hidden="true" tabindex="-1"></a>The various variables are considered ordinal assuming the organization tracking this information has a curated selection of options for data input per each category.</span>
+<span id="cb53-88"><a href="#cb53-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-89"><a href="#cb53-89" aria-hidden="true" tabindex="-1"></a>For this assignment the focus will be on the "Area", "Item", "Year" and "Value" variables to generate information to examine global changes in the value per 1000 head of chickens in the years 2008 and 2018.</span>
+<span id="cb53-90"><a href="#cb53-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-93"><a href="#cb53-93" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-94"><a href="#cb53-94" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Area' column to get variety of countries featured in data set</span></span>
+<span id="cb53-95"><a href="#cb53-95" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb53-96"><a href="#cb53-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-97"><a href="#cb53-97" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Area"</span>))</span>
+<span id="cb53-98"><a href="#cb53-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-99"><a href="#cb53-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-100"><a href="#cb53-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-101"><a href="#cb53-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-104"><a href="#cb53-104" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-105"><a href="#cb53-105" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Item' column to get variety of poultry species featured in dataset</span></span>
+<span id="cb53-106"><a href="#cb53-106" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb53-107"><a href="#cb53-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-108"><a href="#cb53-108" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Item"</span>))</span>
+<span id="cb53-109"><a href="#cb53-109" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-110"><a href="#cb53-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-113"><a href="#cb53-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-114"><a href="#cb53-114" aria-hidden="true" tabindex="-1"></a><span class="co">#get table of values in 'Year' column to get range of years featured in data set</span></span>
+<span id="cb53-115"><a href="#cb53-115" aria-hidden="true" tabindex="-1"></a><span class="co">#tried to pipe, but got error that could not combine unrelated 'Domain' (a character vector) and 'Area.Code' (an integer vector) - using select function instead worked.</span></span>
+<span id="cb53-116"><a href="#cb53-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-117"><a href="#cb53-117" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(birds_data, <span class="st">"Year"</span>))</span>
+<span id="cb53-118"><a href="#cb53-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-119"><a href="#cb53-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-120"><a href="#cb53-120" aria-hidden="true" tabindex="-1"></a>From these tables we can see that a large variety of countries and general geographical areas such as Yemen, Mainland China, Eastern Europe, and Saint Lucia, etc., have contributed agricultural data pertaining to their poultry production fields with data gathered from 1961 to 2018. The categorical selection options range from 'chickens' to 'ducks', 'geese', 'turkeys', and 'pigeons (and related fowl)'. </span>
+<span id="cb53-121"><a href="#cb53-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-124"><a href="#cb53-124" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-125"><a href="#cb53-125" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: summary</span></span>
+<span id="cb53-126"><a href="#cb53-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-127"><a href="#cb53-127" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-128"><a href="#cb53-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-131"><a href="#cb53-131" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-132"><a href="#cb53-132" aria-hidden="true" tabindex="-1"></a><span class="co">#select out desired columns to create a condensed data set</span></span>
+<span id="cb53-133"><a href="#cb53-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-134"><a href="#cb53-134" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(<span class="fu">select</span>(birds_data, <span class="st">"Item"</span>, <span class="st">"Value"</span>, <span class="st">"Area"</span>, <span class="st">"Year"</span>))</span>
+<span id="cb53-135"><a href="#cb53-135" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-136"><a href="#cb53-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-137"><a href="#cb53-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-140"><a href="#cb53-140" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-141"><a href="#cb53-141" aria-hidden="true" tabindex="-1"></a><span class="co">#rename "Value" column to 'Value per 1000 Head Chickens' to reflect units of measurement for poultry</span></span>
+<span id="cb53-142"><a href="#cb53-142" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="ot">&lt;-</span> <span class="fu">rename</span>(select_bird_data, <span class="st">'Value per 1000 Head Chickens'</span> <span class="ot">=</span> <span class="st">'Value'</span>)</span>
+<span id="cb53-143"><a href="#cb53-143" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-144"><a href="#cb53-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-147"><a href="#cb53-147" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-148"><a href="#cb53-148" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018</span></span>
+<span id="cb53-149"><a href="#cb53-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-150"><a href="#cb53-150" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018</span></span>
+<span id="cb53-151"><a href="#cb53-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-152"><a href="#cb53-152" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018</span></span>
+<span id="cb53-153"><a href="#cb53-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-154"><a href="#cb53-154" aria-hidden="true" tabindex="-1"></a><span class="co">#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018</span></span>
+<span id="cb53-155"><a href="#cb53-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-156"><a href="#cb53-156" aria-hidden="true" tabindex="-1"></a>select_bird_data <span class="sc">%&gt;%</span></span>
+<span id="cb53-157"><a href="#cb53-157" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2018'</span>)</span>
+<span id="cb53-158"><a href="#cb53-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-159"><a href="#cb53-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-160"><a href="#cb53-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-163"><a href="#cb53-163" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-164"><a href="#cb53-164" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for 'chickens' and year '2018' so can examine global agricultural poultry value data for just chickens for year 2018</span></span>
+<span id="cb53-165"><a href="#cb53-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-166"><a href="#cb53-166" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange to get max, use slice 1:10 to get top 10 countries where chickens were of highest value in 2018</span></span>
+<span id="cb53-167"><a href="#cb53-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-168"><a href="#cb53-168" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange with desc() to get min, slice 1:10 to get top 10 countries where chickens were of lowest value in 2018</span></span>
+<span id="cb53-169"><a href="#cb53-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-170"><a href="#cb53-170" aria-hidden="true" tabindex="-1"></a><span class="co">#summarize data to get info for highest, lowest, average price, median, mode price, quantiles, and max/min price of chicken across globe in 2018</span></span>
+<span id="cb53-171"><a href="#cb53-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-172"><a href="#cb53-172" aria-hidden="true" tabindex="-1"></a><span class="co">#repeat steps to generate comparable data for 2008</span></span>
+<span id="cb53-173"><a href="#cb53-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-174"><a href="#cb53-174" aria-hidden="true" tabindex="-1"></a>chickens_2018 <span class="ot">&lt;-</span> (<span class="fu">filter</span>(select_bird_data, Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2018'</span>))</span>
+<span id="cb53-175"><a href="#cb53-175" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-176"><a href="#cb53-176" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb53-177"><a href="#cb53-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-180"><a href="#cb53-180" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-181"><a href="#cb53-181" aria-hidden="true" tabindex="-1"></a><span class="co">#could not generate ordered results with arrange() and 'sort', values stayed out of order regardless of the way filtering and grouping functions were ordered in the script</span></span>
+<span id="cb53-182"><a href="#cb53-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-183"><a href="#cb53-183" aria-hidden="true" tabindex="-1"></a><span class="co">#several attempts were made to generate centralizing data with summarize(): filtering, na.omit(), na.rm = TRUE, etc</span></span>
+<span id="cb53-184"><a href="#cb53-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-185"><a href="#cb53-185" aria-hidden="true" tabindex="-1"></a><span class="co">#resorted to finding alternate function, summary(), to get desired results</span></span>
+<span id="cb53-186"><a href="#cb53-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-187"><a href="#cb53-187" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)</span>
+<span id="cb53-188"><a href="#cb53-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-189"><a href="#cb53-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-192"><a href="#cb53-192" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-193"><a href="#cb53-193" aria-hidden="true" tabindex="-1"></a><span class="co"># Create function to calculate mode</span></span>
+<span id="cb53-194"><a href="#cb53-194" aria-hidden="true" tabindex="-1"></a>getmode <span class="ot">&lt;-</span> <span class="cf">function</span>(v) {</span>
+<span id="cb53-195"><a href="#cb53-195" aria-hidden="true" tabindex="-1"></a>   uniqv <span class="ot">&lt;-</span> <span class="fu">unique</span>(v)</span>
+<span id="cb53-196"><a href="#cb53-196" aria-hidden="true" tabindex="-1"></a>   uniqv[<span class="fu">which.max</span>(<span class="fu">tabulate</span>(<span class="fu">match</span>(v, uniqv)))]</span>
+<span id="cb53-197"><a href="#cb53-197" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-198"><a href="#cb53-198" aria-hidden="true" tabindex="-1"></a><span class="co"># Create 2018 chickens value vector from column</span></span>
+<span id="cb53-199"><a href="#cb53-199" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">select</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)</span>
+<span id="cb53-200"><a href="#cb53-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-201"><a href="#cb53-201" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the mode using mode function.</span></span>
+<span id="cb53-202"><a href="#cb53-202" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">getmode</span>(v)</span>
+<span id="cb53-203"><a href="#cb53-203" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(result)</span>
+<span id="cb53-204"><a href="#cb53-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-205"><a href="#cb53-205" aria-hidden="true" tabindex="-1"></a><span class="co">#the printed results return the values in the whole column</span></span>
+<span id="cb53-206"><a href="#cb53-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-207"><a href="#cb53-207" aria-hidden="true" tabindex="-1"></a><span class="co">#not a successful effort to calculate the mode</span></span>
+<span id="cb53-208"><a href="#cb53-208" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-209"><a href="#cb53-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-210"><a href="#cb53-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-213"><a href="#cb53-213" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-214"><a href="#cb53-214" aria-hidden="true" tabindex="-1"></a><span class="co">#could not get method of creating a mode function to work</span></span>
+<span id="cb53-215"><a href="#cb53-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-216"><a href="#cb53-216" aria-hidden="true" tabindex="-1"></a><span class="co">#installed 'modeest' package, and used mlv(Mysamples, method = "mfv") to attempt to calculate mode for value of chickens per 1000 head in 2018 (global)</span></span>
+<span id="cb53-217"><a href="#cb53-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-218"><a href="#cb53-218" aria-hidden="true" tabindex="-1"></a><span class="co">#initially did not work</span></span>
+<span id="cb53-219"><a href="#cb53-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-220"><a href="#cb53-220" aria-hidden="true" tabindex="-1"></a><span class="co">#had to convert column data 'Value per 1000 Head Chickens' into a matrix, then into a vector, to be able to apply the mlv() function</span></span>
+<span id="cb53-221"><a href="#cb53-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-222"><a href="#cb53-222" aria-hidden="true" tabindex="-1"></a><span class="co">#got return of NA  - since data included a missing/NA value - so also used na.rm = TRUE to get numerical values </span></span>
+<span id="cb53-223"><a href="#cb53-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-224"><a href="#cb53-224" aria-hidden="true" tabindex="-1"></a>chix_2018V <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">as.matrix</span>(<span class="fu">select</span>(chickens_2018, <span class="st">'Value per 1000 Head Chickens'</span>)))</span>
+<span id="cb53-225"><a href="#cb53-225" aria-hidden="true" tabindex="-1"></a><span class="fu">mlv</span>(chix_2018V, <span class="at">method =</span> <span class="st">"mfv"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb53-226"><a href="#cb53-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-227"><a href="#cb53-227" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate Standard Deviation</span></span>
+<span id="cb53-228"><a href="#cb53-228" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(chix_2018V, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb53-229"><a href="#cb53-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-230"><a href="#cb53-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-233"><a href="#cb53-233" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb53-234"><a href="#cb53-234" aria-hidden="true" tabindex="-1"></a><span class="co">#filter for global chicken value data for only year 2008</span></span>
+<span id="cb53-235"><a href="#cb53-235" aria-hidden="true" tabindex="-1"></a>chickens_2008 <span class="ot">&lt;-</span> (<span class="fu">filter</span>(select_bird_data, Item <span class="sc">==</span> <span class="st">'Chickens'</span> <span class="sc">&amp;</span> Year <span class="sc">==</span> <span class="st">'2008'</span>))</span>
+<span id="cb53-236"><a href="#cb53-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-237"><a href="#cb53-237" aria-hidden="true" tabindex="-1"></a><span class="co">#use 'summary' function to generate centralizing and other data</span></span>
+<span id="cb53-238"><a href="#cb53-238" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(chickens_2008, <span class="st">'Value per 1000 Head Chickens'</span>)</span>
+<span id="cb53-239"><a href="#cb53-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-240"><a href="#cb53-240" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate mode for 2008 global chicken value data</span></span>
+<span id="cb53-241"><a href="#cb53-241" aria-hidden="true" tabindex="-1"></a>chix_2008V <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">as.matrix</span>(<span class="fu">select</span>(chickens_2008, <span class="st">'Value per 1000 Head Chickens'</span>)))</span>
+<span id="cb53-242"><a href="#cb53-242" aria-hidden="true" tabindex="-1"></a><span class="fu">mlv</span>(chix_2008V, <span class="at">method =</span> <span class="st">"mfv"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb53-243"><a href="#cb53-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-244"><a href="#cb53-244" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate Standard Deviation</span></span>
+<span id="cb53-245"><a href="#cb53-245" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(chix_2008V, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb53-246"><a href="#cb53-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb53-247"><a href="#cb53-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-248"><a href="#cb53-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-249"><a href="#cb53-249" aria-hidden="true" tabindex="-1"></a>Value per 1000 Head Chickens in 2008:</span>
+<span id="cb53-250"><a href="#cb53-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-251"><a href="#cb53-251" aria-hidden="true" tabindex="-1"></a>mean: 318818</span>
+<span id="cb53-252"><a href="#cb53-252" aria-hidden="true" tabindex="-1"></a>median: 16025</span>
+<span id="cb53-253"><a href="#cb53-253" aria-hidden="true" tabindex="-1"></a>mode: 5, 18, 878</span>
+<span id="cb53-254"><a href="#cb53-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-255"><a href="#cb53-255" aria-hidden="true" tabindex="-1"></a>standard deviation: 1910971</span>
+<span id="cb53-256"><a href="#cb53-256" aria-hidden="true" tabindex="-1"></a>min: 4</span>
+<span id="cb53-257"><a href="#cb53-257" aria-hidden="true" tabindex="-1"></a>max: 18969655</span>
+<span id="cb53-258"><a href="#cb53-258" aria-hidden="true" tabindex="-1"></a>1st quantile: 2282</span>
+<span id="cb53-259"><a href="#cb53-259" aria-hidden="true" tabindex="-1"></a>3rd quantile: 107146</span>
+<span id="cb53-260"><a href="#cb53-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-261"><a href="#cb53-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-262"><a href="#cb53-262" aria-hidden="true" tabindex="-1"></a>Value per 1000 Head Chickens in 2018:</span>
+<span id="cb53-263"><a href="#cb53-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-264"><a href="#cb53-264" aria-hidden="true" tabindex="-1"></a>mean: 396772</span>
+<span id="cb53-265"><a href="#cb53-265" aria-hidden="true" tabindex="-1"></a>median: 19374</span>
+<span id="cb53-266"><a href="#cb53-266" aria-hidden="true" tabindex="-1"></a>mode: 40</span>
+<span id="cb53-267"><a href="#cb53-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-268"><a href="#cb53-268" aria-hidden="true" tabindex="-1"></a>standard deviation: 1533739</span>
+<span id="cb53-269"><a href="#cb53-269" aria-hidden="true" tabindex="-1"></a>min: 4</span>
+<span id="cb53-270"><a href="#cb53-270" aria-hidden="true" tabindex="-1"></a>max: 23707134</span>
+<span id="cb53-271"><a href="#cb53-271" aria-hidden="true" tabindex="-1"></a>1st quantile: 2900</span>
+<span id="cb53-272"><a href="#cb53-272" aria-hidden="true" tabindex="-1"></a>3rd quantile: 123910</span>
+<span id="cb53-273"><a href="#cb53-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-274"><a href="#cb53-274" aria-hidden="true" tabindex="-1"></a>The desire was to compare the reported global values per 1000 head chickens between 2008 and 2018 to see if the overall value had increased with the 10yr interlude, or had decreased. From this information we can see that the ranges in reported global values per 1000 head chickens for both the 2008 and 2018 data sets is quite substantial, evidenced by the minimum, maximum, and SD values for each. The minimum reported global values differ little, being 4 for each. While the maximum values (2008: 18,969,655; 2018: 23,707,134) and mean values (2008: 318,818; 2018: 396,772) indicate a significant increase in the global values for 1000 head chickens in the 10 year period.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

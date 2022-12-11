@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Emma Narkewicz">
+<meta name="dcterms.date" content="2022-09-26">
+<meta name="description" content="In this challenge I completed data wrangling on the Birds FAO data set using group() and summarise() and summary statistic functions.">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 2">
+<meta name="twitter:description" content="In this challenge I completed data wrangling on the Birds FAO data set using group() and summarise() and summary statistic functions.">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 2</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#read-in-the-data" id="toc-read-in-the-data" class="nav-link" data-scroll-target="#read-in-the-data">Read in the Data</a></li>
+  <li><a href="#describe-the-data" id="toc-describe-the-data" class="nav-link" data-scroll-target="#describe-the-data">Describe the data</a></li>
+  <li><a href="#provide-grouped-summary-statistics-explain-interpret" id="toc-provide-grouped-summary-statistics-explain-interpret" class="nav-link" data-scroll-target="#provide-grouped-summary-statistics-explain-interpret">Provide Grouped Summary Statistics, Explain, &amp; Interpret</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 2</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_2</div>
+    <div class="quarto-category">emma_narkewicz</div>
+    <div class="quarto-category">birds</div>
+    <div class="quarto-category">fao stat</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    In this challenge I completed data wrangling on the Birds FAO data set using group() and summarise() and summary statistic functions.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Emma Narkewicz </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 26, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to</p>
+<ol type="1">
+<li>read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)</li>
+<li>provide summary statistics for different interesting groups within the data, and interpret those statistics</li>
+</ol>
+</section>
+<section id="read-in-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-the-data">Read in the Data</h2>
+<p>I selected thebirds.csv for this Challenge set to push myself.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Making sure I have the right library open</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Reading in my selected data set and remove codes, element, and domain columns</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Birds <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/birds.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="fu">contains</span>(<span class="st">"Code"</span>), Element, Domain, Flag))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>Birds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30,977 × 6
+   Area        Item      Year Unit      Value `Flag Description`
+   &lt;chr&gt;       &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;             
+ 1 Afghanistan Chickens  1961 1000 Head  4700 FAO estimate      
+ 2 Afghanistan Chickens  1962 1000 Head  4900 FAO estimate      
+ 3 Afghanistan Chickens  1963 1000 Head  5000 FAO estimate      
+ 4 Afghanistan Chickens  1964 1000 Head  5300 FAO estimate      
+ 5 Afghanistan Chickens  1965 1000 Head  5500 FAO estimate      
+ 6 Afghanistan Chickens  1966 1000 Head  5800 FAO estimate      
+ 7 Afghanistan Chickens  1967 1000 Head  6600 FAO estimate      
+ 8 Afghanistan Chickens  1968 1000 Head  6290 Official data     
+ 9 Afghanistan Chickens  1969 1000 Head  6300 FAO estimate      
+10 Afghanistan Chickens  1970 1000 Head  6000 FAO estimate      
+# … with 30,967 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Replace value and unit columns with Number_of_Birds columns, creating Birds_Clean data set</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="ot">=</span> <span class="fu">transmute</span>(Birds,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Area =</span> Area,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Item =</span> Item,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Year =</span> Year,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Number_of_Birds =</span> Value<span class="sc">*</span><span class="dv">1000</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)  </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>Birds_Clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30,977 × 5
+   Area        Item      Year Number_of_Birds `Flag Description`
+   &lt;chr&gt;       &lt;chr&gt;    &lt;dbl&gt;           &lt;dbl&gt; &lt;chr&gt;             
+ 1 Afghanistan Chickens  1961         4700000 FAO estimate      
+ 2 Afghanistan Chickens  1962         4900000 FAO estimate      
+ 3 Afghanistan Chickens  1963         5000000 FAO estimate      
+ 4 Afghanistan Chickens  1964         5300000 FAO estimate      
+ 5 Afghanistan Chickens  1965         5500000 FAO estimate      
+ 6 Afghanistan Chickens  1966         5800000 FAO estimate      
+ 7 Afghanistan Chickens  1967         6600000 FAO estimate      
+ 8 Afghanistan Chickens  1968         6290000 Official data     
+ 9 Afghanistan Chickens  1969         6300000 FAO estimate      
+10 Afghanistan Chickens  1970         6000000 FAO estimate      
+# … with 30,967 more rows</code></pre>
+</div>
+</div>
+<p>The original “Birds” data frame had 30977 rows and 14 columns. A clean “Birds_Clean” data frame was created for analysis by removing the redundant or extraneous code, Element, Domain, and Flag columns. Additionally, the Unit and Value columns were replaced with the Number_of_Birds column , created by converting values in units of 1000 Head to the total number of birds in the easy to work with units of birds.</p>
+</section>
+<section id="describe-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="describe-the-data">Describe the data</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculating min, median, mean, and max Number_of_Birds column, removing na from dataset</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(Birds_Clean, <span class="at">min_birds =</span> <span class="fu">min</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">median_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">mean_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max_birds =</span> <span class="fu">max</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  min_birds median_birds mean_birds   max_birds
+      &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+1         0      1800000  99410630. 23707134000</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Creating a bar chart of Values to identify the mode, using the xlim() function to graph from min-max of data</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_bar</span>() <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">1800000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Graphical Determination of Mode Number of Birds Pt.1, xlim = 0 - 1.8 milion"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="challenge2_EmmaNarkewicz_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#narrowing in to identify mode</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Number_of_Birds))<span class="sc">+</span> <span class="fu">geom_bar</span>() <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>,<span class="dv">8000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Graphical Determination of Mode Number of Birds Pt.2, xlim = 0 - 8,000"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="challenge2_EmmaNarkewicz_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Highest number of birds</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Birds_Clean<span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Number_of_Birds)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Item, Number_of_Birds, Year, <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 100 × 5
+   Area  Item     Number_of_Birds  Year `Flag Description`                      
+   &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;                                   
+ 1 World Chickens     23707134000  2018 Aggregate, may include official, semi-o…
+ 2 World Chickens     23212565000  2017 Aggregate, may include official, semi-o…
+ 3 World Chickens     22826754000  2016 Aggregate, may include official, semi-o…
+ 4 World Chickens     21678753000  2015 Aggregate, may include official, semi-o…
+ 5 World Chickens     21118803000  2014 Aggregate, may include official, semi-o…
+ 6 World Chickens     20953583000  2013 Aggregate, may include official, semi-o…
+ 7 World Chickens     20489756000  2012 Aggregate, may include official, semi-o…
+ 8 World Chickens     20244638000  2010 Aggregate, may include official, semi-o…
+ 9 World Chickens     19950281000  2011 Aggregate, may include official, semi-o…
+10 World Chickens     19720796000  2009 Aggregate, may include official, semi-o…
+# … with 90 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Fewest number of birds</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Number_of_Birds)<span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Item, Number_of_Birds, Year, <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 100 × 5
+   Area                 Item                   Number_of_Birds  Year Flag Desc…¹
+   &lt;chr&gt;                &lt;chr&gt;                            &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;      
+ 1 Aruba                Chickens                             0  1991 Official d…
+ 2 Aruba                Chickens                             0  1992 Official d…
+ 3 Bermuda              Ducks                                0  1976 Official d…
+ 4 Bermuda              Ducks                                0  1977 FAO estima…
+ 5 Bermuda              Ducks                                0  1978 FAO estima…
+ 6 Bermuda              Ducks                                0  1979 FAO estima…
+ 7 Bermuda              Ducks                                0  1980 Official d…
+ 8 Bermuda              Ducks                                0  1981 FAO estima…
+ 9 Bermuda              Ducks                                0  1982 FAO estima…
+10 China, Hong Kong SAR Geese and guinea fowls               0  1993 Official d…
+# … with 90 more rows, and abbreviated variable name ¹​`Flag Description`</code></pre>
+</div>
+</div>
+<p>The bird data set was put together by the [United Nation’s Food and Agricultural Organization] (https://www.fao.org/about/en) as part of their larger statistical data base created for the purposes of tracking and defeating hunger internationally. The clean “Birds_Clean” data frame has 5 columns: Area, Item, Year, Number_of_Birds, and Flag Description.</p>
+<p>The Area column contains the location of the bird-stock, ranging from estimates of the total bird-stock world-wide, for entire continents, or for individual countries. There are 248 unique areas in the data frame. By using the arrange(), select(), and slice() functions it was determined that the with “World” having the most number of birds of any area followed by Asia, while the areas with the fewest total number of birds tended to be islands.</p>
+<p>The Item column refers to which of the 5 types of bird-stocks is being measured in each row: chickens, ducks, geese or fowl, pigeons/other birds, or turkeys. Chickens were the most common item type (42.7% of all items) and pigeons, other birds was the least common item type (3.8% of all items).</p>
+<p>The Year column is self explanatory and spans 58 years ranging from 1961 through 2018. Year seemed to contribute to the size of number of birds, with the top 10 most number of birds all occurring between the 10 year of 2009 through 2018. This suggests the size of bird stocks is likely increasing over time.</p>
+<p>The “Number_of_Birds” column describes the number of birds for each item type in the specified location and year. The minimum number of birds was 0, the median number of birds was 1.8 million, the mean number of birds was 99.4 million, and the maximum number of birds is 23.7 billion. The mode number of birds was 2,000, which was determined graphically. 1036 rows had N/A for Number_of_Birds meaning that value was missing from the data set.</p>
+<p>Lastly, the Flag Description column refers to the origin of each data and can be used to gauge the data_quality with 6 different flag descriptions: Aggregate data, Data not available, FAO data based on imputation, FAO estimate, Official data, and Unofficial data. Using the FAO flag descriptions from the table of top 50 number of birds, the data for largest total number of birds were determined using aggregate data.</p>
+</section>
+<section id="provide-grouped-summary-statistics-explain-interpret" class="level2">
+<h2 class="anchored" data-anchor-id="provide-grouped-summary-statistics-explain-interpret">Provide Grouped Summary Statistics, Explain, &amp; Interpret</h2>
+<p>Conduct some exploratory data analysis, using dplyr commands such as <code>group_by()</code>, <code>select()</code>, <code>filter()</code>, and <code>summarise()</code>. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.</p>
+<p><strong>Area and Total Number of Birds</strong></p>
+<p>After reading in, previewing, and describing the Birds_Clean data set, I decided it would be interesting to look at the relationship between Area and Number of Birds. When looking at tables of the largest and smallest bird-stocks, area seemed to significantly factor into size of bird stocks, so decided to look more closely at this.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of mean and median total number of birds descending by the median value</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Area)<span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Number_of_Birds) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">mean_birds=</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">median_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(median_birds))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 248 × 3
+   Area                      mean_birds median_birds
+   &lt;chr&gt;                          &lt;dbl&gt;        &lt;dbl&gt;
+ 1 World                    2565908193.    328049000
+ 2 China, mainland           981424759.    320500000
+ 3 USSR                      413426790.    247250000
+ 4 United States of America  536970356.    240219000
+ 5 Nigeria                   104694569.    116370000
+ 6 Asia                     1246442041.    103030000
+ 7 Eastern Asia              679408245.     96090000
+ 8 India                     177719707.     68307500
+ 9 Americas                  856355944.     66923500
+10 Indonesia                 368163560.     60005500
+# … with 238 more rows</code></pre>
+</div>
+</div>
+<p>Using the piping, group_by(), select(),summarize(), and arrange() functions, I created a table of the mean and median values per area, descending by median. I arranged the data-set by median as it is less likely to be skewed by outliers than the mean. The mean number of birds for the Area of the world was 2.57 billion, which is almost 8 times larger than the median number of birds for the world, which was 328 million. The areas with highest median total number of birds, starting with the highest are: World, “China, mainland, USSR, United States of America, Nigeria, Asia, Eastern Asia, India, Americas, and Indonesia. It made sense that the World has the highest median value of all areas, but I was surprised that the China (mainland), USSR, the USA, and Nigeria all had a higher area median value than Asia, when considering that the highest 50 total number of birds were all based in the area of World or Asia. A confusing finding is that the median Value for the USA is higher than the median value for”the Americas” which the USA is a part of, so I’d be curious to know if something brought the median down for the Americas. Along those lines, it would be interesting to know what feature of Nigeria make it have a higher median number of birds than its continent of Africa.</p>
+<p>Descending, the 10 lowest median values by area were Liechtenstein, Papua New Guinea, Saint Helena, Ascension and Tristan da Cunha, Jordan, Cayman Islands, Saint Pierre and Miquelon, Nauru, Tokelau, Falkland Islands (Malvinas), and Aruba. It follows earlier patterns observed from the lowest 50 values that islands comprised the majority of area with low values, as the climate of small islands is likely not conducive for poultry-stock. Liechtenstein and Jordan do not follow this pattern, as a small German town and a West-African country, and it would be interesting to learn why they are on this list. These ten areas with the lowest median values ranged from 0-12,000 birds which means these areas likely need to rely heavily on poultry imports or other protein sources.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of min, max, sd, IQR, and range of number of birds,  descending by range/</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Area)<span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Number_of_Birds)<span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">min_birds =</span> <span class="fu">min</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max_birds =</span> <span class="fu">max</span>(Number_of_Birds, <span class="at">na.rm =</span><span class="cn">TRUE</span>), <span class="at">range_birds =</span> max_birds<span class="sc">-</span>min_birds, <span class="at">sd_birds=</span> <span class="fu">sd</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">IQR_birds =</span> <span class="fu">IQR</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">arrange</span>(<span class="fu">desc</span>(range_birds))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 248 × 6
+   Area               min_birds   max_birds range_birds    sd_birds IQR_birds
+   &lt;chr&gt;                  &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+ 1 World               12068000 23707134000 23695066000 5297664399. 985833500
+ 2 Asia                 3408000 13630958000 13627550000 2776107770. 926803250
+ 3 Eastern Asia           93000  5884748000  5884655000 1372882881. 665932250
+ 4 Americas              553000  5796289000  5795736000 1539315549. 545152000
+ 5 China, mainland     15000000  5274475000  5259475000 1436610595. 599500000
+ 6 South-eastern Asia     42000  3862039000  3861997000  680622395. 157789500
+ 7 Southern Asia         350000  2786706000  2786356000  565733859. 103088000
+ 8 South America         199000  2611687000  2611488000  615392924. 112260000
+ 9 Europe               2417000  2486932000  2484515000  777666805.  97111000
+10 Indonesia            5300000  2384147000  2378847000  579077970. 488042250
+# … with 238 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Creating a boxplot of Number of Birds by Area</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Area, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Boxplot of FAO Total Number of Birds by Area"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="challenge2_EmmaNarkewicz_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Once again using the piping, group_by(), select(),summarize(), and arrange(), I created a table of the minimum, maximum, range, standard deviation, IQR of number birds for each area, sorted in descending order by range, to look at the dispersion of the data. I also created a boxplot graphing the Number_of_Birds vs.&nbsp;Area to better visualize the data.</p>
+<p>Looking at this table, the Americas has the 4th largest range of number of birds for all areas in the data frame, at ~5.8 billion. The USA had the 12th largest range of number birds for all areas at ~2 billion. The Americas has a minimum number of birds of 553,000, whereas the USA had a 6 times higher minimum number of birds of 3.4 million. While the Americas have a higher maximum number of birds at ~ 5.8 billion vs USA’s maximum number of birds of ~2 billion, the differences in minimum numbers of birds and range helps explains why the USA has a higher median number of birds than the USA.</p>
+<p>Looking at the world – which had the largest range and IQR for number of birds – we can see that despite area contributing to the number of birds, there is still a large range in number of birds for each area. This means that area alone cannot explain all of the variation in number_of_birds. Therefore, I decided to look at the relationship between time (as measured by Year) and the number of birds.</p>
+<p><strong>Year and Total Number of Birds</strong></p>
+<p>Using the piping, group_by(), and summarise() functions, I created a table of the mean and median of the total number of birds grouped by year. I sorted the table descending by mean number of birds to get average data for each year.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create table of number of birds by year</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">med_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_birds))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 58 × 3
+    Year  avg_birds med_birds
+   &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+ 1  2018 182869178.   2830500
+ 2  2017 179185690.   2764000
+ 3  2016 176522797.   2798000
+ 4  2015 168025068.   2734500
+ 5  2014 163800537.   2687500
+ 6  2013 162940899.   2574000
+ 7  2012 159889568.   2352000
+ 8  2010 158516613.   2200000
+ 9  2011 155450242.   2367000
+10  2009 154204552.   2207000
+# … with 48 more rows</code></pre>
+</div>
+</div>
+<p>Looking at this table, the data follows the expected trend almost perfectly - with time the average total number of birds in a stock increases. The top 10 higher average number of birds in a stock is from the 10 most recent year 2009-2018. In fact, the top 10 average number of birds in a stock is in perfect chronological data, with the exception of more avg_birds in 2011 than 2010. It is clear from this table that over time the average number of birds increases. So while the world will have the largest bird_stock, the world in 2018 will likely have a larger bird stock than the world in 2000.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Graph of Birds by year FAO STAT data</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Year, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Number of Birds by Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="challenge2_EmmaNarkewicz_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Graph of Birds by year FAO STAT data 0-1billion</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Year, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">1000000000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Number of Birds by Year, ylim = 0-1billion"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="challenge2_EmmaNarkewicz_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Looking at the above graph of Number_of_Birds vs.&nbsp;Years, it is once again clear that the number of bird stocks increase by time. With this scale appears to be 3 distinct trend-lines, with most data concentrated near the bottom of the y-axis. Viewing the second graph zoomed in on the y axis from 0-1billion using ylim(), while its its crowded at the bottom of the y-axis but at the top of the graph you can see the trend of number of birds increasing with time (Year).</p>
+<p><strong>Item, Year, and Number of Birds</strong></p>
+<p>So far, I have examined the impact of area and year on number of birds, but not examined the item. To do so I created a table using the pivot_wider() function to examine the average number of birds for each of the 5 types of Item at 2 points of time 50 years apart, 1968 and 2018. I used kable() to rename the column headings and add commas to the data in the table.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a table using the pivot_wider solution modeling the example pivot_wider solution we reviewed in class and using knitr::kable() to add commas and rename the column headings.</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>t1<span class="ot">&lt;-</span>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1968</span>, <span class="dv">2018</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Item)<span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Year, <span class="at">values_from =</span> <span class="fu">c</span>(avg_birds))</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(t1,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">digits=</span><span class="dv">0</span>,<span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Bird Type"</span>, <span class="st">"Average Birds in 1968"</span>, <span class="st">"Average Birds in 2018"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Bird Type</th>
+<th style="text-align: right;">Average Birds in 1968</th>
+<th style="text-align: right;">Average Birds in 2018</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Chickens</td>
+<td style="text-align: right;">91,003,212</td>
+<td style="text-align: right;">396,772,130</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ducks</td>
+<td style="text-align: right;">9,166,421</td>
+<td style="text-align: right;">38,132,814</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Geese and guinea fowls</td>
+<td style="text-align: right;">3,245,371</td>
+<td style="text-align: right;">19,236,000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pigeons, other birds</td>
+<td style="text-align: right;">2,839,529</td>
+<td style="text-align: right;">5,484,714</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Turkeys</td>
+<td style="text-align: right;">7,959,256</td>
+<td style="text-align: right;">17,288,444</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Looking at the table, for every bird type, the average number of birds increased from 1968 to 2018. In this time span, the average number of chickens increased by 4.36 times, the average number of ducks increased by 4.16 times, the average number of geese and guinea fowls increased by 6.77 times, the average number of pigeons and other birds increased by 1.93 times, and the average number of turkeys increased by 2.17 times. The average number of chickens remains much higher than the other bird types over the 50 years, almost reaching 400 million in 2018. The average number of pigeons and other birds remains relatively low compared to the other bird types, not even reaching 5.5 million birds in 2018. Even when factoring in Item (Bird Type), the trend of total number of birds increasing over time for a bird stock remains.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>By wrangling the FAO STAT bird data in R using dply functions I observed that larger areas generally had larger bird-stocks. Additionally, I observed that bird-stocks increased over time – even when accounting for different bird types (Item).</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb24" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 2"</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Emma Narkewicz"</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "In this challenge I completed data wrangling on the Birds FAO data set using group() and summarise() and summary statistic functions."</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "09/26/2022"</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_2</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - emma_narkewicz</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - birds</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - fao stat</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>Today's challenge is to</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>2)  provide summary statistics for different interesting groups within the data, and interpret those statistics</span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in the Data</span></span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a>I selected thebirds.csv for this Challenge set to push myself.</span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a><span class="in">```{r Reading in Data}</span></span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a><span class="co">#Making sure I have the right library open</span></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a><span class="co">#Reading in my selected data set and remove codes, element, and domain columns</span></span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>Birds <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/birds.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="fu">contains</span>(<span class="st">"Code"</span>), Element, Domain, Flag))</span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a>Birds</span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a><span class="co">#Replace value and unit columns with Number_of_Birds columns, creating Birds_Clean data set</span></span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="ot">=</span> <span class="fu">transmute</span>(Birds,</span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">Area =</span> Area,</span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">Item =</span> Item,</span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">Year =</span> Year,</span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">Number_of_Birds =</span> Value<span class="sc">*</span><span class="dv">1000</span>,</span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span></span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a>)  </span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a>Birds_Clean</span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>The original "Birds" data frame had 30977 rows and 14 columns. A clean "Birds_Clean" data frame was created for analysis by removing the redundant or extraneous code, Element, Domain, and Flag columns. Additionally, the Unit and Value columns were replaced with the Number_of_Birds column , created by converting values in units of 1000 Head to the total number of birds in the easy to work with units of birds.</span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## Describe the data</span></span>
+<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-72"><a href="#cb24-72" aria-hidden="true" tabindex="-1"></a><span class="co">#calculating min, median, mean, and max Number_of_Birds column, removing na from dataset</span></span>
+<span id="cb24-73"><a href="#cb24-73" aria-hidden="true" tabindex="-1"></a><span class="fu">summarise</span>(Birds_Clean, <span class="at">min_birds =</span> <span class="fu">min</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">median_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">mean_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max_birds =</span> <span class="fu">max</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb24-74"><a href="#cb24-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-75"><a href="#cb24-75" aria-hidden="true" tabindex="-1"></a><span class="co">#Creating a bar chart of Values to identify the mode, using the xlim() function to graph from min-max of data</span></span>
+<span id="cb24-76"><a href="#cb24-76" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_bar</span>() <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">1800000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Graphical Determination of Mode Number of Birds Pt.1, xlim = 0 - 1.8 milion"</span> )</span>
+<span id="cb24-77"><a href="#cb24-77" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-78"><a href="#cb24-78" aria-hidden="true" tabindex="-1"></a><span class="co">#narrowing in to identify mode</span></span>
+<span id="cb24-79"><a href="#cb24-79" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Number_of_Birds))<span class="sc">+</span> <span class="fu">geom_bar</span>() <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>,<span class="dv">8000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Graphical Determination of Mode Number of Birds Pt.2, xlim = 0 - 8,000"</span> )</span>
+<span id="cb24-80"><a href="#cb24-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-81"><a href="#cb24-81" aria-hidden="true" tabindex="-1"></a><span class="co">#Highest number of birds</span></span>
+<span id="cb24-82"><a href="#cb24-82" aria-hidden="true" tabindex="-1"></a>Birds_Clean<span class="sc">%&gt;%</span></span>
+<span id="cb24-83"><a href="#cb24-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Number_of_Birds)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-84"><a href="#cb24-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Item, Number_of_Birds, Year, <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-85"><a href="#cb24-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>)</span>
+<span id="cb24-86"><a href="#cb24-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-87"><a href="#cb24-87" aria-hidden="true" tabindex="-1"></a><span class="co">#Fewest number of birds</span></span>
+<span id="cb24-88"><a href="#cb24-88" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb24-89"><a href="#cb24-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Number_of_Birds)<span class="sc">%&gt;%</span></span>
+<span id="cb24-90"><a href="#cb24-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Item, Number_of_Birds, Year, <span class="st">`</span><span class="at">Flag Description</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-91"><a href="#cb24-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>)</span>
+<span id="cb24-92"><a href="#cb24-92" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-93"><a href="#cb24-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-94"><a href="#cb24-94" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-95"><a href="#cb24-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-96"><a href="#cb24-96" aria-hidden="true" tabindex="-1"></a>The bird data set was put together by the <span class="sc">\[</span>United Nation's Food and Agricultural Organization<span class="sc">\]</span> (https://www.fao.org/about/en) as part of their larger statistical data base created for the purposes of tracking and defeating hunger internationally. The clean "Birds_Clean" data frame has 5 columns: Area, Item, Year, Number_of_Birds, and Flag Description.</span>
+<span id="cb24-97"><a href="#cb24-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-98"><a href="#cb24-98" aria-hidden="true" tabindex="-1"></a>The Area column contains the location of the bird-stock, ranging from estimates of the total bird-stock world-wide, for entire continents, or for individual countries. There are 248 unique areas in the data frame. By using the arrange(), select(), and slice() functions it was determined that the with "World" having the most number of birds of any area followed by Asia, while the areas with the fewest total number of birds tended to be islands.</span>
+<span id="cb24-99"><a href="#cb24-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-100"><a href="#cb24-100" aria-hidden="true" tabindex="-1"></a>The Item column refers to which of the 5 types of bird-stocks is being measured in each row: chickens, ducks, geese or fowl, pigeons/other birds, or turkeys. Chickens were the most common item type (42.7% of all items) and pigeons, other birds was the least common item type (3.8% of all items).</span>
+<span id="cb24-101"><a href="#cb24-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-102"><a href="#cb24-102" aria-hidden="true" tabindex="-1"></a>The Year column is self explanatory and spans 58 years ranging from 1961 through 2018. Year seemed to contribute to the size of number of birds, with the top 10 most number of birds all occurring between the 10 year of 2009 through 2018. This suggests the size of bird stocks is likely increasing over time.</span>
+<span id="cb24-103"><a href="#cb24-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-104"><a href="#cb24-104" aria-hidden="true" tabindex="-1"></a>The "Number_of_Birds" column describes the number of birds for each item type in the specified location and year. The minimum number of birds was 0, the median number of birds was 1.8 million, the mean number of birds was 99.4 million, and the maximum number of birds is 23.7 billion. The mode number of birds was 2,000, which was determined graphically. 1036 rows had N/A for Number_of_Birds meaning that value was missing from the data set.</span>
+<span id="cb24-105"><a href="#cb24-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-106"><a href="#cb24-106" aria-hidden="true" tabindex="-1"></a>Lastly, the Flag Description column refers to the origin of each data and can be used to gauge the data_quality with 6 different flag descriptions: Aggregate data, Data not available, FAO data based on imputation, FAO estimate, Official data, and Unofficial data. Using the FAO flag descriptions from the table of top 50 number of birds, the data for largest total number of birds were determined using aggregate data.</span>
+<span id="cb24-107"><a href="#cb24-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-108"><a href="#cb24-108" aria-hidden="true" tabindex="-1"></a><span class="fu">## Provide Grouped Summary Statistics, Explain, &amp; Interpret</span></span>
+<span id="cb24-109"><a href="#cb24-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-110"><a href="#cb24-110" aria-hidden="true" tabindex="-1"></a>Conduct some exploratory data analysis, using dplyr commands such as <span class="in">`group_by()`</span>, <span class="in">`select()`</span>, <span class="in">`filter()`</span>, and <span class="in">`summarise()`</span>. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.</span>
+<span id="cb24-111"><a href="#cb24-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-112"><a href="#cb24-112" aria-hidden="true" tabindex="-1"></a>**Area and Total Number of Birds**</span>
+<span id="cb24-113"><a href="#cb24-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-114"><a href="#cb24-114" aria-hidden="true" tabindex="-1"></a>After reading in, previewing, and describing the Birds_Clean data set, I decided it would be interesting to look at the relationship between Area and Number of Birds. When looking at tables of the largest and smallest bird-stocks, area seemed to significantly factor into size of bird stocks, so decided to look more closely at this.</span>
+<span id="cb24-115"><a href="#cb24-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-118"><a href="#cb24-118" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-119"><a href="#cb24-119" aria-hidden="true" tabindex="-1"></a><span class="co">#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of mean and median total number of birds descending by the median value</span></span>
+<span id="cb24-120"><a href="#cb24-120" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb24-121"><a href="#cb24-121" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Area)<span class="sc">%&gt;%</span></span>
+<span id="cb24-122"><a href="#cb24-122" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Number_of_Birds) <span class="sc">%&gt;%</span></span>
+<span id="cb24-123"><a href="#cb24-123" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>( <span class="at">mean_birds=</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">median_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-124"><a href="#cb24-124" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(median_birds))</span>
+<span id="cb24-125"><a href="#cb24-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-126"><a href="#cb24-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-127"><a href="#cb24-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-128"><a href="#cb24-128" aria-hidden="true" tabindex="-1"></a>Using the piping, group_by(), select(),summarize(), and arrange() functions, I created a table of the mean and median values per area, descending by median. I arranged the data-set by median as it is less likely to be skewed by outliers than the mean. The mean number of birds for the Area of the world was 2.57 billion, which is almost 8 times larger than the median number of birds for the world, which was 328 million. The areas with highest median total number of birds, starting with the highest are: World, "China, mainland, USSR, United States of America, Nigeria, Asia, Eastern Asia, India, Americas, and Indonesia. It made sense that the World has the highest median value of all areas, but I was surprised that the China (mainland), USSR, the USA, and Nigeria all had a higher area median value than Asia, when considering that the highest 50 total number of birds were all based in the area of World or Asia. A confusing finding is that the median Value for the USA is higher than the median value for"the Americas" which the USA is a part of, so I'd be curious to know if something brought the median down for the Americas. Along those lines, it would be interesting to know what feature of Nigeria make it have a higher median number of birds than its continent of Africa.</span>
+<span id="cb24-129"><a href="#cb24-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-130"><a href="#cb24-130" aria-hidden="true" tabindex="-1"></a>Descending, the 10 lowest median values by area were Liechtenstein, Papua New Guinea, Saint Helena, Ascension and Tristan da Cunha, Jordan, Cayman Islands, Saint Pierre and Miquelon, Nauru, Tokelau, Falkland Islands (Malvinas), and Aruba. It follows earlier patterns observed from the lowest 50 values that islands comprised the majority of area with low values, as the climate of small islands is likely not conducive for poultry-stock. Liechtenstein and Jordan do not follow this pattern, as a small German town and a West-African country, and it would be interesting to learn why they are on this list. These ten areas with the lowest median values ranged from 0-12,000 birds which means these areas likely need to rely heavily on poultry imports or other protein sources.</span>
+<span id="cb24-131"><a href="#cb24-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-134"><a href="#cb24-134" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-135"><a href="#cb24-135" aria-hidden="true" tabindex="-1"></a><span class="co">#Using group_by(), select(), summarize(), and arrange() to generate a table of Area of min, max, sd, IQR, and range of number of birds,  descending by range/</span></span>
+<span id="cb24-136"><a href="#cb24-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-137"><a href="#cb24-137" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb24-138"><a href="#cb24-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Area)<span class="sc">%&gt;%</span></span>
+<span id="cb24-139"><a href="#cb24-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Area, Number_of_Birds)<span class="sc">%&gt;%</span></span>
+<span id="cb24-140"><a href="#cb24-140" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">min_birds =</span> <span class="fu">min</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max_birds =</span> <span class="fu">max</span>(Number_of_Birds, <span class="at">na.rm =</span><span class="cn">TRUE</span>), <span class="at">range_birds =</span> max_birds<span class="sc">-</span>min_birds, <span class="at">sd_birds=</span> <span class="fu">sd</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">IQR_birds =</span> <span class="fu">IQR</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-141"><a href="#cb24-141" aria-hidden="true" tabindex="-1"></a>   <span class="fu">arrange</span>(<span class="fu">desc</span>(range_birds))</span>
+<span id="cb24-142"><a href="#cb24-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-143"><a href="#cb24-143" aria-hidden="true" tabindex="-1"></a><span class="co">#Creating a boxplot of Number of Birds by Area</span></span>
+<span id="cb24-144"><a href="#cb24-144" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Area, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Boxplot of FAO Total Number of Birds by Area"</span>)</span>
+<span id="cb24-145"><a href="#cb24-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-146"><a href="#cb24-146" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-147"><a href="#cb24-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-148"><a href="#cb24-148" aria-hidden="true" tabindex="-1"></a>Once again using the piping, group_by(), select(),summarize(), and arrange(), I created a table of the minimum, maximum, range, standard deviation, IQR of number birds for each area, sorted in descending order by range, to look at the dispersion of the data. I also created a boxplot graphing the Number_of_Birds vs. Area to better visualize the data.</span>
+<span id="cb24-149"><a href="#cb24-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-150"><a href="#cb24-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-151"><a href="#cb24-151" aria-hidden="true" tabindex="-1"></a>Looking at this table, the Americas has the 4th largest range of number of birds for all areas in the data frame, at \~5.8 billion. The USA had the 12th largest range of number birds for all areas at \~2 billion. The Americas has a minimum number of birds of 553,000, whereas the USA had a 6 times higher minimum number of birds of 3.4 million. While the Americas have a higher maximum number of birds at \~ 5.8 billion vs USA's maximum number of birds of \~2 billion, the differences in minimum numbers of birds and range helps explains why the USA has a higher median number of birds than the USA.</span>
+<span id="cb24-152"><a href="#cb24-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-153"><a href="#cb24-153" aria-hidden="true" tabindex="-1"></a>Looking at the world -- which had the largest range and IQR for number of birds -- we can see that despite area contributing to the number of birds, there is still a large range in number of birds for each area. This means that area alone cannot explain all of the variation in number_of_birds. Therefore, I decided to look at the relationship between time (as measured by Year) and the number of birds.</span>
+<span id="cb24-154"><a href="#cb24-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-155"><a href="#cb24-155" aria-hidden="true" tabindex="-1"></a>**Year and Total Number of Birds**</span>
+<span id="cb24-156"><a href="#cb24-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-157"><a href="#cb24-157" aria-hidden="true" tabindex="-1"></a>Using the piping, group_by(), and summarise() functions, I created a table of the mean and median of the total number of birds grouped by year. I sorted the table descending by mean number of birds to get average data for each year.</span>
+<span id="cb24-158"><a href="#cb24-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-159"><a href="#cb24-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-162"><a href="#cb24-162" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-163"><a href="#cb24-163" aria-hidden="true" tabindex="-1"></a><span class="co">#Create table of number of birds by year</span></span>
+<span id="cb24-164"><a href="#cb24-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-165"><a href="#cb24-165" aria-hidden="true" tabindex="-1"></a>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb24-166"><a href="#cb24-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb24-167"><a href="#cb24-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">med_birds =</span> <span class="fu">median</span>(Number_of_Birds, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb24-168"><a href="#cb24-168" aria-hidden="true" tabindex="-1"></a>   <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_birds))</span>
+<span id="cb24-169"><a href="#cb24-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-170"><a href="#cb24-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-171"><a href="#cb24-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-172"><a href="#cb24-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-173"><a href="#cb24-173" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-174"><a href="#cb24-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-175"><a href="#cb24-175" aria-hidden="true" tabindex="-1"></a>Looking at this table, the data follows the expected trend almost perfectly - with time the average total number of birds in a stock increases. The top 10 higher average number of birds in a stock is from the 10 most recent year 2009-2018. In fact, the top 10 average number of birds in a stock is in perfect chronological data, with the exception of more avg_birds in 2011 than 2010. It is clear from this table that over time the average number of birds increases. So while the world will have the largest bird_stock, the world in 2018 will likely have a larger bird stock than the world in 2000.</span>
+<span id="cb24-176"><a href="#cb24-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-179"><a href="#cb24-179" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-180"><a href="#cb24-180" aria-hidden="true" tabindex="-1"></a><span class="co">#Graph of Birds by year FAO STAT data</span></span>
+<span id="cb24-181"><a href="#cb24-181" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Year, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Number of Birds by Year"</span>)</span>
+<span id="cb24-182"><a href="#cb24-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-183"><a href="#cb24-183" aria-hidden="true" tabindex="-1"></a><span class="co">#Graph of Birds by year FAO STAT data 0-1billion</span></span>
+<span id="cb24-184"><a href="#cb24-184" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Birds_Clean, <span class="fu">aes</span>(Year, Number_of_Birds)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>() <span class="sc">+</span> <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">1000000000</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Number of Birds by Year, ylim = 0-1billion"</span>)</span>
+<span id="cb24-185"><a href="#cb24-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-186"><a href="#cb24-186" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-187"><a href="#cb24-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-188"><a href="#cb24-188" aria-hidden="true" tabindex="-1"></a>Looking at the above graph of Number_of_Birds vs. Years, it is once again clear that the number of bird stocks increase by time. With this scale appears to be 3 distinct trend-lines, with most data concentrated near the bottom of the y-axis. Viewing the second graph zoomed in on the y axis from 0-1billion using ylim(), while its its crowded at the bottom of the y-axis but at the top of the graph you can see the trend of number of birds increasing with time (Year).</span>
+<span id="cb24-189"><a href="#cb24-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-190"><a href="#cb24-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-191"><a href="#cb24-191" aria-hidden="true" tabindex="-1"></a>**Item, Year, and Number of Birds**</span>
+<span id="cb24-192"><a href="#cb24-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-193"><a href="#cb24-193" aria-hidden="true" tabindex="-1"></a>So far, I have examined the impact of area and year on number of birds, but not examined the item. To do so I created a table using the pivot_wider() function to examine the average number of birds for each of the 5 types of Item at 2 points of time 50 years apart, 1968 and 2018. I used kable() to rename the column headings and add commas to the data in the table.</span>
+<span id="cb24-194"><a href="#cb24-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-195"><a href="#cb24-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-198"><a href="#cb24-198" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb24-199"><a href="#cb24-199" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a table using the pivot_wider solution modeling the example pivot_wider solution we reviewed in class and using knitr::kable() to add commas and rename the column headings.</span></span>
+<span id="cb24-200"><a href="#cb24-200" aria-hidden="true" tabindex="-1"></a>t1<span class="ot">&lt;-</span>Birds_Clean <span class="sc">%&gt;%</span></span>
+<span id="cb24-201"><a href="#cb24-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1968</span>, <span class="dv">2018</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb24-202"><a href="#cb24-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Item)<span class="sc">%&gt;%</span></span>
+<span id="cb24-203"><a href="#cb24-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_birds =</span> <span class="fu">mean</span>(Number_of_Birds, <span class="at">na.rm=</span><span class="cn">TRUE</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb24-204"><a href="#cb24-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Year, <span class="at">values_from =</span> <span class="fu">c</span>(avg_birds))</span>
+<span id="cb24-205"><a href="#cb24-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-206"><a href="#cb24-206" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(t1,</span>
+<span id="cb24-207"><a href="#cb24-207" aria-hidden="true" tabindex="-1"></a>             <span class="at">digits=</span><span class="dv">0</span>,<span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">","</span>),</span>
+<span id="cb24-208"><a href="#cb24-208" aria-hidden="true" tabindex="-1"></a>             <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Bird Type"</span>, <span class="st">"Average Birds in 1968"</span>, <span class="st">"Average Birds in 2018"</span>))</span>
+<span id="cb24-209"><a href="#cb24-209" aria-hidden="true" tabindex="-1"></a>             </span>
+<span id="cb24-210"><a href="#cb24-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-211"><a href="#cb24-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb24-212"><a href="#cb24-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-213"><a href="#cb24-213" aria-hidden="true" tabindex="-1"></a>Looking at the table, for every bird type, the average number of birds increased from 1968 to 2018. In this time span, the average number of chickens increased by 4.36 times, the average number of ducks increased by 4.16 times, the average number of geese and guinea fowls increased by 6.77 times, the average number of pigeons and other birds increased by 1.93 times, and the average number of turkeys increased by 2.17 times. The average number of chickens remains much higher than the other bird types over the 50 years, almost reaching 400 million in 2018. The average number of pigeons and other birds remains relatively low compared to the other bird types, not even reaching 5.5 million birds in 2018. Even when factoring in Item  (Bird Type), the trend of total number of birds increasing over time for a bird stock remains.</span>
+<span id="cb24-214"><a href="#cb24-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-215"><a href="#cb24-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-216"><a href="#cb24-216" aria-hidden="true" tabindex="-1"></a><span class="fu">## Conclusion</span></span>
+<span id="cb24-217"><a href="#cb24-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-218"><a href="#cb24-218" aria-hidden="true" tabindex="-1"></a>By wrangling the FAO STAT bird data in R using dply functions I observed that larger areas generally had larger bird-stocks. Additionally, I observed that bird-stocks increased over time -- even when accounting for different bird types (Item).</span>
+<span id="cb24-219"><a href="#cb24-219" aria-hidden="true" tabindex="-1"></a></span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
