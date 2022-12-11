@@ -1,0 +1,222 @@
+---
+title: "Homework 3"
+author: "Aleacia Messiah"
+description: "Descriptive Statistics, Visualizations, and Limitations"
+date: "12/11/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw3
+  - Aleacia Messiah
+  - SIPRI_Milex
+  - tidyverse
+  - readxl
+  - ggplot2
+  - treemap
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+::: callout-note
+## Note
+
+Since Homework 3 is a continuation of Homework 2, the sections *Read in Data* through *Potential Research Questions* will be the same as Homework 2.
+:::
+
+## Read in Data
+
+```{r}
+# read in the Current USD sheet of the Milex dataset, skipping the first 6 rows and renaming the columns
+milex <- read_excel("_data/SIPRI-Milex-data-1949-2021.xlsx", sheet = "Current USD", skip = 6, col_names = c("Country", "Notes", 1949:2021))
+# view milex data
+milex
+```
+
+## Clean Data
+
+```{r}
+milex_clean <- milex %>% 
+  # remove Notes column
+  select(!contains("Notes")) %>% 
+  # create a column with region names
+  mutate(Region = case_when(
+    str_ends(Country, "Africa") ~ "Africa",
+      str_detect(Country, "America") ~ "Americas",
+      str_detect(Country, "Asia & Oceania") ~ "Asia & Oceania",
+      str_ends(Country, "Europe") ~ "Europe",
+      str_ends(Country, "East") ~ "Middle East",
+    TRUE ~ NA_character_
+  )) %>% 
+  # replace NAs in Region column
+  fill(Region, .direction = "down") %>% 
+  # create a column with sub region names
+  mutate(Sub_Region = case_when(
+    str_detect(Country, "North Africa") ~ "North Africa",
+    str_detect(Country, "sub-Saharan Africa") ~ "sub-Saharan Africa",
+    str_detect(Country, "Central America and the Caribbean") ~ "Central America and the Caribbean",
+    str_detect(Country, "North America") ~ "North America",
+    str_detect(Country, "South America") ~ "South America",
+    str_detect(Country, "Oceania") ~ "Oceania",
+    str_detect(Country, "South Asia") ~ "South Asia",
+    str_detect(Country, "East Asia") ~ "East Asia",
+    str_detect(Country, "South East Asia") ~ "South East Asia",
+    str_detect(Country, "Central Asia") ~ "Central Asia",
+    str_detect(Country, "Central Europe") ~ "Central Europe",
+    str_detect(Country, "Eastern Europe") ~ "Eastern Europe",
+    str_detect(Country, "Western Europe") ~ "Western Europe",
+    str_ends(Country, "East") ~ "Middle East",
+    TRUE ~ NA_character_
+  )) %>% 
+  # replace NAs in Sub Region column
+  fill(Sub_Region, .direction = "down") %>% 
+  # remove rows with region and sub-region names
+  slice(-c(1:2, 7, 55:56, 70, 73, 85:86, 91, 98, 105, 117, 123:124, 145, 154, 175)) %>% 
+  # replace "xxx" and "..." with NAs
+  na_if("xxx") %>%
+  na_if("...") %>% 
+  # combine Region and Sub Region into one column
+  unite(Region:Sub_Region, col = "Region & Sub Region", sep = "/" ) %>% 
+  # combine year columns into one column
+  pivot_longer('1949':'2021', names_to = "Year", values_to = "Military Expenditure in Millions of US$")
+# view cleaned dataset
+milex_clean
+# number of distinct countries
+n_distinct(milex_clean$Country)
+# list distinct countries
+distinct(milex_clean[,1])
+# list distinct region and sub-region combinations
+distinct(milex_clean[,2])
+# number of years
+n_distinct(milex_clean$Year)
+# range of years
+range(milex_clean$Year)
+```
+
+## Narrative
+
+The Current USD data from the SIPRI Milex dataset details the military expenditures in millions of US dollars for 173 countries for the period 1949-2021. There are 191 observations (173 actual observations) and 75 variables (`Country`, `Notes`, and Years `1949` through `2021`). Observations (countries) were grouped by region and sub-region. There are 5 regions (Africa, Americas, Asia & Oceania, Europe, and Middle East) and 14 sub-regions (North Africa, Sub-Saharan Africa, Central America and the Caribbean, North America, South America, Oceania, South Asia, East Asia, South East Asia, Central Asia, Central Europe, Eastern Europe, Western Europe, and Middle East). Some of the data is missing for several countries in various years due to the data not being available or the country did not exist or was not independent at the time the data was collected, so those values are replaced with NAs.
+
+After cleaning the data, the new dataset has 12,629 observations and 4 variables (`Country`, `Region & Sub Region`, `Year`, `Military Expenditure in Millions of US$`). The regions and sub-regions were extracted from the `Country` column and combined together into one column to illustrate the various combinations of region and sub-region. The years were also condensed into one column.
+
+## Potential Research Questions
+
+Since this data was taken over a large period of time, I can research whether using time series methods would be appropriate to visualize and analyze the trends in the data.
+
+**1. What trends are present in the data (e.g. are there certain patterns of military spending over the years)?**
+
+**2. What are the top spending countries for each year?**
+
+**3. What is the predicted amount of military expenditures in dollars for year 2022 for each country?**
+
+## Descriptive Statistics
+
+I decided to calculate the average military expenditures (`Military Expenditure in Millions of US$`) each year (`Year`) with missing values removed (missing values were removed in all further analyses in order to properly compute these statistics). It appears that the mean military expenditure amount in US dollars steadily increases over time, which makes sense as more warfare and increased tensions between foreign nations began to arise over time. The average military expenditure in US dollars across the entire dataset is 0.6591971. This is about the same as the average in the late 1970s and early 1980s. The standard deviation of military expenditures in millions of US dollars is 0.473998, meaning this data varies about 0.473998 million US dollars from the mean, so given that the mean is 0.6591971 million US dollars, the military expenditure amounts vary quite greatly. 
+
+Since there are 13 `Region & Sub Region` categories, I want to look at the number of times each region and sub region combination is represented in the data. Africa/sub-Saharan Africa is represented the most at 3,431 times with Europe/Central Europe and Europe/Western Europe following at 1,460 times each. This seems correct as there are many sub-Saharan African countries compared to European countries and others. However, I did not specify to remove missing values, so this count may not be entirely accurate as not every country had a military expenditure amount for each year.
+
+Lastly, I computed the average military expenditures in US dollars by country. The range is from 0.05479452 million US dollars to 1 million US dollars, so the USSR has the smallest average while 17 countries (including the United States of America) have the largest average. This is a bit strange since there were a lot of tensions, especially during the Cold War, between the USSR and the USA, but the reason why the USSR has the smallest average military expenditures in US dollars may be because the USSR broke up in the 1990s and most of the larger military expenditures occurred after the disbandment of the USSR. 
+
+```{r}
+# calculate the average military expenditures by year 
+avg_exp <- milex_clean %>% 
+  group_by(Year) %>% 
+  summarize(avg_expenditure = mean(!is.na(`Military Expenditure in Millions of US$`)))
+# view avg_exp
+avg_exp
+# calculate the average military expenditure in millions of US$ across all years
+mean(!is.na(milex_clean$`Military Expenditure in Millions of US$`))
+# compute the standard deviation of military expenditures in millions of US$
+sd(!is.na(milex_clean$`Military Expenditure in Millions of US$`))
+# count region & sub region combinations
+region_subregion <- milex_clean %>% 
+  group_by(`Region & Sub Region`) %>% 
+  summarize(n = n())
+# view region_subregion
+region_subregion
+# compute average military expenditures by country
+country_exp <- milex_clean %>% 
+  group_by(Country) %>% 
+  summarize(avg_expenditure = mean(!is.na(`Military Expenditure in Millions of US$`)))
+# view country_exp
+country_exp
+# find the range of the average military expenditures in millions of US$ out of all countries
+range(country_exp$avg_expenditure)
+# find the country with the smallest average military expenditure in US$
+slice_min(country_exp, avg_expenditure)
+# find the countries with the largest average military expenditure in US$
+slice_max(country_exp, avg_expenditure)
+# find the top 5 spending countries for each year
+top_country_exp <- milex_clean %>% 
+  group_by(Year) %>% 
+  arrange(desc(`Military Expenditure in Millions of US$`)) %>% 
+  slice_head(n = 5)
+# view top_country_exp
+top_country_exp
+# filter the top 5 spending countries from 1949 to 1953
+first_5_yrs <- filter(top_country_exp, Year <= 1953)
+# view first 5 years data frame
+first_5_yrs
+# filter the top 5 spending countries from 2017 to 2021
+last_5_yrs <- filter(top_country_exp, Year >= 2017)
+# view last 5 years data frame
+last_5_yrs
+```
+
+## Visualizations
+
+To visualize trends of military expenditures over time, I created a time series plot of `avg_expenditure` vs. `year` from the avg_exp data frame. To reiterate, missing values are not included in order to proceed with the analysis. As we can see from the plot, there is a clear increasing trend of military expenditures over time, with the data stabilizing around the late 2010s. As previously mentioned, there was quite a bit of warfare and rising tensions in the twentieth century but the reasoning behind the increasing trend leveling off later on may be due to some countries making an effort to decrease or cut military spending in order to not raise their national debt or the global COVID-19 pandemic taking place beginning in late 2019 and early 2020.
+
+The second visualization is a tree map depicting the region and sub region counts by the sizes of the rectangles. Africa/sub-Saharan Africa is the largest rectangle which coincides with my observation in the previous section. Although Europe/Central Europe and Europe/Western Europe have the same count, their rectangles look different as Europe/Central Europe is longer and Europe/Western Europe looks wider. It would be easier to tell if the counts were listed under the labels but I did not find out how to do this. 
+
+These third and fourth visualizations illustrate the top five spending countries for the first five years and last five years respectively. The military expenditures in US millions of dollars have a wider range in the first five years of data versus the last five years of data, with the first five years ranging from 34 million US dollars to 986 million US dollars and the last five years ranging from 85 to 9,978 million US dollars. What I find interesting are the countries that repeatedly rank in the top five: for example, Denmark was in the top five for 1949 to 1952 while Algeria was in the top five for 2018, 2020, and 2021. I'm not up-to-date on world relations and current events, but for a country to be in the top five for military expenditures, most likely the military makes up a large portion of the country's budget and is therefore an important asset for them to maintain. 
+
+```{r}
+# create a time series plot of avg_expenditure vs. year with avg_exp data
+ggplot(avg_exp, aes(Year, avg_expenditure)) +
+  geom_point() +
+  guides(x = guide_axis(n.dodge = 5)) +
+  labs(x = "Year",
+       y = "Average Expenditure in Millions (US$)",
+       title = "Time Series of Average Expenditure in Millions (US$) vs. Year",
+       subtitle = "Missing values are not included",
+       caption = "Data: SIPRI-Milex-data-1949-2021.xlsx")
+# create a treemap of region and sub region counts
+treemap(region_subregion,
+            index="Region & Sub Region",
+            vSize="n",
+            type="index",
+            title="Treemap of Region & Sub Region Counts",
+            fontsize.title = 12)
+# create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 1949 to 1953
+ggplot(first_5_yrs, aes(Year, `Military Expenditure in Millions of US$`)) +
+  geom_point(aes(color = Country)) +
+  theme(legend.position = "bottom") +
+  labs(title = "Scatterplot of Top 5 Highest Spending Countries from 1949 to 1953",
+       caption = "Data: SIPRI-Milex-data-1949-2021.xlsx")
+# create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 2017 to 2021
+ggplot(last_5_yrs, aes(Year, `Military Expenditure in Millions of US$`)) +
+  geom_point(aes(color = Country)) +
+  theme(legend.position = "bottom") +
+  labs(title = "Scatterplot of Top 5 Highest Spending Countries from 2017 to 2021",
+       caption = "Data: SIPRI-Milex-data-1949-2021.xlsx")
+```
+
+## Limitations
+
+The biggest limitation to my visualizations is in relation to my third research question: What is the predicted amount of military expenditures in dollars for year 2022 for each country? I unfortunately ran out of time and space for this assignment to go in depth into this question but I would assume based on my math background, this would require some forecasting techniques. I would like to dive into more prediction-related analysis to answer this question, but this is outside the scope of this class, so I will have to come back to it later on after a refresher on forecasting methods. 
+
+As for the top spending countries of each year, it was very difficult to visualize the top five spending countries from 1949 to 2021 in one plot (or even faceted plots) which is why I had to limit to illustrating only the first five years (1949 to 1953) and the last five years (2017 to 2021). It would be better for comparison to display all the years in one chart but that was not possible. However, from what I was able to do, I could draw a good conclusion as to what the data was portraying. For the final project, I think it would be beneficial to look more into faceting and other techniques regarding fitting all data points in one plot. In addition, I'll also conduct further research on how to improve my titles and labels on my graphs as they can be better than they are now.
