@@ -1,0 +1,158 @@
+---
+title: "Challenge 7 Instructions"
+author: "Meredith Rolfe"
+description: "Visualizing Multiple Dimensions"
+date: "08/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - australian_marriage
+  - air_bnb
+  - eggs
+  - abc_poll
+  - faostat
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+   - Explain why you choose the specific graph type
+5) If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - eggs ⭐
+  - abc_poll ⭐⭐
+  - australian_marriage ⭐⭐
+  - hotel_bookings ⭐⭐⭐
+  - air_bnb  ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - faostat ⭐⭐⭐⭐⭐
+
+```{r}
+# Read data into a dataframe
+data <- read_csv("_data/eggs_tidy.csv")
+
+head(data)
+
+```
+
+
+### Briefly describe the data
+
+The data looks to be describing the sales of different egg carton types for each month and year. Every case is uniquely identified by a year and month combination. 
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+col_names = names(data)
+col_names <- col_names[!col_names %in% c("year","month")]
+col_names
+
+# Group the data by year to get total sales per year
+data <- data %>%
+     pivot_longer(data, cols=col_names, 
+                   names_to = "carton_type",
+                   values_to = "sales")
+
+head(data)
+
+grouped_data <- data %>%
+  group_by(year) %>%
+  summarise(
+    total_sales = sum(sales)
+  )
+
+grouped_data
+
+```
+I pivoted the data, so that each case represents the month, year, egg carton type and the corresponding sales of that carton type. This representation would make further analysis and groupings much easier. 
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+
+```
+
+## Visualization with Multiple Dimensions
+
+
+```{r}
+# Simple line plot of sales made across the years
+ggplot(grouped_data, aes(x=year, y=total_sales)) + 
+  geom_line()
+
+
+# Group the data by year and carton type, to get total sales
+grouped_data_by_y <- data %>%
+  group_by(year, carton_type) %>%
+  summarise(
+    total_sales = sum(sales)
+  )
+
+grouped_data_by_y
+
+# Graph of data grouped by year and carton type, for total sales
+ggplot(data=grouped_data_by_y, 
+       aes(x=year, y=total_sales, color= carton_type)) +
+  geom_line() + 
+  geom_point() + 
+  labs(
+    x = "Year",
+    y = "Total Sales",
+    color = "Carton Type",
+    title = "Total Sales By Carton Type Across Years"
+  ) + 
+  guides(color = guide_legend(title="Carton Type"))
+
+# Convert year to category type to create a horizontal stacked bar chart
+year_to_cat <- grouped_data_by_y %>%
+  mutate(year=as.character(year))
+
+ggplot(year_to_cat, aes(x = total_sales, y = year)) +
+  geom_bar(
+    aes(color = carton_type, fill = carton_type),
+    stat = "identity", position = "dodge"
+    ) + 
+  labs(
+    x = "Total Sales",
+    y = "Year",
+    title = "Total Sales Across Years Stacked By Carton Type"
+  )
+
+```
+
+
+
