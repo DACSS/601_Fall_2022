@@ -10,7 +10,7 @@ format:
     code-fold: true
     code-copy: true
     code-tools: true
-  pdf: default
+
 categories:
   - Theresa_Szczepanski
   - final_project
@@ -75,7 +75,7 @@ The second data set, `SG9_Item`, is $42 \times 9$ and consists of
  Details about the content of a given test item: 
  
  This includes the content `Reporting Category` (MF (motion and forces)
-WA (waves), and EN (energy), the `Standard` from the [2016 STE Massachusetts Curriculum Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf), the `Item Description` providing the details of what specifically was asked of students, and the points 
+WA (waves), and EN (energy)), the `Standard` from the [2016 STE Massachusetts Curriculum Framework](https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf), the `Item Description` providing the details of what specifically was asked of students, and the points 
 available for a given question, `item Possible Points`.
 
 Summary Performance Metrics:
@@ -84,7 +84,7 @@ Summary Performance Metrics:
 Rising Tide, `RT Percent Points`, the percentage of available points earned by students
 in the state, `State Percent Points`, and the difference between the percentage of points earned by Rising Tide students and the percentage of points earned by students in the state, `RT-State Diff`.
 
-- Lastly, `SG9_CU306Dis` and `SG9_CU306NonDis` are $3 \times 5$ dataframes consisting of summary performance data by `Reporting Category` for students with disabilities and without disabilities; most importantly including `RT Percent Points` and `State Percent Points`.
+- Lastly, `SG9_CU306Dis` and `SG9_CU306NonDis` are $3 \times 5$ dataframes consisting of summary performance data by `Reporting Category` for students with disabilities and without disabilities; most importantly including `RT Percent Points` and `State Percent Points`by disability status.
 
 
 When considering our student performance data, we hope to address the following broad questions:
@@ -95,7 +95,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 - What adjustments (if any) should be made at the Tier 1 level, i.e., curricular adjustments 
-for all students?
+for all students in the General Education setting?
 
 - What would be the most beneficial areas of focus for a targeted intervention course for 
 students struggling to meet or exceed performance expectations?
@@ -106,7 +106,7 @@ students struggling to meet or exceed performance expectations?
 ## Function Library
 
 To read in, tidy, and join our data frames for each content area we will use the 
-following functions. This still needs to be made more adaptable to include ELA.
+following functions.
 ```{r}
 #Item analysis Read in Function
 
@@ -156,8 +156,11 @@ read_item<-function(sheet_name, subject, grade){
 }
 ```
 
+
+Function to Read in MCAS Preliminary Results
 ```{r}
 ## MCAS Preliminary Results Read In
+## Input file_path where the results csv file is stored, and the "year" the exam was administered
 read_MCAS_Prelim<-function(file_path, year){read_csv(file_path,
                     skip=1)%>%
   select(-c("sprp_dis", "sprp_sch", "sprp_dis_name", "sprp_sch_name", "sprp_orgtype",
@@ -252,12 +255,16 @@ read_MCAS_Prelim<-function(file_path, year){read_csv(file_path,
 ```
 
 
-
+Function to Read in Item Reports
 ```{r}
 ## To-Do
 ##Function for number of items
 ## Function for graph for each question
 ## Function for key_word description
+
+# read_MCAS_Item(){
+#   
+# }
 
 ```
 
@@ -268,6 +275,8 @@ read_MCAS_Prelim<-function(file_path, year){read_csv(file_path,
 ### Read in Student Performance Data
 
 ```{r}
+
+
 
 #Filter, rename variables, and mutate values of variables on read-in
 
@@ -380,7 +389,7 @@ __Mutate__
   
 
 
-### Tidy Data and Join
+### Tidy Data
 
 I am interested in analyzing the 9th Grade Science Performance. To do this, I will 
 select a subset of our `MCAS_2022` data frame which includes:
@@ -420,12 +429,13 @@ SG9_MCAS_2022
 
 As expected, we now have 42 X 69 = 2898 rows. 
 
+### Join and Sanity Checks
+
 Now, we should be ready to join our data sets using `sitem` as the key. We should have a 
 2,898 by (10 + 8) = 2,898 by 18 data frame. We will also check our raw data against the 
 performance data reported by the state in the item report by calculating `percent_earned` 
 by Rising Tide students and comparing it to the figure `RT Percent Points` and storing the 
 difference in `earned_diff`
-### Join and Sanity Checks
 ```{r}
 SG9_StudentItem <- SG9_MCAS_2022 %>%
   left_join(SG9_Item, "sitem")
@@ -449,21 +459,8 @@ round to 0.
 
 ## G9 Science Performance Analysis
 
-When considering our student performance data, we hope to address the following broad questions:
+Now we can examine the content of the exam itself and our students' performance relative to the state.
 
-<style>
-div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
-</style>
-<div class = "blue">
-
-- What adjustments (if any) should be made at the Tier 1 level, i.e., curricular adjustments 
-for all students?
-
-- What would be the most beneficial areas of focus for a targeted intervention course for 
-students struggling to meet or exceed performance expectations?
-
-- Are there notable differences in student performance for students with and without disabilities?
-</div>
 ::: panel-tabset
 ### Structure of the Exam
 <style>
@@ -984,7 +981,7 @@ SG9_Math
   
 
 ```
-Rising Tide students as a whole performed slightly weaker relative to the state in all content reporting areas; however, disabled students performed better relative to their peers in the state. The performance gap is accounted for by the performance of the non-disabled students in the general classroom setting.
+Rising Tide students as a whole performed slightly weaker relative to the state in all content reporting areas; however, disabled students performed better relative to their peers in the state. The performance gap between Rising Tide students and students in the state is accounted for by the performance of the non-disabled students in the general classroom setting.
 
 All Rising Tide students, regardless of disability status, performed significantly weaker relative to students in the State  on items including the key word Calculate in their `item description`. This suggests, we should dedicate more classroom instructional time to problem solving with calculation. Notably, the higher a student's performance level, the higher the percentage of points a student lost for calculation items. To increase the proportion of students exceeding expectations, we need to improve our students' performance on calculation based items; evidence based math interventions include small group, differentiated problem sets.
 
@@ -992,18 +989,17 @@ The discrepancy in performance by Rising Tide students with and without disabili
 
 ## Reflection: Limitations/Areas for Improvement
 
--Reflection (2-3 pages) Describe your process/experience with the project, including the decisions you made,
-what was most challenging, and what you wish you would have known. You can also discuss what the next
-steps would be, were you to continue with the project.
+I was inspired to work on this report after years of experience working at a public school. Public education is a sector that is filled with passion and positive intentions but also divisive discussions. There exist a plethora of simplistic "one-trick fixes" that are marketed to students, teachers, and families. The use of data is the best tool we have against pressing forward with initiatives that do not improve student outcomes. 
 
-To improve this report, I need to 
+Over the years, I've noticed that teachers and leaders are given annual data reports yet, most lacked the time, capacity, or resources to identify evidence based, actionable measures to take in the classroom or at the organizational level. When presented with all of the questions from an assessment individually and the performance of all of one's students on paper, it is difficult to identify trends. Anecdotally I have noticed every year the majority of teachers gravitating to the scores and performance of individual students and ascribing mistakes or successes to specific experiences with an individual or one word in a question prompt. While relationship building and teaching to a child are hallmarks to student-teacher relationships, a narrow lens like this will not allow a teacher to identify classroom level changes or curriculum level changes that impact all students and future students. In one's compassionate focus on individuals, a great opportunity to promote the learning for all students is lost.
 
-- edit down the number of visualizations used.
-- edit the average points lost by category to get average over all items, rather than
-average of averages.
-- mutate `IEP` so that the values `0` and `1` are `Disabled` and `Non-Disabled`
-- mutate `Reporting Category` so that the full category names appear in the graphs.
-- be more discerning on when to use `totals` and when to use `averages`. To improve performance on a test, we are concerned with total points lost; to identify curricular weaknesses we are also interested in relative performance to the state by content area
+With the use of R, and the MCAS reports, I decided to focus on ways to identify trends at the classroom or curricular level. I found it challenging to limit the scope of my work for this project. Also, I struggled with discerning when to use `sum` vs. when to use `averages` or `medians`. To improve performance on a test, we are concerned with total points lost; to identify curricular weaknesses we are also interested in relative performance to the state by content area.
+
+I only completed the analysis of the Introductory Physics Exam for High school students. I have `ELA`, `Math`, and `Science` results for grades 5-8 as well as grade 10. I am still working on building a general function library to generate similar graphics and tables for other content areas and grade levels and I would like to complete a similar report for each grade level and assessment for teachers to use.
+
+Given access to historical data, I'd also like to examine these trends over time.
+
+I also have access to reports that include the teacher a student had and the grades they earned from their teacher in the year they were assessed on the MCAS. I would also like to examine the relationship between a students performance as measured by their teachers compared to their performance level as measured by the state. Are their patterns to the groups of students with the largest discrepancy between these two metrics? This would be important data to support the teaching and learning at our school.
 
 ## References
 ::: {#refs}
@@ -1056,11 +1052,12 @@ Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G,
 | `RT-State Diff`     | Discrete    | Difference between percent of points earned by Rising Tide Students and Students in the State for a given `sitem`|
 | `sitem`             | Nominal  | The question number the MCAS exam|
 | `sitem_score`       | Discrete  | The number of points a student earned on a given `sitem`|
-| `sperflev`          | Ordinal    |  Exceeds Expectations      |
+| `sperflev`          | Ordinal    |  The student's [performance level](https://www.doe.mass.edu/mcas/tdd/pld/)      |
+|                     |            | Exceeds Expectations      |
 |                     |            |  Meets Expectations        |
 |                     |            |  Partially Meets Expectations|
 |                     |            |  Does Not Meet Expectations |
-| `sscaleds`              | Discrete  | The [student's scaled score](https://www.doe.mass.edu/mcas/growth/default.html) by subject area (e: English, m: Math, s: Science)|
+| `sscaleds`              | Discrete  | The [student's scaled score](https://www.doe.mass.edu/mcas/parents/pgreport/ghs-english.pdf ) by subject area (e: English, m: Math, s: Science)|
 | `ssgp`              | Continuous  | The [student's growth percentile](https://www.doe.mass.edu/mcas/growth/default.html) by subject area (e: English, m: Math, s: Science)|
 |`State Percent Points`  | Continuous    | Percent of points earned by Massachusetts students for a given `sitem`|
 
