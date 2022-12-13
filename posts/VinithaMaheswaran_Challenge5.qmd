@@ -1,0 +1,350 @@
+---
+title: "Challenge 5 Solutions"
+author: "Vinitha Maheswaran"
+description: "Introduction to Visualization"
+date: "11/27/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+-   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
+-   Australian Marriage ⭐⭐ 
+-   AB_NYC_2019.csv ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐
+-   Public School Characteristics ⭐⭐⭐⭐ 
+-   USA Households ⭐⭐⭐⭐⭐
+
+
+For this challenge I will be working with the "USA Households\*.xlsx" data set.
+
+```{r}
+library(readxl)
+
+# Reading the USA Households\*.xlsx data set and storing in a data frame
+
+column_names = c("Year", "Household_Number_Thousands", "Total_Percent_Distribution", "Under $15,000", "$15,000 to $24,999", "$25,000 to $34,999", "35,000 to $49,999", "$50,000 to $74,999", "$75,000 to $99,999", "$100,000 to $149,999", "$150,000 to $199,999", "$200,000 and over", "Median_Income_Estimate", "Median_Income_MOE", "Mean_Income_Estimate", "Mean_Income_MOE")
+usa_data <- read_excel("_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx", col_names = column_names, skip = 5)
+print(usa_data)
+```
+
+Since the “USA Households\*.xlsx” data set is in Excel format, I am using the 'readxl' package for reading the data. After reading, the data is stored in a dataframe “usa_data". The first three rows in the dataframe contains description about the data and the 4th and 5th row contains the column headings. I resolve this issue by skipping the first 5 rows while reading the data set and storing in a dataframe "usa_data" with the renamed column names.
+
+
+
+### Briefly describe the data
+
+The USA household data contains information on the mean and median income grouped by Race and Hispanic Origin of householder for the period 1967 - 2019. The data is split into 12 different categories based on Races and we have the total number of households surveyed in a given year along with the total percentage distribution (100 for all observations), percentage distribution for various income levels, and the mean and median (estimated and margin of error) income. For some races, data is not available for all the years in the period 1967 - 2019.
+
+
+
+## Tidy Data and Mutate Variables (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here. Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+
+The data is not tidy and requires data cleaning. (Note: I renamed the column names while reading the data.) First, I removed the last 31 rows from the dataframe "usa_data" as they are just footnotes and not observations. 
+
+```{r}
+# Removing the last 31 rows as they are just footnotes and not observations
+usa_data <- head(usa_data,-31)
+print(usa_data)
+```
+
+Currently, the dataset does not have a separate column for "Race". The "Race" was mentioned in the "Year" column (the remaining columns were empty for such observations) and were inserted as separators for different race groups in the data. So, I created a new column for "Race" (muatated variable) and filled it with non-numerical values from "Year" column. I also filled the empty values in "Race" with the previous value in that column. Then, I removed the rows from the dataset which had Race value in the "Year" column.
+
+```{r}
+# Creating new column for Race and filling the empty values for Race with the previous value in that column
+
+usa_data <- usa_data%>%
+  mutate(Race = case_when(str_detect(Year,("([A-Z])")) ~ Year))%>%
+  fill(Race, .direction = "down")
+
+# Removing the rows from usa_data which has non-numerical values in Year column (these rows have Race value in the Year column and were inserted as separators for different Race groups)
+
+usa_data <- usa_data%>%
+  filter(!str_detect(Year,("([A-Z])")))
+
+usa_data
+```
+
+Next, I removed the footnote number next to the year value and race value from the columns "Year" and "Race" respectively as they had no purpose in visualization.
+
+```{r}
+# Removing the footnote number next to the year value in the "Year" column
+
+usa_data <- usa_data%>%
+  mutate(Year = str_remove(Year, " .*"))
+
+# Removing the footnote number next to the race value in the "Race" column
+
+usa_data <- usa_data%>%
+  mutate(Race = str_remove(Race, "[0-9]+"))
+
+usa_data
+```
+
+Following that, I removed the "Total_Percent_Distribution" column form the dataset as the value was same (100) for all the observations and had no purpose in visualization.
+
+```{r}
+# Remove the "Total_Percent_Distribution" column as that value is 100 for all observations
+
+usa_data <- usa_data%>%
+  subset(select = -c(3))
+
+usa_data
+```
+
+Finally, I reordered the columns in the dataframe in order to have "Race" as the first column followed by "Year" and the remaining columns.
+
+```{r}
+# Reorder the columns in the usa_data dataframe so that "Race" is the first column followed by "Year"
+
+usa_data <- usa_data%>%
+  subset(select=c(16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
+
+usa_data
+```
+
+I checked for missing/null data in the "usa_data" dataframe and found that there are no NA or NULL values.
+
+```{r}
+#Check for missing/null data in the hotel_data
+sum(is.na(usa_data))
+sum(is.null(usa_data))
+```
+
+I found that there are few columns which have numerical values but datatype assigned as "character" Hence, I looked further into those columns.
+
+```{r}
+str(usa_data)
+```
+
+The datatype "character" columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have numerical values. I applied the table() to these columns to see which value is non-numerical and whether they can be modified or removed. The columns had few instances of "N" value indicating that the data may not be available. I decided to drop the observations with "N" value from the dataframe and changed the datatype to "numeric" for these columns.
+
+```{r}
+# Checking whether the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have non-numerical values
+col <- c("Household_Number_Thousands", "Mean_Income_Estimate","Mean_Income_MOE")
+for (c in col){
+    print(c)
+    print(table(usa_data[,c]))
+}
+```
+
+```{r}
+# Remove rows from the dataset that have "N" value
+usa_data <- usa_data%>%
+  filter(across(everything(),~ . !="N"))
+usa_data
+```
+
+
+```{r}
+# Converting the datatype of "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" columns from character to numeric
+usa_data <- usa_data%>%
+  mutate(Household_Number_Thousands = as.numeric(Household_Number_Thousands))%>%
+  mutate(Mean_Income_Estimate = as.numeric(Mean_Income_Estimate))%>%
+  mutate(Mean_Income_MOE = as.numeric(Mean_Income_MOE))
+```
+
+
+
+Sanity Check: Make sure that the "N" values are removed from the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE".
+
+```{r}
+# Sanity Check: Check that the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have no non-numerical values
+col <- c("Household_Number_Thousands", "Mean_Income_Estimate","Mean_Income_MOE")
+for (c in col){
+    print(c)
+    print(table(usa_data[,c]))
+}
+```
+
+Sanity Check: Make sure that the range of years is from 1967 - 2019, there are 12 Race groups, and there are no footnote numbers.
+
+```{r}
+# Find number of distinct Year values
+n_distinct(usa_data$Year)
+
+# Sanity check: Check that the unique Year values range from 1967 - 2019 after data cleaning 
+unique(usa_data$Year)
+```
+
+
+```{r}
+# Find number of distinct Race values
+n_distinct(usa_data$Race)
+
+# Sanity check: Check that the unique Race values do not have any footnote numbers after data cleaning 
+unique(usa_data$Race)
+```
+
+
+```{r}
+#Summary of usa_data
+library(summarytools)
+print(summarytools::dfSummary(usa_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+
+**Summary of tidy data and mutate variables (as needed):**
+
+After reading the data and renaming the columns, we have 383 rows and 16 columns in the dataframe. Out of the 383 rows, the last 31 rows are footnotes and are removed resulting in 352 rows and 16 columns. The first column “Year” has information on the Year and Race and Hispanic origin of householder. The race value in the first column is currently used as a separator for the different race groups in the data. Hence, I made a new column called “Race” and filled the column with the race value if available, else filled with the previous race value. We get a total of 12 distinct race groups. Following that, I removed the rows from the dataframe that had non-numerical values in the first column as these rows with the Race value were just used as a divider between race groups. This results in a dataframe of 340 rows and 17 columns. Now, we have separate columns for “Year” and “Race”. Next, I removed the footnote numbers next to the values in the “Year” and “Race” columns. I also removed the column “Total_Percent_Distribution” as the value is 100 for all observations and is not significant. If we add the percentage value for all 9 income levels in an observation it should add up to 100. Finally, I reordered the columns so that “Race” is the first column in the dataframe followed by “Year” and the remaining columns. I also made sure to check that the datatypes of the columns were correct. I noticed that the "character" columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" had few instances of "N" value (indicating that the data may not be available). These columns are supposed to be "numeric". I decided to drop the observations (3 in this case) with "N" value from the dataframe and changed the datatype to "numeric" for these columns.
+
+After cleaning the data, I end up with a dataframe of 337 observations and 16 columns/attributes. I did a sanity check to make sure that the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have no non-numerical values, we have data for the period 1967 - 2019 and we have 12 race categories in total. Currently, I have not removed the observations with race value as "ALL RACES" as I am not sure whether they include the other race categories. I summarized the data using dfSummary() function and made sure that there are no duplicates or missing values in the data and the datatypes match.
+
+
+
+## Univariate Visualizations
+
+I am plotting univariate visualization using bar plots. I am using bar plots as I want to visualize the distribution of categorical variables (Year and Race). Univariate graphs plot the distribution of data from a single variable. 
+
+The bar plot below represents the Distribution of data observations for years 1967 - 2019. 
+
+```{r fig.height = 5, fig.width = 10}
+# Bar graph representing the distribution of data observations for years 1967 - 2019.
+
+library(ggplot2)
+
+ggplot(usa_data, aes(x = Year)) + 
+  geom_bar(fill="#00BFC4", width=0.8) +
+  labs(title = "Distribution of data observations for years 1967 - 2019", 
+       y = "Count", x = "Year") +
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+```
+
+From the above visualization, we can observe that years 2013 and 2017 have the highest number of data observations (16) and it exceeds the number of Race categories which is 12. This means that for few of the Race categories we have more than one data observation for years 2013 and 2017. Need to research more on the reason behind this.
+
+
+The bar plot below represents the Distribution of data observations for Race categories. 
+
+```{r fig.height = 5, fig.width = 10}
+# Bar graph representing the distribution of data observations for Race categories.
+
+library(ggplot2)
+
+ggplot(usa_data, aes(y = Race)) + 
+  geom_bar(fill="#F8766D", width=0.8) +
+  labs(title = "Distribution of data observations for Race categories", 
+       x = "Count", y = "Race")
+```
+
+From the above visualization, we can observe that we have the most number of data observations for the "ALL RACES" race group followed by "HISPANIC (ANY RACE)" race group. "ASIAN AND PACIFIC ISLANDER" race group has the least number of data observations for the period 1967 - 2019.
+
+
+I wanted to find the reason behind 16 data observations for year 2017. I filtered the data for year 2017 and stored it in a new dataframe. I plotted bar plot for Distribution of data observations for Race categories for the year 2017 and found that 8 out of the 12 race categories had data observations for year 2017. These 8 race groups had 2 data observations each for the year 2017.
+
+```{r fig.height = 5, fig.width = 10}
+# Filtering the observations for year 2017
+usa_data_2017 <- usa_data%>%
+  filter(Year=="2017")
+
+# Bar graph representing the distribution of data observations for Race categories for the year 2017.
+ggplot(usa_data_2017, aes(y = Race)) + 
+  geom_bar(fill="#00BE67", width=0.8) +
+  labs(title = "Distribution of data observations for Race categories for the year 2017", 
+       x = "Count", y = "Race")
+```
+
+Similarly, I wanted to find the reason behind 16 data observations for year 2013. I filtered the data for year 2013 and stored it in a new dataframe. I plotted bar plot for Distribution of data observations for Race categories for the year 2013 and found that 8 out of the 12 race categories had data observations for year 2013. These 8 race groups had 2 data observations each for the year 2013. These were the same 8 race groups that had extra data observations for year 2017.
+
+```{r fig.height = 5, fig.width = 10}
+# Filtering the observations for year 2013
+usa_data_2013 <- usa_data%>%
+  filter(Year=="2013")
+
+# Bar graph representing the distribution of data observations for Race categories for the year 2013.
+ggplot(usa_data_2013, aes(y = Race)) + 
+  geom_bar(fill="#CD9600", width=0.8) +
+  labs(title = "Distribution of data observations for Race categories for the year 2013", 
+       x = "Count", y = "Race")
+```
+
+The above 2 bar plots could have been plotted in a single graph using faceting. Would like to try that in the future.
+
+
+## Bivariate Visualization(s)
+
+I am plotting a bivariate visualization using violin plot. Bivariate graphs display the relationship between two variables. This violin plot represents the Mean Income for Race categories over the years 1967 - 2019. I chose violin plot as it can be used to plot the relationship between a categorical variable (Race in this case) and a quantitative variable (Mean Income in this case).
+
+```{r fig.height = 7, fig.width = 10}
+
+# Violin plot representing the Mean Income for Race categories over the years 1967 - 2019.
+ggplot(usa_data, aes(y=Mean_Income_Estimate, x = Race)) + 
+  geom_violin(fill = "cornflowerblue") +
+  labs(title = "Mean Income for Race Categories across the years 1967 - 2019", 
+       y = "Mean Income", x = "Race") +
+  theme(axis.text.x=element_text(angle=60, hjust=1))
+```
+
+From the above visualization, it is evident that "Asian" Race households have the highest Mean Income followed by "White" Race households. It would be useful to research, study and understand the reasons behind the comparatively lower Mean Income for "Black" and "Hispanic" Race households in the US.
+
+
+
+Finally, I am plotting a multivariate visualization using line plot. Multivariate graphs display the relationships among three or more variables. This line plot represents the Mean Income for the Years 1967 - 2019 grouped by Race categories. I am choosing line plot as we have Year as one of the variables and it will be easier to identify trends in the data.
+
+```{r fig.height = 5, fig.width = 10}
+
+# Line plot representing the Mean Income for the years 1967 - 2019 grouped by Race.
+ggplot(usa_data, aes(y=Mean_Income_Estimate, x = Year, group = Race, color = Race)) + 
+  geom_line() +
+  labs(title = "Mean Income for the years 1967 - 2019 grouped by Race", 
+       y = "Mean Income", x = "Year") +
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+```
+
+From the above visualization, we can observe that the mean income for "Asian" Race households is the highest. It is also evident that we have data for "Asian" Race households only from the year 1988. For the years 1967 - 1971, we have data only for the Races "ALL RACES", "BLACK" and "WHITE". "ALL RACES" is the only Race category for which we have data observations for all the years from 1967 - 2019. Hence, it would be difficult to make comparisons among different Race categories for the period 1967 - 2019.
