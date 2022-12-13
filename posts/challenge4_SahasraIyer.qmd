@@ -1,0 +1,210 @@
+---
+title: "Challenge 4 Instructions"
+author: "Meredith Rolfe"
+desription: "More data wrangling: pivoting"
+date: "08/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(ggplot2)
+library(tidyr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+```{r}
+# Read csv file into dataframe
+poultry_data <- read_excel("_data/poultry_tidy.xlsx")
+
+# Printing the top 5 rows
+head(poultry_data, 5)
+
+dim(poultry_data)
+
+# Getting some initial statistics
+unique(poultry_data$Product)
+
+min(poultry_data$Year)
+
+max(poultry_data$Year)
+```
+
+### Briefly describe the data
+
+The data consists of different poultry pieces (breast, thigh, etc.), and their prices in dollars through different years, starting from 2004, right upto 2013. The prices are documented month-wise for this period. 
+The dataset is composed of 600 rows and 4 columns, which holistically represent this data.
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+# Transforming Year and Month columns into "Date" column
+poultry_data$Date <- format(as.Date((paste(poultry_data$Year,poultry_data$Month,"01",sep="")), "%Y%b%e"), "%Y-%m")
+
+head(poultry_data, 5)
+
+# Get rows having no values in "Price_Dollar column"
+poultry_data[is.na(poultry_data$Price_Dollar), ]
+
+# Populating the columns with 0, if no price value is available
+poultry_data <- poultry_data %>%
+  mutate(
+    Price_Dollar = ifelse(is.na(Price_Dollar), 0 , Price_Dollar)
+  )
+
+# Grouping data by Product types
+poultry_grouped <- poultry_data %>%
+  group_by(Product) %>%
+  summarise(
+    price_mean = mean(Price_Dollar),
+    price_median = median(Price_Dollar)
+  )
+
+poultry_grouped
+
+ggplot(poultry_grouped) + 
+  geom_point(aes(x=Product, y=price_mean)) +
+  ylab("Price Mean (in Dollars)") + 
+  xlab("Product type") + 
+  ggtitle("Graph to compare product type to mean price by product")
+
+# Boxplot to find price variations in each product type
+ggplot(poultry_data, aes(x=Product, y=Price_Dollar, group=Product)) + 
+  geom_boxplot() +
+  ylab("Price (in dollars)") + 
+  ggtitle("Boxplot for product type price comparison")
+
+# Data grouped by date
+poultry_grouped_date <- poultry_data %>%
+  group_by(Date) %>%
+  summarise(
+    price_mean = mean(Price_Dollar),
+    price_median = median(Price_Dollar)
+  )
+
+poultry_grouped_date
+
+options(repr.plot.width = 6, repr.plot.height =3)
+
+graph <- ggplot(poultry_grouped_date, aes(x=Date, y=price_mean)) + 
+  geom_point() + 
+  ylab("Price Mean (in Dollars)") + 
+  theme_minimal() +
+  theme(text = element_text(size = 6),element_line(size =1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  ggtitle("Price mean per month (2004 - 2013)")
+
+graph
+```
+```{r}
+filter(poultry_data, Year=="2013" & Month=="November")
+```
+Any additional comments?
+
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+For this data, I have used the Month and Year values to create a new "Date" column. I have then used this column, as well as the Product column, to group the data to get mean price and median price values. While the graphs formed by this grouping are not very informative, on scaling the data, this could be extremely informative. 
+
+Document your work here.
+
+```{r}
+# Reading into dataframe
+data <- read_excel('_data/debt_in_trillions.xlsx')
+data <- data %>%
+  separate(c("Year and Quarter"), c("Year", "Quarter"), ":")
+data
+
+# Group data by year, and get total and mean debt per year
+data_grouped <- data %>%
+  group_by(Year) %>%
+  summarise(total_debt_by_year = sum(Total),
+            mean_debt_by_year = mean(Total))
+
+# Plot the mean debt per year
+ggplot(data_grouped, aes(x=Year, y=mean_debt_by_year, group=1)) + ylab("Mean debt (in Trillions)") + 
+  geom_point() + 
+  geom_line() + 
+  ggtitle("Year vs Mean debt (in Trillions) ")
+
+data_grouped
+
+# Group data by year and get mean value statistics for each debt type
+data_by_debt_type <- data %>%
+   group_by(Year) %>% 
+   summarise(mort_mean = mean(Mortgage),
+             herev_mean = mean(`HE Revolving`),
+             auto_mean = mean(`Auto Loan`),
+             cred_mean = mean(`Credit Card`),
+             stud_mean = mean(`Student Loan`))
+
+data_by_debt_type
+
+# Preprocess the data, to pivot it for graphing
+col_names = names(data_by_debt_type)
+col_names <- col_names[!col_names %in% c("Year")]
+
+col_names 
+
+# Pivot the data such that each case represents the mean debt type for a given year
+pivoted_debt_data <- pivot_longer(data_by_debt_type, cols=col_names, 
+                          names_to = "debt_type",
+                          values_to = "debt_mean_value")
+
+# Graphing the data
+ggplot(pivoted_debt_data, aes(x = Year)) +
+  geom_line(aes(y = debt_mean_value, group=debt_type, color=debt_type)) + 
+  xlab("Year") + 
+  ylab("Debt mean (in trillions) ") + 
+  ggtitle("Mean debt value across years, per debt type") + 
+  guides(color = guide_legend(title="Debt type"))
+
+pivoted_debt_data
+
+```
+
+Any additional comments?
+
+We can see that the mortgage debt has consistently been higher across all the years that the data has been collated for. The mortgage debt is almost 5 time the average debt of all other debt types. 
