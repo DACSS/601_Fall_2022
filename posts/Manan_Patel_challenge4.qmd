@@ -118,6 +118,8 @@ hotel_mutate <- hotel_mutate %>%
 hotel_mutate
 ```
 
+Now it adds a new column to the **`hotel_mutate`** data frame called **`booking_date`**, which is calculated by subtracting the **`lead_time`** column from the **`arrival_date`** column. This new column represents the date on which the hotel reservation was booked. After adding the new **`booking_date`** column, it returns the updated **`hotel_mutate`** data frame.
+
 ```{r}
 unique(hotels_booking$reservation_status)
 ```
@@ -125,22 +127,30 @@ unique(hotels_booking$reservation_status)
 Now we will find that when the status was changed to cancelled after booking and also after that we will Mutate the class of the agent and company field to numeric.\
 
 ```{r}
-hotel_cancellation <- hotel_mutate %>%
-  filter(reservation_status == 'Canceled') %>%
-  mutate(canc_time = booking_date - reservation_status_date)
+hotel_cancellations <- filter(hotel_mutate, reservation_status == 'Canceled')
+hotel_cancellations <- mutate(hotel_cancellations, canc_time = booking_date - reservation_status_date)
 
-hotel_cancellation %>%
-  summarise(min = min(canc_time), max = max(canc_time), mean = mean(canc_time), median = median(canc_time))
+summarise(hotel_cancellations, min = min(canc_time), max = max(canc_time), mean = mean(canc_time), median = median(canc_time))
+
 ```
+
+Here, we filters the **`hotel_mutate`** data frame to only include rows where the **`reservation_status`** column is equal to 'Canceled'. Then, It adds a new column called **`canc_time`** to the **`hotel_cancellations`** data frame, which is calculated by subtracting the **`reservation_status_date`** column from the **`booking_date`** column and calculates summary statistics for the **`canc_time`** column, including the minimum, maximum, mean, and median values.
 
 ```{r}
 hotel_mutate <- hotel_mutate %>%
-  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+  mutate(across(c(agent, company), ~ ifelse(str_detect(., "NULL"), NA, .))) %>%
+  mutate_at(vars(agent, company), as.numeric)
 
 is.numeric(hotel_mutate$agent)
 ```
 
-No, we will check did it got change to numeric or not.
+First, the **`across`** function is used to replace all occurrences of the string **`"NULL"`** with **`NA`** in the **`agent`** and **`company`** columns.
+
+Then, the **`mutate_at`** function is used to convert the **`agent`** and **`company`** columns to numeric data type.
+
+Finally, the **`is.numeric`** function is used to check if the **`agent`** column has been successfully converted to numeric data type.
+
+Now, we will check did it got change to numeric or not.
 
 ```{r}
 is.numeric(hotel_mutate$company)
@@ -187,3 +197,13 @@ yeardata <- newdata %>%
   
 head(yeardata)
 ```
+
+```{r}
+yeardata <- newdata %>%
+  group_by(year)  %>%
+  summarise(mean_mortgage = mean(Mortgage), mean_other = mean(Other))
+
+head(yeardata)
+```
+
+This approach allows for more explicit column names in the resulting data frame.
