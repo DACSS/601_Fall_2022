@@ -1,0 +1,151 @@
+---
+title: "Challenge 5 Instructions"
+author: "Meredith Rolfe"
+description: "Introduction to Visualization"
+date: "08/22/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+-   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
+-   Australian Marriage ⭐⭐ 
+-   AB_NYC_2019.csv ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐
+-   Public School Characteristics ⭐⭐⭐⭐ 
+-   USA Households ⭐⭐⭐⭐⭐
+
+```{r}
+# Read data into dataframe
+data <- read_csv("_data/AB_NYC_2019.csv")
+
+head(data, 5)
+
+# Get summary statistics of data
+summary(data)
+```
+
+### Briefly describe the data
+
+The data is composed of different AirBNB properties listed in New York City, in the year 2019. It consists of information such as the host name, the neighborhood and neighborhood group, the geographical locations, as well as the property type and price. It would be interesting to explore the data to identify differnt statistics by property type as well as neighborhood group.  
+
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+#Get NA columns count
+get_na_col_count <-sapply(data, function(col_name) sum(length(which(is.na(col_name)))))
+na_col_count <- data.frame(get_na_col_count)
+na_col_count
+```
+From the analysis, we can see that every row has a unique id associated with it, which means that there are no duplicate listings present in the dataset. 
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+# Get number of unique room types
+unique(data$room_type)
+
+# Get number of unique neighborhood groups
+unique(data$neighbourhood_group)
+```
+We can see that room_type and neighborhood_group columns are categorical, with limited unique values. 
+
+
+## Univariate Visualizations
+
+```{r}
+data %>%
+  dplyr::count(room_type) %>%
+  ggplot(aes(x = room_type, y = n, fill = room_type)) +
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label = n), vjust = -0.5) +
+  labs(title="Room Types vs Total Bookings", x="Room Types Available", y="Total Booking Count", fill="Room Type")
+  
+data %>%
+  dplyr::count(neighbourhood_group) %>%
+  ggplot(aes(x = neighbourhood_group, y = n, fill = neighbourhood_group)) +
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label = n), vjust = -0.5) +
+  labs(title="Neighborhood vs Total Bookings", x="Neighborhoods", y="Total Booking Count", fill="Neighborhoods")
+```
+```{r}
+# Get histogram plot to get price density of the properties listed
+data %>%
+  ggplot(aes(x=price)) + 
+  geom_histogram() + 
+  xlim(0, 2100) + 
+  xlab("Price (in Dollars)") + 
+  ylab("Number of properties") + 
+  ggtitle("Histogram of property price distribution in dataset")
+
+```
+As the histogram is right skewed, we can conclude that most of the properties have price listings less than $500, with very few properties exceeding that value. 
+
+
+## Bivariate Visualization(s)
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = room_type, fill=neighbourhood_group)) + 
+  labs(x = "Room Type", y = "Number of Airbnbs", title = "Scatterplot of Room Type vs # of Airbnbs",
+       fill = "Neighbourhood Group")
+
+
+ggplot(data) + 
+  geom_point(mapping = aes(x = minimum_nights, y = price)) + 
+  labs(x = "Minimum Nights",
+       y = "Price",
+       title = "Price vs Minimum Nights")
+```
+Any additional comments?
+
+From the analysis, we get various visualizations which tell us that entire apartment bookings are most popular, with Manhattan and Brooklyn being the most sought after neighborhood groups. Within the bivariate visualizations we can also see a breakdown of the proportion of neighborhood group bookings for the property types available. 
