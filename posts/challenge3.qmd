@@ -1,0 +1,128 @@
+---
+title: "Challenge 3"
+author: "Shriya Sehgal"
+desription: "Tidy Data: Pivoting"
+date: "11/17/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+  - animal_weights
+  - eggs
+  - australian_marriage
+  - usa_households
+  - sce_labor
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1.  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2.  identify what needs to be done to tidy the current data
+3.  anticipate the shape of pivoted data
+4.  pivot the data into tidy format using `pivot_longer`
+
+## Read in data
+
+
+```{r}
+dataset <- read_csv("_data/eggs_tidy.csv")
+dataset
+
+```
+
+### Briefly describe the data
+
+```{r}
+summary(eggs_dataset)
+```
+
+```{r}
+head(eggs_dataset)
+```
+
+
+There are 129 rows and 6 columns containing the data of each month from the 2004-2013. The first 2 columns are the months and years and the rest 4 tells us the average price of the size and quantity of the eggs combined. The average price of the eggs ranges from 120-290 cents. The columns are as follows.
+a. large_half_dozen
+b. extra_large_half_dozen
+c. large_dozen
+d. extra_large_dozen
+
+
+## Anticipate the End Result
+
+The first step in pivoting the data is to try to come up with a concrete vision of what the end product *should* look like - that way you will know whether or not your pivoting was successful.
+
+One easy way to do this is to think about the dimensions of your current data (tibble, dataframe, or matrix), and then calculate what the dimensions of the pivoted data should be.
+
+Suppose you have a dataset with $n$ rows and $k$ variables. In our example, 3 of the variables are used to identify a case, so you will be pivoting $k-3$ variables into a longer format where the $k-3$ variable names will move into the `names_to` variable and the current values in each of those columns will move into the `values_to` variable. Therefore, we would expect $n * (k-3)$ rows in the pivoted dataframe!
+
+
+
+```{r}
+
+
+#existing rows/cases
+nrow(dataset)
+
+#existing columns/cases
+ncol(dataset)
+
+#expected rows/cases
+nrow(dataset) * (ncol(dataset)-2)
+
+# expected columns 
+3 + 2
+```
+
+### Challenge: Describe the final dimensions
+
+
+
+It can be seen that the dataset with 120 rows and 6 columns. After pivoting we would have the columns as months, year, size of the egg (large/extra large) and the quanity of the eggs(half dozen/dozen) which would make it extremely easy to observe the changes from 2004-2013 throughout the year for the size of the eggs as well as the quantity of eggs sold.
+
+
+The resultant dataset would be 4 times larger than the original separating the size-quantity pairs with 4 columns. Another column that contains the information about the average price of the eggs have been added. So now, the total number of the columns would decrease by 1 and the resultants columns would be month, year, size, quantity and average price.
+
+## Pivot the Data
+
+Now we will pivot the data, and compare our pivoted data dimensions to the dimensions calculated above as a "sanity" check.
+
+### Example
+
+```{r}
+#| tbl-cap: Pivoted Example
+
+dataset_long <- dataset%>%
+  pivot_longer(cols=contains("large"),
+               names_to = c("size", "quantity"),
+               names_sep="_",
+               values_to = "cost"
+  )
+dataset_long
+```
+
+```{r}
+#existing rows/cases after the pivot
+nrow(dataset_long)
+#existing columns/cases after the pivot
+ncol(dataset_long)
+```
+
+
+It can been observed that the data is 4 times longer than the original dataset (120 to 480 rows) and the number of columns got reduced by 1. The process of pivoting makes the single observation per row and helps in easily understand the data and work for the future analysis.
