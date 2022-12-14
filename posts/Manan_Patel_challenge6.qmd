@@ -1,0 +1,181 @@
+---
+title: "Challenge 6 Instructions"
+author: "Meredith Rolfe"
+description: "Visualizing Time and Relationships"
+date: "08/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+
+-   try to make them "publication" ready (optional)
+-   Explain why you choose the specific graph type
+
+5)  Create at least one graph depicting part-whole or flow relationships
+
+-   try to make them "publication" ready (optional)
+-   Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   debt ⭐
+-   fed_rate ⭐⭐
+-   abc_poll ⭐⭐⭐
+-   usa_hh ⭐⭐⭐
+-   hotel_bookings ⭐⭐⭐⭐
+-   AB_NYC ⭐⭐⭐⭐⭐
+
+## Hotels booking data- (hotel_bookings.csv)
+
+```{r}
+hotel <- read_csv("_data/hotel_bookings.csv", show_col_types = FALSE)
+hotel
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+To count the number of unique values in all the columns we will do,
+
+```{r}
+rapply(hotel,function(x)length(unique(x)))
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+To find the unique values for the hotel we will do,
+
+```{r}
+unique(hotel$hotel)
+```
+
+```{r}
+table(hotel$country)
+```
+
+```{r}
+head(hotel)
+```
+
+```{r}
+lapply(hotel, class)
+```
+
+```{r}
+unique(hotel$hotel)
+```
+
+```{r}
+hotelmut <- hotel %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_month,arrival_date_year))
+
+hotelmut
+```
+
+To change the data type of the agent and company variables from character to numeric.
+
+```{r}
+hotelmut <- hotelmut %>%
+  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+is.numeric(hotelmut$agent)
+```
+
+## Time Dependent Visualization
+
+```{r}
+newplot <- hotelmut %>% select(total_guests, arrival_date) %>%
+  group_by(arrival_date) %>%
+  summarise(net_guests = sum(total_guests, na.rm=TRUE))
+
+newplot
+```
+
+```{r}
+summary(newplot$arrival_date)
+```
+
+```{r}
+newplot1 <- ggplot(newplot, aes(x = arrival_date, y = net_guests)) +
+             ggtitle("Guest Count Vs. Arrival Date Trend: Jul 2015 - Jun 2016") +
+             geom_line(color = "darkgreen") +
+             xlab("") +
+             theme(axis.text.x = element_text(angle = 60, hjust = 1, colour = "red"),
+                   axis.text.y = element_text(colour = "red"),
+                   plot.background = element_rect(fill = "lightblue"),
+                   text = element_text(family = "Courier New")) +
+             scale_x_date(date_labels = "%Y %b %d", date_minor_breaks = "1 month",
+                          limit = c(as.Date("2015-07-01"), as.Date("2016-07-01")))
+newplot1
+```
+
+data in the newplot data frame, with the x-axis showing the arrival_date variable and the y-axis showing the net_guests variable. The plot has a title, Guest Count Vs. Arrival Date Trend: Jul 2015 - Jun 2016, and the line is colored dark green.The x-axis uses custom date labels, shows minor breaks every month, and it is limited to the range of dates from July 1, 2015 to July 1, 2016. So, basically it creates a line graph to visualize trends for one year, from July 2015 to July 2016, using time series data. The graph shows the total number of guests who arrived on each day during this period. It also displays minor breaks for each month. The data reveals that the highest number of guests arrived during the first week of December 2015, followed by a sharp decrease. The number of guests appears to be consistent during the summer months of April, May, and June, which may be due to increased vacation travel during this period.
+
+## Visualizing Part-Whole Relationships
+
+```{r}
+# create a bar graph based on deposit_type
+library(ggplot2)
+ggplot(hotel, aes(deposit_type, fill = hotel)) +
+  geom_bar(color = "black", size = 0.5) +
+  scale_fill_manual(values = c("#FF0000", "#00FF00", "#0000FF")) +
+  theme(panel.background = element_rect(fill = "gray"))
+```
+
+I selected a bar graph with the deposit type on the x-axis because it effectively illustrates the counts of each deposit type by hotel. The graph demonstrates that the majority of bookings from both hotels do not require a deposit. If a deposit is required, the city hotel has a higher number of non-refundable deposits than the resort hotel, which has a small number of refundable deposits. This visual representation clearly shows the differences between the two hotels and the types of deposits they require.
+
+```{r}
+newplot2 <- hotelmut %>% 
+  filter(reservation_status != 'Canceled', arrival_date >= as.Date("2015-07-01") & arrival_date < as.Date("2016-07-01")) %>%
+  select(meal) %>%
+  group_by(meal) %>%
+  summarise(total_count = n(), .groups = 'drop') %>%
+  filter(meal != "Undefined")
+newplot2
+```
+
+We uses the filter function to keep only rows that have a reservation_status value other than canceled and an arrival_date within the given date range then it selects only the meal column from the resulting data frame after it groups the data by meal and uses the summarise function to calculate the total count of reservations for each meal plan type. The .groups argument is used to specify that the grouping should be dropped from the output. Finally, the filter function is used again to remove rows with a meal value of Undefined.
