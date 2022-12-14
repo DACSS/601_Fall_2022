@@ -40,6 +40,16 @@ One of the biggest challenges faced by people today are the layoffs going on acr
 * Stage - The stage of funding for the company, giving an insight into which categories are facing the biggest problems in this period.
 * Country - The country in which the layoff took place. The highest layoffs are currently going on in the United States and that is clearly reflected in the data analysis done below of this dataset.
 
+
+## Possible research queries
+Some of the possible research questions that come up when we look at this dataset are :-
+
+* Which sector/industry has been impacted the most with this layoffs trend?
+* Which countries are suffering from the highest number of layoffs?
+* What kind of funding stage are most companies at when laying off people?
+* When was the peak observed in the layoffs trend? What could be the possible reason for it?
+
+
 ## Read in the Data
 
 We are going to read the csv and put it into a dataframe. There are two columns that are there in the dataset we do not need for our analysis. These are Source (the source of the lay off information) and List_of_Employees_Laid_Off. Hence, after reading in the data, we ignore these two columns from our dataframe before continuing analysis on it.
@@ -88,12 +98,9 @@ paged_table(dataGroupedByCountry)
 
 ```
 
-This gives us an insight of how which species have highest appearances in the films as well as how the height and mass varies by the species.
+Though we get an idea on the number of layoffs in each country, we do not get any real comparison just from the table. We need visualizations to be able to better compare and analyze the data we see in this table.
 
-We can further look at the heights of different characters of certain species to get an insight on how it varies with species using the below graph :-
-
-```{r Species to Height graph, fig.width=14, fig.height=8}
-# Use group data to get species with more than 2 rows and plot a graph that shows relation between species and their height
+```{r Country to Layoffs graph, fig.width=14, fig.height=8}
 dataGroupedByCountry %>%
   top_n(20) %>%
   ggplot(aes(y=Country, x=Total_Laid_Off, fill = Country)) +
@@ -106,6 +113,14 @@ dataGroupedByCountry %>%
             x = "Country", 
             y = "Laid off count")
 
+
+```
+
+This graph helps us gain perspective of layoffs in the highest 20 countries. As can be seen from the bar chart, the United States has the highest layoff count with more than 150000 layoffs. None of the other countries has such a significant number of layoffs. The second highest is India with around 30000 layoffs.
+
+The above visualization gives us an idea in count, now we should consider percentages and composition.
+
+```{r Layoffs distribution}
 dataGroupedByCountryPercentage <- dataGroupedByCountry %>%
   mutate(across(where(is.numeric), ~ formattable::percent(./sum(.)))) %>%
   arrange(desc(Total_Laid_Off)) %>%
@@ -114,22 +129,25 @@ dataGroupedByCountryPercentage <- dataGroupedByCountry %>%
 ggplot(dataGroupedByCountryPercentage, aes(x="", y=Total_Laid_Off, fill=Country)) +
   geom_bar(stat="identity", width=1, color="white") +
   coord_polar("y", start=0)
-
 ```
 
-We take only the species for which we have atleast 2 character data. As can be seen, Droids are usually smaller while Wookies are usually much bigger.
+The above pie chart gives us the distribution of layoffs taking place across the top 20 countries. United States constitutes almost 65% of the total layoffs all across the world.
 
-We can analyze the origin of each species as well which species has more character origins in Original films as compared to prequels or sequels. This can be seen in the table below :-
+Now we look at the distribution of layoffs among the funding stage in each of the top 20 countries.
 
-```{r Species origin}
-comparison <- compare(data,dataGroupedByCountryPercentage,allowAll=TRUE)
-df.2.sub <- data[data$Country %in% dataGroupedByCountryPercentage$Country,]
-paged_table(df.2.sub)
+```{r Funding Stage with respect to layoffs and countries}
+dataTop20Countries <- data[data$Country %in% dataGroupedByCountryPercentage$Country,]
 
-df.2.sub %>%
+dataTop20Countries %>%
   ggplot(aes(fill=Stage, y=Country, x=Laid_Off_Count)) + 
       geom_bar(position="stack", stat="identity")
 
 ```
 
-## Possible research queries
+As can be seen from the graph, companies at the funding stage of IPO have one of the highest layoffs count.
+
+## Limitations
+I believe the current analysis and visualizations have the following limitations :-
+
+* The Funding stage graph needs to be clearer, maybe separated out for each of the top countries?
+* More visualations can probably used with a few other graph options that I have yet to explore to give a more clearer picture of the data analysis.
