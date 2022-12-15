@@ -1,0 +1,153 @@
+---
+title: "Homework 3"
+author: "Kavya Harlalka"
+desription: "Reading in Data"
+date: "10/12/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw3
+---
+
+```{r Libraries}
+#| label: setup
+#| warning: false
+#| message: false
+
+# Import important libraries needed for functions
+library(tidyverse)
+library(rmarkdown)
+library(summarytools)
+library(dplyr)
+library(formattable)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+
+One of the biggest challenges faced by people today are the layoffs going on across the globe. The layoffs are affecting not just a single country or industry but almost all of them. The dataset used here contains almost 1700 rows detailing the layoffs with the following columns of note :-
+
+* Company - The organization from which the layoffs took place. This piece of information would give us an idea which companies are having the largest layoffs all over the world.
+* Location - This gives us the City in which the layoff has happened. This can give us an idea about which areas are affected the most.
+* Laid_Off_Count - This gives us the number of employees laid off. It will give the total counts for any kind of grouping we would want to do to further analyze the data.
+* Percentage - It gives the value of percentage that the laid off employees form giving an insight on how much percent of employees were let go and which companies are going through the highest percentage lay offs.
+* Date - Gives the date on which the layoff took place, will help give a distribution of the layoffs taking place providing a good idea about the peaks and the lowest points of the layoff periods.
+* Stage - The stage of funding for the company, giving an insight into which categories are facing the biggest problems in this period.
+* Country - The country in which the layoff took place. The highest layoffs are currently going on in the United States and that is clearly reflected in the data analysis done below of this dataset.
+
+
+## Possible research queries
+Some of the possible research questions that come up when we look at this dataset are :-
+
+* Which sector/industry has been impacted the most with this layoffs trend?
+* Which countries are suffering from the highest number of layoffs?
+* What kind of funding stage are most companies at when laying off people?
+* When was the peak observed in the layoffs trend? What could be the possible reason for it?
+
+
+## Read in the Data
+
+We are going to read the csv and put it into a dataframe. There are two columns that are there in the dataset we do not need for our analysis. These are Source (the source of the lay off information) and List_of_Employees_Laid_Off. Hence, after reading in the data, we ignore these two columns from our dataframe before continuing analysis on it.
+
+```{r Read In Data}
+# Read data from the csv file
+data <- read.csv('_data/Dataset_detailing_layoffs.csv')
+
+# Remove unnecessary columns
+data <- subset(data, select = -c(Source, List_of_Employees_Laid_Off))
+
+# Printing the read data as a paged table
+paged_table(data)
+```
+
+We can see all the data in the paged table above. We are going to group this data by certain column values to give us better insight on the layoff patterns that are currently trending.
+
+## Summary of data
+
+First step is going to be printing and anlyzing the summary of the complete dataset to give us an idea how to approach it.
+
+```{r Data Summary}
+# Get and print summary of the dataset to help us analyze it.
+print(dfSummary(data))
+```
+
+We can see that there are more than 1400 companies data, 161 cities in 55 countries and affecting 28 industries. Thus we cannot analyze each and every value of each and every column since the dataset is quite large. We will only be analyzing the ones that have been impacted the most since it would not give us in-depth insight we need if we consider all the values of such a large datasets. Reducing the number of values also produce better and more insightful visualizations.
+
+## Analysis of Country wise data
+
+Let us start with the most critical analysis, which countries have been impacted the most by this layoff trend.
+
+```{r Country-Wise Analysis}
+# Group dataset by Country, ignoring values that have country as NA
+dataGroupedByCountry <- data %>%
+  group_by(Country) %>% 
+  filter(!is.na(Country))
+
+# Analyze the grouped data by finding the total laid off count per country
+dataGroupedByCountry <- dataGroupedByCountry %>%
+  summarise(
+    Total_Laid_Off = sum(Laid_Off_Count, na.rm = TRUE)
+  ) %>%
+  arrange(Country)
+paged_table(dataGroupedByCountry)
+
+```
+
+Though we get an idea on the number of layoffs in each country, we do not get any real comparison just from the table. We need visualizations to be able to better compare and analyze the data we see in this table.
+
+```{r Country to Layoffs graph, fig.width=14, fig.height=8}
+dataGroupedByCountry %>%
+  top_n(20) %>%
+  ggplot(aes(y=Country, x=Total_Laid_Off, fill = Country)) +
+      geom_col() +
+      theme(axis.text.x=element_text(size=20, angle=30, hjust=1),
+            axis.title.x = element_text(size=20),
+            axis.text.y=element_text(size=20),
+            axis.title.y = element_text(size=20)) +
+       labs(title = "Layoffs by Country 2022",
+            x = "Country", 
+            y = "Laid off count")
+
+
+```
+
+This graph helps us gain perspective of layoffs in the highest 20 countries. As can be seen from the bar chart, the United States has the highest layoff count with more than 150000 layoffs. None of the other countries has such a significant number of layoffs. The second highest is India with around 30000 layoffs.
+
+The above visualization gives us an idea in count, now we should consider percentages and composition.
+
+```{r Layoffs distribution}
+dataGroupedByCountryPercentage <- dataGroupedByCountry %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(./sum(.)))) %>%
+  arrange(desc(Total_Laid_Off)) %>%
+  top_n(20)
+
+ggplot(dataGroupedByCountryPercentage, aes(x="", y=Total_Laid_Off, fill=Country)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0)
+```
+
+The above pie chart gives us the distribution of layoffs taking place across the top 20 countries. United States constitutes almost 65% of the total layoffs all across the world.
+
+Now we look at the distribution of layoffs among the funding stage in each of the top 20 countries.
+
+```{r Funding Stage with respect to layoffs and countries}
+dataTop20Countries <- data[data$Country %in% dataGroupedByCountryPercentage$Country,]
+
+dataTop20Countries %>%
+  ggplot(aes(fill=Stage, y=Country, x=Laid_Off_Count)) + 
+      geom_bar(position="stack", stat="identity")
+
+```
+
+As can be seen from the graph, companies at the funding stage of IPO have one of the highest layoffs count.
+
+## Limitations
+I believe the current analysis and visualizations have the following limitations :-
+
+* The Funding stage graph needs to be clearer, maybe separated out for each of the top countries?
+* More visualations can probably used with a few other graph options that I have yet to explore to give a more clearer picture of the data analysis.
