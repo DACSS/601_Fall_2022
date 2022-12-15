@@ -1,0 +1,114 @@
+---
+title: "Challenge 5"
+author: "Neeharika Karanam"
+description: "Introduction to Visualization"
+date: "12/03/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+-   AB_NYC_2019.csv ⭐⭐⭐
+
+```{r}
+NYC_data <- read_csv("_data/AB_NYC_2019.csv")
+NYC_data
+```
+
+### Briefly describe the data
+
+The above dataset is about the airBNB listings in the New York City from 2019 and eit has 48895 rows and 16 columns. Each row is a listing which a lot of information like the location, host details like the unique ID and name, cost, room_type and various other details of the place. This dataset will help us in comparing the prices of the airBNB listings which are very similar to each other and also between the hosts. I have observed that there are hosts that have multiple listings.
+
+## Tidy Data (as needed)
+
+I have observed that there is need for tidying the data because I have seen cases where the value is NA in the column "reviews_per_month" and I have also observed that there are NA in the "date_of_last_review" column but this is completely acceptable becasue there is actually no data actually available. Therefore, reviews_per_month we need to replace the values of NS to 0 and the NA values are basically caused as there is no reviews actually present.
+
+```{r}
+replace_na(data, list(reviews_per_month = 0))
+
+```
+## Mutate
+
+In this particular dataset I have observed that there is no need for any kind of a mutation as all of the values that would help in the analysis are in extremely good shape and does not need tidying up.
+
+## Univariate Visualizations
+
+1. I have been extremely curious of how the listings in NYC are actually distributed throughout as we may assume Manhattan to have a lot of listings because it has a lot of touristic attractions. I am extremely interested in the borough of the various listings that the available in NYC.
+
+```{r}
+ggplot(data, aes(neighbourhood_group, fill = room_type)) + geom_bar() +
+  theme_bw() +
+  labs(title = "AirBNB by Location ", y = "Number of Listings", x = "Borough")
+```
+
+As anticipated, Manhattan has the most number of the airBNB listings but you can also observe that Brooklyn also has a lot of airBNB listings whereas, Queens, bronx and the Staten Island have a very listings on airBNB.
+
+This graph also shows us the complete breakdown of all of the listings in different locations as well the various types of rooms available in each of these places like the entire home/apt, Private room or a shared room. By just looking at the graph we can say that there are a lot of entire home/apt. One of the other interesting analysis is that there is a very high proportion of the entire home/apt in Manhattan than in other places.
+
+For the graph I have chosen a bar graph as it is a very easy and a convenient way to prepare the counts and also implement the different colors.
+
+2. The second analysis I am extremely interested is the reviews per month, which could be a measure of the average length of stay at various locations.
+
+```{r}
+ggplot(data, aes(reviews_per_month), xlim = c(0,10)) + 
+  geom_histogram(binwidth = .25) + 
+  labs(title = "Reviews Per Month")
+```
+
+I have chosen the histogram for this graph and it helps in showing the distribution of all the various reviews per month. I have also observed that there are many listings which do not have a lot of reviews which are given per month whereas there are some have reviews of 7 or 8. I have also observed that the listings in NYC are mostly long term and therefore this plot makes complete sense as most of them will not be rented a lot.
+
+## Bivariate Visualization(s)
+
+One of the most interesting metric is the prices in the different locations of NYC. This is extremely important for those who are interested in investing in an airBNB as it will tell us which areas in NYC demand a very high price per night.
+
+```{r}
+data %>%
+  ggplot(aes(neighbourhood_group, price), fill = neighbourhood) + 
+  geom_boxplot() + 
+  labs(title = "Price per each of the Listing by Borough") + 
+  theme_bw()
+```
+
+The aforementioned graph shows how the rates for each night for the listings in various places vary. I chose a box plot because it shows how prices are distributed throughout the various regions. As predicte, the majority of listings in the Bronx and Staten Island are affordable and concentrate in one location. Despite a few expensive exceptions, Queens appears to be a mostly inexpensive city. Brooklyn and Manhattan, which are both undoubtedly more costly in general, are home to the majority of the most expensive AirBNB.
