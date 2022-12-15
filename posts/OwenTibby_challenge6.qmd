@@ -1,0 +1,195 @@
+---
+title: "Challenge 6"
+author: "Owen Tibby"
+description: "Visualizing Time and Relationships"
+date: "11/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(stringr)
+
+library(dplyr)
+library(babynames)
+library(viridis)
+library(hrbrthemes)
+library(plotly)
+library(readxl)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+
+-   try to make them "publication" ready (optional)
+-   Explain why you choose the specific graph type
+
+5)  Create at least one graph depicting part-whole or flow relationships
+
+-   try to make them "publication" ready (optional)
+-   Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following data-sets, using the correct R package and command.
+
+-   debt ⭐
+-   fed_rate ⭐⭐
+-   abc_poll ⭐⭐⭐
+-   usa_hh ⭐⭐⭐
+-   hotel_bookings ⭐⭐⭐⭐
+-   AB_NYC ⭐⭐⭐⭐⭐
+
+```{r}
+
+debt<- read_excel("_data/debt_in_trillions.xlsx")
+```
+
+### Briefly describe the data
+
+This data-set provides insight into the total household debt (in trillions) in the U.S from 2003 to 2021 published quarterly. The debt is broken down into major loan types: mortgage, revolving home equity line of credit, auto loans, credit cards and student loans.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+dim(debt)
+summary(debt)
+
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+#Creating a date variable
+debt <-  debt %>% 
+  mutate(Month_day= case_when(str_detect(`Year and Quarter`, "Q1")~ "March 31", str_detect(`Year and Quarter`, "Q2")~ "June 30", str_detect(`Year and Quarter`, "Q3")~ "September 30", str_detect(`Year and Quarter`, "Q4")~ "December 31")) %>% 
+  mutate(Year_prefix= "20")
+
+debt<- debt %>% 
+unite(`FullYearQ`, `Year_prefix`, `Year and Quarter`, sep="") %>% 
+  separate(FullYearQ,into = c("Year2", "Quarter"), sep = ":") %>% 
+  mutate(Year=Year2) %>% 
+  unite(`Date`, `Month_day`, `Year2`, sep = ", ")
+
+print(head(debt))
+
+library(lubridate)
+debt$Date <-  debt$Date %>% 
+mdy() 
+
+#Reorganizing columns
+ col_order <- c(10, 2, 1, 3:9)
+debt<-debt[, col_order]
+  print((debt))
+
+```
+
+```{r}
+#Pivoting the data wider
+debt_wide <- debt%>%
+  pivot_longer(cols= 4:10, names_to = "Debt_Type", values_to="Debt_Amount") %>%
+   group_by(Debt_Type)
+
+debt_tidy <- debt_wide
+
+```
+
+## Time Dependent Visualization
+
+```{r Total debt}
+debt_tidy %>% 
+filter(Debt_Type == "Total") %>% 
+ggplot() + aes(x=`Date`,y=(Debt_Amount), color= Debt_Type) +
+geom_point(stat = "identity")+
+labs(y= "Debt Amount (Trillions)", x= "Year", color=" Type of Debt") +
+ggtitle("Graph 1.0: US Annual Household Debt on Aggregate")
+
+
+```
+
+```{r All types of debt}
+#Vizualizing all types of debt
+
+debt_total <- debt_tidy %>% filter(`Debt_Type` != "Total")
+
+debt_total %>% 
+ggplot() + aes(x=`Date`,y=(Debt_Amount), color= Debt_Type) +
+geom_point(stat = "identity")+
+labs(y= "Debt Amount (Trillions)", x= "Year" , color=" Type of Debt") +
+ggtitle("Graph 1.1: Types of Household Debt")
+```
+
+In the series of graphs below, I'll take a closer look at some useful patterns. The following time series relationships will be visualized using xy plots, chosen for the double-scaled effect when comparing two variables on both sides of the y-axis
+
+In the example below, graph 1.2, I chose to compare auto loans with credit card debt because they are often two of the easiest types of loans to qualify for.
+
+```{r graph 1.2}
+library(latticeExtra)
+ #Comparing Auto and Credit Card debt
+
+ Auto.Loan <- xyplot(`Auto Loan` ~ `Date`, debt, type = "l" , lwd=2)
+ Credit.Card <- xyplot(`Credit Card` ~ `Date`, debt, type = "l", lwd=2)
+doubleYScale(Auto.Loan, Credit.Card, text = c("Graph 1.2: Easily Accessible Credit           
+Auto Loans in Trillions","Credit Cards in Trillions") , add.ylab2 = TRUE)
+```
+
+```{r graph 1.3}
+#Comparing HE Revolving and Mortgage Loans
+
+HE.Rev <- xyplot(`HE Revolving`~Date, debt, type= "l", lwd=2)
+Mortgage <- xyplot(`Mortgage`~`Date`, debt, type="l", lwd=2)
+ doubleYScale(HE.Rev, Mortgage, text = c("Graph 1.3:        
+Revolving Home Equity Loans in Trillions",  "Mortgages in Trillions") , add.ylab2 = TRUE)
+```
+
+```{r graph 1.4}
+#Comparing  Auto and Student Loans
+
+HE.Rev <- xyplot(`HE Revolving`~Date, debt, type= "l", lwd=2)
+Student <- xyplot(`Student Loan`~`Date`, debt, type="l", lwd=2)
+ doubleYScale(HE.Rev, Student, text = c("Graph 1.4: 
+Revolving Home Equity Loans in Trillions", "Student Laons in Trillions") , add.ylab2 = TRUE)
+```
+
+## Visualizing Part-Whole Relationships
+
+```{r graph 1.5}
+
+debt_total %>% ggplot() + 
+aes(x=`Date`, y=Debt_Amount, fill= reorder(`Debt_Type`,Debt_Amount)) +
+geom_area()+
+ggtitle("Graph 1.5: Debt in Trillions")+
+  labs(y= "Debt Amount (Trillions)", x= "Date", fill="Type of Debt")
+
+```
+
+The above graph was chosen to illustrate the aftermath of the US financial cliff of 2012. This stacked area graph helped me to understand the part-whole relationships while keeping time continuous on the x-axis.
