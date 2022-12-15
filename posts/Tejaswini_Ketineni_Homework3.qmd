@@ -1,0 +1,112 @@
+---
+title: "Homework3"
+author: "Tejaswini_Ketineni"
+description: "Homework3"
+date: "11/28/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Homework3
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+The emphasis in this homework is on exploratory data analysis using both graphics and statistics. You should build on your prior homework - incorporating any feedback and adjusting the code and text as needed. These homeworks are intended to be cumulative. Therefore, while it is fine to switch datasets, you will need to include all of the information from HW1 for your new (or old) dataset in this hw submission as well. 
+
+Include descriptive statistics (e.g, mean, median, and standard deviation for numerical variables, and frequencies and/or mode for categorical variables
+Include relevant visualizations using ggplot2 to complement these descriptive statistics. Be sure to use faceting, coloring, and titles as needed. Each visualization should be accompanied by descriptive text that highlights:
+     the variable(s) used
+     what questions might be answered with the visualizations
+     what conclusions you can draw
+Use group_by() and summarise() to compute descriptive stats and/or visualizations for any relevant groupings. For example, if you were interested in how average income varies by state, you might compute mean income for all states combined, and then compare this to the range and distribution of mean income for each individual state in the US.
+Identify limitations of your visualization, such as:
+    What questions are left unanswered with your visualizations
+    What about the visualizations may be unclear to a naive viewer
+    How could you improve the visualizations for the final project
+
+## Read in data
+
+```{r}
+FedFundsRate <- read_csv("_data/FedFundsRate.csv")
+```
+
+```{r}
+head(FedFundsRate)
+```
+```{r}
+colnames(FedFundsRate)
+```
+
+```{r}
+library(funModeling)
+plot_num(FedFundsRate)
+```
+```{r}
+sapply(FedFundsRate,function(x)sum(is.na(x)))
+```
+There are so many NA values in each of the columns, but we would maintain them as such as removing would lead to huge data loss.
+
+```{r}
+sapply(FedFundsRate,function(x)sum(is.null(x)))
+```
+
+```{r}
+print(summarytools::dfSummary(FedFundsRate,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+FedFundsRate_mutate <- FedFundsRate%>%
+  mutate(Date = str_c(Day,Month,Year,sep="/"),Date = dmy(Date))
+head(FedFundsRate_mutate)
+```
+
+```{r}
+FedFundsRate_mutate = subset(FedFundsRate_mutate,select = -c(Day,Month,Year))
+```
+
+```{r}
+head(FedFundsRate_mutate)
+```
+```{r}
+FedFundsRate_mutate <- FedFundsRate_mutate %>%
+  pivot_longer(col = c (`Federal Funds Target Rate`, `Effective Federal Funds Rate`, `Real GDP (Percent Change)`, `Unemployment Rate`, `Inflation Rate`), names_to = "Economic indicators", values_to = "Economic Indicator Value")
+```
+
+```{r}
+head(FedFundsRate_mutate)
+```
+
+```{r}
+ggplot(FedFundsRate_mutate, aes(`Date`, `Economic Indicator Value`, color = `Economic indicators`)) + geom_line(na.rm = TRUE) + labs(title = "Economic Rates over Time")
+```
+```{r}
+ggplot(FedFundsRate_mutate, aes(Date,`Economic Indicator Value`,color = "lightred")) +geom_point() +labs(title = "Economic Indicators across the Years")+facet_wrap(vars(`Economic indicators`))
+```
+
+```{r}
+ggplot(FedFundsRate_mutate, aes(`Date`, `Economic Indicator Value`, color = `Economic indicators` )) + geom_line(na.rm = TRUE) + labs(title = "Economic Rates over Time")+facet_wrap(vars(`Economic indicators`))
+```
+
+The new features built in homework3 are the pivot and mutate which is not added in homework 2, I used better plots for the pivots.
+
