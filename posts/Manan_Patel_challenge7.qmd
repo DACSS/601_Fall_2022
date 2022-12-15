@@ -1,0 +1,222 @@
+---
+title: "Challenge 7 Instructions"
+author: "Meredith Rolfe"
+description: "Visualizing Multiple Dimensions"
+date: "08/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - australian_marriage
+  - air_bnb
+  - eggs
+  - abc_poll
+  - faostat
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+
+-   Explain why you choose the specific graph type
+
+5)  If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   eggs ⭐
+-   abc_poll ⭐⭐
+-   australian_marriage ⭐⭐
+-   hotel_bookings ⭐⭐⭐
+-   air_bnb ⭐⭐⭐
+-   us_hh ⭐⭐⭐⭐
+-   faostat ⭐⭐⭐⭐⭐
+
+## Eggs data set- (eggs_tidy.csv)
+
+```{r}
+eggs <- read_csv("_data/eggs_tidy.csv")
+head(eggs)
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+column = names(eggs)
+column <- column[!column %in% c("year","month")]
+column
+```
+
+Here, names() function returns the names of the columns in a data frame. The %in% operator is used to test whether the elements of the column vector are contained in the c("year","month") vector, which is a vector of character strings containing the values year and month. So the column vector will only contain the names of columns that are not year or month.
+
+To find the total sales for each year, we can group the data by year and use a summary function to calculate the total sales for each group.
+
+```{r}
+eggs <- eggs %>%
+     pivot_longer(eggs, cols=column, names_to = "carton_type", values_to = "sales")
+head(eggs)
+```
+
+## Visualization with Multiple Dimensions
+
+```{r}
+group <- eggs %>%
+  group_by(year) %>%
+  summarise(
+    sum = sum(sales)
+  )
+group
+```
+
+In this eggs dataset is first grouped by the year column using the group_by() function then for each group a new column named sum is created that contains the sum of the sales column for that group. The resulting dataset is saved in the group variable then we used summarise() function.
+
+I restructured the data so that each row represents a month, year, egg carton type, and the corresponding sales of that type of carton. This new format will make it easier to conduct further analysis and group the data.
+
+Let's create a simple line graph showing the sales made over the years-
+
+```{r}
+# create a line plot of the sum column against the year column
+ggplot(group, aes(x = year, y = sum)) +
+  geom_line(color = "red") +  # set the line color to red
+  theme_minimal() +  # use the minimal theme for the plot
+  theme(
+    plot.background = element_rect(fill = "lightblue"),  # set the background color to light blue
+    panel.grid = element_line(color = "grey")  # set the grid lines to grey
+  )
+```
+
+To get the total sales, group the data by year and carton type-
+
+```{r}
+group_by_y <- eggs %>%
+  group_by(year, carton_type) %>%
+  summarise(
+    sum = sum(sales)
+  )
+group_by_y
+```
+
+```{r}
+ggplot(group_by_y, aes(x=year, y=sum, fill=carton_type)) +
+  geom_col(color="black", size=0.5) +
+  theme(text = element_text(family="Courier")) +
+  geom_vline(xintercept=c(2010, 2015, 2020), color="red", linetype="dashed", size=1) +
+  scale_fill_brewer(type="seq", palette="Blues")
+
+```
+
+Now we will create a graph showing the data grouped by year and carton type, with the total sales-
+
+```{r}
+# Here we create a new plot with the group_by_y dataframe as the data source
+ggplot(data=group_by_y, aes(x=year, y=sum, color= carton_type)) +
+  geom_line() +
+  geom_point() +
+  # Add labels for the x-axis, y-axis, and plot title
+  labs(
+    x = "Year",
+    y = "Total Sales",
+    color = "Carton Type",
+    title = "Total Sales By Carton Type Across Years"
+  ) +
+  guides(color = guide_legend(title="Carton Type")) +
+  # Use the theme_minimal function to create a minimal theme
+  theme_minimal() +
+  theme(
+    text = element_text(family="Arial", size=16, color="darkblue"), # Set font, size, and color of text
+    panel.background = element_rect(fill="lightblue") # Set fill color of background
+  )
+
+```
+
+To create a horizontal stacked bar chart and convert the year variable to a categorical type we will,
+
+```{r}
+# we will create a new dataframe with the year column as a character
+catyear <- group_by_y %>%
+  mutate(year=as.character(year))
+
+# now we create a new plot with the catyear dataframe as the data source
+ggplot(catyear, aes(x = sum, y = year)) +
+  # then add a stacked bar chart to the plot
+  geom_bar(
+    aes(color = carton_type, fill = carton_type), # Color and fill bars based on carton_type
+    stat = "identity", # Set the statistic to identity to create a stacked bar chart
+    position = "dodge" # Set the position to dodge to stack the bars
+  ) + 
+  # Add labels for the x-axis, y-axis, and plot title
+  labs(
+    x = "Total Sales",
+    y = "Year",
+    title = "Total Sales Across Years Stacked By Carton Type"
+  ) +
+  # Use the theme_minimal function to create a minimal theme with no background annotations or grid lines
+  theme_minimal() +
+  # Use the theme function to customize the font, size, and color of the text in the plot, and the background color
+  theme(
+    text = element_text(family="Arial", size=16, color="darkblue"), # Set font, size, and color of text
+    panel.background = element_rect(fill="yellow") # Set fill color of background
+  )
+
+```
+
+```{r}
+ggplot(data = catyear, mapping = aes(x=year, y=sum, fill = year)) +
+  geom_bar(stat = "identity", position = "stack") + 
+  labs(
+    x = "Year",
+    y = "Sale",
+    fill = "Year",
+    title = "Total egg sale by Year"
+  ) +
+  theme(
+    plot.background = element_rect(fill = "lightblue"),
+    panel.border = element_rect(color = "black", fill = NA, size = 2)
+  )
+```
+
+```{r}
+ggplot(data = catyear, mapping = aes(x=carton_type, y=sum, fill = year)) +
+  geom_bar(stat = "identity", position = "stack") + 
+  labs(
+    x = "egg and carton size",
+    y = "sale",
+    fill = "Year",
+    title = "Total egg sales by category and month"
+  )+
+  theme(
+    plot.background = element_rect(fill = "lightblue"),
+    panel.border = element_rect(color = "black", fill = NA, size = 1),
+    text = element_text(family = "Arial")
+  )
+```
