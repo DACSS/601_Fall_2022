@@ -1,0 +1,228 @@
+---
+title: "Challenge 8 Instructions"
+author: "Meredith Rolfe"
+description: "Joining Data"
+date: "08/25/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   military marriages ⭐⭐
+-   faostat ⭐⭐
+-   railroads ⭐⭐⭐
+-   fed_rate ⭐⭐⭐
+-   debt ⭐⭐⭐
+-   us_hh ⭐⭐⭐⭐
+-   snl ⭐⭐⭐⭐⭐
+
+## Snl data- (snl_actors.csv)
+
+```{r}
+actor <- read_csv('./_data/snl_actors.csv')
+actor
+```
+
+```{r}
+cast <- read_csv('./_data/snl_casts.csv')
+cast
+```
+
+```{r}
+season <- read_csv('./_data/snl_seasons.csv')
+season
+```
+
+### Briefly describe the data
+
+The data set we are looking at contains information about the actors in the TV show Saturday Night Live. Each row in the data set represents one actor, and the 'aid' column is used to uniquely identify each actor. This means that the 'aid' column acts as the primary key for the data set, and no two rows have the same value for this column. In addition to the 'aid' column, there are three other columns in the data set: 'type', 'url', and 'gender'.
+
+The 'type' column describes the type of actor that each row represents. The possible values for this column are 'cast', 'crew', 'guest', and 'unknown'. The 'url' column is a combination of the 'type' column and an additional identifier for the actor. This additional identifier can be anywhere from 1 to 4 characters long and can consist of either letters or numbers, but not both. In some cases, the additional identifier is a 4 character code, while in other cases it is a 4 digit code.
+
+The 'url' column does not contain any duplicate values (excluding missing values), which means that no two actors with a non-missing 'url' value have the same additional identifier. If the 'type' column is missing for a given row, then the 'url' value will also be missing. However, there is one row that does not follow this pattern: ('Jack Handey', NA, 'crew', 'male'). This row has a missing 'url' value, but it does not have an 'unknown' value in the 'type' column.
+
+## Tidy Data (as needed)
+
+```{r}
+subset(actor, is.na(url))
+```
+
+57 observations are missing a value for the url column, and all of these observations have an unknown value for the type column. Only one of these observations with a missing url value is for the person named "Jack Handey", who is listed as a crew member.
+
+Now we will use subset() function to create a new data frame that contains only the rows of the actor data frame where the url column is NA (missing or null) and the type column is crew-
+
+```{r}
+actor %>% 
+  subset(is.na(url) & type == "crew") 
+```
+
+Let's create a new data frame that contains only the rows of the actor data frame where the gender column is andy-
+
+```{r}
+actor %>%
+  subset(gender == "andy")
+```
+
+```{r}
+actor$gender[actor$gender=="andy"] <- "unknown"
+actor
+```
+
+Here, the gender column of the actor data frame is being updated by replacing the value andy with the value unknown.
+
+Now, we will convert the first_epid and last_epid columns in the season data frame from numeric to Date format-
+
+```{r}
+season <- transform(season, 
+                         first_epid = as.Date(as.character(first_epid), "%Y%m%d"), 
+                         last_epid = as.Date(as.character(last_epid), "%Y%m%d"))
+
+season
+```
+
+```{r}
+# Convert first_epid and last_epid to date objects
+cast <- transform(cast, 
+                  first_epid = as.Date(as.character(first_epid), "%Y%m%d"), 
+                  last_epid = as.Date(as.character(last_epid), "%Y%m%d"))
+
+# Filter out rows where first_epid or last_epid is NA
+cast %>% filter(!is.na(first_epid)|!is.na(last_epid))
+```
+
+```{r}
+subset(actor, str_detect(url, "/./?."))
+```
+
+```{r}
+# Join the cast and season data frames using an inner join
+cast_join <- cast %>%
+  inner_join(season, by = "sid")
+# replace the NA with the corresponding value in the first_epid.y column
+cast_join$first_epid.x[is.na(cast_join$first_epid.x)] <- cast_join$first_epid.y
+# replace the NA with the corresponding value in the last_epid.y column
+cast_join$last_epid.x[is.na(cast_join$last_epid.x)] <- cast_join$last_epid.y
+# Rename the columns in the cast_join
+colnames(cast_join) <- c("aid", "sid", "featured", "first_epid_actor", "last_epid_actor", "upload_anchor", "n_episodes_actor", "%_apperance", "year", "first_epid_season", "last_epid_season", "n_episodes_season")
+# Print cast_join
+cast_join
+```
+
+```{r}
+# Join the cast_join and actor data frames on the aid column
+cast_join <- cast_join %>% 
+             inner_join(actor, by = "aid")
+# Print the resulting data frame
+cast_join
+```
+
+## Join Data
+
+```{r}
+inner_join(actor, casts)
+```
+
+```{r}
+inner_join(actorcast, seasons)
+```
+
+```{r}
+# Group the cast_join data frame by year and gender,
+# and summarize the number of rows in each group
+plot <- cast_join %>%
+  group_by(year, gender) %>%
+  summarize(
+    n = n()
+  )
+# Create the plot using the `ggplot()` function
+ggplot(plot, aes(fill=gender, y=n, x=year)) +
+  # Add a bar chart using the `geom_bar()` function, displaying the raw data values
+  geom_bar(stat="identity") + labs(title = "Change in the number of actors by gender") +
+  # Set background color to light blue
+  theme(panel.background = element_rect(fill = "lightblue"))
+
+```
+
+The total number of actors on SNL has been increasing, with a particular increase in the number of female actors
+
+```{r}
+# create a new plot using the plot and Use the geom_bar() function to create a bar plot
+ggplot(plot, aes(fill=gender, y=n, x=year)) + geom_bar(position="fill", stat="identity") +
+  # Using the labs() function to set the plot title
+  labs(title = "Change in the proportion of actors by gender")+
+  # Set the plot's background color to lightblue
+  theme(panel.background = element_rect(fill = "lightblue"))
+```
+
+Since the show began, male actors have comprised more than half of the cast and the proportion of female actors in 2020 is similar to that of 1970
+
+```{r}
+data <- cast_join %>% 
+  filter(featured==TRUE) %>%
+  group_by(year, gender) %>%
+  summarize(
+    number = n()
+  )
+# Using the ggplot() function to create a new plot using the data data frame
+ggplot(data, aes(fill=gender, y=number, x=year)) +
+  # let's create a bar plot with stat="identity"
+  geom_bar(stat="identity") +
+  # Using the labs() function to set the plot title here
+  labs(title = "Change in the number of featured actors by gender") +
+  # Using background color of the plot to light blue
+  theme(panel.background = element_rect(fill = "lightblue"))
+```
+
+Until 1990, the majority of featured actors on SNL were male. However, since 1990 there has been an increase in the number of female actors featured on the show.
+
+```{r}
+ac <- full_join(actors, casts, by = "aid")
+# create a jitter plot of gender vs. type with color based on whether the actor was featured or not
+ggplot(ac, aes(`type`, `gender`)) +
+  geom_jitter(aes(color = `featured`)) +
+  labs(x = "group actor belongs",
+       y = "gender of actor",
+       title = "gender of actor vs group actor belongs") +
+  # add a dark blue background color
+  theme(panel.background = element_rect(fill = "lightblue")) +
+  # change the font to Arial
+  theme(text = element_text(family = "Arial"))
+```
+
+I recently conducted an analysis on a dataset that combined information about actors and the groups they are in, along with their gender and whether they were featured or not. I wanted to see if there were any patterns or trends in the data related to these variables. The results of the analysis showed that most featured actors were part of the main cast, which is not surprising. However, there were also some featured actors who were part of an unknown group. When looking at the genders of the actors, there were a significant number of male, female, and unknown gender guests, as well as more male cast members than female cast members. The crew was smaller in size compared to the cast, but most of the crew members were male, just like the cast.
+
+One interesting aspect of the dataset was the inclusion of a gender called andy which was not clearly defined. It is possible that this gender could refer to non-binary or enby individuals, but upon closer examination, it did not seem like the guests with this gender identified as non-binary or used non-binary pronouns. It is possible that andy could mean androgynous, or it could be a placeholder for an unknown gender. If it is the latter, it seems unnecessary to use a specific term like andy instead of the more straightforward unknown. I think I found the combined dataset to be interesting and informative, particularly in regards to the large number of guests in the dataset.
