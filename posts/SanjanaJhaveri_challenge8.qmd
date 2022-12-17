@@ -1,0 +1,116 @@
+---
+title: "Challenge 8"
+author: "Sanjana Jhaveri"
+description: "Joining Data"
+date: "12/13/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - snl
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+```{r}
+snl_seasons <- read_csv("_data/snl_seasons.csv")
+snl_casts <- read_csv("_data/snl_casts.csv")
+snl_actors <- read_csv("_data/snl_actors.csv")
+
+view(snl_seasons)
+view(snl_casts)
+view(snl_actors)
+```
+
+### Briefly describe the data
+
+I imported three datasets related to SNL(Saturday Night Live). I'll start with the snl_seasons dataset. It describes when the season started and ended and how many episodes each season consisted of. The snl_casts dataset describes the number of episodes each cast member was there for and their name. Sometimes the first episode or the last episode they appeared on was included. Something to be noted is that both snl_seasons and snl_casts datasets included a sid (season id) which I can use as a primary key to join both of these datasets. In the snl_actors dataset, we have the actors name, gender, if they were an actor or cast member and some url. A note here is that both the snl_casts and snl_actors datasets includes an aid (actor id) that I can use as the primary key to join these two datasets.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+```{r}
+  snl_seasons$first_epid <- ymd(snl_seasons$first_epid)
+  snl_seasons$last_epid <- ymd(snl_seasons$last_epid)
+  snl_seasons
+```
+
+```{r}
+  snl_casts$first_epid <- ymd(snl_casts$first_epid)
+  snl_casts$last_epid <- ymd(snl_casts$last_epid)
+  snl_casts %>% filter(!is.na(first_epid)|!is.na(last_epid))
+  snl_casts
+```
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+I needed to turn the values of first and last episode of the snl_seasons and snl_casts datasets into readable dates. So the format of these dates are year-month-day. For the casts dataset, since a lot of the rows have N/A for both first and last episode date. I deleted those conditions and only kept the ones in which at least one value( first episode or last episode) doesn't have N/A as the value.
+
+```{r}
+snl_seasons_casts <- snl_casts %>% 
+  inner_join(snl_seasons, by = "sid")
+snl_seasons_casts
+```
+
+```{r}
+snl <- snl_seasons_casts %>% 
+  inner_join(snl_actors, by = "aid")
+snl
+```
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+I joined snl seasons and casts datasets by the primary key sid and then further joined that joined dataset with primary key aid to add the snl actors dataset in.
+
+```{r}
+snl %>%
+   ggplot(aes(n_episodes.y, year, color = gender)) + 
+   geom_point() 
+```
+I wanted to see which gender did more snl episodes per year. We can see a lot of green dots which shows me that there were not that many female cast members/guests. However, most females were on the show somewhere between 18-22 episodes a year. The males on the show were there between 7 and 23 episodes a year. 
+
+```{r}
+snl %>%
+   ggplot(aes(n_episodes.y, gender, color = featured)) + 
+   geom_point() 
+```
+I can see here a lot the gender specified as "unknown" were featured on the show but not actual cast members. Only one female was featured on the show. The other males and females were all cast members and not just features.
