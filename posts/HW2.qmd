@@ -1,7 +1,7 @@
 ---
 title: "HW2"
-author: "Marria Dubyk"
-desription: "Something to describe what I did"
+author: "Mariia Dubyk"
+desription: "HW2: reading data"
 date: "11/06/2022"
 format:
   html:
@@ -20,6 +20,7 @@ categories:
 #| warning: false
 
 library(tidyverse)
+library(ggplot2)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -28,10 +29,19 @@ knitr::opts_chunk$set(echo = TRUE)
 I decided to use a dataset from open source called The Armed Conflict Location & Event Data Project (ACLED) https://acleddata.com/about-acled/. One of my sphere of interests is social movements and protests but I have never worked with qualitative data related to this topic. So I decided to find related dataset. 
 
 ```{r}
-protest_data <- protest
+library(readr)
+protest_orig <- read.csv("_data/protest.csv", head = TRUE, sep=";")
 library(summarytools)
-view(dfSummary(protest_data))
-protest_data
+print(
+  dfSummary(protest_orig, 
+            varnumbers   = FALSE,
+            na.col       = FALSE,
+            style        = "multiline",
+            plain.ascii  = FALSE,
+            headings     = FALSE,
+            graph.magnif = .8),
+  method = "render"
+)
 ```
 
 ## Brief description of the data
@@ -57,7 +67,7 @@ From the first sight, the data does not need much cleaning. For example, we do n
 
 ```{r}
 # Leave selected columns
-protest_data <- select(protest_data, "data_id", "event_date", "year", "event_type", "sub_event_type", "actor1", "assoc_actor_1", "inter1", "actor2", "assoc_actor_2", "inter2", "interaction", "country", "admin1", "location", "latitude", "longitude", "source", "source_scale", "fatalities")
+protest_data <- select(protest_orig, "data_id", "event_date", "year", "event_type", "sub_event_type", "actor1", "assoc_actor_1", "inter1", "actor2", "assoc_actor_2", "inter2", "interaction", "country", "admin1", "location", "latitude", "longitude", "source", "source_scale", "fatalities")
 
 # Organize dates
 library(stringr)
