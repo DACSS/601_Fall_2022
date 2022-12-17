@@ -1,0 +1,236 @@
+---
+title: "HW3"
+author: "Karla Barrett-Dexter"
+desription: "Millenial Migration Patterns"
+date: "12/11/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+    df-print: paged
+categories:
+  - hw3
+  - Karla Barrett-Dexter
+  - Millenial Migration Data
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read in the data
+
+```{r}
+#| label: Read in data
+#| warning: false
+MillenialMigration <- read_csv("od.csv")
+MillenialMigration
+```
+## Tidy Data
+As a continuation from HW2, I renamed the columns again for ease of understanding and additionally, I separated the race/parental column and created two separate columns for each variable because I was interested in exploring these data points independently of each other. 
+
+```{r}
+#| label: Tidy data
+#| warning: false
+#Changed column names for ease of understanding
+MillenialMigration <- MillenialMigration %>%
+  rename(Origin_Zone = o_cz,
+         Origin_City = o_cz_name,
+         Origin_State = o_state_name,
+         Dest_Zone = d_cz,
+         Dest_City = d_cz_name,
+         Dest_State = d_state_name,
+         Num_Migrators = n,
+         N_from_Origin = n_tot_o,
+         N_from_Dest = n_tot_d,
+         Race_ParentalIncome = pool)
+MillenialMigration
+
+#I wanted to separate the Race and Parental Income data, in order to analyze the data separately in future iterations. I could not figure out a way to separate the two  without putting a character in between. I used the following code to update the Race_ParentalIncome column to have an underscore in it. This was probably  not the most efficient way to accomplish this outcome and it took me quite a while to get the code right. 
+MillenialMigration_ <- MillenialMigration %>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "AsianQ1", "Asian_Q1"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "AsianQ2", "Asian_Q2"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "AsianQ3", "Asian_Q3"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "AsianQ4", "Asian_Q4"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "AsianQ5", "Asian_Q5"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "BlackQ1", "Black_Q1"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "BlackQ2", "Black_Q2"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "BlackQ3", "Black_Q3"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "BlackQ4", "Black_Q4"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "BlackQ5", "Black_Q5"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "HispanicQ1", "Hispanic_Q1"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "HispanicQ2", "Hispanic_Q2"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "HispanicQ3", "Hispanic_Q3"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "HispanicQ4", "Hispanic_Q4"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "HispanicQ5", "Hispanic_Q5"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "OtherQ1", "Other_Q1"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "OtherQ2", "Other_Q2"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "OtherQ3", "Other_Q3"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "OtherQ4", "Other_Q4"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "OtherQ5", "Other_Q5"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "WhiteQ1", "White_Q1"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "WhiteQ2", "White_Q2"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "WhiteQ3", "White_Q3"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "WhiteQ4", "White_Q4"))%>%
+  mutate(Race_ParentalIncome = stringr::str_replace(Race_ParentalIncome, "WhiteQ5", "White_Q5"))
+
+#I used the following code to check my work
+MigratorsByRace_Income <- MillenialMigration_ %>%
+  group_by(Race_ParentalIncome) %>%
+  summarise(Freq = sum(Num_Migrators))
+print(n=30, MigratorsByRace_Income)
+
+#The following code was used to separate the column and create two new columns, one for Race and one for Parental Income. 
+MillenialMigration_Sep <- separate(MillenialMigration_, Race_ParentalIncome, into = c("Race", "Parental_Income"), sep = "_")
+MillenialMigration_Sep
+
+```
+## Narrative
+This dataset show migrations patterns for people born between the years 1984 and 1992. I found the dataset through data-is-plural.com, which led me to migrationpatterns.org, where I downloaded the data from. The data was originally taken from the US Census, tax, and HUD information. The origin zone, city, and state is the location of an individual at age 16 and the destination commute zone, city, and state is the location of an individual at age 26. The dataset also includes information on race/ethnicity and parental income. 
+
+## Descriptive Statistics
+I found the mean, median, and standard deviation for each numerical variable and the frequencies for each categorical variable, which I found more interesting to keep exploring. 
+
+The same 10 states experienced the most migration in and out:
+CA
+TX
+NY
+FL
+PA
+OH
+IL
+GA
+NC
+MI
+
+California was the top state for both migration in and out.
+
+```{r}
+#| label: Descriptive Statistics
+#| warning: false
+#Mean, median, and standard deviation for numerical variables
+summarise(MillenialMigration_Sep, mean.TotalMigrators=mean(Num_Migrators, na.rm=TRUE), mean.NfromOrigin=mean(N_from_Origin, na.rm=TRUE), mean.NFromDest=mean(N_from_Dest, na.rm=TRUE))
+summarise(MillenialMigration_Sep, median.TotalMigrators=median(Num_Migrators, na.rm=TRUE), median.NfromOrigin=median(N_from_Origin, na.rm=TRUE), median.NFromDest=median(N_from_Dest, na.rm=TRUE))
+summarise(MillenialMigration_Sep, SD.TotalMigrators=sd(Num_Migrators, na.rm=TRUE), sd.NfromOrigin=sd(N_from_Origin, na.rm=TRUE), sd.NFromDest=sd(N_from_Dest, na.rm=TRUE))
+
+#Frequencies for categorical variables
+Migration_DestCityState <- MillenialMigration_Sep %>%
+  group_by(Dest_State, Dest_City) %>%
+  summarise(Num_Migrators = sum(Num_Migrators))
+Migration_DestCityState
+
+Migration_DestState <- MillenialMigration_Sep %>%
+  group_by(Dest_State) %>%
+  summarise(Num_Migrators = sum(Num_Migrators))
+Migration_DestState <- Migration_DestState %>% arrange(desc(Num_Migrators))
+
+Migration_OriginCityState <-MillenialMigration_Sep %>%
+  group_by(Origin_State, Origin_City) %>%
+  summarise(Num_Migrators = sum(Num_Migrators))
+Migration_OriginCityState
+
+Migration_OriginState <- MillenialMigration_Sep %>%
+  group_by(Origin_State) %>%
+  summarise(Num_Migrators = sum(Num_Migrators))
+Migration_OriginState <- Migration_OriginState %>% arrange(desc(Num_Migrators))
+
+MigratorsByIncome <- MillenialMigration_Sep %>%
+  group_by(Parental_Income) %>%
+  summarise(Num_Migrators= sum(Num_Migrators))
+MigratorsByIncome
+
+MigratorsByRace <- MillenialMigration_Sep %>%
+  group_by(Race) %>%
+  summarise(Num_Migrators= sum(Num_Migrators))
+MigratorsByRace
+
+Migration_DestAndOriginState <- MillenialMigration_Sep %>%
+  group_by(Dest_State, Origin_State) %>%
+  summarise(Num_Migrators = sum(Num_Migrators))
+
+```
+
+## Visualizations
+I made two simple point plots and bar graphs to look at the total number of migrators by parental income quintile and race. The two key takeaways are that the highest number of migrators were white and in the highest income quartile. 
+
+I also created a plot point to show the total number of migrators to and from each state. This graph is not all that useful and I will continue to consider how it can be improved. 
+
+
+```{r}
+#| label: Visualizations
+#| warning: false
+#I used the following to create simple point plot for number of migrators by income and race
+ggplot(MigratorsByIncome, aes(Parental_Income, Num_Migrators)) + geom_point(color="blue", shape=0) + labs(title = "Migrators by Income")
+ggplot(data = MigratorsByIncome)+
+  geom_bar(mapping = aes(x = Parental_Income, y = Num_Migrators, fill=Parental_Income), stat = "identity")+ labs(title = "Migrators by Income")
+
+ggplot(MigratorsByRace, aes(Race, Num_Migrators)) + geom_point() + labs(title = "Migrators by Race")
+ggplot(data = MigratorsByRace)+
+  geom_bar(mapping = aes(x = Race, y = Num_Migrators, fill=Race), stat = "identity")+ labs(title = "Migrators by Race")
+
+
+#I used the following code to create a new table with the total migrators in (dest) and out (origin) of each state
+Migration_OriginState <- Migration_OriginState %>%
+  rename(Num_MigratorsOut = Num_Migrators,
+         State = Origin_State)
+Migration_DestState <- Migration_DestState %>% 
+  rename(Num_Migrators_In = Num_Migrators,
+         State = Origin_State)
+Migration_In_And_Out <- inner_join(Migration_OriginState, Migration_DestState, by="State")
+Migration_In_And_Out
+
+#I used the following code to create a point plot to compare the number of migrators going in and out of each state
+ggplot(Migration_In_And_Out, aes(Num_MigratorsOut, Num_Migrators_In)) + geom_point(mapping = aes(color=State))
+```
+## Groupings
+I decided to further explore the migration patterns for California, as it was the state that saw the most movement in and out. I looked at the migration by Race and found that White and Hispanic people migrated the most, with a slight variation between in (White more in) and out (Hispanic more out).
+
+```{r}
+#| label: Groupings
+#| warning: false
+
+MillenialMigration_CA <- MillenialMigration_Sep %>%
+  filter(`Dest_State`== "California")
+MillenialMigration_to_CA <- MillenialMigration_CA
+
+MillenialMigration_from_CA <- MillenialMigration_Sep %>%filter(`Origin_State`== "California")
+
+
+CA_Migrators_By_Race_To <- MillenialMigration_to_CA %>%
+  group_by(Race) %>%
+  summarise(Num.Migrators.To.CA = sum(Num_Migrators))
+
+CA_Migrators_By_Race_From <- MillenialMigration_from_CA %>%
+  group_by(Race) %>%
+  summarise(Num.Migrators.From.CA = sum(Num_Migrators))
+
+CA_Migrators_By_Race_From
+CA_Migrators_By_Race_To
+
+CA_Migration_In_And_Out <- inner_join(CA_Migrators_By_Race_To, CA_Migrators_By_Race_From, by="Race")
+CA_Migration_In_And_Out
+
+ggplot(data = CA_Migration_In_And_Out)+
+  geom_bar(mapping = aes(x = Race, y = Num.Migrators.To.CA, fill=Race), stat = "identity")+ labs(title = "Migrators to CA by Race")
+
+ggplot(data = CA_Migration_In_And_Out)+
+  geom_bar(mapping = aes(x = Race, y = Num.Migrators.From.CA, fill=Race), stat = "identity")+ labs(title = "Migrators From CA by Race")
+```
+
+
+
+## Limitations
+Some limitations and questions I am still exploring are:
+-How was the sample chosen?
+-How much migration is not captured by census data?
+-Is this data useful for municipalities to prepare for new citizens?
+-What are the income ranges for the parental income quintiles?
+-Can I change the Y axis scaling? The bar chart and plot point graph for total migrators by income have different Y axis labels.
+
