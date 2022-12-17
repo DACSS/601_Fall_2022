@@ -105,10 +105,12 @@ students struggling to meet or exceed performance expectations?
 
 ## Function Library
 
-To read in, tidy, and join our data frames for each content area we will use the 
-following functions.
+To read in, tidy, and join our data frames for each content area we will use functions. In this library. I am also drafting some functions that I would use to scale up this project. There is still work to be done here.
+
+:::panel-tabset
+### Item analysis Read in Function
 ```{r}
-#Item analysis Read in Function
+#Item analysis Read in Function: Input: sheet_name, subject, grade; return: student item report for a given grade level and subject.
 
 #subject must be: "math", "ela", or "science"
 read_item<-function(sheet_name, subject, grade){
@@ -157,7 +159,7 @@ read_item<-function(sheet_name, subject, grade){
 ```
 
 
-Function to Read in MCAS Preliminary Results
+### Function to Read in MCAS Preliminary Results
 ```{r}
 ## MCAS Preliminary Results Read In
 ## Input file_path where the results csv file is stored, and the "year" the exam was administered
@@ -252,32 +254,148 @@ read_MCAS_Prelim<-function(file_path, year){read_csv(file_path,
   ))%>%
     mutate(year = year)
 }
+
+
 ```
 
 
-Function to Read in Item Reports
+### Functions for Item Report/Exam Structure
 ```{r}
-## To-Do
-##Function for number of items
-## Function for graph for each question
-## Function for key_word description
 
-# read_MCAS_Item(){
-#   
-# }
+##Function for number of items table and graph
+
+##ToDo Should a Function Produce Table and Graph?
+##ToDo, Adjust the caption for test and year?
+##ToDo, the Data Files need to be Updated to Include ELA reports
+
+Subject_Cat_Total<-function(subject, subjectItemDF){
+    if(subject == "science"){subjectItemDF%>%
+        select(`sitem`, `item Possible Points`, `Reporting Category`)%>%
+        group_by(`Reporting Category`)%>%
+        summarise(available_points = sum(`item Possible Points`, na.rm=TRUE))%>%
+        mutate(percent_available_points = available_points/(sum(available_points, na.rm = TRUE)))%>%
+        ggplot(aes(x='',fill = `Reporting Category`, y = `available_points`)) +
+    geom_bar(position="fill", stat = "identity") + coord_flip()+
+ labs(subtitle ="All Students" ,
+       y = "% Points Available",
+       x= "Reporting Category",
+       title = "Percentage of Exam Points Available by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+    } 
+  else if (subject == "math"){subjectItemDF%>%
+      select(`mitem`, `item Possible Points`, `Reporting Category`)%>%
+      group_by(`Reporting Category`)%>%
+      summarise(available_points = sum(`item Possible Points`, na.rm=TRUE))%>%
+      mutate(percent_available_points = available_points/(sum(available_points, na.rm = TRUE)))%>%
+      ggplot(aes(x='',fill = `Reporting Category`, y = `available_points`)) +
+    geom_bar(position="fill", stat = "identity") + coord_flip()+
+ labs(subtitle ="All Students" ,
+       y = "% Points Available",
+       x= "Reporting Category",
+       title = "Percentage of Exam Points Available by Reporting Category",
+      caption = "2022 HS Introductory Physics MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+  
+} else if (subject == "ELA"){subjectItemDF%>%
+    select(`eitem`, `item Possible Points`, `Reporting Category`)%>%
+    group_by(`Reporting Category`)%>%
+    summarise(available_points = sum(`item Possible Points`, na.rm=TRUE))%>%
+    mutate(percent_available_points = available_points/(sum(available_points, na.rm = TRUE)))%>%
+    ggplot(aes(x='',fill = `Reporting Category`, y = `available_points`)) +
+    geom_bar(position="fill", stat = "identity") + coord_flip()+
+ labs(subtitle ="All Students" ,
+       y = "% Points Available",
+       x= "Reporting Category",
+       title = "Percentage of Exam Points Available by Reporting Category",
+      caption = "2022 ELA MCAS")+
+       theme(axis.text.x=element_text(angle=60,hjust=1))
+}
+    }
+# testDF<-read_item("SG9Physics", "science")
+# #view(testDF)
+# Subject_Cat_Total("science", testDF)
+
 
 ```
 
+### Function to Join Student Performance to Item Report
+
+```{r}
+Student_Item<-function(subject, gradeLevel, subjectItemDF, studentPerfDF){
+ if(subject == "science"){
+   select( studentPerfDF, contains("sitem"), gender, grade, yrsinsch,
+                             race, IEP, `plan504`, sattempt, sperflev, sperf2, sscaleds)%>%
+                            filter((grade == gradeLevel) & sattempt != "N")%>%
+     pivot_longer(contains("sitem"), names_to = "sitem", values_to = "sitem_score")%>%
+     left_join(subjectItemDF, "sitem")
+ }
+if(subject == "math"){
+   select( studentPerfDF, contains("mitem"), gender, grade, yrsinsch,
+                             race, IEP, `plan504`, mattempt, mperflev, mperf2, mscaleds)%>%
+                            filter((grade == gradeLevel) & mattempt != "N")%>%
+     pivot_longer(contains("mitem"), names_to = "mitem", values_to = "mitem_score")%>%
+     left_join(subjectItemDF, "mitem")
+}
+  ####ToDo, update departmental analysis data to include ELA item reports
+  if(subject == "ela"){
+   select( studentPerfDF, contains("eitem"), gender, grade, yrsinsch,
+                             race, IEP, `plan504`, eattempt, eperflev, eperf2, escaleds)%>%
+                            filter((grade == gradeLevel) & eattempt != "N")%>%
+     pivot_longer(contains("eitem"), names_to = "eitem", values_to = "eitem_score")%>%
+     left_join(subjectItemDF, "eitem")
+}
+}
+# TestMCAS_2022<-read_MCAS_Prelim("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830305.csv",2022)
+# SG5_Item<-read_item("SG5", "science", 5)
+# SG5_Student_Item<-Student_Item("science", 5, SG5_Item, TestMCAS_2022)
+# SG5_Student_Item
+# TestMCAS_2022<-read_MCAS_Prelim("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830305.csv",2022)
+# MG5_Item<-read_item("MG5", "math", 5)
+# MG5_Student_Item<-Student_Item("math", 5, MG5_Item, TestMCAS_2022)
+# MG5_Student_Item
+
+```
+### Function Student Performance by KeyWord
+
+```{r}
+keyWord<-function(subjectItemDF, subject, keyWord){
+  keyWord<-str_to_lower(keyWord)
+  keyWordFirst<-str_to_upper(str_sub(keyWord, 1L,1L))
+  keyWordEnd<-str_sub(keyWord, 1L+1, -1L)
+  keyWordCap<-str_c(keyWordFirst, keyWordEnd)
+  if (subject == "science"){
+  select(subjectItemDF,`sitem`, `item Desc`,`item Possible Points`, `Reporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+   mutate( key_word = case_when(
+     !(str_detect(`item Desc`, keyWord)|str_detect(`item Desc`,keyWordCap)) ~ str_c("Non-", keyWordCap),
+    str_detect(`item Desc`, keyWord)|str_detect(`item Desc`,keyWordCap) ~ keyWordCap))
+  }
+   else if (subject == "math"){
+  select(subjectItemDF, `mitem`, `item Desc`,`item Possible Points`, `Reporting Category`, `State Percent Points`, `RT-State Diff`)%>%
+  mutate( key_word = case_when(
+     !(str_detect(`item Desc`, keyWord)|str_detect(`item Desc`,keyWordCap)) ~ str_c("Non-", keyWordCap),
+    str_detect(`item Desc`, keyWord)|str_detect(`item Desc`,keyWordCap) ~ keyWordCap))
+  }
+}
+#view(SG9_Calc)
+# MG8_Item<-read_item("MG8", "math", 8)
+# MG5_Item
+# MG8_Describe<-keyWord(MG8_Item, "math", "determine")
+# MG8_Describe
+# SG8_Item<-read_item("SG8", "science", 8)
+# SG8_Item
+# SG8_Calc<-keyWord(SG8_Item, "science", "calculate")
+# SG8_Calc
+```
+
+:::
 ## Data Read-In Tidy
 
 ::: panel-tabset
 
-### Read in Student Performance Data
+### Read in Student Performance and Item Description Data
 
 ```{r}
-
-
-
 #Filter, rename variables, and mutate values of variables on read-in
 
 MCAS_2022<-read_MCAS_Prelim("_data/PrivateSpring2022_MCAS_full_preliminary_results_04830305.csv",2022)
@@ -290,7 +408,6 @@ MCAS_2022
 
 
  Introductory Physics, `SG9_Item` Read-In
-
 
 ```{r}
 # G9 Science Item analysis
@@ -487,9 +604,6 @@ SG9_Cat_Total
 ```
 
 ```{r}
-
-
-
 ggplot(SG9_Cat_Total, aes(x='',fill = `Reporting Category`, y = `available_points`)) +
     geom_bar(position="fill", stat = "identity") + coord_flip()+
  labs(subtitle ="All Students" ,
@@ -508,7 +622,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Where did RT students lose most of their points? 
+Where did Rising Tide students lose most of their points? 
 </div>
 
 The proportion of points lost by Rising Tide students corresponds to the proportion of 
@@ -561,8 +675,7 @@ Did Rising Tide students' performance relative to the state vary by content repo
 
 </div>
 
-We can see from our table that on average our students earned between 4 and 5 percentage points fewer relative 
-to their peers in the state on items across all three reporting categories.
+We can see from our table that on average our students earned between 4 and 5 percent fewer of the available points relative to their peers in the state for items in each of the three `reporting Categories`.
 
 ```{r}
 
@@ -585,31 +698,9 @@ SG9_Cat_RTState<-SG9_Item%>%
    geom_text(aes(label = `RT-State Diff`), vjust = -1., colour = "white", position = position_dodge(.9))
 
 SG9_Cat_RTState
-
-
-
-#SG9_CU306Dis
-#SG9_CU306NonDis
-
 ```
 
-
-
-```{r}
-# #view(SG9_Item)
-# SG9_Cat_StateDiff<-SG9_Item%>%
-#   select(`sitem`, `Reporting Category`, `item Possible Points`, `State Percent Points`, `RT-State Diff`)%>%
-#   group_by(`Reporting Category`)%>%
-#   summarise(avg_RT_State_Diff = round(mean(`RT-State Diff`, na.rm=TRUE),2),
-#             sd_RT_State_Diff = sd(`RT-State Diff`, na.rm=TRUE),
-#             med_RT_State_Diff = median(`RT-State Diff`, na.rm=TRUE),
-#             sum_RT_State_Diff = sum(`RT-State Diff`, na.rm=TRUE))
-# 
-# SG9_Cat_StateDiff
-```
-
-
-Here we see the distribution of `RT-State Diff` (difference between the percentage of points earned on a given item by Rising Tide students and percentage of points earned on the same item by their peers in the State) by `sitem` and content `Reporting Category`. We can see generally that items in the Motion and Forces `Reporting Category` seem to have the highest variability in student performance relative to the state. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots)
+Here we see the distribution of `RT-State Diff` (difference between the percentage of points earned on a given item by Rising Tide students and percentage of points earned on the same item by their peers in the State) by `sitem` and content `Reporting Category`. We can see generally that items in the Motion and Forces `Reporting Category` seems to display the most concerning variability in student performance relative to the state. It would be worth looking at the specific question strands with the Physics Teachers. (It would be helpful to add item labels to the dots using `ggplotly`, however I did not find a way to have that render on the class blog)
 
 ```{r}
 
@@ -628,7 +719,8 @@ SG9_Cat_Box <-SG9_Item%>%
     ggtitle("G9 Introductory Physics School State Difference by Item") +
     xlab("")
 
-ggplotly(SG9_Cat_Box)
+SG9_Cat_Box
+#ggplotly(SG9_Cat_Box)
 ```
 
 
@@ -648,7 +740,7 @@ on an item be explained by the difficulty level of an item?
 
 
 When considering `RT-State Diff` against `State Percent Points` for each `sitem` on the MCAS, this does not seem to generally be the case. Although the regression line shows `RT-State Diff` more likely to 
-be negative on items where students in the State earned fewer points; the p-value is not significant.
+be negative on items where students in the State earned fewer points, the p-value is not significant.
 
 ```{r}
 
@@ -700,7 +792,8 @@ SG9_Calc
 
 
 
-     
+Now, we can see that by the Waves and Energy categories half of the available points come
+from questions with calculate and half do not. In the Motion and Forces category, 40% of points are associated with questions that ask students to "calculate". 
 
 ```{r}
 
@@ -714,8 +807,7 @@ SG9_Calc%>%
 
 ```
 
-Now, we can see that by the Waves and Energy categories half of the available points come
-from questions with calculate and half do not. In the Motion and Forces category, 40% of points are associated with questions that ask students to "calculate".
+
 ```{r}
 SG9_Calc_PointsAvail<-SG9_Calc%>%
   group_by(`Reporting Category`, `key_word`)%>%
@@ -733,22 +825,6 @@ SG9_Calc_PointsAvail<-SG9_Calc%>%
    geom_text(aes(label = `sum_item_Possible_Points`), vjust = 1.5, colour = "white", position = position_dodge(.9))
 
 SG9_Calc_PointsAvail
-
- # SG9_Calc_PointsAvail_Stacked <- SG9_Calc%>%
- #   ggplot(aes(fill=key_word, y = `item Possible Points`, x=`Reporting Category`)) +
- #     geom_bar(position="stack", stat="identity")+
- #   labs(subtitle = "Stacked Bar Chart",
- #        y = "Available Points",
- #       x= "Reporting Category",
- #       title = "Available points by Key Word",
- #      caption = "2022 HS Introductory Physics MCAS")+
- #      theme(axis.text.x=element_text(angle=60,hjust=1))+
- #   coord_flip()
- # 
- # SG9_Calc_PointsAvail_Stacked
- 
-  
-  
 ```
 
 When we compare the median  `RT-State Diff` for items containing the word "calculate" in their description vs. items that do not, we can see that across all of the `Reporting Categories` Rising Tide students performed 
@@ -766,7 +842,8 @@ SG9_Calc_MedDiffBar<-SG9_Calc%>%
        x= "Reporting Category",
        title = "Median RT-State-Diff by Key Word",
       caption = "2022 HS Introductory Physics MCAS")+
-   geom_text(aes(label = `med_RT_State_Diff`), vjust = 1.5, colour = "black", position = position_dodge(.9))
+    theme(axis.text.y=element_text(angle=40,hjust=.5))+
+   geom_text(aes(label = `med_RT_State_Diff`), hjust = 1, vjust = .75, colour = "black", position = position_dodge(.8))
 SG9_Calc_MedDiffBar
 ```
 Here we can see the distribution of `RT-State Diff` by `sitem` and `Reporting Category` and the disparity in `RT-State Diff`  when we consider items asking students to "Calculate" vs. those that do not.
@@ -842,27 +919,6 @@ G9Sci_StudentCalcPerflev
 #view(SG9_StudentItem)
 
 
-# G9Sci_StudentCalc<-SG9_StudentItem%>%
-#   select(gender, sitem, sitem_score, `item Desc`, `item Possible Points`, `State Percent Points`, IEP, `RT-State Diff`, `Reporting Category`, `sperflev`)%>%
-#   mutate( key_word = case_when(
-#      !str_detect(`item Desc`, "calculate|Calculate") ~ "Non-Calc",
-#      str_detect(`item Desc`, "calculate|Calculate") ~ "Calc"))%>%
-#   group_by(`Reporting Category`, `key_word`)%>%
-#   summarise(total_points_lost = sum(`sitem_score`-`item Possible Points`, na.rm = TRUE))%>%
-#  ggplot(aes(fill=`key_word`, y=total_points_lost, x=`Reporting Category`)) + geom_bar(position="dodge", stat="identity") + coord_flip()+
-#    labs(subtitle ="Calculate" ,
-#        y = "Sum Points Lost",
-#        x= "Reporting Category",
-#        title = "Sum Points Lost by Key Word",
-#       caption = "2022 HS Introductory Physics MCAS")+
-#    geom_text(aes(label = `total_points_lost`), vjust = 1.5, colour = "black", position = position_dodge(.9))
-
-
-#+
-   #geom_text(aes(label = `total_points_lost`), vjust = 1.5, colour = "white", position = position_dodge(.9))
-
-#G9Sci_StudentCalc
-
 
 
 
@@ -874,7 +930,7 @@ G9Sci_StudentCalcPerflev%>%
        title = "Percentage of Points Lost by Key Word and Performance Level",
       caption = "2022 HS Introductory Physics MCAS")
 
-G9Sci_StudentCalcPerflev
+#G9Sci_StudentCalcPerflev
 
 ```
 
@@ -885,7 +941,7 @@ G9Sci_StudentCalcPerflev
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
-Did RT students perform worse relative to their peers in the state on more "challenging" calculation items?
+Are there differences in the performance of non-disabled and disabled students relative to their academic peers in the state?
 </div>
 
 
@@ -940,23 +996,14 @@ G9Sci_StudentCalcDis<-SG9_StudentItem%>%
    labs(subtitle ="Calculate" ,
        y = "Percent Points Lost",
        x= "Reporting Category",
-       title = "Percent Points Lost by Key Word Non-Disabled vs. Disabled Students",
+       title = "Percent Points Lost by Key Word and Disability Status",
       caption = "2022 HS Introductory Physics MCAS")
 
 G9Sci_StudentCalcDis
 
 
 ```
-```{r}
-# view(SG9_CU306Dis)
-# SG9_CU306Dis%>%
-#   mutate(Disability_Status = "Disabled")
-# SG9_CU306NonDis%>%
-#   mutate(Disability_Status = "NonDisabled")
-# SG9_CU306Dis<-SG9_CU306Dis%>%
-#   full_join(SG9_CU306NonDis, "RT-State Diff")
-# view(SG9_CU306Dis)
-```
+
    
 
 
@@ -965,7 +1012,7 @@ G9Sci_StudentCalcDis
 
 ## Conclusion
 
-A student's performance on their 9th Grade Introductory Physics MCAS is strongly associated with their performance on their 8th Grade Math MCAS exam. This suggests, that the use of prior Math MCAS and current STAR Math testing data can identify students in need of extra support.
+A student's performance on their 9th Grade Introductory Physics MCAS is strongly associated with their performance on their 8th Grade Math MCAS exam. This suggests that the use of prior Math MCAS and current STAR Math testing data can identify students in need of extra support.
 ```{r}
 SG9_Math<-MCAS_2022%>%
   select(sscaleds, mscaleds2021,sscaleds_prior, grade, sattempt)%>%
@@ -981,28 +1028,33 @@ SG9_Math
   
 
 ```
-Rising Tide students as a whole performed slightly weaker relative to the state in all content reporting areas; however, disabled students performed better relative to their peers in the state. The performance gap between Rising Tide students and students in the state is accounted for by the performance of the non-disabled students in the general classroom setting.
+Rising Tide students as a whole performed slightly weaker relative to the state in all content reporting areas; however, students classified as disabled performed better relative to their peers in the state. The performance gap between Rising Tide students and students in the state on the HS Introductroy Physics exam is accounted for by the performance of the non-disabled students in the general classroom setting.
 
-All Rising Tide students, regardless of disability status, performed significantly weaker relative to students in the State  on items including the key word Calculate in their `item description`. This suggests, we should dedicate more classroom instructional time to problem solving with calculation. Notably, the higher a student's performance level, the higher the percentage of points a student lost for calculation items. To increase the proportion of students exceeding expectations, we need to improve our students' performance on calculation based items; evidence based math interventions include small group, differentiated problem sets.
+All Rising Tide students, regardless of disability status, performed significantly weaker relative to students in the State  on items including the key word "Calculate" in their `item description`. This suggests that we should dedicate more classroom instructional time to problem solving with calculation. Notably, the higher a student's performance level, the higher the percentage of points a student lost for calculation items. The largest area of growth for students across all performance categories is on calculation based items; evidence based math interventions include small group, differentiated problem sets.
 
-The discrepancy in performance by Rising Tide students with and without disabilities further supports the need for differentiated small group problem sets in the general classroom setting and tiered, small-group, problem sets for non-disabled students.
+The discrepancy in performance by Rising Tide students with and without disabilities relative to their associated academic peers in the state, suggest that our non-disabled students would benefit from some of the practices and supports currently provided to our students on IEPs. Differentiated, tiered, small group problem sets in the general classroom setting could potentially address the "calculation gap".
 
 ## Reflection: Limitations/Areas for Improvement
 
-I was inspired to work on this report after years of experience working at a public school. Public education is a sector that is filled with passion and positive intentions but also divisive discussions. There exist a plethora of simplistic "one-trick fixes" that are marketed to students, teachers, and families. The use of data is the best tool we have against pressing forward with initiatives that do not improve student outcomes. 
+I was inspired to work on this report after years of experience working at a public school. Public education is a sector that is filled with passion and positive intentions but also divisive discussions. There exist a plethora of simplistic "one-trick fixes" that are marketed to students, teachers, and families. The use of data is the best tool we have against pressing forward and investing our precious time and money with initiatives that do not improve student outcomes. 
 
-Over the years, I've noticed that teachers and leaders are given annual data reports yet, most lacked the time, capacity, or resources to identify evidence based, actionable measures to take in the classroom or at the organizational level. When presented with all of the questions from an assessment individually and the performance of all of one's students on paper, it is difficult to identify trends. Anecdotally I have noticed every year the majority of teachers gravitating to the scores and performance of individual students and ascribing mistakes or successes to specific experiences with an individual or one word in a question prompt. While relationship building and teaching to a child are hallmarks to student-teacher relationships, a narrow lens like this will not allow a teacher to identify classroom level changes or curriculum level changes that impact all students and future students. In one's compassionate focus on individuals, a great opportunity to promote the learning for all students is lost.
+Over the years, I've noticed that teachers and leaders are given annual data reports yet, most lack the time, capacity, or resources to identify evidence based, actionable measures to enact in the classroom or at the organizational level. When presented with all of the questions from an assessment individually and the performance of all of one's students on paper, it is difficult to identify trends. Anecdotally, I have noticed every year the majority of teachers gravitating to the scores and performance of individual students that they previously taught and ascribing mistakes or successes to specific experiences with an individual or one word in a question prompt. While relationship building and teaching to a child are hallmarks to student-teacher relationships, a narrow lens like this will not allow a teacher to identify classroom level changes or curriculum level changes that could impact all students and future students. In one's compassionate focus on individuals, a great opportunity to promote the learning for all students is lost.
 
-With the use of R, and the MCAS reports, I decided to focus on ways to identify trends at the classroom or curricular level. I found it challenging to limit the scope of my work for this project. Also, I struggled with discerning when to use `sum` vs. when to use `averages` or `medians`. To improve performance on a test, we are concerned with total points lost; to identify curricular weaknesses we are also interested in relative performance to the state by content area.
+With the use of R, and the MCAS reports, I decided to focus on ways to identify trends at the classroom or curricular level. I found it challenging to limit the scope of my work for this project. Also, I struggled with discerning when to use `sum` vs. when to use `averages` or `medians`. To improve a student's performance on a test, we are concerned with total points lost and relative weight of a content category; to identify curricular weaknesses we are also interested in relative performance to the state by content area.
 
-I only completed the analysis of the Introductory Physics Exam for High school students. I have `ELA`, `Math`, and `Science` results for grades 5-8 as well as grade 10. I am still working on building a general function library to generate similar graphics and tables for other content areas and grade levels and I would like to complete a similar report for each grade level and assessment for teachers to use.
+I only completed the analysis of the Introductory Physics Exam for High school students. I have `ELA`, `Math`, and `Science` results for grades 5-8 as well as grade 10. I am still working on building a general function library to generate similar graphics and tables for other content areas and grade levels and I would like to complete a similar report for each grade level and subject area assessment for teachers to use.
 
-Given access to historical data, I'd also like to examine these trends over time.
+Given access to historical data, I think it would be beneficial to examine these trends over time to discern the performance gaps attributable to changes in the population of students (a factor which we cannot control or change) vs. those attributable to curriculum and teaching (an area we can influence and effect change).
 
-I also have access to reports that include the teacher a student had and the grades they earned from their teacher in the year they were assessed on the MCAS. I would also like to examine the relationship between a students performance as measured by their teachers compared to their performance level as measured by the state. Are their patterns to the groups of students with the largest discrepancy between these two metrics? This would be important data to support the teaching and learning at our school.
+I also have access to reports that include the teacher a student had and the grades they earned from their teacher in the year they were assessed on the MCAS. I would like to examine the relationship between a student's performance as measured by their teachers compared to their performance level as measured by the state. Are their patterns to the groups of students with the largest discrepancy between these two metrics? This would be important data to support the teaching and learning at our school.
 
+On a broader scale, I think that I need to develop a stronger sense for what summary statistics are the most meaningful for a given variable to identify potential trends or insights and subsequently what visualizations best convey these insights to a reader. I would  also like to develop a tool-kit of best practices for "checking against my own biases". What set of metrics can I perform to best control for my potential mistakes as a human being with a limited perspective?
+
+::: callout-note
+I did not cite the source for the MCAS Preliminary Results because it is not a publicly available data set as it contains students' personal information. I did use the raw csv. file retrievable from the DESE portal title "MCAS Full Preliminary Results". 
+:::
 ## References
-::: {#refs}
+
 Chang, W. (2022). *R Graphics Cookbook, 2nd Edition*. O'Reilly Media.
 
 Grolemund, G., & Wickham, H. (2016). *R for Data Science: Import, Tidy, Transform, Visualize, and Model Data*. O'Reilly Media.
@@ -1032,11 +1084,11 @@ Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G,
 
 
 
-:::
+
 ## Appendix
 ::: panel-tabset
 ### Codebook MCAS_2022 Variables
- [DESE](https://www.doe.mass.edu/mcas/results.html)
+ For more information about the MCAS, see the Department of Elementary and Secondary Education's [(DESE)](https://www.doe.mass.edu/mcas/results.html) page.
 
 
 | variable | Measurement Level| Values|
