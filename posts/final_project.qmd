@@ -1,0 +1,234 @@
+---
+title: "601 Fall Final Project"
+author: "Jerin Jacob"
+editor: visual
+description: "A study on the crime data of Massachusetts state"
+output: distill::distill_article
+date: "12/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  final_project_601
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+#library(plyr)
+library(readr)
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+
+This is a study on crime data of Massachusetts states. The dataset is a county based number of crimes at a location at a specific time of the day. The data is been taken from the public website of police department. I decided to take the data for 2021 as it is the most recent data. The data from police department had only the number of crimes at a location at a time of the day. I also took census data to get the county-wise population data from the census 2020 and do the study on crime data as a function relative to the population of the county of occurance.
+
+### Reading the Data:
+
+As there are 14 counties in Massachusetts, my data contains 14 separate county files to be read along with the population data of Massachusetts counties.
+
+
+### Reading crime data from 14 files and concatinating them to a single dataframe 
+```{r}
+filepath <- "_data/601_final_project_jerin_jacob/"
+csv_file_names <- list.files(path = filepath, pattern = "_2021*")
+#csv_file_names
+```
+
+```{r}
+read_crimes<-function(file_name){
+  x<-unlist(str_split(file_name, pattern="[[:punct:]]", n=3))
+  read_csv(paste0(filepath, file_name),
+           skip = 8, 
+           col_names = c("Location","6-9pm","9-12pm","12-3am","3-6am","6-9am","9-12noon","12-3pm","3-6pm"), show_col_types = FALSE)%>%
+             mutate(County = x[1],
+                    Year = x[2])
+}
+counties<-
+  purrr::map_dfr(csv_file_names, read_crimes) %>%
+  select(`Location`, `12-3am`, `3-6am`,  `6-9am`, `9-12noon`, `12-3pm`, `3-6pm`, `6-9pm`, `9-12pm`, `County`, `Year`)
+#counties
+#dim(counties)
+
+
+```
+
+#### Reading population Data
+
+
+```{r}
+ma_population <- read_csv('_data/601_final_project_jerin_jacob/MA_population.csv', col_names = c("Number", "County", "Population"))
+
+ma_population$County <- word(ma_population$County, 1)
+
+ma_population <- ma_population[ -c(1) ]
+
+ma_population
+
+```
+
+
+## Reading Unemployment data of Massachusetts state
+
+
+```{r}
+unemployment <- read_csv('_data/601_final_project_jerin_jacob/LURReport.csv', skip = 6) %>%
+  drop_na(Month) %>%
+  filter(Month == "Annual") %>%
+  filter(Year == "2020") %>%
+  mutate(County = str_remove_all(Area, " COUNTY")) %>%
+  select(County, `Area Rate`)
+unemployment$County <- str_to_title(unemployment$County)
+unemployment
+```
+
+
+
+## Reading Poverty rate in Massachusetts
+```{r}
+poverty <- read_excel('_data/601_final_project_jerin_jacob/PovertyReport.xlsx', skip = 4) %>%
+  mutate(County = Name, poverty_rate = Percent...7) %>%
+  select(County, poverty_rate) %>%
+  filter(!County == "Massachusetts")
+
+  
+poverty
+```
+
+## Reading Age & Sex data for Massachusetts
+```{r}
+age_sex <- read_csv('_data/601_final_project_jerin_jacob/age_sex.csv') %>%
+  mutate(County = str_remove_all(CTYNAME, " County")) %>%
+  filter(YEAR == 12) %>%
+    mutate(male18_24percent = round((AGE1824_MALE/POPESTIMATE)*100)) %>%
+    mutate(male25_29percent = round((AGE2529_MALE/POPESTIMATE)*100)) %>%
+  select(County, male18_24percent, male25_29percent)
+  
+
+age_sex
+
+
+```
+
+## 3 main reasons for crime rates 
+```{r}
+crimerate_reasons <- join_all(list(unemployment, poverty, age_sex), by = 'County', type = 'left') %>%
+  mutate(unemp_rate = `Area Rate`) %>%
+  select(!`Area Rate`)
+  
+crimerate_reasons
+
+```
+
+
+```{r}
+County_crime_total <- filter(counties, Location == "All Location Types")
+#head(County_crime_total)
+#head(ma_population)
+
+```
+
+To get the crime rate for each county I joined the population data for counties to the crime data and made the number of crimes a function of per 100000 people in the county so that we can compare counties.
+
+```{r}
+
+df_crime_rate <- County_crime_total %>%
+  left_join(ma_population,by= "County")%>%
+  mutate(across(c(2:9),
+           .fns = ~./(Population/100000)))%>%
+  pivot_longer(cols = (ends_with("am") | ends_with("pm")) | ends_with("noon"), names_to = "Time", values_to = "Crime_Rate")
+df_crime_rate$Crime_Rate <- round(df_crime_rate$Crime_Rate)
+df_crime_rate$Time<- factor(df_crime_rate$Time,                 # Relevel group factor
+                         levels = c("12-3am", "3-6am", "6-9am", "9-12noon", "12-3pm", "3-6pm", "6-9pm","9-12pm"))
+df_crime_rate <- df_crime_rate %>%
+  group_by(County)
+df_crime_rate
+```
+
+## Finding which county has the highest crime rate 
+
+```{r}
+test <- df_crime_rate %>%
+  # select(County, Crime_Rate) %>%
+  group_by(County) %>%
+  summarise(Crime_Rate = sum(Crime_Rate)) %>%
+#test
+
+  ggplot(aes(x = County, y = Crime_Rate, fill = County)) +
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_text(aes(label = Crime_Rate), vjust = 0)
+
+test
+
+```
+
+
+## Finding which time of the day has the highest crime rate 
+
+```{r}
+time_total_crime_rate <- df_crime_rate %>%
+  group_by(Time) %>%
+  summarise(CrimeRate = sum(Crime_Rate))
+county_total_crime_rate
+ggplot(time_total_crime_rate, aes(x = Time, y = CrimeRate, fill = Time)) + 
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_text(aes(label = CrimeRate), vjust = 0)
+```
+
+Out of all the counties in Massachusetts, Hampden has the highest crime rate followed by Suffolk and Nantucket. The time of the day with most crime rate is '12 noon to 3 pm' followed by '3-6pm' and '9-12noon'. So I decided to check what times have most crime rates in these top counties.
+
+```{r}
+
+df_crime_rate %>%
+  filter(County == "Hampden" | County == "Suffolk"| County ==  "Nantucket") %>%
+  group_by(County, Time) %>%
+  summarise(CrimeRate = sum(Crime_Rate)) %>%
+  ggplot(aes(x = County, y = CrimeRate, fill = Time)) + 
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+# +
+#   geom_text(aes(label = CrimeRate), vjust = 0)
+
+```
+
+```{r}
+df_crime_rate %>%
+  filter(Time == "12-3pm" | Time == "3-6pm"| Time ==  "9-12noon") %>%
+  group_by(Time, County) %>%
+  summarise(CrimeRate = sum(Crime_Rate)) %>%
+  ggplot(aes(x = Time, y = CrimeRate, fill = County)) + 
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+
+```{r}
+unemployment
+unemployment %>%
+  #filter(Area == "HAMPDEN COUNTY" | Area == "NANTUCKET COUNTY" | Area == "SUFFOLK COUNTY") %>%
+  group_by(Area) %>%
+  ggplot(aes(x = Area, y = `Area Rate`, fill = Area)) +
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+
+##Bibliography
+
+Source of data: 
+1, https://masscrime.chs.state.ma.us/public/View/dispview.aspx
+2, https://lmi.dua.eol.mass.gov/LMI/LaborForceAndUnemployment
+
+Programming Language: R
+
+Course book : R for Data Science by Hadley Wickham & Garrett Grolemund
