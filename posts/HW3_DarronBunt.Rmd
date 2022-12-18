@@ -1,0 +1,353 @@
+---
+title: "HW3 - Darron Bunt"
+description: "Exploratory Data Analysis of Twitter Posts Made by Flagship US Colleges"
+author: "Darron Bunt"
+date: "`r Sys.Date()`"
+categories:
+  - hw3
+  - darron_bunt
+output: distill::distill_article
+---
+
+## Loading Packages into R Environment
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(stringr)
+library(tm)
+library(wordcloud)
+
+options(dplyr.summarise.inform = FALSE)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+The emphasis in this homework is on exploratory data analysis using both graphics and statistics. You should build on your prior homework - incorporating any feedback and adjusting the code and text as needed. These homeworks are intended to be cumulative. 
+
+## Loading the Dataset
+```{r}
+#import data
+FlagshipTwitter <- read_csv("posts/_data/FlagshipTwitterUpdated.csv")
+```
+
+## Descriptive Statistics - What is being produced by each college's account?
+
+The first question that I want to answer is how frequently flagship college Twitter accounts are posting, and what type of post those posts are. Accordingly, I'm going to explore data related to the overall number of posts, and then break this down further into four post types: original posts, retweets, quote tweets, and replies.
+
+### Number of posts made by each college in the month of November
+
+First, I'm going to look at how many posts each college made overall during the month of November. 
+
+```{r}
+#remove rows where the Page Type isn't twitter
+FlagshipTwitter2 <- subset(FlagshipTwitter, PageType =='twitter')
+#rename the columns I intend to use for analysis
+FlagshipTwitter3 <- rename(FlagshipTwitter2, c(Tweet = 'Full Text', MentionedAuthors = 'Mentioned Authors', TWFollowers = 'Twitter Followers', TWReply = 'Twitter Reply Count', TWRetweets = 'Twitter Retweets', TWLikes = 'Twitter Likes', Reach = 'Reach (new)', EngType = 'Engagement Type', URL = Url))
+#put columns I plan to use first 
+FlagshipTwitterUse <- select(FlagshipTwitter3, Author, Date, Impressions, Reach, TWLikes, TWRetweets, TWReply, EngType, Sentiment, Hashtags, MentionedAuthors, Tweet, TWFollowers, URL, everything())
+#separate dates into respective date and time column
+TwitterUse2 <- separate(FlagshipTwitterUse, Date, into = c("Date", "Time"), sep = " ")
+TwitterUse2$Date <- parse_date(TwitterUse2$Date, format = "%m/%d/%Y")
+TwitterUse2$Time <- parse_time(TwitterUse2$Time, format = "%H:%M")
+
+#count posts made by each college
+by_college <- TwitterUse2 %>%
+count(Author) %>%
+  rename("Total_Posts" = "n") %>%
+  mutate(Total_PostsPerc = (Total_Posts/sum(Total_Posts)*100)) %>%
+  arrange(desc(Total_PostsPerc))
+by_college
+```
+What we see right off the bat is that post volume varies significantly depending on the flagship college in question - from 337 (Rutgers) to only two (University of South Dakota). 
+
+I'm curious about the summary statistics for post volume overall, as this should provide us with greater insight into how the numbers vary across the 50 colleges.
+
+```{r}
+#summary statistics for Posts by College
+summary(by_college)
+```
+In addition to the difference between the minimum number of posts (two) and the maximum (337), there is also a relatively large difference in the median (93), the mean (113), and the IQR (105). 
+
+This leads me to believe that there different posting strategies are being implemented at these different schools. 
+
+### Number of OG posts, retweets, quote tweet, and comments by each college
+
+To further contextualize this information, I now want to break down of each account's post volume by the type of post that they were - either original posts, quote tweets, retweets, or comments/replies. This will help us look into not just who posts the most, but what types of posts they are making (and whether different schools are employing strategies that lean more heavily into particular types of posts). 
+
+```{r}
+#number of OG posts, retweets, comments made by each college
+TwitterUse2 <- TwitterUse2 %>%
+  replace_na(list(EngType = "OG"))
+
+post_type_by_college <- TwitterUse2 %>%
+group_by(Author, EngType) %>%
+  summarize(Count=n()) %>%
+  pivot_wider(names_from = EngType, values_from = Count)
+post_types_by_college <-  merge(by_college, post_type_by_college, by="Author")
+post_types_by_college
+```
+```{r}
+post_prop_college <- post_types_by_college %>%
+  mutate(OGProp = OG/Total_Posts*100) %>%
+mutate(QuoteProp = QUOTE/Total_Posts*100) %>%
+mutate(ReplyProp = REPLY/Total_Posts*100) %>%
+mutate(RetweetProp = RETWEET/Total_Posts*100) %>%
+  select(Author, OGProp, QuoteProp, RetweetProp, ReplyProp)
+post_prop_college
+```
+I can also pull the summary statistics for each type of post. This will help to further contextualize the data regarding the types of posts made by each college. 
+
+```{r}
+#number of OG posts, retweets, comments made by each college
+post_type_by_college <- TwitterUse2 %>%
+  replace_na(list(EngType = "OG")) %>%
+group_by(Author, EngType) %>%
+  summarize(Count=n()) %>%
+  pivot_wider(names_from = EngType, values_from = Count)
+post_types_by_college <-  merge(by_college, post_type_by_college, by="Author")
+```
+
+```{r}
+#summary statistics for post type by college
+summary(post_types_by_college)
+```
+
+Interestingly, retweets are the most common type of post, averaging 60 per author. The IQR for retweets (69) provides an idea of the level of variability in the post volume of this type by college. The number of original posts by college is more consistent, with a mean of 47 and an IQR of 37. Quote tweets are the least utilized type of posts (5.6), while replies are also relatively infrequent (8.3)
+
+### Most common day of the week to post
+
+I want to do two things at this step: ensure that I have the day of the week each post was made as a column of data, and then to use that data to break down the number of posts that were made on each day of the week.
+
+```{r}
+#number of posts made on each day of the week
+TwitterUse2$Weekday <- weekdays(TwitterUse2$Date)
+
+
+
+day_of_week <- TwitterUse2 %>%
+  count(Weekday, sort = TRUE,
+        ) %>%
+  rename("WD_Posts" = "n")
+day_of_week
+```
+The most common day of the week to post is Tuesday, with Wednesday close behind. Posts on Fridays and Mondays were next most common, with Thursdays were not far behind. Weekends had the fewest posts.
+
+### Most common time of day to post
+
+The time of day that posts are made is also a variable worth considering. I don't, however, want to look at post time down to the second; instead, I want to break the day up into four equal time periods: overnight (00:00:00 to 05:59:59), morning (06:00:00 to 11:59:59), afternoon (12:00:00 to 17:59:59), and evening (18:00:00 to 23:59:59). 
+
+```{r}
+#assign a time period label to each post based on when it was made
+time_of_day <- TwitterUse2 %>%  
+   mutate(TimePeriod = format(Time, format="%H:%M:%S")) %>%
+  mutate(TimePeriod = replace(TimePeriod, TimePeriod >= "00:00:00" & TimePeriod < "05:59:59", "overnight")) %>%
+  mutate(TimePeriod = replace(TimePeriod, TimePeriod >= "06:00:00" & TimePeriod < "11:59:59", "morning")) %>%
+  mutate(TimePeriod = replace(TimePeriod, TimePeriod >= "12:00:00" & TimePeriod < "17:59:59", "afternoon")) %>%
+ mutate(TimePeriod = replace(TimePeriod, TimePeriod >= "18:00:00" & TimePeriod < "23:59:59", "evening")) %>%
+  select(Author, Date, TimePeriod, Tweet)
+time_of_day
+```
+Can I pivot this so that I have a count of how many times each account posted in each time frame?
+
+```{r}
+time_of_day_by_college <- time_of_day %>%
+group_by(Author, TimePeriod) %>%
+  summarize(Count=n()) %>%
+  pivot_wider(names_from = TimePeriod, values_from = Count)
+time_of_day_by_college[is.na(time_of_day_by_college)] <- 0 
+time_of_day_by_college
+```
+
+### Number of posts during each time frame
+
+With this information, we can now do a broad summary of posts made during each time frame by all of the colleges in the dataset.
+
+```{r}
+#number of posts made during each time period
+time_of_day_count <- time_of_day %>%
+count(TimePeriod, sort = TRUE,
+        ) %>%
+  rename("TimeOfDay" = "n") %>%
+  mutate(TimeOfDayPerc = (TimeOfDay/sum(TimeOfDay)*100))
+time_of_day_count
+```
+A relatively equal proportion of posts are made during the evening (46%) and afternoon (40%), with a small portion of posts made overnight (12%).
+
+I am somewhat surprised by the very small proportion of morning posts, which is making me believe that the timestamps in the dataset (i) do not reflect local time when the post was made; (ii) were also likely given in UTC and not in one of the more common time zones in the US. Given this, I will likely not dive too deeply into any exploration of the impact that time of day has on engagement metrics. 
+
+## Descriptive statistics for the response to posts made by the college accounts
+
+Making posts is certainly an important part of having a social media presence, but how your audience responds to those posts is crucial data that helps to guide social media strategy. Shouting into a vacuum is both inefficient and poor strategy; if no one is consuming and engaging with your content, why invest in creating it to begin with?
+
+While there are several metrics that relate to post engagement – including likes, retweets, and replies by one’s Twitter audience – the metric I want to focus on for this analysis is reach. Reach is an estimate of the number of people that have actually seen/read a given post, and the reach listed in this dataset has been calculated using Brandwatch’s proprietary algorithm.
+
+### Average Reach by School
+
+These are the high level statistics for key metrics overall across the entire college dataset.
+
+```{r}
+summary(TwitterUse2[c("Impressions", "Reach", "TWLikes", "TWRetweets", "TWReply")])
+```
+Given the large difference between the the mean reach (21,024) and the max/min (1,573,085 and 2,882 respectively) this would suggest that there are outliers within the dataset that potentially skew overall results. This trend is similarly seen in the other four metrics as well. 
+
+While there is a high degree of variability between the minimum and maximum for each major metric, the IQR is more consistent. 
+
+Notably, reach seems to be far more consistent across the flagship college Twitter posts when compared to impressions.
+
+Impressions: Median = 141,784, IQR = 103,831
+Reach: Median = 19,519, IQR = 7,697
+
+This gives a quartile based coefficient of variation of 0.73 for impressions, but only 0.39 for reach.
+
+This would seem to suggest that while some accounts have a greater opportunity for their posts to be seen (ie. impressions), that does not necessarily translate into more people actually reading any given post (ie. reach).
+
+### Summary statistics by college
+
+Next, I want to find the high level summary statistics (max, min, mean, median) for the posts that were made by each college. 
+
+```{r}
+#Engagement summary statistics by college
+eng_met_by_college <- TwitterUse2 %>%
+group_by(Author) %>%
+  summarize(
+    Impressions_Max = max(Impressions, na.rm = TRUE), 
+    Impressions_Min = min(Impressions, na.rm = TRUE),
+Impressions_Median = median(Impressions, na.rm = TRUE),
+Impressions_Mean = mean(Impressions,na.rm = TRUE),
+ Reach_Max = max(Reach, na.rm = TRUE), 
+    Reach_Min = min(Reach, na.rm = TRUE),
+Reach_Median = median(Reach, na.rm = TRUE),
+Reach_Mean = mean(Reach,na.rm = TRUE),
+TWLikes_Max = max(TWLikes, na.rm = TRUE), 
+    TWLikes_Min = min(TWLikes, na.rm = TRUE),
+TWLikes_Median = median(TWLikes, na.rm = TRUE),
+TWLikes_Mean = mean(TWLikes,na.rm = TRUE),
+TWRT_Max = max(TWRetweets, na.rm = TRUE), 
+    TWRT_Min = min(TWRetweets, na.rm = TRUE),
+TWRT_Median = median(TWRetweets, na.rm = TRUE),
+TWRT_Mean = mean(TWRetweets,na.rm = TRUE),
+TWReply_Max = max(TWReply, na.rm = TRUE), 
+    TWReply_Min = min(TWReply, na.rm = TRUE),
+TWReply_Median = median(TWReply, na.rm = TRUE),
+TWReply_Mean = mean(TWReply,na.rm = TRUE))
+eng_met_by_college
+```
+### Relationship between reach and number of followers 
+The key metric that I'm most interested in is reach, as it is more of a reflection of how many people actually saw a post (as opposed to impressions, which shows the theoretical potential number of people who could have seen a post). 
+
+What I'd like to layer onto reach is the number of followers that each account has in order to examine the relationship between reach and number of followers. 
+
+The number of followers any Twitter account has can and does vary day-by-day. For simplicity's sake, I am going to use the follower count for the day in November when they had the greatest number of followers to do my subsequent analysis.
+
+```{r}
+#Number of followers for each college
+followers_by_college <- TwitterUse2 %>%
+group_by(Author) %>%
+  summarize(
+    Followers = max(TWFollowers, na.rm = TRUE))
+followers_by_college
+```
+I can now also pull the summary statistics comparing the number of followers at each flagship institution.
+```{r}
+#summary statistics for followers by college
+summary(followers_by_college)
+```
+
+These statistics support the assertion that the number of followers that each account has differs greatly - there is a difference of 376,872 followers between the smallest account (University of Wyoming) and the largest (Ohio State). At 137,286, the IQR is also reflective of a great degree of variability in followers by account. 
+
+```{r}
+#pull only data for mean on each key metric for each college
+mean_data <- select(eng_met_by_college, 
+                      Author, Impressions_Mean, Reach_Mean, TWLikes_Mean,TWRT_Mean, TWReply_Mean)
+
+#merge followers_by_college and mean_data
+merged_college <-  merge(followers_by_college, mean_data, by="Author")
+
+#add posts by college as a data point to what I created above
+merged_college2 <- merge(by_college, merged_college, by="Author") %>%
+  select(Author, Total_Posts, Followers, Impressions_Mean, Reach_Mean, TWLikes_Mean, TWRT_Mean, TWReply_Mean)
+merged_college2
+```
+
+### Compare followers and average reach by college
+
+```{r}
+#divide mean key metrics by number of followers
+merged_college2$ImpPerFollower <- merged_college2[,4]/merged_college2[,3]
+merged_college2$ReachPerFollower <- merged_college2[,5]/merged_college2[,3]
+merged_college2
+```
+### Adding in enrollment data
+
+The Carnegie Foundation for the Advancement of Teaching and the American Council on Education collaborate to provide the Carnegie Classifications. These classifications provide data related to every institution of higher education in the US. Read in data from Carnegie. 
+```{r}
+#import Author > School Name data
+TWAuthor2School <- read_csv("posts/_data/Author_SchoolName.csv")
+#import enrollment data from CCIHE 
+EnrollmentData <- read_csv("posts/_data/CCIHE2021PublicData.csv")
+
+#combine author > school and merged_college2
+twitter_enrollment <- merged_college2 %>%
+  left_join(TWAuthor2School, by = "Author") %>%
+ left_join(EnrollmentData, by = "SchoolName") %>%
+  
+  select(Author, SchoolName, F20Enrollment, Followers, Total_Posts, Reach_Mean, SizeSetting) 
+twitter_enrollment$SizeSetting <- str_replace_all(twitter_enrollment$SizeSetting, c("Four-year, large, primarily residential" ="LargePriRez", "Four-year, large, highly residential" = "LargeHighRez", "Four-year, large, primarily nonresidential" = "LargeNonRez", "Four-year, medium, primarily nonresidential" = "MedNonRez", "Four-year, medium, primarily nonresidential" = "MedPriRez", "Four-year, small, highly residential" = "SmallHighRez", "Four-year, medium, primarily residential" = "MedPriRez"))
+twitter_enrollment
+```
+### Comparing followers to enrollment
+```{r}
+twitter_enrollment$TWFolEnr <-  twitter_enrollment$Followers/twitter_enrollment$F20Enrollment
+twitter_enrollment$TWReachEnr <-  twitter_enrollment$Reach/twitter_enrollment$F20Enrollment
+
+twitter_enrollment_prop <- twitter_enrollment %>%
+  select(SchoolName, TWFolEnr, TWReachEnr)
+twitter_enrollment_prop
+```
+
+
+## Dissecting posts made by the Twitter authors
+
+### Characters per post
+```{r}
+#count the number of characters in each Twitter post
+TwitterUse2$TweetCharCount = str_length(TwitterUse2$Tweet)
+TwitterUse2 %>%
+  select(Author, TweetCharCount, Tweet)
+```
+
+```{r}
+#number of posts from November that were about athletics
+DissectPosts <- TwitterUse2 %>%
+  select(Author, TWFollowers, Tweet, EngType, TweetCharCount, Reach, TWLikes, TWRetweets, TWReply)
+DissectPostsAthletics <- DissectPosts %>%
+  filter(str_detect(Tweet, "FB|(?i)football|basketball|MBB|WBB|athletics|NCAA"))
+  DissectPostsAthletics
+```
+
+### Most common words used in tweets
+```{r}
+#Create a vector containing only the text
+TweetText <- DissectPosts$Tweet
+# Create a corpus  
+TweetCorpus <- Corpus(VectorSource(TweetText))
+
+TweetCorpus <- TweetCorpus %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+TweetCorpus <- tm_map(TweetCorpus, content_transformer(tolower))
+TweetCorpus <- tm_map(TweetCorpus, removeWords, stopwords("english"))
+
+dtm <- TermDocumentMatrix(TweetCorpus) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+df <- data.frame(word = names(words),freq=words)
+
+wordcloud(words = df$word, freq = df$freq, min.freq = 100,           max.words=50, random.order=FALSE, rot.per=0.35,            colors=brewer.pal(4, "Dark2"))
+```
