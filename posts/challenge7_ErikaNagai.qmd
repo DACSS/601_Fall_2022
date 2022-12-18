@@ -1,5 +1,6 @@
+
 ---
-title: "Challenge 8 Erika Nagai"
+title: "Challenge 7 Erika Nagai"
 author: "Erika Nagai"
 description: "Visualizing Multiple Dimensions"
 date: "10/31/2022"
@@ -29,6 +30,7 @@ library(ggwordcloud)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
+
 
 ## Challenge Overview
 
@@ -144,7 +146,7 @@ I learned from the below table that 1) The minimum nights of 85% + listings are 
 ```{r}
 accommodation_df %>%
   group_by(minimum_nights) %>%
-  summarize(
+  dplyr::summarize(
     frequency = n(),
   ) %>%
   mutate(
@@ -173,7 +175,7 @@ Looking at the below table, only less than 0.5% of accommodations charge 1000+ U
 
 accommodation_df %>%
   group_by(price) %>%
-  summarize(
+  dplyr::summarize(
     frequency = n(),
   ) %>%
   mutate(
@@ -206,8 +208,8 @@ For example, `host_id` should be unique however the same host_id appear multiple
 
 ```{r}
 host_df %>% group_by(host_id) %>%
-  count() %>%
-  arrange(desc(n))
+  dplyr::summarise(number =n()) %>%
+  arrange(desc(number))
 ```
 
 So I removed duplicated rows by using `distinct()` function
@@ -251,7 +253,7 @@ First, I decided to visualize the number of accommodation listings by room types
 accommodation_df %>% 
   filter(outlier==0) %>%
   group_by(neighbourhood_group, room_type)%>%
-  summarize(
+  dplyr::summarize(
     frequency = n()
   ) %>%
   ggplot(aes(fill=room_type, y=frequency, x=neighbourhood_group)) + geom_bar(position="stack", stat="identity") +
@@ -283,3 +285,4 @@ accommodation_df %>% filter(outlier == 0) %>%
   labs(title = "The number of reviews per month by room types and neighbourhood groups")
   
 ```
+
