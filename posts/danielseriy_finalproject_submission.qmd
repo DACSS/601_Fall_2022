@@ -1,0 +1,298 @@
+---
+title: "DACSS 601 Final Project - Presidential Election Data from 1976 - 2020; an analysis of voter trends and satisfaction with the current electoral system"
+author: "Daniel Seriy"
+desription: "Presidential Election Data from 1976 - 2020; an analysis of voter trends and satisfaction with the current electoral system."
+date: "12/17/2022"
+---
+
+```{r}
+library(tidyverse) 
+library(readxl) 
+library(ggplot2) 
+library(usmap)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Elections in recent history have been controversial and contentious. Are people in the United States really satisfied with our electoral system, not in the sense of the electoral college, but in the candidates that are available to them? Along with this, which electorate, in terms of states, are the most dissatisfied with elections, and do these dissatisfied electorates have the most impact on elections in general. The hope is that with the analysis of this data set, the answers to these questions can begin to be answered.
+
+## Data
+
+The data set being used in this study has been sourced from the MIT Election Data and Science Lab. This data set was created in 2017, and contains presidential election data for all 50 states for the 1976 - 2020 election years. The data set includes 15 distinct variables. Not all of these variable will be necessary in our analysis, and will be cleaned in order to make the analysis more streamlined. the summary of the original data set is included below.
+
+```{r}
+#Read in of election Dataset 
+election_orig <- read.csv("~/601 Final Project/posts/_data/1976-2020-president.csv")
+
+#Summarize Dataset election_orig
+summary(election_orig)
+```
+
+## Data Wrangling & Mutation
+
+In order to begin the analysis, we must create a data frame that contains only crucial data from the original data set. In this case, we only needed to select the data that describes the outcome of each election cycle for each state. After this is completed, a new variable, percentvotes, was created to better represent the candidate with the highest percent of the votes for any election cycle. Finally, it was crucial to better format how write-in votes were represented. First for all rows that had writein == TRUE , "Write-In Votes" was replaced into the candidate column as well as the party_detailed column for the same row would be replaced with "Other". finally, the writein column was removed since its data was now represented in the candidate and party_detailed columns.
+
+This election1 data frame will be where all other data frames needed for the following visualizations will be derived from.
+
+```{r}
+#Select Pertinant Data from election_orig
+election1 <- election_orig %>%
+  select(year, state, candidate, party_detailed, writein, candidatevotes, totalvotes) %>%
+  mutate(state = tolower(state)) %>%
+  mutate(percentvotes = (candidatevotes/totalvotes) * 100) %>%
+  mutate(candidate = case_when(
+    writein == TRUE ~ "Write-In Votes",
+    writein == FALSE ~ candidate)) %>%
+  mutate(party_detailed = case_when(
+    writein == TRUE ~ "Other",
+    writein == FALSE ~ party_detailed)) %>%
+  select(!writein)
+```
+
+## Visualization #1: Heat Mapping of totalvotes
+
+Step #1: Create data frame election_participation, that assigns the totalvotes for each state in each election year.
+
+```{r}
+election_participation <- election1 %>%
+  select(year, state, totalvotes) %>%
+  distinct() %>%
+  pivot_wider(names_from = year,
+              values_from = totalvotes,
+              id_cols = state)
+```
+
+Step #2: Create data frame mapdata, to represent the geographic data of the 50 states.
+
+- This is crucial in order to create the visualization, and will be used again for visualization #2.
+
+```{r}
+mapdata <- us_map() %>%
+  select(x, y, group, full) %>%
+  mutate(state = full) %>%
+  select(!full)
+
+mapdata$state <- tolower(mapdata$state)
+```
+
+Step #3: Join mapdata and election_participation data frames by state & pivot_longer the newly joined data frame in order for data to be organized by year. This new data frame is called mapdata_totalvotes.
+
+- This new data frame, mapdata_totalvotes, will be what is used to create the visualization.
+
+```{r}
+mapdata_totalvotes <- left_join(mapdata, election_participation, by = "state") %>%
+  pivot_longer(cols = c("1976" : "2020"),
+               names_to = "year",
+               values_to = "total_votes")
+```
+
+Step #4: Create visualization of data, map_totalvotes, using ggplot2. The visualization will create 12 distinct heat maps for each election year using facet.
+
+```{r}
+map_totalvotes <- ggplot(mapdata_totalvotes, aes(x = x,
+                                                 y = y,
+                                                 fill = total_votes,
+                                                 group = group)) +
+  facet_wrap(vars(year)) +
+  geom_polygon(color = "black") +
+  scale_fill_gradient(name = "Total Votes", low = "white", high = "red", na.value = "grey50") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        rect = element_blank())
+
+map_totalvotes
+```
+
+## Visualization #2: Mapping of popular vote winner by state
+
+Step #1: Create data frame election_winners, where each state for each election year is assigned the party_detailed with the highest percentvotes.
+
+```{r}
+election_winners <- election1 %>%
+  select(!candidatevotes & !totalvotes & !candidate) %>%
+  group_by(year, state) %>%
+  slice_max(n = 1, percentvotes) %>%
+  pivot_wider(names_from = year,
+              values_from = party_detailed,
+              id_cols = state)
+```
+
+Step #2: Join mapdata and election_winners data frames by state & pivto_longer in order for data to be organized by year and party in a new data frame, mapdata_winners.
+
+```{r}
+mapdata_winners <- left_join(mapdata, election_winners, by = "state") %>%
+  pivot_longer(cols = c("1976" : "2020"),
+               names_to = "year",
+               values_to = "Party")
+```
+
+Step #3: Create visualization, map_winners, where each election year is represented using facet. 
+- In order for each state to be colored to match the party correctly, data frame color_list was created to assign each party with it's respective color.
+
+```{r}
+map_winners <- ggplot(mapdata_winners, aes(x = x,
+                                           y = y,
+                                           fill = Party,
+                                           group = group)) +
+  facet_wrap(vars(year)) +
+  geom_polygon(color = "black") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        rect = element_blank())
+
+color_list <- c("DEMOCRAT" = "blue", "DEMOCRATIC-FARMER-LABOR" = "green", "other" = "yellow", "REPUBLICAN" = "red")
+
+map_winners + scale_colour_manual(values = color_list,aesthetics = c("colour", "fill"))
+```
+
+## Visualization #3 & #4: Growth of totalvotes
+ 
+The following 2 visualizations represent the same data. the first of two represent all the data on a singular graph to better show the outliers in growth, while the second of the two represents each state individually.
+
+Step #1: Create data frame total_votes_data to represent totalvotes for each state and year.
+
+```{r}
+total_votes_data <- election1 %>%
+  select(year, state, totalvotes) %>%
+  distinct()
+```
+
+Step #2: Create visualization #3, total_votes_group.
+
+```{r}
+total_votes_group <- ggplot(total_votes_data, aes(x = year,
+                                                  y = totalvotes,
+                                                  group = state,
+                                                  color = state)) +
+  geom_line() +
+  ggtitle("Total Votes Growth")
+
+total_votes_group
+```
+
+Step #3: Create visualization #4, total_votes_indv.
+
+```{r}
+total_votes_indv <- ggplot(total_votes_data, aes(x = year,
+                                                 y = totalvotes,
+                                                 group = state,
+                                                 color = state)) +
+  facet_wrap(vars(state)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  geom_line() +
+  theme(legend.position = "none") +
+  ggtitle("Total Votes Growth by State")
+
+total_votes_indv
+```
+
+## Visualization #5 & #6: Growth of Write-In Votes
+
+The following to visualizations are completed in a similar manner to #3 & #4, but instead of using totalvotes, we are using the number of Write-In votes.
+
+Step #1: Create data frame writein_votes_data which represents how many write-in votes were recorded for each state in each election year.
+
+```{r}
+writein_votes_data <- election1 %>%
+  filter(candidate == "Write-In Votes") %>%
+  select(year, state, candidatevotes)
+```
+
+Step #2: Create visualization #5, writein_votes_group.
+
+```{r}
+writein_votes_group <- ggplot(writein_votes_data, aes(x = year,
+                                                  y = candidatevotes,
+                                                  group = state,
+                                                  color = state)) +
+  geom_line() +
+  ggtitle("Write-In Votes Growth")
+
+writein_votes_group
+```
+
+Step #3: Create visualization #6, writein_votes_indv.
+
+```{r}
+writein_votes_indv <- ggplot(writein_votes_data, aes(x = year,
+                                                 y = candidatevotes,
+                                                 group = state,
+                                                 color = state)) +
+  facet_wrap(vars(state)) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  geom_line() +
+  theme(legend.position = "none") + 
+  ggtitle("Write-In Votes Growth by State")
+
+writein_votes_indv
+```
+
+## Analysis
+
+- Visualization #1:
+
+From a purely visual interpretation, visualization #1 can give us insight into which states have larger electorates than others. It is clear to see that states on the coasts or states on the exterior parts of the US have more voters than states in the interior. This makes sense due to the fact that the majority of larger cities and population centers are in states closer to the ocean/boarders, while states in the interior tend to have smaller populations because of the nature of that land being the "breadbasket", where most of the agricultural production takes place. There are 4 states in the visualization that stand out as outliers to having larger voting populations. These states are Florida, Texas, California & New York. This makes sense due to the fact that these states contain some of the largest cities in the US, with NYC containing the #1 largest city, NYC, with a population of ~8.8 Million people as of the 2020 census. California follows closely behind with the second largest city, Los Angeles, with a population of ~3.9 Million people as of the 2020 Census. Texas has the 4th largest city Houston, and Florida contains the 12th largest and 44th largest cities, Jacksonville and Miami, respectively. (infoplease)
+
+- Visualization #2:
+
+While it would make sense to assume that states with larger populations have a disproportional impact in determining the outcome of elections, according to visualization #2 as well as the actual results of national elections, this assumption would be incorrect and not supported by the visualization. If we look at the four states mentioned above, while there are instances where the outcome of the states popular vote did match up with the outcome of the election, like California going Republican '80 & '84 for Reagan, this did not match up with California's majority of Republican in '76, and the winner of the election Jimmy Carter for the Democrats. This is only one example of the states, but this is true for all of the other big states. They do tend to match the results of the national election, but it is not consistent enough to say that there is a correlation between the states with total votes determining the outcome of the election.
+
+- Visualization #3 & #4:
+
+These visualizations help support my conclusion for visualization #1. This is because I concluded that the 4 states with the most total votes were California, Texas, New York, and Florida had the 4 highest total votes, and through visualizations #3 & #4, its is clearer to see that these states are the outliers compared to the rest of the states. Not only that, but these visualizations also show that compared to the other states in the US, the total amount of voters in these states is also growing more than the other 46 states, meaning that as time goes on, these 4 states will contribute more and more to the total popular vote.
+
+Another Conclusion you can pull from these visualizations is that states with notably large cities like North Carolina with Charlotte and Illinois with Chicago, these cities are also growing with total votes, unlike states with notably small cities like Montana or Nebraska are staying rather constant.
+
+- Visualization #5 & #6:
+
+In order to answer the question of the satisfaction of the electorate with the current state of the electoral system, I have decided to use the amount & growth of write-in votes as the marker for said satisfaction/dissatisfaction.
+
+The main conclusion that I made from these visualizations comes from visualization #5. this visualization clearly shows that going into the 2012 election, voters were beginning to write-in votes way more than they had in the past, and then would decrease down towards the 2020 election meaning that for the second election of Obama and the electoral race between Clinton and Trump, people were not satisfied with the candidates that were available to them.
+
+What makes this statistic more interesting is that the outliers for this data were California, Texas, and Washington DC. While I can understand that California and Texas had higher values due to the conclusions that we made above about their higher total voters, Washington DC makes an ironic point. The voters in the district have the least amount of representation in government and yet they are the most dissatisfied with the presidential candidates. I just find that to be interesting.
+
+## Future additions/improvements
+
+While I think the work I have done here is a great start, I think there is a lot of additions I can make.
+
+First, I think that the addition of population data would give me more insight into the types of voters who are voting and the amount of eligible voters who are/aren't voting. If I were to have included this data or found a data set with this data included, I could have created visualizations that were not just total votes, but total votes per capita (of eligible voters), I could have a better understanding of the trust in the voting system and understand how many people who can vote are voting.
+
+Second, I think it would be helpful to have been able to add an overlay of the electoral college results on top of the popular vote election results. This would have allowed me to compare the differences between the two and possibly allow me to conclude which of the two systems is better representative of the electorate.
+
+## Conclusion
+
+In Conclusion, This project allowed me to explore the world of R and data visualization, and see the possibilities that these tools have to offer. This project also allowed me to better understand presidential election data and what it can show.
+
+There is a lot more work that can be done on this project to make more concrete conclusions, and I plan to continue this research into the future. There are millions of more data sets available on the internet to join into the data I have already compiled, and more complexity I can create. Not only that, but with the addition of statistical analysis, which I plan to include in the future, I will be able to make more concrete conclusions about the realities of presidential election data.
+
+
+## Citations
+
+- Research Citations:
+  - https://www.infoplease.com/us/cities/top-50-cities-us-population-and-rank
+  - http://www.iweblists.com/us/government/PresidentialElectionResults.html
+
+
+- Data Set Citation:
+  - MIT Election Data and Science Lab, 2017, "U.S. President 1976–2020", https://doi.org/10.7910/DVN/42MVDX, Harvard Dataverse, V6, UNF:6:4KoNz9KgTkXy0ZBxJ9ZkOw== [fileUNF]
+
+
+
+
+
