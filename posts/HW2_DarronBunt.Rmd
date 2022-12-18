@@ -1,0 +1,101 @@
+---
+title: "Homework 2 - Darron Bunt"
+description: "Read In Dataset"
+author: "Darron Bunt"
+date: "`r Sys.Date()`"
+categories:
+  - HW2
+  - darron_bunt
+output: distill::distill_article
+---
+
+## Loading Packages into R Environment
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+## Loading the Dataset
+
+I have chosen to use my own data. Specifically, the dataset that I have chosen is made up of all of the Twitter posts authored by all 50 state flagship universities during the month of November 2022. In addition to the posts themselves, this dataset also includes a variety of associated metrics (such date/time posted, post impressions and reach, number of likes/retweets/comments, total number of Twitter followers, sentiment as tagged by artificial intelligence).  
+
+```{r}
+#import data
+FlagshipTwitter <- read_csv("posts/_data/FlagshipTwitterUpdated.csv")
+```
+## Cleaning the Dataset
+
+#### 1. Cleaning out any rows that are not Twitter data
+
+I realized that when I had run my query in Brandwatch, I had not specified that I only wanted to return authors from Twitter. Accordingly, I had pulled in some mentions from forums, blogs, YouTube (etc.) where the author name there matched the flagship institution's Twitter author name.
+
+```{r}
+#remove rows where the Page Type isn't twitter
+FlagshipTwitter2 <- subset(FlagshipTwitter, PageType =='twitter')
+FlagshipTwitter2
+```
+Ok, awesome. I've gotten rid of 865 mentions that I didn't need/want.
+
+#### 3. Narrow down to the columns I actually want to use in analysis (and clean up their names, as necessary)
+
+Though I had already deleted a few columns, I quickly realized I would probably not be using 32 different data points in this analysis and would be well served to re-order my columns such that the ones I intend to use the most are first, not interspersed randomly. 
+
+I also wanted to give several columns clearer/more usable names.
+
+```{r}
+#rename the columns I intend to use for analysis
+FlagshipTwitter3 <- rename(FlagshipTwitter2, c(Tweet = 'Full Text', MentionedAuthors = 'Mentioned Authors', TWFollowers = 'Twitter Followers', TWReply = 'Twitter Reply Count', TWRetweets = 'Twitter Retweets', TWLikes = 'Twitter Likes', Reach = 'Reach (new)', EngType = 'Engagement Type', URL = Url))
+
+#put columns I plan to use first 
+FlagshipTwitterUse <- select(FlagshipTwitter3, Author, Date, Impressions, Reach, TWLikes, TWRetweets, TWReply, EngType, Sentiment, Hashtags, MentionedAuthors, Tweet, TWFollowers, URL, everything())
+FlagshipTwitterUse
+```
+#### 4. Sort out my dates
+
+My dates are currently date + times that each tweet was posted. I want to separate this into a date column and a time column.
+
+```{r}
+#separate dates into respective date and time column
+TwitterUse2 <- separate(FlagshipTwitterUse, Date, into = c("Date", "Time"), sep = " ")
+
+TwitterUse2$Date <- parse_date(TwitterUse2$Date, format = "%m/%d/%Y")
+TwitterUse2$Time <- parse_time(TwitterUse2$Time, format = "%H:%M")
+TwitterUse2
+```
+I suspect I will want to mutate the data and create new variables as I progress with my project, but I believe that this iteration of the dataset will provide the foundation I need to begin exploratory data analysis.
+
+## Narrative About the Dataset
+
+The dataset is comprised of data relating to every tweet authored by one of the 50 US flagship colleges during the month of November, 2022. 
+
+The dataset is comprised of the 5,658 posts that were made by the 50 US flagship colleges in November 2022. For each post, there are several associated variables that will be used for analysis. The 14 variables that are of particular interest for this project are: 
+
+* **School Name:** Which school authored each post.
+* **Twitter Followers:** The number of Twitter followers the account had at the time of posting.
+* **F20 Enrollment:** The enrollment at each school in the Fall of 2020.
+* **Size Setting:** The size and setting designation for each school. 
+* **Date:** The date each post was authored.
+* **Time:** The time each post was posted.
+* **Weekday:** The day of the week each post was made.
+* **Engagement Type:** A designation of whether the post was an original post (OG), a retweet of someone else's post (RETWEET), a reply to another account's post (REPLY), or quote tweet, a retweet of another account's post with added commentary (QUOTE).
+* **Impressions:** The sum of the followers of a tweet's author and the followers of any retweeting authors.
+* **Reach:** An estimate of how many people have actually seen/read a given post.
+* **Twitter Likes:** The number of times Twitter users "liked" a given post. 
+* **Twitter Retweets:** The number of times Twitter users retweeted a given post on their own Twitter. 
+* **Twitter Replies:** The number of times Twitter users left a comment on a given post. 
+* **Sentiment:** An AI-driven interpretation of the content of each tweet that subsequently labels the post as either Positive, Negative, or Neutral.
+* **Tweet:** The content of the tweet authored.
+
+
+## Research Questions This Dataset Could Answer
+
+There are three primary questions of interest that I think this dataset could help answer:
+* Are there consistencies in how colleges are using Twitter?
+* What makes some posts more successful than others?
+* Are there takeaways on how colleges can most effectively use Twitter?
