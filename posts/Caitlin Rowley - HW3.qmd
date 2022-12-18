@@ -66,12 +66,12 @@ duplicates <- duplicated(Boston_tidy)
 
 options(max.print=999999)
 duplicates["TRUE"]
-
+head(Boston_tidy)
 ```
 
 ## Summary of Data
 
-"Boston_tidy" represents AirBnB rental listing data for the city of Boston over the last twelve months. The data frame has 17 variables and 5,185 rows of data. Each row now represents one unique observation---or in this case, a unique rental listing---that includes data related to the following variables: (1) room/listing ID number, (2) name of the room/listing, (3) listing host ID number, (4) listing host name, (5) room/listing neighborhood, (6) room/listing latitude, (7) room/listing longitude, (8) type of room/listing, (9) room/listing price, (10) minimum number of nights for rent, (11) number of room/listing reviews, (12) most recent room/listing review, (13) number of room/listing reviews per month, (14) number host-specific listings, (15) room/listing availability over the next year, (16) number of reviews for room/listing over the past 12 months, and (17) room/listing licensure status.
+"Boston_tidy" represents AirBnB rental listing data for the city of Boston over the last twelve months. The data frame has 17 variables and 5,185 rows of data. Each row now represents one unique observation---or in this case, a unique rental listing---that includes data related to the following variables: (1) room/listing ID number, (2) name of the room/listing, (3) listing host ID number, (4) listing host name, (5) room/listing neighborhood, (6) room/listing latitude, (7) room/listing longitude, (8) type of room/listing, (9) room/listing price, (10) minimum number of nights for rent, (11) number of room/listing reviews, (12) most recent room/listing review, (13) number of room/listing reviews per month, (14) number room-specific host listings (i.e., the number of unique room listings by host), (15) room/listing availability over the next year, (16) number of reviews for room/listing over the past 12 months, and (17) room/listing licensure status.
 
 Some potential research questions include:
 
@@ -124,7 +124,7 @@ summary(Boston_median$median_price)
 
 We can see from this data set that the highest median room price is \$750/night for a shared room in the Fenway neighborhood. The lowest median room price is \$10/night for a shared room in Charlestown.
 
-I will next generate statistics related to room price, minimum number of nights per stay, number of reviews per room, and number of listings by host.
+I will next generate statistics using raw data (not excluding outliers or values equal to 0) related to room price, minimum number of nights per stay, number of reviews per room, and number of listings by host.
 
 ```{r}
 # summary statistics for entire data set: 
@@ -138,41 +138,73 @@ Boston_mutate %>%
   summary()
 ```
 
-**This summary indicates that \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+This raw data indicates that room prices for Boston Airbnbs range from \$0-\$10,000 per night---both of which I would assume are outliers---with the median price equaling \$179 per night and the average price equaling \$231 per night. Regarding the minimum number of nights per stay, values ranged from 1-730 nights. At first, I assumed the maximum value was an outlier, but Airbnb does offer long-term stays ("long-term" being defined as more than 28 days), so it is possible that this particular listing is for long-terms stays only. I will dive deeper into this later to see if this is a commonality within the data set, or if it is truly an outlier. I also included the number of reviews per listing in this analysis to see if this may be an indicator of the popularity of certain rooms and, by extension, certain hosts. I will delve into this in my final project, as well. In the same vein, I included number of room-specific host listings in this summary, with the values ranging from 1-477 listings. The median number of room-specific listings per host is 6, while the average is 62. The final component of this analysis is listing availability over the next 365 days. The values range from 0-365 days, with the median value being 187 days and the average being 190 days.
+
+As a precursor to a deeper analysis on number of host listings, I filtered the data set to include only values greater than one in the "host_listings" column, which tells us the number of rooms listed by the same host.
 
 ```{r}
-# summary statistics for categorical variables:
+# filter by hosts with more than one listing:
 
 Boston_id <- Boston_mutate%>%
-  filter(host_id>1)%>%
-  group_by(neighborhood)
-
-print(Boston_id)
+  filter(host_listings>1)%>%
+  group_by(host_id, host_listings)
+head(Boston_id)
 ```
 
-**SUMMARY\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+This output indicates that that there are 3,918 room-specfic listings whose hosts have more than one unique listing in Boston's Airbnb database.
+
+Additionally, we can dig a little deeper into the number of room-specific listings by host.
+
+```{r}
+max_listings <- Boston_mutate%>%
+  select(host_id, host_name, room_name, neighborhood, host_listings)
+max_listings[max_listings$host_listings == '477',]
+head(max_listings)
+```
+
+We now know that there are 477 unique listings whose hosts also have 477 unique listings.
+
+I will next generate some summary statistics for the categorical variable indicating listing neighborhood.
+
+```{r}
+# summary statistics by neighborhood:
+
+unique_neighbor <- unique(Boston_mutate$neighborhood)
+unique[which.max(tabulate(match(Boston_mutate$neighborhood, unique)))]
+
+```
+
+We can see from this tabulation that the most frequently listed neighborhood is Allston.
 
 ## Visualization with Multiple Dimensions
 
-I will next focus on data visualization. I will first generate a bar chart portraying median room price by neighborhood.
+I will next focus on data visualization. I will first generate a bar chart portraying median room price by neighborhood. This visual does not exclude outliers, though it will exclude room prices that equal zero.
 
 ```{r}
 library(RColorBrewer)
 library(ggtext)
 library(ggplot2)
 
+# group median price by neighborhood:
+
+Boston_median_price <- Boston_mutate%>%
+  filter(room_price>0) %>%
+  group_by(neighborhood)%>%
+    summarize(median_price = median(room_price))
+
 # generate bar chart:
 
-ggplot(Boston_median, aes(x=neighborhood, y=median_price, fill=neighborhood)) + geom_bar(stat="identity") +
-  scale_fill_hue() +
+ggplot(Boston_median_price, aes(x=neighborhood, y=median_price, fill=neighborhood)) +
+geom_bar(stat="identity") +
+scale_fill_hue() +
   theme_classic() +
   labs(x="Neighborhood",y="Median Price per Night", title = "Boston Airbnb Rental Prices by Neighborhood")+
   theme(axis.text.x = element_markdown(angle=90, hjust=1))
 ```
 
-**SUMMARY\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+This bar chart tells us that the neighborhoods with the highest median room price per night are (1) Chinatown at just under \$400/night , (2) Back Bay at just under \$300/night, and (3) Downtown at about \$260/night. The neighborhoods with the lowest median prices are Roxbury at about \$80/night, (2) Dorchester at just under \$100/night, and (3) Hyde Park at about \$100/night. These values are confirmed in the data frame "Boston_median_price."
 
-I will next generate a geom_point chart to visualize room price by neighborhood and room type. I will also apply a boxplot overlay to capture both the interquartile range and outliers. I will first need to exclude strong outliers
+I will next generate a geom_point chart to visualize room price by neighborhood. I will also use facet wrapping to separate the values by room type. I will also apply a boxplot overlay to capture both the interquartile range and outliers. I will first need to exclude strong outliers
 
 ```{r}
 # remove outliers:
@@ -205,9 +237,13 @@ Boston_outlier%>%
   theme(axis.text.x = element_markdown(angle = 90, hjust=1))
 ```
 
-This is very difficult to read due to the number of neighborhoods, so I am going to apply the three variables (room price, room type, and neighborhood) to another visual. In the interim, I will display a simpler version of this geom_point chart without the facet wrap so that the visual only captures neighborhood and room price per night.
+This is very difficult to read due to the number of neighborhoods, so I am going to apply the three variables (room price, room type, and neighborhood) to another visual.
+
+In the interim, I will display a simpler version of this geom_point chart without the facet wrap so that the visual only captures neighborhood and room price per night.
 
 ```{r}
+# generate geom_point chart with boxplot:
+
 Boston_outlier%>%
  group_by(room_type, neighborhood)%>%
   ggplot(aes(x=neighborhood, y=room_price)) +
@@ -216,9 +252,12 @@ Boston_outlier%>%
   theme_light()+
   geom_boxplot()+
   theme(axis.text.x = element_markdown(angle = 90, hjust=1))
+  
+  
+# want to add values: text(x = Boston_outlier$room_price, y = Boston_outlier$room_price, labels = Boston_outlier$room_price)
 ```
 
-**SUMMARY\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_**
+Here, we can see the distribution of prices across neighborhoods using individual data points. We can also see the spread of data points with the boxplot overlay, which includes the minimum value, the values within the 25th quartile, the median value, the values within the 75th quartile, and the maximum value. The boxplot also indicates outliers. With this visualization, we can see that neighborhoods with the narrowest distribution of data points---or, in this case, room prices---are Chinatown and the Leather District, while the neighborhoods with the broadest distribution of data points seem to be Charlestown, Harbor Islands and Mattapan. In my final project, I'd like to add the value lables to the boxplots to confirm this.
 
 I will next visualize the data using a choropleth map. I will generate a map of the Boston area and apply data related to neighborhood, room price, and room type.
 
@@ -232,36 +271,49 @@ library(tidyverse)
 # generate map
 
 states_map <- map_data("state")
+head(states_map)
 
 ma_map <- filter(states_map, region=="massachusetts") %>%
 ggplot(., aes(x=long, y=lat, group=group)) +
   geom_polygon(fill="white", color="black")
-ma_map
+print(ma_map)
+```
 
+I've generated the map of Massachusetts, so now I will work on merging my data sets to apply as an overlay to the map.
+
+```{r}
 # merge 'ma_map' and 'Boston_tidy' by coordinates
 
 # mutate and rename columns
 
-Boston_mutate %>%
+Boston_coord <- Boston_mutate %>%
   rename("coordinates" = "room_coordinates")
+head(Boston_coord)
 
 ma_map_df <- filter(states_map, region=="massachusetts")
 ma_mutate <- ma_map_df %>%
   mutate("coordinates" = paste(lat, long))
-data.frame(ma_mutate)
+head(ma_mutate)
 
 # merge data 
 
-map_merge <- merge(ma_mutate, Boston_tidy_mutate, by="coordinates")
+map_merge <- merge(ma_mutate, Boston_coord, by = "coordinates", all=T)
+head(map_merge)
 
 # remove if room_id is NA when merged with map data
 
 map_merged <- map_merge %>% filter(!is.na(map_merge$room_id))
-
-# paste data onto map of MA
-
-map <- ggplot(map_joined, aes(x=long, y=lat, group=group)) + geom_polygon(aes(fill = room_price, color = "light pink"))
-map
+head(map_merged)
 ```
 
-I am having trouble pasting the data onto the map of Massachusetts. I will try using the 'sf()' function, as I'd like to zoom in on the map to just show Boston, as the data would be illegible if it the map is kept at its current scale. Once I successfully apply the code, I will adjust the aesthetics to reflect neighborhood, roomy type, and room price. I will continue to work on this for my final project.
+I now have my map and my merged data, but I'd like to zoom in on Boston, as the data would be illegible if it the map is kept at its current scale. I will try an iteration of the above code to generate this visual.
+
+```{r}
+# load map, plot data
+
+MA_map <- map_data("state")
+filter(states_map, region == "massachusetts")%>%
+  ggplot() + geom_polygon(data = map_merged, aes(x = long, y = lat, group = group), colour = "black", fill = NA) + geom_point(data = Boston_mutate, aes(x = room_latitude, y = room_longitude, size = room_price, color = neighborhood)) + coord_map()
+```
+
+This x-axis range on this visual is too narrow, and there are too many data points included. For my final project, I will work on expanding the limits of the x-axis, and I will also consider ways that I can slice or group the data to make the visual more readable. I will also consider additional variables that I can visualize.
