@@ -1,0 +1,263 @@
+---
+title: "HW2"
+author: "Prajakti Kapade"
+description: "Homework 3"
+date: "12/03/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+
+---
+
+```{r}
+library(dplyr) 
+library(ggplot2)
+```
+
+#Read Dataset
+We will load the hotel_bookings dataset.
+```{r}
+hotel_data <- read.csv('_data/hotel_bookings.csv')
+hotel_data
+```
+```{r}
+colnames(hotel_data)
+```
+
+The dataset contains 32 columns and 119,390 observations. The columns are shown above. 
+Some of the categorical columns are : hotel, deposit_type, company, customer_type
+The columns related to time are : "lead_time" ,"arrival_date_year" , "arrival_date_month"     "arrival_date_week_number" ,"arrival_date_day_of_month" ,"stays_in_weekend_nights", "stays_in_week_nights"
+The target column according to this dataset is : "is_cancelled" which is binary 1 for YES and 0 for NO.
+
+#Dataset Statistics
+```{r}
+summary(hotel_data)
+```
+Summary provides the statistics for each column.As, we can see this dataset is well-defined in terms of rows and columns, thus, they need no pivoting.
+
+```{r}
+unique(hotel_data$hotel)
+unique(hotel_data$deposit_type)
+unique(hotel_data$customer_type)
+```
+There are two types of hotels : "Resort Hotel", "City Hotel", three types of Deposits : "No Deposit" ,"Refundable" ,"Non Refund", and four types of customers in this dataset : "Transient","Contract","Transient-Party","Group".
+
+We will look at the frequency for categorical columns.
+```{r}
+hotel_data%>%
+  group_by(customer_type)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+```{r}
+hotel_data%>%
+  group_by(market_segment)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+```{r}
+hotel_data%>%
+  group_by(hotel)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+
+
+```{r}
+hotel_data%>%
+  group_by(distribution_channel)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+
+#Dataset Cleaning
+Using the code below to see the null values
+```{r}
+sapply(hotel_data, function(x) sum(is.na(x)))
+```
+
+As, we just have null values in one column i.e. Children. We can substitue those 4 values with the values in babies columns, as they mean the same or are giving same context.
+```{r}
+n <- length(hotel_data$children)
+for (i in 1:n) {
+  if (is.na(hotel_data$children[i]))
+    hotel_data$children[i] <- hotel_data$babies[i]
+}
+```
+
+Now, we will look at one column which does not clearly define itself : "adr". It should be "average daily rate". According to the summary, the maximum value is very high while the mean lies in 100s. We will look at how many records are actually in the high range.
+```{r}
+hotel_data%>%
+  filter(adr>2000)
+```
+```{r}
+hotel_data%>%
+  filter(adr>1000)
+```
+We can see, there is only one record which can be an outlier, so we can replace the value by mean of the column "adr".
+
+```{r}
+hotel_data = hotel_data%>%
+  mutate(adr = replace(adr, adr>1000, mean(adr)))
+```
+
+#Data Analysis
+
+```{r}
+ggplot(data = hotel_data, aes(x = hotel)) +
+  geom_bar(stat = "count",fill='lightblue') +
+  labs(title = "Booking by Hotel type",
+       x = "Hotel type",
+       y = "No. of bookings") 
+```
+The visualization shows that City Hotels have higher booking than Resorts.
+
+```{r}
+ggplot(data = hotel_data, aes(x = customer_type)) +
+  geom_bar(stat = "count",fill='purple') +
+  labs(title = "Booking by customer type",
+       x = "Customer type",
+       y = "No. of bookings") 
+```
+The visualization suggests that the Customers having maximum bookings are Transient, followed by Transient-Party, then Contract and lastly Groups.
+
+```{r}
+ggplot(data = hotel_data, aes(x = market_segment)) +
+  geom_bar(stat = "count",fill='lightblue') +
+  labs(title = "Booking by Market Segment",
+       x = "Market Segment",
+       y = "No. of bookings") 
+```
+The visualization suggests that the Market Segment with highest booking is Online TA, while the ones with least bookings are in Aviation Segment ( If we ignore Undefined)
+
+```{r}
+ggplot(data = hotel_data, aes(x = distribution_channel)) +
+  geom_bar(stat = "count",fill='purple') +
+  labs(title = "Booking by Distribution channel",
+       x = "Distribution channel",
+       y = "No. of bookings") 
+```
+The visualization suggests that the Distribution channel with maximum bookings is TA/TO while the one with least bookings is GDS.
+
+#Visualizations
+
+Below are visualizing deposit type, customer type and market segment for each Hotel type.
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(hotel, deposit_type) %>% 
+                group_by( hotel, deposit_type) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(deposit_type, n), n, fill = hotel)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(hotel, customer_type) %>% 
+                group_by( hotel, customer_type) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(customer_type, n), n, fill = hotel)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(hotel, market_segment) %>% 
+                group_by( hotel, market_segment) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(market_segment, n), n, fill = hotel)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+Below are the visualizations related to our Target Variable "is_cancelled" ( 1 for YES and 0 for NO)
+These visualizations show the distribution of cancelled bookings per hotel type and customer type.
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(is_canceled, hotel) %>% 
+                group_by( is_canceled, hotel) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(hotel, n), n, fill = is_canceled)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+ 
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(is_canceled, customer_type) %>% 
+                group_by( is_canceled, customer_type) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(customer_type, n), n, fill = is_canceled)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+```{r}
+#plot distribution of deposit type
+hotel_data %>% select(is_canceled, is_repeated_guest) %>% 
+                group_by( is_canceled, is_repeated_guest) %>% 
+                summarise(n = n()) %>% 
+                ggplot(aes(reorder(is_repeated_guest, n), n, fill = is_canceled)) + 
+                geom_bar(stat = "identity", position = position_dodge()) + xlab("") + 
+                ylab("# of bookings") + labs(fill = "Hotel type") 
+```
+
+We can summarize the following from the plots above:
+1. The number of bookings for Resorts are half the number of bookings for the City Hotels.
+2. Majority of the City Hotels have No Deposit for the booking, while there are 0 City Hotels asking for Refundable Deposits.
+3. Majority of customers booking the City Hotels are Transient, followed by Transient-Party.
+4. Most cancellations were made for City Hotels.
+5. Most cancellations were made by Transient Customers.
+6. Repeated guests have very low percentage of cancellations.
+
+
+Now, we will look at the distribution of hotels per country
+```{r}
+hotel_data%>%
+  group_by(country)%>%
+  summarise(num=n())%>%
+  arrange(desc(num))
+```
+
+As, "is_canceled" is our target variable, let us see the cancelations per country.
+```{r}
+hotel_data %>% 
+  select(country, is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled)) %>% 
+  head(n=10)
+```
+
+The maximum bookings are made in : PRT,GBR,FRA,ESP,DEU
+The maximum cancelations are made in : PRT,GBR,ESP,FRA,ITA
+
+As seen, FRA has higher bookings than ESP, and the cancelations are less as compared the ESP. Thus, the hit rate i.e. the probability for booking to happen is high in FRA.
+
+```{r}
+hotel_data %>% 
+  select(country, stays_in_week_nights) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(stays_in_week_nights)) %>% 
+  head(n=10)
+```
+
+```{r}
+hotel_data %>% 
+  select(country, stays_in_weekend_nights) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(stays_in_weekend_nights)) %>% 
+  head(n=10)
+```
+Also, we can see the stay in week nights and weekend nights follow almost similar pattern in terms of the countries, with FRO and SEN being the top 2.
+
+The visualizations fail to answer:
+- The difference between Resort and City Hotels?
+- How does arrival date/month/year affect the bookings and the cancellations?
+- How is the "adr" field affecting the bookings? Do they depict something?
+
+
+

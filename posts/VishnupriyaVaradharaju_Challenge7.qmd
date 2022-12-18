@@ -1,0 +1,185 @@
+---
+title: "Challenge 7 Solutions"
+author: "Vishnupriya Varadharaju"
+description: "Visualizing Multiple Dimensions"
+date: "11/30/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Working with the Hotel data set as I had previously tidied it. 
+
+## Read in data
+
+```{r}
+# Reading in data
+h_book <- read_csv("_data/hotel_bookings.csv", show_col_types = FALSE)
+h_book
+```
+
+### Briefly describe the data
+
+The following dataset has 119390 observations and 32 different fields. This is basically the data from two hotels - City Hotel & Resort Hotel. Each entry corresponds to a booking made by a customer. There are various information that are recorded with each booking. It includes the arrival date, number of days of stay, meal, type of room reserved, customer type, reservation status, number of adult/children and many more. The data consists of entries from countries all over the world.
+ 
+
+## Tidy Data (as needed)
+
+In country, there are entries called NULL, which can be removed as it may not be useful for the analysis. 
+
+```{r}
+# in country we can see that there is a field call NULL that can be removed
+table(h_book$country)
+
+h_book <- h_book %>% 
+  filter(!(country == "NULL"))
+
+```
+
+
+Two fields, Agents and Company have numerical values in them, but have the datatype marked as character. These NULL entries can be changed to NA and the datatype can be changed to numeric. Also, the arrival date in year, month and date can be combined into a single field called as arrival date. 
+
+```{r}
+# combining the arrival date into a single field
+# to find the total number of guests in the hotel - add adults, children and babies
+
+h_book_mut <- h_book %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_year))
+
+h_book_mut
+
+# mutating the datatype of the agent and company field from char to numeric
+
+h_book_mut <- h_book_mut %>%
+  mutate(across(c(agent, company),~ replace(.,str_detect(., "NULL"), NA))) %>% mutate_at(vars(agent, company),as.numeric)
+
+is.numeric(h_book_mut$agent)
+is.numeric(h_book_mut$company)
+```
+
+## Visualization with Multiple Dimensions
+
+I had previously used only one two dimensions to visualize this dataset. I can add an additional dimension of the category of hotel to see the guest count arrival rate between "City Hotel" and "Resort Hotel".
+
+Firstly, I want to see how many guests are arriving over a period of time on a daily basis for each hotel separately.
+
+```{r}
+plot1_data <- h_book_mut %>% select(hotel, total_guests, arrival_date) %>%
+  group_by(hotel, arrival_date) %>%
+  summarise(net_guests = sum(total_guests, na.rm=TRUE))
+
+plot1_data
+
+# finding the date ranges of the arrival date of this data
+
+summary(plot1_data$arrival_date)
+```
+
+
+```{r}
+p <- ggplot(plot1_data, aes(x=arrival_date, y=net_guests, color = hotel)) + ggtitle("Guest Count Vs. Arrival Date Trend: Jul 2015 - Jun 2016") +
+  geom_line() + 
+  labs(y="Net Guests", x ="Date", color="Hotel") + theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  scale_x_date(date_labels = "%Y %b %d", date_minor_breaks = "1 month", limit=c(as.Date("2015-07-01"),as.Date("2016-07-01")))
+
+p
+```
+
+From the above plot, we can see a general trend that the number of incoming guests for the Resort Hotel are lower than that of the City Hotel. But during the first and last week of December and February, we can see that the number of incoming guests for Resort Hotel does peak higher than the City Hotel. This case can also be seen during the last week of March. These periods usually correspond to the Holiday period, where in this can be one indicator that people, prefer the Resort Hotel to the City Hotel. 
+
+
+Next we can try to find out during which months the total number of guests peak between the two hotels. 
+```{r}
+plot2_data <- h_book_mut %>% select(hotel, arrival_date_month, total_guests) %>%
+  group_by(hotel, arrival_date_month) %>%
+  summarise(net_guests = sum(total_guests, na.rm=TRUE))
+
+plot2_data <- plot2_data %>% mutate(month = case_when(
+  arrival_date_month == "January" ~ 1,
+  arrival_date_month == "February" ~ 2,
+  arrival_date_month == "March" ~ 3,
+  arrival_date_month == "April" ~ 4,
+  arrival_date_month == "May" ~ 5,
+  arrival_date_month == "June" ~ 6,
+  arrival_date_month == "July" ~ 7,
+  arrival_date_month == "August" ~ 8,
+  arrival_date_month == "September" ~ 9,
+  arrival_date_month == "October" ~ 10,
+  arrival_date_month == "November" ~ 11,
+  arrival_date_month == "December" ~ 12,
+  TRUE ~ NA_real_
+)) %>% arrange(month)
+
+plot2_data$month <-as.character(plot2_data$month)
+
+plot2_data
+```
+
+```{r}
+p <- ggplot(plot2_data, aes(fill=hotel,x=reorder(month, sort(as.numeric(month))), y=net_guests)) + 
+    geom_bar(position="dodge", stat="identity") + labs(y="Number of Guests", x="Months",  title="Monthly Trend of Number of Guests") + scale_fill_discrete(name = "Hotel")
+p
+```
+
+From the above visualization we can see that for City Hotel, the distribution is fairly normal. However for the Resort Hotel, the distribution is somewhat uniform through all the months, with smaller peaks during the months of July and August.
+
+
+Next, I want to find the average price per night for different rooms in both the hotels and also look at how the prices vary on a monthly basis. There are 9 room types (from A-L). First I group by room type and find the mean adr and then I group by the hotels.
+
+```{r}
+plot3_data <- h_book_mut %>% select(hotel, arrival_date_month, assigned_room_type, adr) %>%
+  group_by(hotel, arrival_date_month, assigned_room_type) %>%
+  summarise(net_adr = mean(adr, na.rm=TRUE)) %>% mutate(month = case_when(
+  arrival_date_month == "January" ~ 1,
+  arrival_date_month == "February" ~ 2,
+  arrival_date_month == "March" ~ 3,
+  arrival_date_month == "April" ~ 4,
+  arrival_date_month == "May" ~ 5,
+  arrival_date_month == "June" ~ 6,
+  arrival_date_month == "July" ~ 7,
+  arrival_date_month == "August" ~ 8,
+  arrival_date_month == "September" ~ 9,
+  arrival_date_month == "October" ~ 10,
+  arrival_date_month == "November" ~ 11,
+  arrival_date_month == "December" ~ 12,
+  TRUE ~ NA_real_
+)) %>% arrange(month)
+
+plot3_data
+
+```
+
+
+```{r}
+p <- ggplot(plot3_data, aes(fill=assigned_room_type,x=reorder(month, sort(as.numeric(month))), y=net_adr)) + 
+    geom_bar(position="dodge", stat="identity") + labs(y="Mean ADR", x="Months",  title="ADR by Room Type and Hotel through the Months") + scale_fill_discrete(name = "Room Type") + facet_wrap( ~ hotel)
+p
+```
+
+The above plot is to compare the prices of different rooms between the two hotels across various months. Generally we can see that the prices of the rooms tend to peak in the month of July and August for both the hotels. From the previous plot, it was seen that the number of guests are also high during this time. This could be probably be one of the reasons why the prices shoot up during those months. While the prices for the different rooms are fairly the same throughout the different months for City Hotel. Whereas for Resort Hotel, the prices for the different rooms follow a normal distribution.
+
+

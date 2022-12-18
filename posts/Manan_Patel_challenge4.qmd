@@ -1,0 +1,209 @@
+---
+title: "Challenge 4 Instructions"
+author: "Meredith Rolfe"
+desription: "More data wrangling: pivoting"
+date: "08/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+  - abc_poll
+  - eggs
+  - fed_rates
+  - hotel_bookings
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  identify variables that need to be mutated
+4)  mutate variables and sanity check all mutations
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   abc_poll.csv ⭐
+-   poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐
+-   FedFundsRate.csv⭐⭐⭐
+-   hotel_bookings.csv⭐⭐⭐⭐
+-   debt_in_trillions.xlsx ⭐⭐⭐⭐⭐
+
+## Hotels booking data- (hotel_bookings.csv)
+
+```{r}
+hotel <- read_csv("_data/hotel_bookings.csv", show_col_types = FALSE)
+hotel
+```
+
+### Briefly describe the data
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+Let's use lubridate package, so we can check unique values in all the columns.
+
+from the given result- 119,390 × 32, we can say dataset has 119390 rows and 31 columns so, each row in the data set belongs to the hotel bookings done by each customer and it describe- type, reservation status, arrival date, no. of the adult or children in the room, room type, customer, stay days, meal, previous cancellations.
+
+```{r}
+rapply(hotel,function(x)length(unique(x)))
+```
+
+Any additional comments?
+
+## Identify variables that need to be mutated
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, are all time variables correctly coded as dates? Are all string variables reduced and cleaned to sensible categories? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+table(hotel$country)
+```
+
+We can see lot of NULL value in the country column, so we should remove this because it won't help us.
+
+```{r}
+hotel <- hotel %>% 
+  filter(!(country == "NULL"))
+```
+
+To see the class for each columns let's do,
+
+```{r}
+sapply(hotel, class)
+```
+
+Now we can mutate the arrival date into one single field and after that we can also mutate the adults and children so we can get the total guests in the hotel and then we will see the range of the arrival date of the bookings.
+
+```{r}
+hotel_mutate <- hotel %>% 
+  mutate(arrival_date = str_c(arrival_date_day_of_month,
+                              arrival_date_month,
+                              arrival_date_year, sep="/"),
+         arrival_date = dmy(arrival_date),
+         total_guests = adults + children + babies) %>% 
+  select(-c(arrival_date_day_of_month,arrival_date_month,arrival_date_year))
+hotel_mutate
+```
+
+```{r}
+summary(hotel_mutate$arrival_date)
+```
+
+From the above information we can see that arrival dates now lie between 2015-07-01 and 2017-08-31.
+
+```{r}
+hotel_mutate <- hotel_mutate %>%
+  mutate(booking_date = arrival_date - lead_time)
+hotel_mutate
+```
+
+Now it adds a new column to the **`hotel_mutate`** data frame called **`booking_date`**, which is calculated by subtracting the **`lead_time`** column from the **`arrival_date`** column. This new column represents the date on which the hotel reservation was booked. After adding the new **`booking_date`** column, it returns the updated **`hotel_mutate`** data frame.
+
+```{r}
+unique(hotels_booking$reservation_status)
+```
+
+Now we will find that when the status was changed to cancelled after booking and also after that we will Mutate the class of the agent and company field to numeric.\
+
+```{r}
+hotel_cancellations <- filter(hotel_mutate, reservation_status == 'Canceled')
+hotel_cancellations <- mutate(hotel_cancellations, canc_time = booking_date - reservation_status_date)
+
+summarise(hotel_cancellations, min = min(canc_time), max = max(canc_time), mean = mean(canc_time), median = median(canc_time))
+
+```
+
+Here, we filters the **`hotel_mutate`** data frame to only include rows where the **`reservation_status`** column is equal to 'Canceled'. Then, It adds a new column called **`canc_time`** to the **`hotel_cancellations`** data frame, which is calculated by subtracting the **`reservation_status_date`** column from the **`booking_date`** column and calculates summary statistics for the **`canc_time`** column, including the minimum, maximum, mean, and median values.
+
+```{r}
+hotel_mutate <- hotel_mutate %>%
+  mutate(across(c(agent, company), ~ ifelse(str_detect(., "NULL"), NA, .))) %>%
+  mutate_at(vars(agent, company), as.numeric)
+
+is.numeric(hotel_mutate$agent)
+```
+
+First, the **`across`** function is used to replace all occurrences of the string **`"NULL"`** with **`NA`** in the **`agent`** and **`company`** columns.
+
+Then, the **`mutate_at`** function is used to convert the **`agent`** and **`company`** columns to numeric data type.
+
+Finally, the **`is.numeric`** function is used to check if the **`agent`** column has been successfully converted to numeric data type.
+
+Now, we will check did it got change to numeric or not.
+
+```{r}
+is.numeric(hotel_mutate$company)
+```
+
+## Debt in trillions data- (debt_in_trillions.xlsx)
+
+```{r}
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+Let's try a new data set which is debt in trillion
+
+```{r}
+library(readxl)
+data <- read_excel("_data/debt_in_trillions.xlsx")
+head(data)
+```
+
+Data shows the amount of debt in mortgage, HE revolving, auto loan, credit card, student loan, other, and total for each quarter from 2003 - 2021.
+
+```{r}
+str(data)
+```
+
+Now we will try to create a column with only year and quarter, basically we will separate it.
+
+```{r}
+newdata <- data %>%
+  separate(`Year and Quarter`, c("year", "quarter"))
+
+newdata$year <- as.integer(newdata$year)
+```
+
+Now we will create a data which is calculated by year
+
+```{r}
+yeardata <- newdata %>%
+  group_by(year)  %>%
+  summarise_at (vars(Mortgage:Other), list(mean)) 
+  
+head(yeardata)
+```
+
+```{r}
+yeardata <- newdata %>%
+  group_by(year)  %>%
+  summarise(mean_mortgage = mean(Mortgage), mean_other = mean(Other))
+
+head(yeardata)
+```
+
+This approach allows for more explicit column names in the resulting data frame.

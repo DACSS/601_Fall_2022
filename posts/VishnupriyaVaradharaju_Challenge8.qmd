@@ -1,0 +1,134 @@
+---
+title: "Challenge 8 Solutions"
+author: "Vishnupriya Varadharaju"
+description: "Joining Data"
+date: "12/10/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - snl
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Working with the SNL Dataset for this Challenge.
+
+## Read in data
+
+The SNL data set consists of three different csv files. They are read into separate dataframes.
+```{r}
+# Reading in the SNL dataset
+actors <- read_csv("_data/snl_actors.csv", show_col_types = FALSE)
+casts <- read_csv("_data/snl_casts.csv", show_col_types = FALSE)
+seasons<- read_csv("_data/snl_seasons.csv", show_col_types = FALSE)
+
+head(actors)
+head(casts)
+head(seasons)
+```
+
+
+### Briefly describe the data
+
+There are three datasets. The first one is actors, which has 4 fields and 2306 observations. It basically consists of details about each actor, the type and their gender. The second dataset is casts which has 8 fields and 614 observations. Each row corresponds to a season that a particular actor has featured in. It also has details about the number of episodes that actor has featured in that particular season. The third dataset is seasons which consists of 5 fields and 46 observations. Each row corresponds to a season, the year it was released, the number of episodes in that season and the first and last episode dates.
+
+## Tidy Data (as needed)
+
+```{r}
+# Actors
+# Find the different types and genders
+
+unique(actors$type)
+unique(actors$gender)
+
+actors <- actors %>% select(-c(url))
+actors
+```
+We can see that in actors, there is a particular type called 'unknown'. In gender we can also see 'unknown' and another field called 'andy'. We can retain these for now and remove them later if needed. We can remove the url field as it seems redundant for our analysis here.
+
+The other two datasets seem to have the data in place. We can rename a few of these columns for better readability.
+
+```{r}
+# Renaming columns in actors
+actors <- actors %>% 
+  rename(
+    Actor = aid,
+    Type = type,
+    Gender = gender
+    )
+
+# Renaming columns in casts
+casts <- casts %>%
+  rename(
+    Actor = aid,
+    Season = sid,
+    Featured = featured,
+    Anchor = update_anchor,
+    Episodes = n_episodes,
+    EpisodesProp = season_fraction
+  )
+
+# Renaming columns in seasons
+seasons <- seasons %>%
+  rename(
+    Season = sid,
+    Year = year,
+    FirstEpisode = first_epid,
+    LastEpisode = last_epid,
+    TotEpisodes = n_episodes,
+  )
+```
+
+There are some fields in these datasets which can be mutated. The 'andy' field under Gender in actors can also be mutated to 'unknown'.
+```{r}
+actors <- actors %>%
+  mutate(Gender = str_replace(Gender, "andy", "unknown"), Type = str_replace(Type, "unknown", "celebrity")
+  )
+```
+
+
+## Join Data
+
+We can now join the actors and casts data so that we can get an indicator of the gender and typeof all the actors being featured in different seasons. Here I am doing a left join wherein for each row in the casts table, I want the respective fields from actors table to be merged.
+
+```{r}
+actorsCasts = merge(x=casts,y=actors,by="Actor",all.x=TRUE)
+```
+
+Next, I would also like to merge the seasons table to this, to get the Year and the total number of episodes.
+
+```{r}
+snl = merge(x=actorsCasts, y=seasons, by="Season", all.x=TRUE)
+```
+
+Now we have a single table with all of the SNL data. From this table, I can now drop some redundant columns like 'EpisodesProp', 'FirstEpisode', 'LastEpisode' as these details can be inferred from the other fields.
+
+```{r}
+snl <- snl %>% select(-c(EpisodesProp,FirstEpisode,LastEpisode)) %>% filter(Featured == FALSE)
+```
+
+From this table, we can further calculate the number of female, male and unknowns who have taken part from 2010-2020 and not featured.
+```{r}
+genCount <- snl %>% select(c(Season, Actor, Gender, Year)) %>% 
+  filter(Year > 2010) %>%
+  group_by(Season, Gender) %>%
+  summarise(count = n())
+genCount
+```
+
+

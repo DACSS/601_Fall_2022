@@ -1,0 +1,79 @@
+---
+title: "Challenge 2"
+author: "Sanjana Jhaveri"
+desription: "Data wrangling: using group() and summarise()"
+date: "08/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+library(readr)
+hotel_bookings <- read_csv("_data/hotel_bookings.csv")
+
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+Looks like there are different types of hotels you can book: city or resort hotel. Is_canceled field is either a 0 or a 1, which means this field is more of a true/false flag. The dates for the hotel bookings range for 3 years (2015-2017).
+
+```{r}
+summary(hotel_bookings)
+```
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+hotel_bookings %>%
+  select(hotel, country, adr, adults, reservation_status, children, babies) %>%
+  group_by(hotel, country, adr) %>%
+  summarize(number_of_people = sum(adults, children, babies), price_per_person = (adr/number_of_people)) %>%
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+For this grouping, I added the adults, children and number of babies to get the total number of people in a room. That way, we can see the price of each room based on the total number of people, not just the adults. I also calculated the price of the hotel room per person.
+
+

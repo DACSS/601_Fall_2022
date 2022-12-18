@@ -1,0 +1,205 @@
+---
+title: "Blog Post Template"
+author: "Manan Patel"
+desription: "Something to describe what I did"
+date: "08/02/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw1
+  - challenge1
+  - my name
+  - dataset
+  - ggplot2
+---
+
+```{r}
+#| label: setup
+#| warning: false
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(purrr)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Layoffs or the termination of employment for a large number of workers and have become increasingly common in recent years especially since the COVID-19 pandemic started. Layoffs are typically counted when more than 50 employees are let go from a company for a period of at least 31 days. The occurrence of layoffs can cause anxiety and paranoia among remaining employees, especially if they are struggling to meet their performance goals or arrive to work on time. According to recent statistics, a total of 17 million layoffs have been reported in the United States. In this article, we have collected and analyzed various data on layoffs in the US, including trends, demographics, and industry-specific information. We have also examined the details of these statistics in order to provide a thorough understanding of the layoff situation in the country.
+
+In the United States, 40% of the population has experienced a layoff at least once in their career. In the past two years, 28% of Americans have reported being laid off from their company. In July 2022, 160 tech companies underwent layoffs. In 2022, there were a total of 2.12 million layoffs recorded in the business and professional services industry. In 2021, there were a total of 17 million layoffs recorded across all industries in the US. The trade and transportation industry saw 1.46 million layoffs between June 2021 and June 2022. Among adults between the ages of 18 and 34, 61% reported experiencing significant pressure and anxiety related to the possibility of being laid off. Women are 25% less likely to be laid off by companies compared to men. In the third quarter of 2022, 23,158 layoffs were recorded. A survey found that 46% of employees felt unprepared for layoffs and separations.
+
+Tech companies around the world are struggling to deal with the economic downturn. A combination of factors such as reduced consumer spending, increased interest rates from central banks, and a strong US dollar has raised concerns about the possibility of a recession. In response to these challenges, some tech firms have started laying off employees. For example, Meta recently laid off 13% of its workforce, which is over 11,000 people. This data set was created in an effort to allow the Kaggle community to analyze the current challenges facing the tech industry and potentially uncover useful insights.
+
+## **Reading the Dataset-**
+
+```{r}
+df <- read.csv("_data/layoffs.csv")
+head(df)
+```
+
+## The columns in this datasets are described as follows-
+
+1.  "company" - This column refers to the name of the company that has experienced a layoff.
+
+2.  "location" - This column refers to the location of the layoff, which could be a city, state, or region.
+
+3.  "industry" - This column refers to the industry in which the company operates, such as tech, healthcare, or finance.
+
+4.  "total_laid_off" - This column refers to the total number of employees who were laid off by the company.
+
+5.  "percentage_laid_off" - This column refers to the percentage of the company's workforce that was laid off.
+
+6.  "date" - This column refers to the date on which the layoff occurred.
+
+7.  "stage" - This column refers to the stage of funding that the company was in at the time of the layoff. This could be early-stage, late-stage, or publicly traded.
+
+8.  "country" - This column refers to the name of the country in which the company is located.
+
+9.  "funds_raised" - This column refers to the amount of funds that the company had raised, in millions of dollars, prior to the layoff. This information could be relevant in understanding the financial situation of the company at the time of the layoff.
+
+## Some Research Questions-
+
+\
+A list of the top 10 companies that have laid off employees.
+
+1.  The top 3 companies that have laid off employees on a yearly basis.
+
+2.  The top 3 locations where the most layoffs have occurred on a yearly basis.
+
+3.  A list of the top 20 companies that have laid off a specific percentage of their employees.
+
+4.  The top 10 countries where the most layoffs have occurred.
+
+5.  The top 10 locations in the United States where the most layoffs have occurred.
+
+6.  The locations in India where the most layoffs have occurred.
+
+7.  The relationship between funds received and layoffs.
+
+8.  The stage of a company's development at which the most layoffs have occurred.
+
+9.  The industry that has experienced the most layoffs.
+
+10. The total number of layoffs on a yearly basis.
+
+11. The number of layoffs that have occurred on a yearly basis according to country.
+
+```{r}
+tail(df)
+```
+
+```{r}
+sapply(df, class)
+```
+
+## **Checking for all possible NA and cleaning up the datasets**
+
+```{r}
+sapply(df,function(x)sum(is.na(x)))
+```
+
+```{r}
+df <- df %>% drop_na()
+df %>% sapply(function(x)sum(is.na(x)))
+```
+
+```{r}
+df <- df %>% mutate_if(is.character,as.factor)
+glimpse(df)
+```
+
+```{r}
+n_distinct(df$company)
+```
+
+```{r}
+df$yrs <- strftime(df$date,'%Y') %>% as.factor()
+df$mnt <- strftime(df$date,'%m') %>% as.factor()
+```
+
+## **Setup figure size**
+
+```{r}
+fig <- function(width,height){
+    options(repr.plot.width=width,repr.plot.height=height)
+}
+fig(20,10)
+```
+
+```{r}
+df_summarized <- df %>%
+  group_by(country,yrs) %>%
+  summarize(avgLayoffs = round(mean(total_laid_off), 0)) %>%
+  arrange(desc(avgLayoffs)) %>%
+  head(3)
+
+barplot(df_summarized$avgLayoffs, names.arg = df_summarized$country, main = "", xlab = "", ylab = "")
+
+```
+
+```{r}
+# Get the number of unique values in the 'location' column
+print(length(unique(df$location)))
+
+# Get the unique values in the 'location' column
+unique(df$location)
+
+```
+
+```{r}
+# Get the number of unique values in the 'industry' column
+print(length(unique(df$industry)))
+
+# Get the unique values in the 'industry' column
+unique(df$industry)
+```
+
+```{r}
+unique(df$stage)
+```
+
+```{r}
+unique(df$country)
+```
+
+```{r}
+# Convert the 'date' column to a date data type
+df$date <- as.Date(df$date)
+
+# Extract the month and year from the 'date' column
+df$month <- month(df$date)
+df$year <- year(df$date)
+
+```
+
+```{r}
+# Select rows that are duplicates
+duplicate_rows <- df[duplicated(df),]
+
+# Remove duplicate rows from the data frame
+df <- df[!duplicated(df),]
+
+```
+
+```{r}
+df$stage <- ifelse(is.na(df$stage), "Unknown", df$stage)
+```
+
+```{r}
+colSums(is.na(df))
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+subset(df, percentage_laid_off == 1)
+```

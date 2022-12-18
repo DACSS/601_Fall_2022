@@ -1,0 +1,99 @@
+---
+title: "Homework 3"
+author: "Sanjana Jhaveri"
+date: "12/07/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - homework_3
+  - nfl_2019
+  
+  ---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(readr)
+nfl <- read_csv("_data/nfl2019.csv")
+View(nfl)
+
+```
+
+```{r}
+nfl <- read_csv("_data/nfl2019.csv",
+                          skip = 1,
+                          col_names = c("delete", "Opponent", "Home_Ranking", "Opponent_Ranking", "Home_1st_Downs", "Home_Total_Yards", "Home_Passing_Yards", "Home_Rushing_Yards", "Home_Turnovers", "Opponent_1st_Downs", "Opponent_Total_Yards","Opponent_Passing_Yards", "Opponent_Rushing_Yards", "Opponent_Turnovers", "Home_Offensive_Ranking", "Home_Defensive_Ranking", "Home_Special_Teams", "Home", "Year", "Winner")) %>%
+  select(!starts_with("delete")) %>%
+  na_if("Skipped")
+```
+
+```{r}
+mean(nfl$Home_Total_Yards)
+mean(nfl$Opponent_Total_Yards)
+```
+
+```{r}
+mean(nfl$Home_Passing_Yards)
+mean(nfl$Opponent_Passing_Yards)
+```
+
+```{r}
+mean(nfl$Home_Rushing_Yards)
+mean(nfl$Opponent_Rushing_Yards)
+```
+
+```{r}
+nfl%>%
+  ggplot(aes(x=`Home_Passing_Yards`, y=`Year`)) +
+  geom_point()
+```
+
+```{r}
+nfl%>%
+  ggplot(aes(x=`Opponent_Passing_Yards`, y=`Year`)) +
+  geom_point()
+```
+
+```{r}
+nfl$home_winner <- with(nfl, ifelse(Home == Winner, 'Win', 'Loss'))
+
+view(nfl)
+
+```
+
+```{r}
+nrow(filter(nfl,home_winner == "Win"))
+```
+```{r}
+sum(nfl$Home_Passing_Yards > nfl$Opponent_Passing_Yards & nfl$home_winner == "Win") 
+```
+```{r}
+sum(nfl$Home_Rushing_Yards > nfl$Opponent_Rushing_Yards & nfl$home_winner == "Win") 
+```
+```{r}
+library(ggplot2)
+
+scatter <- nfl %>%
+  ggplot(mapping=aes(x = Year, y = `Home_Passing_Yards`))+ 
+  geom_point(aes(color=home_winner))
+scatter
+```
+```{r}
+library(ggplot2)
+
+scatter <- nfl %>%
+  ggplot(mapping=aes(x = Year, y = `Home_Rushing_Yards`))+ 
+  geom_point(aes(color=home_winner))
+scatter
+```
