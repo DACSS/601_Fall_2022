@@ -31,6 +31,8 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Description-
+
 Layoffs or the termination of employment for a large number of workers and have become increasingly common in recent years especially since the COVID-19 pandemic started. Layoffs are typically counted when more than 50 employees are let go from a company for a period of at least 31 days. The occurrence of layoffs can cause anxiety and paranoia among remaining employees, especially if they are struggling to meet their performance goals or arrive to work on time. According to recent statistics, a total of 17 million layoffs have been reported in the United States. In this article, we have collected and analyzed various data on layoffs in the US, including trends, demographics, and industry-specific information. We have also examined the details of these statistics in order to provide a thorough understanding of the layoff situation in the country.
 
 In the United States, 40% of the population has experienced a layoff at least once in their career. In the past two years, 28% of Americans have reported being laid off from their company. In July 2022, 160 tech companies underwent layoffs. In 2022, there were a total of 2.12 million layoffs recorded in the business and professional services industry. In 2021, there were a total of 17 million layoffs recorded across all industries in the US. The trade and transportation industry saw 1.46 million layoffs between June 2021 and June 2022. Among adults between the ages of 18 and 34, 61% reported experiencing significant pressure and anxiety related to the possibility of being laid off. Women are 25% less likely to be laid off by companies compared to men. In the third quarter of 2022, 23,158 layoffs were recorded. A survey found that 46% of employees felt unprepared for layoffs and separations.
@@ -40,6 +42,7 @@ Tech companies around the world are struggling to deal with the economic downtur
 ## **Reading the Dataset-**
 
 ```{r}
+# data frame
 df <- read.csv("_data/layoffs.csv")
 head(df)
 ```
@@ -91,9 +94,14 @@ A list of the top 10 companies that have laid off employees.
 
 11. The number of layoffs that have occurred on a yearly basis according to country.
 
+Let's see the last
+
 ```{r}
+# Get the last six rows of df
 tail(df)
 ```
+
+Get the class of each column in df
 
 ```{r}
 sapply(df, class)
@@ -102,46 +110,78 @@ sapply(df, class)
 ## **Checking for all possible NA and cleaning up the datasets**
 
 ```{r}
-sapply(df,function(x)sum(is.na(x)))
+# Use sapply to apply a lambda function to each column in the df data frame
+missing_counts <- sapply(df, function(x) {
+  # Within the lambda function, we will use the sum and is.na functions to count the number of missing values in x
+  sum(is.na(x))
+})
+# then finally we will print the resulting vector of missing value counts
+missing_counts
 ```
 
 ```{r}
+# Use the drop_na function to remove rows with missing values from the df
 df <- df %>% drop_na()
-df %>% sapply(function(x)sum(is.na(x)))
+# Using sapply to apply a lambda function to each column in the df
+missing_counts <- sapply(df, function(x) {
+# Within the lambda function, use the sum and is.na functions to count the number of missing values in x
+  sum(is.na(x))
+})
+# then finally we will print the resulting vector of missing value counts
+missing_counts
 ```
+
+Let's convert character columns to factor columns in df-
 
 ```{r}
 df <- df %>% mutate_if(is.character,as.factor)
 glimpse(df)
 ```
 
+Now we will count the number of unique values in the company column of df-
+
 ```{r}
 n_distinct(df$company)
 ```
 
 ```{r}
-df$yrs <- strftime(df$date,'%Y') %>% as.factor()
-df$mnt <- strftime(df$date,'%m') %>% as.factor()
+# Convert the date column to a year column and a month column
+df$yrs <- strftime(df$date,'%Y') %>% as.factor()  # extract year from date and convert to a factor
+df$mnt <- strftime(df$date,'%m') %>% as.factor()  # extract month from date and convert to a factor
+```
+
+Now let's see the mean, median, and standard deviation of total_laid_off.
+
+```{r}
+#mean will calculates the average  
+mean(df$total_laid_off)
+#median will calculates the median
+median(df$total_laid_off)
+#sd will calculates the standard deviation
+sd(df$total_laid_off)
 ```
 
 ## **Setup figure size**
 
 ```{r}
-fig <- function(width,height){
-    options(repr.plot.width=width,repr.plot.height=height)
+fig <- function(width, height) {
+  # Set the width and height options for the plot
+  options(repr.plot.width = width, repr.plot.height = height)
 }
-fig(20,10)
+# Call it
+fig(20, 10)
 ```
 
 ```{r}
+# we will group the data here by country and year, and summarize the mean total_laid_off for each group
 df_summarized <- df %>%
-  group_by(country,yrs) %>%
+  group_by(country, yrs) %>%
   summarize(avgLayoffs = round(mean(total_laid_off), 0)) %>%
+  # now we will sort the data by avgLayoffs in descending order
   arrange(desc(avgLayoffs)) %>%
   head(3)
-
+# create a bar plot of the avgLayoffs
 barplot(df_summarized$avgLayoffs, names.arg = df_summarized$country, main = "", xlab = "", ylab = "")
-
 ```
 
 ```{r}
@@ -166,7 +206,13 @@ unique(df$stage)
 ```
 
 ```{r}
+# Total how many unique countries are there in the dataset
 unique(df$country)
+```
+
+```{r}
+# Total how many unique companies are there in the dataset
+length(unique(df$company))
 ```
 
 ```{r}
@@ -203,3 +249,120 @@ summary(df)
 ```{r}
 subset(df, percentage_laid_off == 1)
 ```
+
+```{r}
+head(df, 2)
+colSums(is.na(df))
+```
+
+```{r}
+dim(df)
+```
+
+```{r}
+df[df$company == "Lyft", ]
+
+```
+
+```{r}
+head(df, n = 2)
+colSums(is.na(df))
+```
+
+```{r}
+df <- df %>% drop_na()
+df %>% sapply(function(x)sum(is.na(x)))
+```
+
+```{r}
+df <- df %>% mutate_if(is.character,as.factor)
+glimpse(df)
+```
+
+```{r}
+df$yrs <- strftime(df$date,'%Y') %>% as.factor()
+df$mnt <- strftime(df$date,'%m') %>% as.factor()
+```
+
+```{r}
+fig <- function(width,height){
+    options(repr.plot.width=width,repr.plot.height=height)
+}
+fig(20,10)
+```
+
+```{r}
+# select the top 5 rows of the data frame based on the values in the "total_laid_off" column
+top_companies <- top_n(df, 5, total_laid_off)
+
+```
+
+# Visualization-
+
+```{r}
+par(bg = "lightgray")
+# group the data by country and count the number of unique companies
+layoff_by_country <- df %>% group_by(country) %>% summarize(no_of_companies = n_distinct(company)) %>%
+  arrange(desc(no_of_companies)) %>% head(10)
+
+# create the bar plot using barplot
+barplot(layoff_by_country$no_of_companies, main = "Number of Companies Undertook Lay Offs by Country",
+        xlab = "Country", ylab = "Number of Companies", col = "green",
+        names.arg = layoff_by_country$country, las = 2)
+
+```
+
+This code first groups the data by country and counts the number of unique companies in each group. It then arranges the resulting data frame in descending order based on the number of companies and selects the top 10 rows. Finally, it creates a bar plot using the barplot function, with the number of companies on the y-axis and the country on the x-axis. The plot is titled Number of Companies Undertook Lay Offs by Country.
+
+In the dataset, there is a company based in the United States that laid off 11,000 employees, which is the highest number of layoffs for any company in the dataset. The size of layoffs is very high in both the United States and India, but surprisingly, it is very low in China which is not even in top 10 compared to the United States and India.
+
+```{r}
+par(bg = "lightgray")
+# group the data by location and count the number of unique companies
+layoff_by_city <- df %>% group_by(location) %>% summarize(no_of_companies = n_distinct(company)) %>%
+  arrange(desc(no_of_companies)) %>% head(15)
+
+# create the bar plot using barplot
+barplot(layoff_by_city$no_of_companies, main = "Number of Companies Undertook Lay Offs in the big Cities",
+        xlab = "City", ylab = "Number of Companies", col = "red",
+        names.arg = layoff_by_city$location, las = 2, cex.names = 0.8)
+
+# add the number of companies to each bar using the text function
+text(x = 1:length(layoff_by_city$no_of_companies), y = layoff_by_city$no_of_companies,
+     labels = layoff_by_city$no_of_companies, pos = 3.9, cex = 0.8)
+
+```
+
+This code first groups the data by location and counts the number of unique companies in each group. It then arranges the resulting data frame in descending order based on the number of companies and selects the top 20 rows. Finally, it creates a bar plot using the barplot function, with the number of companies on the y-axis and the location (city) on the x-axis. The plot is titled Number of Companies Undertook Lay Offs in the big Cities.
+
+The San Francisco Bay Area (also known as Silicon Valley), New York City, and Bengalore are all renowned tech hubs that have seen significant numbers of layoffs in recent times. These cities are known for their high concentration of technology companies and are often considered the centers of innovation and growth in the tech industry. However, economic downturns and other factors can lead to layoffs in these areas, resulting in a reduction of the tech workforce in these cities. Now, If we closely observe then we won't see any small cities in this list which says that all the big city area has high layoffs than smaller cities.
+
+```{r}
+top_industry_wise <- df %>%
+  group_by(industry) %>%
+  summarise(total_laid_off = sum(total_laid_off)) %>%
+  arrange(desc(total_laid_off))
+
+```
+
+```{r}
+dim(top_industry_wise)
+```
+
+```{r}
+par(bg = "lightgray")
+colors <- c("red", "blue", "green", "yellow", "orange")
+barplot(top_industry_wise$total_laid_off, names.arg = top_industry_wise$industry,
+        xlab = "Industry", ylab = "Layoffs", main = "Industry vs Layoffs", col = colors)
+
+```
+
+The layoffs had a notable effect on three specific industries: transportation, consumer, and retail. These industries were likely negatively impacted by the layoffs in some way such as a decrease in business or financial losses.
+
+# Further plans-
+
+I plan to improve the visualizations for the dataset in order to provide a clearer understanding of the data for the viewer and to facilitate my own research by answering any remaining questions I might have. This will involve adding additional visualizations to the existing set. This way it will also improve the visualizations for my final project.
+
+# Conclusion-
+
+Despite the significant changes and challenges brought about by the coronavirus pandemic, tech companies continue to prioritize engineering talent in their outbound recruitment efforts. It is possible that the pandemic has even intensified this trend, as startups may be focusing more on product development and less on sales and customer success due to slowed customer growth. Previous analysis has shown that tech layoffs have disproportionately affected sales and customer success roles. As a result, tech companies may be able to redirect their resources towards product development initiatives, leading to a sustained demand for engineers.
