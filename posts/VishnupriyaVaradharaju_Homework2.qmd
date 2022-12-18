@@ -1,0 +1,196 @@
+---
+title: "Homework 2"
+author: "Vishnupriya Varadharaju"
+desription: "Homework 2"
+date: "12/16/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - 2015_Flight_Delay_Cancellation
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+I'm using the 2015 Flights Delay and Cancellation Dataset. This dataset has three different files. One is flights.csv which has details of flight names and their ID. The second file is airports.csv, which has details of the airport name, location, city, airlines that fly there and the latitude and longitude. The third file is flights.csv which has details about the date of a trip, the airline name, number, origin and destination airport, scheduled departure time and much more.
+
+## Reading in the dataset
+
+```{r}
+#reading in airlines csv
+airlines <- read_csv('_data/2015_flight_cancellation/airlines.csv',show_col_types = FALSE)
+#reading in airports csv
+airports <- read_csv('_data/2015_flight_cancellation/airports.csv', show_col_types = FALSE)
+#reading in flights csv
+flights <- read_csv('_data/2015_flight_cancellation/flights.csv', show_col_types = FALSE)
+```
+
+```{r}
+#trying to get all the col names 
+colnames(airlines)
+colnames(airports)
+```
+
+```{r}
+#trying to get all the col names 
+colnames(flights)
+```
+
+## Describe the data
+
+As stated previously the main table 'flights' has entries that correspond to a flight. The details of year, month, day and day_of_week tell the date of the flight. The airline name, flight number, tail number are to do with the aircraft details. The scheduled departure and scheduled arrival, where the actual times at which the flight should take off or land. The departure time and the arrival time are the actual time at which the flight took off or landed. The time difference between the scheduled and actual time is also given. The taxi-in time is the time take between touch down and the aircraft arriving at the gate. The taxi-out time is the time taken from the gate to wheels taking off. The time of travel, the distance covered is also given. Details about aircraft diversion, cancellation, cancellation reasons are also present. 
+
+A new point that I learnt here is the difference between flight number and tail number. A tail number is a number given to each physical aircraft. Whereas, flight number is a number given to an aircraft on a particular route. So flights with different tail numbers can have the same flight number.
+
+```{r}
+head(flights)
+```
+
+## Tidying data
+
+The flights table is very large with close to 5800000 entries. For the sake of uploading a smaller file, I have edited the csv such as only month = 12 is included. To reduce on computation time, I am selecting only month equal to December for further analysis.
+
+```{r}
+flights_short <- flights %>% filter(MONTH == 12)
+head(flights_short)
+```
+The resulting table has close to 479200 flights. 
+
+```{r}
+summary(flights_short)
+```
+
+From the summary table we can see that for AIR_SYSTEM_DELAY, SECURITY_DELAY, AIRLINE_DELAY, LATE_AIRCRAFT_DELAY AND WEATHER_DELAY, the number of NA values is close to 80%. These columns will not be very useful for analysis and hence can be removed. Furthermore, the CANCELLATION_REASON column also has nearly 98% NA values, and hence can be removed.
+
+```{r}
+(382458/479230) * 100
+```
+
+```{r}
+unique(flights_short$CANCELLATION_REASON)
+count(flights_short,CANCELLATION_REASON)
+```
+
+Creating a new field called date, which has the year, month and day in a single field.
+```{r}
+flights_short <- flights_short %>% 
+  mutate(FLIGHT_DATE = str_c(DAY,
+                              MONTH,
+                              YEAR, sep="/"),
+         .before = YEAR,
+         FLIGHT_DATE = dmy(FLIGHT_DATE)) %>% select(-c(YEAR, MONTH, DAY,AIR_SYSTEM_DELAY, SECURITY_DELAY, AIRLINE_DELAY, LATE_AIRCRAFT_DELAY,WEATHER_DELAY, DAY_OF_WEEK,CANCELLATION_REASON))
+```
+
+Next, we can see that the time stamps in SCHEDULED_DEPARTURE, SCHEDULED_ARRIVAL,DEPARTURE_TIME, ARRIVAL_TIME have the format with the first two digits indicating the hour and the next two digits indicating the minutes. This can be converted into a more readable time stamp. TAXI_IN, TAXI_OUT, WHEELS_OFF, WHEELS_ON - these columns may not be needed for our analysis and can be removed. 
+
+
+```{r}
+flights_short <- flights_short %>% 
+  mutate(SCHEDULED_DEPARTURE = str_c(substr(SCHEDULED_DEPARTURE, start=1, stop=2),
+                              substr(SCHEDULED_DEPARTURE, start=3, stop=4),sep=":"), SCHEDULED_ARRIVAL = str_c(substr(SCHEDULED_ARRIVAL, start=1, stop=2),
+                              substr(SCHEDULED_ARRIVAL, start=3, stop=4),sep=":"),
+         DEPARTURE_TIME = str_c(substr(DEPARTURE_TIME, start=1, stop=2),
+                              substr(DEPARTURE_TIME, start=3, stop=4),sep=":"), ARRIVAL_TIME = str_c(substr(ARRIVAL_TIME, start=1, stop=2),substr(ARRIVAL_TIME, start=3, stop=4),sep=":")) %>% 
+  select(-c(TAXI_OUT, TAXI_IN, WHEELS_OFF, WHEELS_ON, AIR_TIME, ELAPSED_TIME, SCHEDULED_TIME, FLIGHT_NUMBER,TAIL_NUMBER))
+```
+
+
+```{r}
+flights_short %>% filter(DIVERTED == 1 & CANCELLED == 1) 
+```
+We can create a new column to show the flights that were cancelled or diverted. 1 corresponds to diverted and 2 corresponds to cancelled and 3 corresponds to flight journey that has taken place.
+
+```{r}
+flights_short <- flights_short %>% mutate(STATUS = case_when(
+  "DEPARTED" == 1 ~ 1,
+  "CANCELLED" == 1 ~ 2,
+  TRUE ~ 3
+)) %>% select(-c(DIVERTED, CANCELLED))
+```
+
+There are some NA values in the DEPARTURE_DELAY. These null values can be removed from the data set as they are a small percentage when compared to the rest of the data. But some of these null values may also be because the flight was either cancelled or diverted. So just retaining the fields for now.
+
+```{r}
+flights_short <- flights_short %>% filter(is.na(DEPARTURE_DELAY) == FALSE & is.na(DEPARTURE_TIME) == FALSE & STATUS == 3) %>% filter(is.na(ARRIVAL_DELAY) == FALSE & is.na(ARRIVAL_TIME) == FALSE & STATUS == 3)
+#summary(flights_short)
+```
+
+We can merge the airlines table with the current table to get the full name of the airlines. Merging the airports table with the current table to get the Origin and Destination City names as it will be easier to understand than the IATA code (left as an extension).
+
+```{r}
+flights_short <- flights_short %>% 
+  rename(
+    IATA_CODE = AIRLINE
+    )
+
+flight_table = merge(x=flights_short, y=airlines, by="IATA_CODE", all.x=TRUE)
+flight_table <- flight_table %>% select(-IATA_CODE) 
+
+colOrder <- c("FLIGHT_DATE", "AIRLINE", "ORIGIN_AIRPORT", "DESTINATION_AIRPORT",
+              "STATUS", "DISTANCE", "SCHEDULED_DEPARTURE","DEPARTURE_TIME",
+              "DEPARTURE_DELAY","SCHEDULED_ARRIVAL","ARRIVAL_TIME","ARRIVAL_DELAY")
+            
+flight_table1 <- flight_table[, colOrder]
+head(flight_table1)
+```
+
+## Visualizing the data
+
+One simple visualization is to plot the different airports that are there in the US from the airports table on to a geographical map.
+
+```{r}
+head(airports)
+```
+
+
+```{r}
+library(maps)
+USA <- map_data("world") %>% filter(region=="USA")
+
+#filter out those airports which do not have a latitude and longitude
+airport_loc <- airports %>% filter(is.na(LATITUDE) == FALSE, is.na(LONGITUDE) == FALSE) %>% select(-c(AIRPORT))
+```
+
+```{r}
+ggplot() +
+  geom_polygon(data = USA, aes(x=long, y = lat, group = group), fill="lightgreen", alpha=0.5) +
+  geom_point(data=airport_loc, aes(x=LONGITUDE, y=LATITUDE), size = 0.1) +
+  theme_void() + coord_map() + ylim(NA,150) + xlim(NA, 5) + ggtitle("Location of airports in the USA") + theme(plot.title = element_text(lineheight=1, face="bold"))
+```
+
+
+The above graph is just to give a rough idea about where the airports are roughly located in the USA. We can see that the airports are present in Alaska and in all the other island states of the USA. 
+
+## Research Questions
+
+The table flight_table can be further cleaned based on the requirements of the analysis questions.
+This data can provide the analysis to the following questions.
+
+1. In the month of December, what percentage of flight trips were cancelled, or diverted? Which airlines had the most number of cancellations or diversions?
+
+2. Descriptive statistics about the most popular airlines or the most popular destinations. What % of the flights belonged to which airline?
+
+3. Percentage of flight journeys that occurred on weekends vs on weekdays.
+
+4. What is the mean delay of various airlines? (have to include both departure and arrival delay) What % of flights had 0 delay in departure or arrival time? What % of flights took off much early than the scheduled time or landed earlier than the scheduled arrival? Are departure delays more than arrival delays? What % of flights are able to compensate the departure delay by arriving early?
+
+5. How many different airports do each of the airlines visit? This can show how expanded each airline is.
+
+
+
