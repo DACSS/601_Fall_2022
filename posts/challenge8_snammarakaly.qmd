@@ -1,0 +1,105 @@
+---
+title: "Challenge 8"
+author: "Siddharth Nammara Kalyana Raman"
+description: "Joining Data"
+date: "12/11/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+```{r}
+codes <- read.csv("_data/FAOSTAT_country_groups.csv")
+cattle <- read.csv("_data/FAOSTAT_cattle_dairy.csv")
+```
+
+### Briefly describe the data
+
+Majorly, I'm going to use the FAO Stat Cattle dataset. This data on food and agriculture is available to the general public for more than 245 nations. Information on cow milk, including variables for units sold and product value, is specifically contained in this file. The information spans the years 1960 to 2018. There are more than 36,000 rows of data in this file.
+
+So that we don't have to examine the data at such a detailed, individual nation level, the second file I will be integrating is a codebook that organizes the countries. To run analysis on these groups within the cattle/dairy dataset, I want to join in the country group variable.
+
+## Tidy Data (as needed)
+
+I will use the "Area.code" that each row's country has been given to join in the country group variable. However, the country file refers to it as "Country Code," thus I am also renaming the variable to "Country Code" here.
+
+```{r}
+
+cattlenew <- rename (cattle, "Country Code"= "Area.Code" )
+head(cattlenew)
+
+codesnew <- rename (codes, "Country Code"= "Country.Code" )
+head(cattlenew)
+```
+
+
+## Join Data
+
+I'll join the two tables using left join.
+```{r}
+head(codes)
+```
+```{r}
+cattlefinal <- left_join(cattlenew, codesnew, by = "Country Code" )
+head(cattlefinal)
+```
+```{r}
+cattlefinal %>%
+  filter(Year >= 1998) %>%
+  filter(`Flag.Description` == "Official data") %>%
+  filter(`Country.Group`=="Central Asia") %>%
+  filter(`Unit` == "tonnes") %>%
+  ggplot(aes(x=`Area`, y=`Value`)) + 
+  geom_point(
+    color="red",
+    fill="#69b3a2",
+    size=.5,
+    alpha=.5
+  )+
+  labs(title = "Official Tonnes of Milk Produced in Central Asia from the Year 2010-2018", x="Country", y="Milk Value") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
+
