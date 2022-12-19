@@ -1,0 +1,361 @@
+---
+title: "Movie Exploratoy Analysis: Final Project"
+author: "Shriya Sehgal"
+desription: "Movie Exploratoy Analysis"
+data: "IMDb 5000 Movie Dataset"
+date: "12/15/2022"
+format:
+  html:
+    toc: true
+    code-fold: false
+    code-copy: true
+    code-tools: true
+
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tibble)
+library(DT)
+library(knitr)
+library(tm)
+library(ggrepel)
+library(ggplot2)
+library(wordcloud)
+library(dplyr)
+library(fitdistrplus)
+library(plotly)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(formattable)
+library(GGally)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+The movie industry is one of the largest commercial institutions today. It has made a significant contribution to the global economy of the countries around the world. Hundreds of thousands of movies are being released worldwide every year in the hopes that it would be a box office hit and win the hearts of the public audience. With the massive amount of data on movies available today, I believe it would be really fascinating to examine and understand the factors that lead to the success of a movie. Such analysis would be crucial for the film production houses and sponsors to invest their time and money to the kind of movies that are positively acclaimed by the critics and the public. It would also be extremely beneficial to understand the historical trends and maximize the overall profit of the movie. 
+
+So the main objective of the paper will be to:
+
+* Explore the distribution of the movies wrt. some important feature. 
+
+* Explore the movie's IMDb score wrt. some important features.
+
+* Understand how the budget and the revenue of the movie vary wrt some important features. 
+
+## Data
+
+The 5000 IMDb Movie Dataset (https://www.kaggle.com/datasets/carolzhangdc/imdb-5000-movie-dataset) has been taken from Kaggle which contains information about 5000 movies that have been released between 1960-2016.The dataset holds interesting and valuable features like the movie's genre, IMDb score, budget, revenue, actors/director names, facebook likes, critics/user reviews and many more which would crucial in visualizing and understanding how a movie's success is a factor of these attributes. The detailed description of the data has been added after the process of data cleaning and preparation.
+
+```{r}
+movie <-  read_csv("_data/movie_metadata.csv", show_col_types = FALSE)
+
+head(movie, 20)
+```
+
+
+### Data Cleaning
+The first process of cleaning the data includes removing any spurious characters (Â) and white spaces from the different features like title and genre that could lead to an invalid analysis. Such character can occur in the raw data due to the internet scrapping process. The code given below will take care of the same.
+```{r}
+movie$movie_title <- (sapply(movie$movie_title,gsub,pattern="\\Â",replacement=""))
+movie$genres <- (sapply(movie$genres,gsub,pattern="\\|",replacement=" "))
+
+```
+
+After reading that data I realized that the dataset contains duplicate movies that should be removed. The code given below will take care of the same.
+
+```{r}
+movie = movie[!duplicated(movie$movie_title),]
+```
+
+
+I also notices that the currency in 'Budget' and 'Gross' of all the movies are not consistent with each other. For instance, Japan had all of it's movies information in Yen which makes it difficult to compare it's financial success with respect to a movie in USA. To make it easier to compare the movies with each other irrespective of their origin, I manually converted the currency into USD dollars.
+```{r}
+
+movie <- transform(movie, budget = ifelse(country == "South Korea", budget/1173.49, budget))
+movie <- transform(movie, budget = ifelse(country == "Japan", budget/115.33, budget))
+movie <- transform(movie, budget = ifelse(country == "Turkey", budget/3.49, budget))
+movie <- transform(movie, budget = ifelse(country == "Hungary", budget/298.17, budget))
+movie <- transform(movie, budget = ifelse(country == "Thailand", budget/35.67, budget))
+
+movie <- transform(movie, gross = ifelse(country == "South Korea", gross/1173.49, gross))
+movie <- transform(movie, gross = ifelse(country == "Japan", gross/115.33, gross))
+movie <- transform(movie, gross = ifelse(country == "Turkey", gross/3.49, gross))
+movie <- transform(movie, gross = ifelse(country == "Hungary", gross/298.17, gross))
+movie <- transform(movie, gross = ifelse(country == "Thailand", gross/35.67, gross))
+```
+To make the analysis more comprehensible, I converted the budget and revenue into the factor of millions and Facebook likes of the director and actors into a factor of thousands.
+
+```{r}
+#Convert budget and revenue in millions
+movie$budget <- movie$budget/1000000
+movie$gross <- movie$gross/1000000
+movie$cast_total_facebook_likes <- movie$cast_total_facebook_likes/1000
+movie$movie_facebook_likes <- movie$movie_facebook_likes/1000
+movie$actor_1_facebook_likes <- movie$actor_1_facebook_likes/1000
+movie$director_facebook_likes <- movie$director_facebook_likes/1000
+movie$actor_2_facebook_likes <- movie$actor_2_facebook_likes/1000
+movie$actor_3_facebook_likes <- movie$actor_3_facebook_likes/1000
+```
+
+The Gross income earned by the movie along with the budget are 2 of the most important factors in deciding the financial success of the movie. So I mutated the data and found 2 new important features based on the budget and gross, ie. the profit earned by the movie and its rate of investment percentage.
+```{r}
+movie <- movie %>% 
+  mutate(profit = gross - budget,
+         ROI_perctentage = (profit/budget)*100)
+```
+
+
+
+### Final Updated Data Description
+The final data description of the updated data has been shown below along with its datatype (character/numerical)
+```{r}
+description.type <- lapply(movie,class)
+description.desc <- c("Tells if the Movie was colored or black/white",
+"DIrector's Name",
+"Number of critics who reviewed",
+"Runtime of the movie in minutes",
+"Number of director's facebook page likes",
+"Number of 3rd actor's facebook page likes",
+"Name of second actor",
+"Number of 1st actor's facebook page likes",
+"Movie's Gross Earning in million in $",
+"Movie's Genre",
+"First actor's Name",
+"Movie's Title",
+"Number of IMDb User's votes",
+"Cast member's total facebook likes",
+"Name of the third actor",
+"Number of the actor who featured in the movie poster",
+"Movie plot describing Keywords",
+"IMDb's link",
+"Number of User's reviews",
+"Movie's Language",
+"Country",
+"Content rating ",
+"Budget in millions in $",
+"Release Year",
+"Actor 2 facebook likes",
+"IMDB score",
+"Aspect ratio of the movie",
+"Number of facebook likes",
+"Genre",
+"Keywords",
+"Profit in millions in $",
+"Return Of Investment in Percentage")
+description.name1 <- colnames(movie)
+data.desc <- as_data_frame(cbind(description.name1,description.type,description.desc))
+colnames(data.desc) <- c("Factors","DataType","Factor Description")
+library(knitr)
+kable(data.desc)
+```
+
+## Exploratory Data Analysis
+In this section, I used various packages and graphical methods to explore the 5000 IMDB movie data set.
+
+### Distribution of Some Important Variables
+This section explores the frequency of the movies with respect to many important features. The profits of the movie, its imdb score as well as its run time give close to a normal distribution. We can see that both the budget and gross income earned are right skewed; majority of the movies have their budget and revenue ranging from $0 million to \$20 million. On the other hand the profit, which is normally distributed around \$0, portrays that almost an equal number of movies have seen financial success and failure.
+The graph that explores the distribution of the movie release year shows there has been a significant increase in the movies produced every year and we can see a considerable upward trend since 1990.
+
+```{r}
+par(mfrow=c(2,3))
+hist(movie$gross,col = 'red',breaks=500,main='Movie gross',xlab = 'Gross (in million $)',xlim = c(0,100))
+hist(movie$budget,col = 'blue',breaks=500,main='Movie budget',xlab = 'budget (in million $)',xlim = c(0,100))
+hist(movie$profit,col = 'red',breaks=200,main='Profits of the Movie',xlab = 'Profit (in  million $)', xlim = c(-200,200))
+hist(movie$title_year,col = 'blue',breaks=70,main='Movie Release Year',xlab = 'Movie Release Year',xlim = c(1960,2016))
+hist(movie$imdb_score,col = 'red',breaks=70,main='Movie IMDb Score ',xlab = 'IMDb Score',xlim = c(0,10))
+hist(movie$duration,col = 'blue',breaks=100,main='Movie Runtime',xlab = 'Movie Runtime',xlim = c(0,200))
+```
+
+## Movie Genre Analysis
+The genre of the movie is an important attribute that helps distinguish them into different categories and analyse which of them do the best in terms of financial success and user/critics reviews. In this dataset, each movie has more than one genre, so the separation of each genre in this column was required to explore all of them separately. The 'TM' package was used for this purpose. I converted the genre variable to corpus and further analysed them.
+A word cloud is a graphical representation for the word frequency that gives highest importance to the words/titles that appear more frequently in a text. This is a great way to understand which are the top movie genre, at a cursory glance. We can see that Drama, Comedy and Thriller are the top movie genres in the word cloud.
+
+
+```{r}
+genre <- Corpus(VectorSource(movie$genres))
+genre_dtm <- DocumentTermMatrix(genre)
+genre_freq <- colSums(as.matrix(genre_dtm))
+freq <- sort(colSums(as.matrix(genre_dtm)), decreasing=TRUE)
+genre_wf <- data.frame(word=names(genre_freq), freq=genre_freq)
+pal2 <- brewer.pal(10,"Dark2")
+wordcloud(genre_wf$word,genre_wf$freq,random.order=FALSE,
+          rot.per=.15, colors=pal2,scale=c(5,.9))
+```
+
+
+## Movie IMDB's Analysis on Various Factors
+
+### Relationship of Genre with the IMDB Score
+The next graph explores how the IMDB Score varies for all the genres. For this I have created a new dataframe that contains all the genres as different columns along with its final imdb score. As we go through each movie's genre, we keep adding 1 to the respective genre column that is present in the main movie_dataset attribute. Once that is done I calculated the mean of all the imdb scores of each genre. We can see that almost all the genre's movies have similar Imdb rating and there is no significant trend that shows that one kind of genre does better than the other which is a very interesting to see. 
+```{r}
+
+genres.df <- as.data.frame(movie[,c("genres", "imdb_score")])
+
+genres.df$Action <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Action") 1 else 0)
+genres.df$Adventure <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Adventure") 1 else 0)
+genres.df$Animation <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Animation") 1 else 0)
+genres.df$Biography <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Biography") 1 else 0)
+genres.df$Comedy <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Comedy") 1 else 0)
+genres.df$Crime <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Crime") 1 else 0)
+genres.df$Documentary <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Documentary") 1 else 0)
+genres.df$Drama <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Drama") 1 else 0)
+genres.df$Family <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Family") 1 else 0)
+genres.df$Fantasy <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Fantasy") 1 else 0)
+genres.df$`Film-Noir` <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Film-Noir") 1 else 0)
+genres.df$History <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "History") 1 else 0)
+genres.df$Horror <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Horror") 1 else 0)
+genres.df$Musical <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Musical") 1 else 0)
+genres.df$Mystery <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Mystery") 1 else 0)
+genres.df$News <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "News") 1 else 0)
+genres.df$Romance <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Romance") 1 else 0)
+genres.df$`Sci-Fi` <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Sci-Fi") 1 else 0)
+genres.df$Short <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Short") 1 else 0)
+genres.df$Sport <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Sport") 1 else 0)
+genres.df$Thriller <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Thriller") 1 else 0)
+genres.df$War <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "War") 1 else 0)
+genres.df$Western <- sapply(1:length(genres.df$genres), function(x) if (genres.df[x,1] %like% "Western") 1 else 0)
+
+means <- rep(0,23)
+for (i in 1:23) {
+  means[i] <- mean(genres.df$imdb_score[genres.df[i+2]==1])
+}
+barplot(means, main = "Average imdb scores for different genres")
+```
+
+
+
+### Actor's with the Highest Average IMDB Score
+The table format shows the top 20 actors which give the highest IMDB rating. Actors are what give life to the characters and drive a movie to its success or failure. Hence, this is an important factor that allows the production house to hire the actors who do generally well and give a highly acclaimed movie. This table shows that Krystyna Janda's movies average IMDB rating is 9.10. This of course in not a complete analysis because we should also consider the number of movies done by each actor, but it still shows an approximate trend
+
+```{r}
+movie %>%
+  group_by(actor_1_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
+```
+
+### Director's with the Highest Average IMDB Score
+Similar to the above table, this one shows the top 20 director which gives the highest IMDB ratings. This table shows that John Blanchard's movies have the highest average rating of 9.5.
+```{r}
+movie %>%
+  group_by(director_name) %>%
+  summarise(avg_imdb = mean(imdb_score)) %>%
+  arrange(desc(avg_imdb)) %>%
+  top_n(20, avg_imdb) %>%
+  formattable(list(avg_imdb = color_bar("orange")), align = 'l')
+```
+
+
+
+### Top 40 movies based on their profits
+This particular graph shows profit earned by the top 40 movies that. We can see with this plot that the trend is almost linear showing that usually the movies with high budget tend to be financially more successful and earn more profit. 
+```{r}
+movie %>%
+  arrange(desc(profit)) %>%
+  top_n(40, profit) %>%
+  filter(title_year %in% c(2000:2016)) %>%
+  ggplot(aes(x=budget, y=profit)) +
+  geom_point() +
+  geom_smooth() + 
+  geom_text_repel(aes(label=movie_title)) +
+  labs(x = "Budget $million", y = "Profit $million", title = "Top 40 Profitable Movies") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
+### Average Movie Budget by Countries
+
+This part of the analysis explores how the budget of the movies vary with each country. Surprisingly, India spends the most amount of money on their movies. It is also interesting to see that the trend is not very linear, i.e. the top countries have a significantly higher movie budget than the countries that have lower average budget of the movies.
+```{r}
+country_movie <- movie %>%
+  subset(country != "") %>%
+  subset(country != "New Line") %>%
+  group_by(country) %>%
+  summarise(count=n(),
+            avg_budget = mean(budget,na.rm="true"),
+            avg_gross = mean(gross,na.rm="true"))
+country_with_multiple_movies <- subset(country_movie,count>1)[1]
+
+ggplot(country_movie[complete.cases(country_movie), ],
+       aes(x=reorder(country,-avg_budget),avg_budget))+
+  geom_bar(stat = "identity",fill = 'red')+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  ylab("Average Movie Budget in Million $")+
+  xlab("")+
+  ggtitle("Average Movie Budget by Country")
+```
+
+### Average Movie Gross by Country
+This part of the analysis explores how the revenue earned by the movies vary with each country in millions. We can see that the top 5 countries have a considerably higher revenue(more than $50 Million ) than the rest of the countries.
+
+```{r}
+ggplot(country_movie[complete.cases(country_movie), ],
+       aes(x=reorder(country,-avg_gross),avg_gross))+
+  geom_bar(stat = "identity",fill = 'blue')+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  ylab("Average Movie Gross in Million $")+
+  xlab("")+
+  ggtitle("Average Movie Gross by Country")
+```
+
+
+### Averge Movie Budget by Language
+Similar to the above 2 plots, these 2 graph explores how the budget spent and the revenue earned by the movies vary with the language of the movie produced. 
+```{r}
+language_movie <- movie %>%
+  group_by(language) %>%
+  summarise(count=n(),
+            avg_budget = mean(budget,na.rm="true"),
+            avg_gross = mean(gross,na.rm="true"))
+director_with_multiple_movies <- subset(language_movie,count>1)[1]
+
+ggplot(language_movie[complete.cases(language_movie), ],
+       aes(x=reorder(language,-avg_budget),avg_budget))+
+  geom_bar(stat = "identity",fill = 'red')+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  ylab("Average Movie Budget in Million")+
+  xlab("")+
+  ggtitle("Average Movie Budget by the Language")
+```
+## Average Movie Gross by Language
+```{r}
+ggplot(language_movie[complete.cases(language_movie), ],
+       aes(x=reorder(language,-avg_gross),avg_gross))+
+  geom_bar(stat = "identity",fill = 'blue')+
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
+  ylab("Average Movie Gross in Million")+
+  xlab("")+
+  ggtitle("Average Movie Gross by the Language")
+```
+
+
+### Final Correlation Map 
+The last plot is a heatmap that shows how various attributes of a movie are correlated to each other. 
+We can see that there is a very high correlation between the gross income and the profit earned by the movies with a factor of 0.74. There is also a high correlation between reviews and movie FB likes.
+```{r}
+ggcorr(movie, label = TRUE, label_round = 2, label_size = 2, size =2 , hjust = .85) +
+  ggtitle("Correlation Heatmap") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Conclusion
+
+This paper has helped us explore and understand the movie dataset and answer some of the interesting questions. Some of the important inferences that I could from the above analysis are as follow:
+
+* We can see that Drama, comedy and thriller are one of top genres movies produced.
+* The number of movies being produced every year have increased significantly. 
+* The IMDb score as well as the profit of the movies are normally distributed while the Budget and the Revenue are very rightly skewed.
+* There is no significant trend that shows that one kind of genre does better than the other.
+* We calculated the average highest Imdb score for different actors and directors which would be beneficial for the production houses to hire them accordingly.
+* We also saw that on the basis of the top 40 movies that did the best financially, there is an almost linear correlation between the budget of the movie and the profit earned by it. 
+* India has a significantly higher movie budget (around 100 million USD) than the other movies.New Zealand on the other hands tops the average movie gross (around 10 million USD). 
+* Similarly we could see that Czech Language movies that have highest movie budget (around 85 million USD), and Mayan language has the highest movie revenue(around 50 million USD). 

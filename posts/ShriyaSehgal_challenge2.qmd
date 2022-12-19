@@ -1,0 +1,87 @@
+---
+title: "Challenge 2"
+author: "Shriya Sehgal"
+desription: "Data wrangling: using group() and summarise()"
+date: "11/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+
+
+```{r}
+dataset <- read.csv('_data/hotel_bookings.csv')
+dataset
+
+```
+
+
+
+The dataset of hotel_booking describes the information like the room assigned, deposit type, reservation number, number of adults/children/babies across various countries.
+
+
+## Describe the data
+
+
+
+```{r}
+#| label: summary
+library(summarytools)
+print(dfSummary(dataset))
+```
+
+We can see here that the dataset contains the data between the years 2015-2017 and there are 2 distinct values of the Resort and city in the dataset. Around 37% of the bookings are canceled. 
+
+## Provide Grouped Summary Statistics
+
+```{r}
+dataGroupedByADT <- dataset %>%
+  group_by(arrival_date_month)
+dataGroupedByADT %>%
+  summarise(
+    avg_stays_in_week_nights = mean(stays_in_week_nights, nr.rm = TRUE),
+    avg_stays_in_weekend_nights = mean(stays_in_weekend_nights, nr.rm = TRUE)
+  )
+```
+
+### Explain and Interpret
+
+The first table is grouped by the months when the booking is done and analyses how the average stay in the weekday and weekend night differs per month. Such sorts of analysis might help the hotel in organizing the staff and resources on the basis of the month of the year during the weekend and weekdays. If is also helpful in planning the activities that are seasonal specific during the weekdays along with deciding the prices of the room and the discounts applied to them.
+
+```{r}
+prop.table(table(select(dataGroupedByADT, reservation_status))) %>% 
+  `*`(100) %>% 
+  round(2)
+```
+
+### Explain and Interpret
+The second table that shows the distribution in the percentage basis of the booking of the segments that were cancelled which helps analyse which month gets the highest and lowest number of cancellations. This would help the hotel coming up with the ways to reduce the number of cancellations in specific months.
+
