@@ -1,0 +1,82 @@
+---
+title: "Challenge 1"
+author: "Janhvi Joshi"
+desription: "Reading in data and creating a post"
+date: "10/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_1
+  - railroads
+  - faostat
+  - wildbirds
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a dataset, and
+
+2)  describe the dataset using both words and any supporting information (e.g., tables, etc)
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, using the correct R package and command.
+
+-   railroad_2012_clean_county.csv ⭐
+-   birds.csv ⭐⭐
+-   FAOstat\*.csv ⭐⭐
+-   wild_bird_data.xlsx ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐⭐
+
+Find the `_data` folder, located inside the `posts` folder. Then you can read in the data, using either one of the `readr` standard tidy read commands, or a specialized package such as `readxl`.
+
+```{r}
+bird <- read_csv('_data/birds.csv')
+bird
+as_tibble(bird)
+```
+
+Add any comments or documentation as needed. More challenging data sets may require additional code chunks and documentation.
+
+## Describe the data
+
+Description: The birds dataset contains approximately 30k rows and 14 columns on different stock birds from 248 regions like Afghanistan, Albania, Jamaica and Micronesia. All these birds belong to the domain of "Live Animals". The birds are categorized in one of the following categories: "Chickens", "Ducks", "Geese and guinea fowls", "Turkeys", "Pigeons, other birds". The dataset spans form the year 1961 to 2018. It was gathered form various official and unofficial sources like FAO estimates, unofficial figures likely gathered from livestock farms, as well as aggregates calculated from a combination of these sources. This dataset is likely useful to analyse when, where and how many different livestock birds were grown.
+
+```{r}
+#| label: summary
+nrow(bird)
+colnames(bird)[4] <- c("area")
+unique_areas <- unique(bird$area)
+unique_areas
+colnames(bird)[2] <- c("domain")
+unique_domains <- unique(bird$domain)
+unique_domains
+colnames(bird)[6] <- c("element")
+unique_element <- unique(bird$element)
+unique_element
+colnames(bird)[8] <- c("item")
+unique_items <- unique(bird$item)
+unique_items
+
+summary(bird)
+
+colnames(bird)[14] <- c("flag")
+unique_flag <- unique(bird$flag)
+unique_flag
+```
