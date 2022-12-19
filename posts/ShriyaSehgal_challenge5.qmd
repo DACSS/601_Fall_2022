@@ -1,0 +1,129 @@
+---
+title: "Challenge 5"
+author: "Shriya Sehgal"
+description: "Introduction to Visualization"
+date: "11/30/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+-   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
+-   Australian Marriage ⭐⭐ 
+-   AB_NYC_2019.csv ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐
+-   Public School Characteristics ⭐⭐⭐⭐ 
+-   USA Households ⭐⭐⭐⭐⭐
+
+```{r}
+aus_data<- read_csv("_data/australian_marriage_tidy.csv")
+aus_data
+```
+
+### Briefly describe the data
+The Australian marriage dataset is a survey of the public opinion of the people in Australia about the legality of the marriage of the same sex. This hdata has been collected in November 2017 across al 150 Federal Electoral Division in Australia. The public were allowed to answer in either yes, no or not clear.
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+The data seems pretty tide with 16 observations of 4 variables
+
+```{r}
+
+summary(aus_data)
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+```{r}
+#Pivoting the responses to be independed variables.
+aus_data <- aus_data%>%
+  pivot_wider(names_from = resp, values_from = c(percent,count)) %>% 
+  mutate(`Total responses`= (`count_yes` + `count_no`))
+aus_data
+```
+
+## Univariate Visualizations
+
+```{r Graph 1}
+#Respondents to postal survey by province
+ggplot(aus_data, aes(x =reorder(territory, -`Total responses`), y = `Total responses`)) +
+geom_bar(stat = "identity") +
+labs(x= " Austrailian Territory", y= "No. of Respondents" )+
+ggtitle("Graph 1: Respondents by Territory")
+  
+```
+The above graph displays # of respondents from each Australian Territory which gives the idea how many reponses we got from each area.
+
+
+```{r Graph 2}
+
+ggplot(aus_data, aes(x =reorder(territory, -`percent_no`), y =`count_no`)) +
+geom_bar(stat = "identity") +
+labs(x= " Austrailian Territory", y= "No. of Respondents" )+
+ggtitle("Graph 2: Respondents Not in Favour of Same-Sex Marriage")
+```
+This graph gives information about the respondants with do not support same-sex marriage. It displays the territories by their disapproval percentage and shows any pattern that exists.
+
+## Bivariate Visualization(s)
+```{r Graph 3}
+
+ggplot(aus_data, aes(x =`percent_no`, y= `Total responses`, colour=territory )) +
+geom_point() +
+geom_smooth(color= 'red',method='lm', formula= y~x)+
+labs(x= " Percentage of Disapproval", y= "Total Responses", color= "Territory" )+
+ggtitle("Graph 3: Total Respondents vs Disapproval %")
+  
+```
+The above graph co-relation between Approval percentage and Number of respondents. As there are only 8 different territories, we has done have enough data to establish a pattern and see if any particular territory favors the legality of the same sex marriage in Australia over the other. 
+
+
+**We can conclude that the majority of Australians favor the legality of the marriage in the same sex**
