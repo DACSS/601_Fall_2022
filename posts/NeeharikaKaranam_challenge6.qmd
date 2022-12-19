@@ -1,0 +1,131 @@
+---
+title: "Challenge 6"
+author: "Neeharika Karanam"
+description: "Visualizing Time and Relationships"
+date: "12/03/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+
+```{r}
+RawData <- read_excel("_data/debt_in_trillions.xlsx")
+head(RawData)
+```
+
+### Briefly describe the data
+
+The above dataset is about the cumulative debt which is held by some of the nation citizens which are most likely in the US and the dataset consists of 6 rows and 8 columns which explains the different kinds of debts in different quarters Like the auto loan, credit card, student loan.
+
+## Tidy Data (as needed)
+
+I think there is tidying required in the form of separating the combined field of year and the quarter.
+
+```{r}
+split_quarter <- RawData %>%
+  separate(`Year and Quarter`,c('Year','Quarter'),sep = ":")
+
+split_quarter
+```
+
+## Time Dependent Visualization
+
+I have performed the time dependent visualization for the auto load debt and then I will help in transforming the data so that I will be able to understand how the auto loan adds up when compared to the others.
+
+```{r}
+
+scatter_data <- split_quarter %>%
+  ggplot(mapping=aes(x = Year, y = `Auto Loan`))+ 
+  geom_point(aes(color=Quarter))
+scatter_data
+
+```
+
+Now I would like to pivot the data which will help me in further analysis
+
+```{r}
+debt_split<- split_quarter%>%
+  pivot_longer(!c(Year,Quarter), names_to = "DebtType",values_to = "DebtPercent" )
+
+debt_split
+```
+## Visualizing Part-Whole Relationships
+
+Now as a part of the visualizing by part-whole I have done the following analysis by the debt type.
+
+```{r}
+
+debt_split_Plot <- debt_split%>%
+  ggplot(mapping=aes(x = Year, y = DebtPercent))
+
+
+debt_split_Plot +
+  facet_wrap(~DebtType, scales = "free")
+
+
+debt_split_Plot + 
+  geom_point(aes(color = DebtType))
+```
+
+The above graph shows the Mortage debt by influencing the total so I want to visualise how the various different types of the debt sway the total debt for the year therefore, I gace separated out the types of debt.
+
+```{r}
+debt_split_Plot+
+  geom_point() +
+  facet_wrap(~DebtType) +
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+```
+
+The above graph demonstrates how the different mortgages drove the total debt but what can we do with the trends of the other types of the debts looks like and how does it actually looks like so I am going to get the scaled to free to see this kind of a visualization.
+
+```{r}
+debt_split_Plot+
+  geom_point(aes(color = Quarter,alpha=0.9,)) +
+  facet_wrap(~DebtType, scales = "free_y") + 
+  guides(alpha="none") +
+  labs(title="Debt by type from '03 - '21")+
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+```

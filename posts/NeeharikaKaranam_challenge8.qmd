@@ -1,0 +1,106 @@
+---
+title: "Challenge 8"
+author: "Neeharika Kaaranam"
+description: "Joining Data"
+date: "12/05/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+```{r}
+
+country_dataset <- read_csv("_data/FAOSTAT_country_groups.csv")
+cattle_dataset <- read_csv("_data/FAOSTAT_cattle_dairy.csv")
+
+```
+
+### Briefly describe the data
+
+I have chosen 2 different datasets to perform the join operation. I have chosen the FAOSTAT country groups and FAOSTAT cattle diary datasets. 
+
+The first dataset is basically a codebook that helps in grouping the different countries so that we dont really have to look at the data at a very granular contry level. My main aim is to join the country group variable in order to perform the analysis of the different groups which are within the cattle and dairy dataset.
+
+The second dataset is mainly about the publicly available food and the agriculture data over the 245 countries in the world. It also contains very particular information about the cow milk and also has variables like the units sold and the value of the product. The information from these datasets are from 1960s to 2018. There are 36000+ rows in the dataset.
+
+## Tidy Data (as needed)
+
+I have observed that all of the rows have an "area code" which is assigned to the country and I will be using this variable to join the contry group variable. But it is called the "country code" in the country groups file, therefore I am renaming the "area code" variable to be "country code".
+
+```{r}
+cattle_rename <- rename (cattle_dataset, "Country Code"= "Area Code" )
+
+cattle_rename
+
+```
+
+## Join Data
+
+I am now going to join both of these files using the country code variable.
+
+```{r}
+final <- left_join(cattle_rename, country_dataset, by = "Country Code" )
+final
+```
+
+Now the datasets have been joined and now I want to plot a graph for certain country groups as below.
+
+```{r}
+final %>%
+  filter(Year >= 2002) %>%
+  filter(`Flag Description` == "Official data") %>%
+  filter(`Country Group`=="Central Asia") %>%
+  filter(`Unit` == "tonnes") %>%
+  ggplot(aes(x=`Area`, y=`Value`)) + 
+  geom_point(
+    color="blue",
+    fill="#69b3a2",
+    size=.5,
+    alpha=.5
+  )+
+  labs(title = "Official Tonnes of Milk that was Produced in Central Asia from 2002-2018", x="Country", y="Cost of Milk") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
