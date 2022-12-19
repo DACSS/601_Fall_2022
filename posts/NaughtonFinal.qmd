@@ -75,7 +75,7 @@ TS <- read_csv("_data/reservations_Naughton.csv",
 ### Weekdays from Novemebr 2020 to October 2022
 The first part of the data I wanted to look at was the utilization of the space. I took the count of each checked-in client for a unique class and calculated the percent usage of the space given the capacity of the room. The capacity changes throughout the 2 years because of different Covid restrictions.  The red line in the graphs below denotes when capacity was less than 42 bikes - when the studio opened, Covid restrictions limited capacity to 14 bikes. Throughout November and the winter, capacity was 14 and increased to 23. On July 19, 2021, capacity increased and remained at 42 bikes. The first graph shows the daily average utilization, so for every class on that day, how many bikes were booked out of the possible bikes, and the second graph shows the total number of checked-in reservations each day.
 
-On both graphs, it is evident summer is especially low. The Madison location is located near University of Wisconsin, so there are a lot of student riders. Therefore, when students are home, like during summer and holiday breaks, sign-ups are less, which is also evident in both graphs. These graphs use plotly so you can highlight each individual data point or zoom in to a particular range of dates.
+On both graphs, it is evident summer is especially low. The Madison location is located near University of Wisconsin, so there are a lot of student riders. Therefore, when students are home, like during summer and holiday breaks, sign-ups are less, which is also evident in both graphs. These graphs use plotly so you can highlight each individual data point or zoom in to a particular range of dates. **Note, these graphs no longer have plotly for the final project to appear on the blog.
 
 I was surprised to see that May 4, 2021, which is a date with capacity restrictions, had similar total bike counts to the maximum bike count for after restrictions were lifted. On May 4, there were 7 classes offered, which was the most classes Midwest has had in a day. Their next highest day with most reservations was December 14, 2021. I can assume that both of these days are at the end of the semester. Thus, students want to workout before they leave for the semester. Offering more classes at the end of the semester and before breaks would be a smart business move.
 
@@ -111,7 +111,7 @@ p <- WeekdayDailyCapacityAvg %>%
        ) +
   geom_vline(xintercept = as.numeric(as.Date("2021-07-19")), linetype=4, colour="red")
 
-p <- ggplotly(p)
+#p <- ggplotly(p)
 p
 
 ## each day's total bike reservation
@@ -130,7 +130,7 @@ b <- WeekdayDailyReservationCount %>%
        ) +
   geom_vline(xintercept = as.numeric(as.Date("2021-07-19")), linetype=4, colour="red")
 
-b <- ggplotly(b)
+#b <- ggplotly(b)
 b
  
 ```
@@ -199,8 +199,9 @@ WeekdayOctTotalReservation<- WeekdayOct %>%
 
 These graphs are messy - each weekday has different time slots so the days are hard to compare signups. For example, Monday offers a 4:30pn, but Friday does not. Each day can also vary - on three out of the four Thursdays in October, there is a 3:30pm class. There is not a clear winner of which day has the most reservations, but Friday consistently has the least amount of sign-ups. In general, Tuesdays and Wednesdays seem to usually have the most reservations, but these are also the days when they typically offer 5 classes (6:30pm). Proportionally, Monday 4:30pm does the best with highest utilization.
 ```{r}
-# bar graoh for number of reservations in October separated by day and time
-c <- ggplot(WeekdayOct) +
+# bar graph for number of reservations in October separated by day and time
+#c <- 
+  ggplot(WeekdayOct) +
   geom_bar(mapping = aes(x = ClassDate, fill=ClassTime)) + 
   labs(x = "Class Date", 
        y = "Number of reservations", 
@@ -208,7 +209,7 @@ c <- ggplot(WeekdayOct) +
        fill = "Class Time",
        )+
   scale_fill_discrete(labels=c('7AM', '8:30AM', '9:30AM', '12:30PM','3:30PM', '4:00PM', '4:30PM', '5:30PM', '6:30PM')) 
-plotly::ggplotly(c)
+#plotly::ggplotly(c)
 
 ##proportion of class times offered on each day
  ggplot(data=WeekdayOctTotalReservation, aes(x=ClassDate, y = reservations, fill=ClassTime)) +
@@ -227,6 +228,7 @@ My take-aways for this section is that Fridays are the least attended day of the
 
 ## Substitute Instructors
 
+### Substitute Instructors and the Effect on Sign-ups
 The next question I have from this dataset is does a substitute teacher affect class sign-ups? Instructors will have a set schedule, and they might need to request a class off. I am curious if having a substitute impacts the overall signup. Sometimes the client knows well in advance if there will be a substitute. Other times, the instructor changes can happen last minute. It is likely, however, that the client will be notified of the switch prior to taking class. 
 
 ### Substitute Instructors from November 2021 to Current
@@ -365,6 +367,8 @@ There is not a distinct trend for if a class is taught by an originally planned 
 When looking at the time of classes with substitutes, utilization of weekend morning classes are less dependent on if there is a substitute compared to weekday evening classes. This shows me that the business should try to limit substitutes during the week and be strategic about who is covering the classes. They also can be more relaxed on having instructors here on the weekend. They also might want to consider having a popular instructor teach during the 6:30 time slot to increase reservations during this time. 
 
 ## Themes 
+
+### Themes and the Effect on Signups
 Finally, I want to look at which themes are most popular. This studio chooses themes as their class name. Each instructor curates their own theme. There are 767 unique themes that have been taught over the last 2 years. Some themes are verses (VS) so there are two artists, others have 3 artists, and others are more generic.
 
 I separated the Class Name into 2 new columns - one called Primary Artist and second called other. I separated by , or VS. We are told to name themes with the most popular and most used artists first so I knew I could use that primary artist as my baseline. I then categorized the themes into POP, HIP HOP, PUNK ROCK, EDM, GENERAL, and OTHER. For pop, hip hop, punk rock, and EDM, I took the primary artist and used case_when looking for specific artists and organizing them appropriately. Then, GENERAL were themes that did not have an artist and were generic, such as BEST OF 2000s. OTHER was reserved for event type rides such as birthdays, charities, or anniversaries. I also took out 60 minute classes and classes taught by New Instructors. 
@@ -582,7 +586,7 @@ ggplot(aes(x=themeCategory, y = avgCapPercentage)) +
 
 Next, I wanted to break down themes even more. The first graph is a violin plot. This shows that every theme category, except for punk rock, was able to have a class with close to 100% utilization. However, EDM's distribution is more evenly distributed between 20 and 50%. "Other themes have the most evenly distributed across all utilization.
 
-The second graph is a plotly that looks at the total number of themes offered broken down by utilization percentage grouping by theme category. You can see that most classes are in the 21-40% category. Punk rock and EDM have the lowest utilization.
+The second graph looks at the total number of themes offered broken down by utilization percentage grouping by theme category. You can see that most classes are in the 21-40% category. Punk rock and EDM have the lowest utilization.
 ```{r}
 ##this graph shows the average capacity for each theme category from Nov 2020 to Oct 2022
 TSThemesFinal %>% 
@@ -593,13 +597,14 @@ TSThemesFinal %>%
          x = "Theme Category")
 
 ## Themes the total number of themes offered broken down by utilization percentage groupings
-e <- TSThemesFinal %>% 
+#e <- 
+TSThemesFinal %>% 
     ggplot(aes(x=percentageGrouping, fill=themeCategory)) + 
     geom_histogram(stat="count") +
     labs(title = "Number of Classes By Utilization, Nov 2020 - Oct 2022", 
          y = "Count of Classes", 
          x = "Average Utilization Group") 
-plotly::ggplotly(e)
+#plotly::ggplotly(e)
 
 ```
 
@@ -615,33 +620,36 @@ My final graph is from 10am, 4:30pm, and 5:30pm classes after July 17, 2021. I c
 ``` {r}
 
 ## Themes from Summer 2021 to current, the total number of themes offered during the seasons
-a<- TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
+#a<- 
+TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
   mutate(season = factor(season, levels=c("Summer 2021", "Fall 2021", "Winter 2021", "Spring 2022", "Summer 2022", "Fall 2022"))) %>%
     ggplot(aes(x=season, fill=themeCategory)) + 
     geom_histogram(stat="count") +
     labs(title = "Number of Classes By Theme from July 17, 2021 to Current, Broken Down by Season", 
          y = "Count of Classes", 
          x = "Theme Category") 
-plotly::ggplotly(a)
+#plotly::ggplotly(a)
 
 ## Theme categories from Summer 2021 to current, the total classes in each utilization group
-x<- TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
+#x<- 
+TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
    ggplot(aes(x=percentageGrouping, fill=themeCategory)) + 
     geom_histogram(stat="count") +
     labs(title = "Number of Classes in Utilization Group, July 19, 2021 to Current", 
          y = "Count of Classes", 
          x = "Average Utilization Group") 
-plotly::ggplotly(x)
+#plotly::ggplotly(x)
 
 
-y<- TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
+#y<- 
+TSThemesFinal %>% filter(ClassDate>= '2021-07-19') %>% 
   filter(ClassTime== hms("17:30:00") | ClassTime == hms("16:30:00")| ClassTime == hms("10:00:00")) %>%
    ggplot(aes(x=percentageGrouping, fill=themeCategory)) + 
     geom_histogram(stat="count") +
     labs(title = "Number of 10am, 4:30pm & 5:30pm Classes By Utilization, July 19, 2021 to Current", 
          y = "Count of Classes", 
          x = "Average Utilization by Theme") 
-plotly::ggplotly(y)
+#plotly::ggplotly(y)
 
 ```
 
