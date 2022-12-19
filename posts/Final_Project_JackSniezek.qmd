@@ -1,0 +1,206 @@
+---
+title: "Final Project"
+author: "Jack Sniezek"
+desription: "Examining NFL Betting Statistics"
+date: "12/14/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - final project
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The Super Bowl is easily the biggest betting event in the United States, with an estimated $7.61 billion in bets for the Super Bowl LVI. This figure is up 78%, or $3.33B from the year before. The huge surge in betting figures can be explained by the Supreme Court overturning a federal ban on sports betting in 2018, which had been in place since 1992. The law previously only allowed a select few states to operate. Today, 39 states and Washington DC either have legal sports betting or are considering legislation to implement it. Of the 39 states with legal sports betting or legislation, 22 allow online and mobile sports betting, which has led to the rise of many online sportsbooks such as DraftKings, Caesar’s Sportsbook, and BetMGM. 
+
+The purpose of this paper is to explore the trends in NFL betting in the Super Bowl Era. The key points that I intend to cover in my research are:
+
+• Stadiums where spread is covered the most how it changes over time
+•	How weather affects who has covered the spread
+•	Who covers the spread in the Super Bowl/playoff games
+
+I would like to also examine the over/under for these, as well as how individual teams fare against weather, stadium, and opponent, but I am afraid this will result in me taking on too much to handle. So, for the purposes of this paper, I will stick to these research topics.
+
+
+The dataset I will be working with was available on Kaggle.com and consists of NFL game results, betting odds information, stadium information, and weather information. The data is made up of game results and weather information 1966 to present, and betting odds beginning in 1979. The betting odds included are the spread and the over/under. Weather data included is temperature, wind speed, and humidity for each game. Stadium data includes years active, type, capacity, and location. I will have to do significant data clean up, as the weather data is incomplete in some spots, there is a lot of extra stadium data, and many teams have changed names/cities. There are also some data points that are unique that have no info such as stadiums used for one or two games and have no information associated with it(for example, several baseball stadiums were venues in the early days of the NFL). 
+
+## Read in the Data
+
+First I read in the data. There are 3 separate csv files that contain the data I will be working with; spreadspoke_scores, nfl_stadiums, and nfl_teams.
+
+```{r}
+#change directory
+spreadspoke_scores <- read_csv("_data/nfl_data/spreadspoke_scores.csv")
+spreadspoke_scores
+
+stadiums <- read_csv("_data/nfl_data/nfl_stadiums.csv")
+stadiums
+
+teams <- read_csv("_data/nfl_data/nfl_teams.csv")
+teams
+
+```
+
+## Combine the Data
+
+The datasets will have to be merged using joins before I can start manipulating the data. The stadium data was easy to join because it only required one variable name change. I had issues joining the teams data as there was not a clear variable that was exactly the same on both datasets. Initially I tried to use team_id and team_favorite_id, but some of the teams had name changes but still had the same id. This created duplicate data that could not be removed because multiple ids were connected to one data point. Ultimately, I found success by using team_name and team_home for the join.
+
+```{r}
+#Rename stadium so I can join to stadiums data, create new variable for join with teams data
+scores <- spreadspoke_scores%>%
+  rename(stadium_name = stadium)
+
+#new variable to join scores data
+new_teams <- teams%>%
+  mutate(team_home = team_name)
+  #mutate(team_name_id = str_c(team_name, team_id, sep = "_"), .before = team_name)
+
+#select only data that I can use
+#team_id had to be removed because the duplicates made redundant data, i.e. some teams changed names/location but id was the same
+new_teams <- new_teams%>%
+  select(team_home,team_name,team_id,team_name_short,team_conference,team_division,team_division_pre2002)
+
+#in case I messed up the data
+full_scores <- scores
+
+#joins
+
+full_scores <- full_join(x = scores, y = new_teams, by = "team_home")
+full_scores <- full_join(x = full_scores,y = stadiums, by = "stadium_name")
+
+full_scores
+
+```
+
+The fully merged data contains 13,505 rows(games), and 37 columns.
+
+## Clean and Mutate
+
+My next big challenge was trying to create a variable that tells whether or not a spread was covered. I mutated the favorite variable to show the team name instead of the team id, and then I mutated the spread from a negative number to a positive in order for it to mathematically make sense to compare to the scores. Then I could use a case_when() to compare the two and determine if the spread was covered. The data was then ready to be selected and filtered. I took 13 variables and filtered out data from before 1979, except Super Bowls, since that was when the spread data was available. Also, I noticed that some spreads were 0 and the favorite was "PICK", so I filtered by spreads > 0.
+
+```{r}
+#rename 
+full_scores <- full_scores%>%
+  rename(favorite = team_favorite_id,
+         spread = spread_favorite)
+
+#adjust favorite so data is team name and not id
+#make spread positive number to keep calculations accurate
+#new variable to show if a spread was covered, uses case_when
+full_scores <- full_scores%>%
+  mutate(favorite = ifelse(favorite == team_id,team_home,team_away))
+
+
+full_scores <- full_scores%>%
+  mutate(spread = spread * -1,
+         favorite_covers = case_when(team_home == favorite & (score_home - score_away) > spread ~ "Cover",
+                                     team_home == favorite & (score_home - score_away) < spread ~ "Not Cover",
+                                     team_away == favorite & (score_away - score_home) > spread ~ "Cover",
+                                     team_away == favorite & (score_away - score_home) < spread ~ "Not Cover"))
+
+
+#select and filter the data  
+full_scores <- full_scores%>%
+  select(schedule_season,schedule_week,team_home,score_home,score_away,team_away,favorite,spread,favorite_covers,stadium_name,stadium_type,weather_temperature,weather_wind_mph)%>%
+  filter(schedule_season > 1978 | schedule_week == "Superbowl",
+         spread > 0)
+
+full_scores
+
+```
+## Visualize
+
+Here is where I struggled. My intent was to show spread coverage at different stadiums on a bar graph, but I could not figure out how to graph a count. I also tried a similar plot with wind mph and Super Bowls, but also could not figure out if I could plot the count of the spreads. However, I was able to manipulate the data into showing what I was looking for in the graph. I was able to get a count of the number of covers at each stadium by week. For example, in Giants Stadium, favorites have covered 17 times in week 16. Thats the most out of any team. I also did an overall count of stadium covers, with Giants Stadium having the most covers at 223. Giants Stadium is a unique situation, as both the Giants and Jets both play their home games there. Because tof this, it gets twice the amount of games as other stadiums. Next, I checked the Super Bowl covers at each stadium. The Rose Bowl has the most covers at 4, followed by the Louisiana Superdome and the Orange Bowl both at 3. Covers at different wind speeds is interesting. The most covers by more than double is at 0 mph, which makes sense. Rounding out the top 10 wind speeds for covers is 5 mph through 12 mph. The highest wind speed to have a cover is 32 mph.
+
+In addition to using the counts to show my data, I made some tables to represent stadium covers, wind speed covers, and temperature covers. The stadium table breaks down stadium covers by week. The wind speed table breaks it down wind speed covers by week, with a filter to show the covers when the wind speed is more than 10 mph. The temperature covers table represents temperature covers by week. The coldest temperature for game that the spread was covered was -3 degrees.
+
+```{r}
+ 
+stadium_covers <- full_scores%>%
+  select(schedule_season, schedule_week,stadium_name, favorite_covers)%>%
+  filter(schedule_season > 1978,favorite_covers == "Cover")%>%
+  count(stadium_name, favorite_covers, schedule_week,sort = TRUE)
+
+  #ggplot(aes(y = stadium_name, x = schedule_week, fill = favorite_covers), geom_bar())
+
+stadium_covers
+  
+stadium_covers_total <- full_scores%>%
+  select(schedule_season, schedule_week,stadium_name, favorite_covers)%>%
+  filter(schedule_season > 1978,favorite_covers == "Cover")%>%
+  count(stadium_name, favorite_covers,sort = TRUE)
+
+stadium_covers_total
+
+superbowl_covers <- full_scores%>%
+  filter(schedule_week == "Superbowl",favorite_covers == "Cover")%>%
+  count(stadium_name, favorite_covers, schedule_week,sort = TRUE)
+  
+  #ggplot(aes(x = favorite_covers), geom_bar())
+
+superbowl_covers
+
+wind_covers <- full_scores%>%
+  filter(schedule_season > 1978,favorite_covers == "Cover")%>%
+  count(weather_wind_mph, favorite_covers,sort = TRUE)
+
+  #ggplot(aes(x= schedule_week, y = weather_wind_mph, fill = mean(weather_wind_mph)),geom_histogram())
+
+wind_covers
+
+
+tbl_stadium <- with(full_scores, table(stadium_name,schedule_week, favorite_covers))
+tbl_stadium
+
+tbl_wind <- with(full_scores, table(weather_wind_mph>10, schedule_week, favorite_covers))
+tbl_wind 
+
+#tbl_heat <- with(full_scores, table(weather_temperature,schedule_week, favorite_covers))
+#tbl_heat 
+#decided not to include the temperature table because its huge
+```
+
+## Reflection
+
+I am disappointed that I could not get any graphs to work. That being said, I enjoyed working with this dataset, and am happy with what I was able to produce with the data. This was challenging data to work with, and it took me many long nights to work through some of the mutations and getting the joins to work right. I did learn quite a bit about Rstudio and found it very rewarding when my code started working correctly. I even found some satisfaction working on the graphs, when I at least got the counts working as I had hoped. I thought it was a fascinating dataset, with so many variables I could've used for analysis. It probably could have been done 100 different ways. In the end, the only question I had left was if the over/under data would have worked out better than the spreads. 
+
+
+## References
+Course textbook:
+
+Wickham, H., & Grolemund, G. (2016). R for data science: Visualize, model, transform, tidy, and import data. OReilly Media.
+
+Link: https://r4ds.had.co.nz/explore-intro.html
+
+R programming language:
+
+R Core Team (2022). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+R Packages:
+
+Tidyverse: Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). “Welcome to the tidyverse.” Journal of Open Source Software, 4(43), 1686. doi:10.21105/joss.01686 https://doi.org/10.21105/joss.01686.
+
+ggplot2: H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+
+
+Sports Betting Laws by State
+https://www.investopedia.com/sports-betting-laws-by-state-5219064
+
+
+Record 31.4 Million Americans to Wager $7.61B on Super Bowl LVI
+https://www.americangaming.org/new/record-31-4-million-americans-to-wager-on-super-bowl-lvi/
+
