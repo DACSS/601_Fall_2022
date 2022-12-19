@@ -1,0 +1,340 @@
+---
+title: "Final_Project"
+author: "Tejaswini_Ketineni"
+description: "Online_Market_Clustering"
+date: "12/17/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Final_Project
+---
+### Objective
+
+We have witnessed the emergence of many e-commerce companies in the past decade which has given rise to the surge of online retail sales.This indicates the way in which the process of shopping for the consumers has changed in time.During the earlier stages, people preferred going to a retail store and shop. But now since the way of shopping has transformed from more retail to more online, its mandatory to observe the certain key  features:
+1. The shopping process
+2. The sites frequently visited
+3. Payment information
+4. Customer’s shopping address
+5. Their internet activity etc..
+A customer centric model for business is being built by the online websites to gain maximum profits
+This current project helps an online small business firm which sells unique gifts for all different occasions.The strategy which is employed by that particular store is that they opted to mail catalogues to the addresses.They procure orders through phone.The company has launched the website to go completely online.The main objective of this project is to help them understand the business behavioral pattern of the customers and to create a customer centric pattern.It is very much important to maintain the customer relation.
+
+### What is Customer Segmentation and it's prospective use ?
+
+Customer segmentation is the process in which we divide the groups based on the common characteristics.Our final goal is to find the customers who has the greatest potential to let the firm grow and retrieve maximum gains.The insights that we draw from the customer segmentation helps us design a proper segmentation strategy.Customer segmentation turns out beneficial for the following reasons :
+
+1.We can devise a highly effective marketing strategy.
+2.We can improve customer retention.
+3.We can improve the metrics of conversion.
+4.Enhanced product development.
+
+### Reading the Data
+
+Loading required packages and data.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tibble)
+library(dplyr)
+library(ggplot2)
+library(naniar)
+library(tidyverse)
+library(readr)
+library(corpus)
+library(tm)
+library(tmap)
+library(treemapify)
+library(wordcloud)
+library(dlookr)
+library(highcharter)
+library(countrycode)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+read the data extracted from kaggle which is from UCI machine learning repository.
+
+```{r}
+#reading in the dataframe and checking the answers
+Online_retail<-read.csv("_data/Online_Retail_v2.csv", header=TRUE)
+```
+
+```{r}
+head(Online_retail)
+```
+```{r}
+df<-Online_retail
+```
+
+```{r}
+colnames(Online_retail)
+```
+
+```{r}
+dim(Online_retail)
+```
+The data set contains of about 539394 rows and 8 columns.
+
+### Cleaning the data and performing Feature Engineering.
+
+
+```{r}
+miss_var_summary(Online_retail,order=TRUE)
+gg_miss_var(Online_retail)
+```
+
+We see that the customer ID's are missing we now see the structure of the whole data 
+```{r}
+summary(Online_retail)
+```
+
+One notable observation we can see here is that the Quantity has negative value as minimum. we will look into this in further steps.
+
+```{r}
+n_distinct(Online_retail$CustomerID)
+```
+
+```{r}
+n_distinct(Online_retail$Description)
+```
+
+```{r}
+sapply(Online_retail,function(x)sum(is.null(x)))
+```
+
+```{r}
+sapply(Online_retail,function(x)sum(is.na(x)))
+```
+we see that there are 132605 missing values in CustomerID
+
+```{r}
+Online_retail<-Online_retail%>%na.omit(Online_retail$CustomerID)
+Online_retail$Description<-replace_na(Online_retail$Description, "No-info")
+```
+
+```{r}
+print(summarytools::dfSummary(Online_retail,varnumbers = FALSE,plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.70, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+plot_outlier(Online_retail,UnitPrice,col="#AE4371")
+```
+
+```{r}
+plot_outlier(Online_retail,Quantity,col="#E6AB02")
+```
+There are missing values present in CustomerID's and if the description also has null values we replace the null values with "No info" and we simply omit the customerID.Data is highly skewed with outliers and when we remove them, it looks like normally distributed.
+
+For quantity as we have seen above while calculating the summary, we see that there are negative values in the data. Instead of directly removing them as the outlier plot showed those values, there could be a possibility that negative and positive values of quantity could be inter-connected.To be elaborate, there is a high possibility that those outliers could be cancelled or reverted orders and hence got negative values.Let's analyse in detail.
+
+```{r}
+check_quantity<-Online_retail%>%filter(Quantity<0)
+```
+So we see a invoice charecter C , which could represent cancellation. Let's sort this and understand the range.
+
+```{r}
+check_quantity<-check_quantity%>%arrange(Quantity)
+```
+Let's try to understand about the first listed entry to dig deep as it can be the huge outlier.We will study the orders made by the consumer with ID 16446.
+```{r}
+Online_retail%>%filter(CustomerID==16446)
+```
+So we see that from the time stamps , PAPER CRAFT , LITTLE BIRDIE the order is cancelled in 12 mins after it is placed.So we remove all the cancelled orders.
+```{r}
+Online_retail_no_outliers<-Online_retail%>%filter(Quantity>0)%>%filter(UnitPrice>0)
+```
+
+So, Now we have removed the outliers successfully.
+
+### FeatureEngineering.
+
+In order to find out how much money is being spent, we come up with an idea of creating a variable called spent - which is a product of quantity and unit price.
+```{r}
+Online_retail_new<-Online_retail_no_outliers%>%
+  mutate(Online_retail_no_outliers,Expenditure=Quantity*UnitPrice)
+```
+
+
+```{r}
+colnames(Online_retail_new)
+```
+We observe that the invoice date is in charecter variable type, So we would want to convert it to a date column.
+
+```{r}
+library(lubridate)
+Online_retail_new$InvoiceDate<-dmy_hm(Online_retail_new$InvoiceDate)
+Online_retail_new$year<-year(Online_retail_new$InvoiceDate)
+Online_retail_new$month<-month(Online_retail_new$InvoiceDate)
+Online_retail_new$hour<-hour(Online_retail_new$InvoiceDate)
+Online_retail_new$wday<-wday(Online_retail_new$InvoiceDate)
+```
+
+### Exploratory Data Analysis Visualizations.
+
+We first intend to understand the revenue generated by the countries to the firm.
+```{r}
+dsub1<-Online_retail_new%>%group_by(Country) %>%dplyr::summarise(Total_Income = sum(Expenditure))
+plot1 <- ggplot(dsub1,aes(x = reorder(Country,-Total_Income),Total_Income)) + geom_bar(stat = "identity",fill="dodgerblue2") + coord_flip()+  labs( x = 'Income_Earned',y = "Country", title = "Total Income by Country") +theme(axis.text.x = element_text(angle=90))
+plot1
+```
+
+```{r}
+dsub2<-Online_retail_new %>%group_by(Country)%>%filter(Country!="United Kingdom")%>% 
+dplyr::summarise(Total_Income = sum(Expenditure))
+
+plot2<-ggplot(dsub2,aes(x = reorder(Country,-Total_Income),Total_Income)) + geom_bar(stat = "identity",fill="red") +  coord_flip()+ labs( x = 'Income_Earned',y = "Country", title = "Total Income by Country")+theme(axis.text.x = element_text(angle=90))
+plot2
+```
+We see that there is huge revenue generated by united kingdom when compared to the other countries, and if we exclude UK, Netherlands has the highest share of Revenue.
+```{r}
+library(ggplot2)
+Revenue_by_month<-Online_retail_new%>% 
+  group_by(month)%>%
+  dplyr::summarise(Total_Income = sum(Expenditure))
+plot_by_month<-ggplot(Revenue_by_month, mapping = aes(x = reorder(month, -Total_Income), Total_Income)) + 
+  geom_bar(stat = "identity",fill="orchid4") +   labs( x = 'Revenue_generated',y = "Month", title = "Total Revenue by Month") +theme(axis.text.x = element_text(angle=90))
+
+Revenue_by_year <- Online_retail_new %>% 
+  group_by(year) %>% 
+  dplyr::summarise(Total_Income = sum(Expenditure))
+plot_by_year <- ggplot(Revenue_by_year, aes(x = reorder(year, -Total_Income), Total_Income)) + geom_bar(stat = "identity",fill="lightblue") +   labs( x = 'Revenue_generated',y = "year", title = "Total Revenue by year") +theme(axis.text.x = element_text(angle=90))
+
+plot_by_month
+
+
+```
+```{r}
+plot_by_year
+```
+
+
+We observe that the month of november has the highest sales and the revenue generated has an exponential increase from 2010 to 2011.
+Now let us understand what are the items those are being frequently ordered and the items being frequently cancelled.
+
+```{r}
+top_orders<-Online_retail_new %>% group_by(Description) %>% dplyr::summarise(Total_order_expense = sum(Expenditure)) %>% arrange(-Total_order_expense)
+ggplot(data = head(top_orders,10),aes(x = reorder((Description), Total_order_expense), Total_order_expense)) + geom_bar(stat = "identity",fill="orange1")+  labs( y = 'Revenue',x = "Products", title = "Top 10 Products") +theme(axis.text.x = element_text(angle=90)) + coord_flip()
+```
+Tree graph representation of the same
+```{r}
+top_orders<-Online_retail_new%>% group_by(Description)%>%dplyr::summarise(Total_order_expense = sum(Expenditure)) %>% arrange(-Total_order_expense)
+ggplot(data = head(top_orders,10), aes(area = round(Total_order_expense,2), fill = Description,label=round(Total_order_expense,2))) +
+  geom_treemap()+geom_treemap_text(colour = "black",place = "centre",size = 15)+scale_fill_brewer(palette = "Blues")
+```
+Now the cancelled metrics are understood and it is understood that paper craft, little birdie is cancelled as well along with being ordered more.
+```{r}
+cancel_df<-Online_retail%>%filter(Quantity < 0)
+cancel_df<-cancel_df%>%
+  mutate(cancel_df,Expenditure=Quantity*UnitPrice)
+cancelled_data <- cancel_df %>% group_by(Description) %>% dplyr::summarise(Total_order_expense = sum(Expenditure)) %>% arrange(Total_order_expense)
+ggplot(head(cancelled_data,10),  aes(x = reorder((Description), -Total_order_expense), Total_order_expense)) + geom_bar(stat = "identity",fill="turquoise4")+  labs( y = 'Income',x = "Products", title = "Top 10 Products- cancelled") +theme(axis.text.x = element_text(angle=90)) + coord_flip()
+```
+
+We now are going to understand the unique words in the description, which are observed in the orders.
+```{r}
+products_list <- unique(Online_retail_new$Description)
+p_list <- Corpus(VectorSource(products_list))
+toSpace <- content_transformer(function (x , pattern) gsub(pattern, " ", x))
+p_list<-tm_map(p_list, toSpace, "/")
+p_list<-tm_map(p_list, toSpace, "@")
+p_list<-tm_map(p_list, toSpace, "\\|")
+p_list<-tm_map(p_list, content_transformer(tolower))
+p_list<-tm_map(p_list, removeNumbers)
+p_list<-tm_map(p_list, removeWords, stopwords("english"))
+p_list<-tm_map(p_list, removeWords, c( "blue","white","metal","small", "large","red","black","design","pink","glass","set"))
+p_list<-tm_map(p_list, removePunctuation)
+p_list<-tm_map(p_list, stripWhitespace)
+dtm<-TermDocumentMatrix(p_list)
+m<-as.matrix(dtm)
+v<-sort(rowSums(m),decreasing=TRUE)
+d<-data.frame(word = names(v),freq=v)
+
+set.seed(123)
+wordcloud(words=d$word,freq=d$freq,min.freq=1,
+          max.words=20, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8,"Dark2"))
+
+```
+A bigger font size usually represents higher repetition of that particular word in description.The stop words are chosen iteratively because the colors would not give any useful insights while studying the frequently ordered item.
+
+
+```{r}
+world_map<-Online_retail_new%>%group_by(Country)%>% dplyr::summarise(revenue=sum(Expenditure))
+  
+highchart(type = "map") %>%hc_add_series_map(worldgeojson,world_map%>%bind_cols(as_tibble(world_map$revenue)) %>% group_by(world_map$Country) %>% dplyr::summarise(revenue = log1p(sum(value))) %>% ungroup() %>% mutate(iso2 = countrycode(sourcevar = world_map$Country,origin="country.name", destination="iso2c")),value = "revenue", joinBy = "iso2") %>%
+hc_title(text = "Revenue by country (log)") %>%
+hc_tooltip(useHTML = TRUE, headerFormat = "",pointFormat = "{point.map_info$Country}") %>% 
+  hc_colorAxis(stops = color_stops(colors = viridisLite::inferno(10, begin = 0.1)))
+```
+
+
+```{r}
+summary(Online_retail_new)
+```
+
+As we know, the clustering is grouping homogenous data points together.The motive of clustering is to make the Distance between data points in the cluster should be made minimal.we adopt a variety of clustering algorithms and RFM analysis is one of the most pivotal step.
+RFM Analysis gives score to each of the customers on three elements of recency, frequency and monetary. The lesser value of recency depicts that the customer visits the store more.Frequency depicts the gap between two purchases and higher value indicates more frequent purchases.Monetary refers to the amount of money spent.
+
+```{r}
+recency<-Online_retail_new%>%dplyr::select(CustomerID,InvoiceDate)%>%mutate(recency= as.Date("2011-12-09")-as.Date(InvoiceDate))  
+recency<-recency%>%dplyr::select(CustomerID,recency)%>%group_by(CustomerID)%>% slice(which.min(recency))
+
+#frequency
+amount_products<-Online_retail_new%>%dplyr::select(CustomerID,InvoiceDate)%>%group_by(CustomerID, InvoiceDate)%>%dplyr::summarise(n_prod=n())
+df_frequency<-amount_products %>% dplyr::select(CustomerID) %>%group_by(CustomerID) %>% dplyr::summarise(frequency=n())
+
+#monetary
+customer<-summarise_at(group_by(Online_retail_new,CustomerID,Country), vars(Expenditure,Quantity), funs(sum(.,na.rm = TRUE)))
+monetary<-select(customer, c("CustomerID", "Expenditure"))
+
+#RFM DF
+# inner join the three RFM data frames by CustomerID
+rfm<-recency%>%dplyr::inner_join(., df_frequency, by = "CustomerID") %>% dplyr::inner_join(., monetary, by = "CustomerID")
+# drop the days from recency column and transform it into numeric data type
+rfm<-rfm %>% mutate(recency=str_replace(recency, " days", "")) %>% mutate(recency = as.numeric(recency)) %>% ungroup()
+head(rfm, 3)
+```
+we now scale the data frame.
+```{r}
+rfm1<-select(rfm,-CustomerID)
+df_scale<-scale(rfm1)
+```
+Now we use silhouette method to find out optimal number of clusters.
+
+```{r}
+library(factoextra)
+fviz_nbclust(df_scale, kmeans,method="silhouette")
+```
+We now perform kmeans clustering with optimal clusters
+```{r}
+set.seed(123)
+k_means_clustering<- kmeans(df_scale, 2, nstart = 25)
+fviz_cluster(k_means_clustering,df_scale)
+```
+
+
+```{r}
+print(k_means_clustering)
+```
+### Conclusion and Scope.
+
+From this we can say that cluster 2 is the most valuable customers as the money spent and the frequency of purchases are more.The advertising and marketing patterns might vary based on type of product being launched, motive behind the launch and so on.., knowing about all the charecteristics of the two clusters would save a lot of toil during the marketing process and provide us with the best possible outcomes.
+
+### References
+
+https://rfm.rsquaredacademy.com/index.html
+https://rstudio-pubs-static.s3.amazonaws.com/375287_5021917f670c435bb0458af333716136.html
+https://www.kaggle.com/analytical-customer-segmentation-analysis-r
+
+
+
