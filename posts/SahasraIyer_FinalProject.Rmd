@@ -1,0 +1,606 @@
+---
+title: "601_Final_Project"
+author: "Sahasra"
+date: '2022-12-18'
+output: distill::distill_article
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+# Load the required packages
+library(dplyr)
+library(tidyr)
+library(spotifyr)
+library(ggplot2)
+library(plotly)
+library(Dict)
+library(reshape2)
+library(stringi)
+library(stringr)
+library(hash)
+```
+
+## Introduction 
+
+Spotify is perhaps one of, if not the leading, music streaming service available today. It boasts of a wide variety of music genres in its coffins, and presently has over 456 million monthly active users, which includes 195 paying subscribers (as of September 2022). Spotify allows its users to create their own playlists, and also generates daily and weekly playlists, basis the streaming numbers of a certain genre or geographic region.
+
+In this project, I have chosen to study the Top 50 Playlists of 4 countries - India, USA, France and Brazil. The music from these countries vary extremely in terms of their artists, as well as genres. What I aim to research through this project, is to find some similarities (if they exist) amongst these playlists, as this would suggest some sort of symphony across music as an art form, or if they vary, as this would mean that certain features exist that make the music originating from these countries distinctive to their audiences. 
+
+## Data
+
+The data being used in this project was not available beforehand and involved using Spotify's API to source the current data of the Top 50 Songs from each of the countries we chose. To start with I used the spotifyr wrapper package, to get different tracks and the attributes associated with them, relating to the features of songs, as well as details of the artists that created them and the genres that they belong to. The first step in accessing this Spotify data is to get an API key, which I created on the Spotify Developer Dashboard. The following code was used to get the Spotify access token : 
+
+```{r}
+# Use client_id and secret token from developer dashboard to get access token
+id <- '4949e892016b49a988d0ceb6db9c8152'
+secret <- '191ad5c5e32d4552a83d9e8eb95f1456'
+Sys.setenv(SPOTIFY_CLIENT_ID = id)
+Sys.setenv(SPOTIFY_CLIENT_SECRET = secret)
+access_token <- get_spotify_access_token()
+```
+
+With the Spotify access token now available, I then manually added the 4 playlists to my own account, in order to carry out a filtered analysis on the playlists present in my account. 
+
+We now fetch the playlists saved in my Spotify account, using the code chunk below : 
+
+```{r}
+# Here I have used my unique Spotify user id to fetch the saved playlists on my Spotify account
+options(httr_oauth_cache=T)
+user_id <- 'u965216r0zoxby3bmbsxdsynm'
+user_playlists <- get_user_playlists(user_id, limit = 20, offset = 0,
+  authorization = get_spotify_authorization_code(),
+  include_meta_info = FALSE)
+```
+
+The variable user_playlists now contains all the playlists saved to my account. We will now filter the playlist of the Top 50 songs from the 4 countries we aim to analyse. 
+
+```{r}
+# Here, I have filtered the 4 playlist of interest
+filter_user_playlists <- user_playlists %>%
+  filter(name %in% c('Top Songs - India','Top Songs - USA','Top Songs - Brazil','Top Songs - France'))
+```
+
+We will now use the function get_track_data for fetching the tracks that are contained in each of the 4 playlists. This is done by using the unique playlist id, associated with each of the playlists. As we are constructing a dataset, we are also mapping each track with the playlist that it is retrieved from, in order to ensure that in the occasion of an overlap, we know which playlist the track originated from. Along with the tracks within the playlists, we also get the audio features associated with each track. This consists of features such as danceability, acousticness, track length, etc. which we will discuss in further sections. 
+
+```{r}
+# get_track_data - Function defined to get all the tracks within a playlist
+get_track_data <- function(index) {
+  features <- data.frame()
+  tracks <- data.frame()
+  upper_lim = index+1
+  for(i in index:upper_lim) {
+    playlist_tracks <- get_playlist_tracks(filter_user_playlists[i,"id"], authorization = get_spotify_access_token())
+    playlist_tracks$playlist_name <- filter_user_playlists[i, "name"]
+    tracks <- rbind2(tracks, playlist_tracks)
+    playlist_features <- get_track_audio_features(tracks$track.id, 
+                                                        authorization = get_spotify_access_token())
+    features <- rbind2(features, playlist_features)
+  }
+  
+  return (list(tracks, features))
+}
+```
+
+The code below fetches the tracks and associated audio features from the first 2 playlists from the filtered playlists, which are 'Top Songs - India' and 'Top Songs - USA'. We require to do this piecewise, as the function get_playlist_tracks has a predefined limit of fetching only 100 tracks per fetch call (sourced from the Spotify API documentation). 
+
+```{r}
+tracks_f <- data.frame()
+features_f <- data.frame()
+
+# Retrieve data of first 2 playlists
+data <- get_track_data(1)
+tracks_f <- rbind2(tracks_f, data[[1]])
+features_f <- rbind2(features_f, data[[2]])
+```
+
+We then fetch the tracks and audio features for the next 2 playlists, 'Top Songs - Brazil' and 'Top Songs - France'. 
+
+```{r}
+# Retrieve data of last 2 playlists
+data <- get_track_data(3)
+tracks_f <- rbind2(tracks_f, data[[1]])
+features_f <- rbind2(features_f, data[[2]])
+
+# Rename uri column in features_f dataframe fo r subsequent join operation
+features_f <- features_f %>%
+  rename("track.uri" = "uri")
+```
+
+We now have the consolidated tracks and features dataframes, which contains the tracks from all 4 playlists. 
+
+```{r}
+#tracks_f
+#features_f
+```
+
+We will now do a left join on the tracks_f and featues_f dataframes on the track.uri column, to get our final dataset.
+
+```{r}
+# Join operation to get final dataset
+all_tracks <- tracks_f%>%
+  left_join(features_f, by="track.uri")
+```
+
+## Analysis and Visualization 
+
+We will first look at the different acoustic features of the tracks, namely danceability, speechiness, acousticness, energy and loudness. Let us first look at what each of these features convey about a song : 
+
+1. Danceability: Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.
+
+2. Speechiness: This detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value.
+
+3. Acousticness: A confidence measure from 0.0 to 1.0 of whether the track is acoustic.
+
+4. Energy: Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale.
+
+5. Loudness: The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track and are useful for comparing relative loudness of tracks.
+
+We only consider the above acoustic features, in the interest of looking at variables that show a degree of variation across the playlists, the visualizations of which are as below : 
+
+```{r}
+# Boxplots for visualizing danceability, energy and loudness across the 4 playlists
+fig_danceability <- plot_ly(all_tracks, y=~danceability, color = ~playlist_name, type = "box") %>% 
+  layout(yaxis = list(title = c("Danceability")))
+fig_energy <- plot_ly(all_tracks, y=~energy, color = ~playlist_name, type = "box", showlegend=FALSE) %>% 
+  layout(yaxis = list(title = c("Energy")))
+fig_loudness <- plot_ly(all_tracks, y=~loudness, color = ~playlist_name, type = "box", showlegend=FALSE) %>%
+  layout(yaxis = list(title = c("Loudness")))
+
+
+fig <- subplot(fig_danceability, fig_energy, fig_loudness, nrows=3, titleY=TRUE) %>%
+  layout(title=list(text="Feature comparison across playlists"),
+  plot_bgcolor='#e5ecf6', 
+         xaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'),
+         yaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'))
+
+fig
+```
+```{r}
+# Boxplots for visualizing speechinessand acousticness across the 4 playlists
+fig_speechiness <- plot_ly(all_tracks, y=~speechiness, color = ~playlist_name, type = "box") %>%
+  layout(yaxis = list(title = c("Speechiness")))
+fig_acousticness <- plot_ly(all_tracks, y=~acousticness, color = ~playlist_name, type = "box", showlegend=FALSE)  %>%
+  layout(yaxis = list(title = c("Acousticness")))
+
+fig <- subplot(fig_speechiness, fig_acousticness, nrows=2, titleY=TRUE) %>%
+  layout(title=list(text="Feature comparison across playlists"),
+  plot_bgcolor='#e5ecf6', 
+         xaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'), 
+         yaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'))
+
+fig
+```
+From the boxplots above, we observe that the Brazil playlist has the highest number of danceable songs. Furthermore, Brazil, France and India have comparable energy coefficients for the tracks in their playlists, and USA has a slightly low track energy coefficient. In totality, however, France has the highest energy tracks (more compact boxplot). From the third boxplot, we observe that the same trend follows for loudness, which gives us the intuition that energy and loudness are perhaps correlated. Here however, Brazil has a more compact boxplot than France, which shows that the Brazil songs have a higher decibel level. We can perhaps anticipate some really upbeat songs in this playlist. 
+
+The speechiness plots vary across the 4 playlists, but we observe that India and USA have comparable medians, with France trailing behind closely. We can perhaps assume that the tracks here are composed of more music than words. I can't completely solidify the thought on the same, as there exist many outliers in this boxplot. 
+Finally, the acousticness boxplot shows us that France has the least acoustic songs in its playlist. Again, as this is confidence based, we cannot arrive at conclusive results. 
+
+Let us now visualize a heatmap for these acoustic features, to get a numeric value for their correlatedness. We construct the heatmap by computing correlation between the features, which is done using Pearson's method. The value ranges between -1 and 1. A value closer to 1 indicates a high correlation, and a value closer to -1 indicates that the 2 features are extremely uncorrelated. 
+
+```{r}
+# Constructing the heatmap for checking correlation between acoustic features
+track_features <- all_tracks %>%
+  select(danceability, energy, loudness, speechiness, acousticness, instrumentalness, track.popularity, playlist_name) %>%
+  rename(
+    popularity = track.popularity
+  )
+
+cor_mat <- cor(track_features[sapply(track_features, is.numeric)])
+
+hm_data <- melt(cor_mat)
+
+hm_data <- hm_data %>%
+  rename(
+    Features_x = Var1,
+    Features_y = Var2,
+    Index = value
+  )
+
+hm_plot <- ggplot(hm_data,aes(x = Features_x, y = Features_y, fill = Index)) +
+  geom_tile() + 
+  theme(axis.text.x=element_text(angle=45,hjust=1)) +
+  scale_fill_gradient(high = "blue", low = "white") 
+
+ggplotly(hm_plot)
+```
+
+The color density for each feature measured against the other, gives us an estimate of the relatedness (or otherwise) of 2 features. 
+
+For instance, the darkest color gradient is present in the cross-section between loudness and energy, an intuition we previously had. It has a correlation coefficient of 0.709. Let us look at the loudness vs energy distribution plot. 
+
+```{r}
+# Scatterplot for Loudness vs Energy
+options(dplyr.summarise.inform = FALSE)
+
+group_by_playlist <- all_tracks %>%
+  group_by(playlist_name) %>%
+  rename(
+    Playlist = playlist_name
+  )
+
+fig <- ggplot(group_by_playlist, aes(x=loudness, y=energy, color=Playlist, fill=Playlist, text=(paste("Loudness:", loudness, "<br>", "Energy:", energy))), showlegend=FALSE)  +
+  geom_point() +
+  labs(
+    fill="Playlist",
+    x="Loudness",
+    y="Energy"
+  ) + 
+  facet_wrap(~Playlist) + 
+  ggtitle("Loudness vs Energy") 
+
+
+ggplotly(fig)
+
+```
+From the above scatterplots, we can observe a similar behaviour across all 4 playlists. As the decibel of a track increases, so does its energy factor. 
+
+Two other features seem to have a higher color gradient that the rest, loudness and danceability. Their visualization is as below : 
+
+```{r}
+# Scatterplot for Loudness vs Danceability
+fig <- ggplot(group_by_playlist, aes(x=loudness, y=energy, color=Playlist, fill=Playlist, text=(paste("Loudness:", loudness, "<br>", "Danceability:", danceability))), showlegend=FALSE)  +
+  geom_point() +
+  labs(
+    fill="Playlist",
+    x="Loudness",
+    y="Danceability"
+  ) + 
+  facet_wrap(~Playlist) + 
+  ggtitle("Loudness vs Danceability") 
+
+
+ggplotly(fig)
+
+```
+
+Again, we see an upward trend for these 2 acoustic features. So we can conclude that the playlists have a general trend of tracks having high decibels being considered to be more danceable. 
+
+Let us now observe the heatmap from the lower side of the index spectrum. We can observe that the 2 features acousticness and danceability are almost white, with a correlation factor of -0.349. This shows us that they are inversely related. 
+
+```{r}
+# Scatterplot for Acousticness vs Danceability
+fig <- ggplot(group_by_playlist, aes(x=acousticness, y=energy, color=Playlist, fill=Playlist, text=(paste("Acousticness:", acousticness, "<br>", "Danceability:", danceability))), showlegend=FALSE)  +
+  geom_point() +
+  labs(
+    fill="Playlist",
+    x="Acousticness",
+    y="Danceability"
+  ) + 
+  facet_wrap(~Playlist) + 
+  ggtitle("Acousticness vs Danceability") 
+
+
+ggplotly(fig)
+```
+From the plots above, we do observe a tapering end at the lower right of each plot, which shows us that the two features do not follow a linear trend. 
+
+From the plots so far, we see that danceability, energy and loudness are some key acoustic features within our playlists. Let us construct a distribution plot for each of these 3 features for our playlists. 
+
+```{r}
+# Density plot for Danceability distribution
+green <- "#1ed760"
+yellow <- "#e7e247"
+pink <- "#ff6f59"
+blue <- "#17bebb"
+
+dance_dist <- all_tracks %>%
+  rename(
+    Playlist = playlist_name
+  )
+fig <- ggplot(dance_dist, aes(x=danceability, fill=Playlist))+
+  geom_density(alpha=0.7, color=NA)+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Danceability", y="Density")+
+  theme_minimal()+
+  ggtitle("Distribution of Danceability")
+
+
+ggplotly(fig, tooltip=c("text"), showlegend=TRUE)
+
+```
+
+This graph suggests that of the 4 playlist, the USA playlist has the widest range of danceability in its Top 50 playlist. Further, we can also see that France's playlist consists of songs on the higher end of the danceability spectrum.
+
+We will now plot the energy distribution across the 4 playlists : 
+
+```{r}
+# Density plot for Energy distribution
+fig <- ggplot(dance_dist, aes(x=energy, fill=Playlist))+
+  geom_density(alpha=0.7, color=NA)+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Energy", y="Density")+
+  theme_minimal()+
+  ggtitle("Distribution of Energy")
+
+
+ggplotly(fig, tooltip=c("text"), showlegend=TRUE)
+
+```
+We observe that India and US have the widest range of energy amongst the 4 playlists. US has extremely few tracks with high energy coefficient in its playlist, compared to the other 3, which was also what we observed in the boxplots plotted previously. Also, France's Top 50 playlist is mostly made up of songs on the higher end of the energy spectrum, which was a similar observation in our boxplots. 
+
+We will now plot the loudness distribution across the 4 playlists : 
+
+```{r}
+# Density plot for Loudness distribution
+fig <- ggplot(dance_dist, aes(x=loudness, fill=Playlist))+
+  geom_density(alpha=0.7, color=NA)+
+  scale_fill_manual(values=c(green, yellow, pink, blue))+
+  labs(x="Loudness", y="Density")+
+  theme_minimal()+
+  ggtitle("Distribution of Loudness")
+
+
+ggplotly(fig, tooltip=c("text"), showlegend=TRUE)
+
+```
+
+From the density plot, we observe that the US, Brazil and France playlists have some really high decibel songs, of which Brazil is the clear winner, which is very similar to our observation with the boxplots. While the Indian playlist has many high decibel songs towards the higher end of the spectrum, it doesn't contain any with the decibel levels as high as the other 3. 
+
+
+Apart from these main acoustic features, I also analyzed the track popularity feature against danceability. This stemmed from the simple intuition that popular tracks could perhaps have danceable tunes. The visualization of the same is as below : 
+
+```{r}
+# Scatterplot for Popularity vs Danceability
+options(dplyr.summarise.inform = FALSE)
+
+group_by_danceability <- all_tracks %>%
+  group_by(playlist_name, track.popularity) %>%
+  summarise(
+    mean_d = mean(danceability)
+  ) %>%
+  rename(
+    Playlist = playlist_name
+  )
+
+fig <- ggplot(group_by_danceability, aes(x=track.popularity, y=mean_d, color=Playlist, text=(paste("Popularity:", track.popularity, "<br>", "Danceability:", mean_d))))  +
+  geom_point() +
+  labs(
+    x="Popularity",
+    y="Danceability",
+    fill="Playlist"
+  ) +
+  facet_wrap(~Playlist) + 
+  ggtitle("Popularity vs Danceability")
+
+ggplotly(fig)
+```
+Popularity is measured on a scale between 0 and 100, where 100 is the best. Per my intuition, the plots towards the right end of the scatter plots should have then had a higher danceability factor. However, the scatter plots we observe are completely random, exhibiting no significant relationship between the 2 variables. 
+
+An interesting acoustic feature that is unexplored so far is speechiness. As per the documentation, speechiness refers to the presence of spoken words in a song. Songs with a speechiness score between 0.33 and 0.66 contain both music and speech; they could be rap songs, for example. Based on this, we’re going to look at speechiness based on the difference between the speechiness score and 0.33. If the difference is above 0, it’s most likely a rap song. The farther below 0, the more instrumental the track is. 
+We will first use mutate to create a new column  that calculates the speechiness difference score by subtracting 0.33 from the speechiness column. 
+
+```{r}
+# Mutate column for getting difference
+all_tracks <- all_tracks %>%
+  mutate(difference=speechiness - 0.33)
+```
+
+We will now plot the graph to observe how many bars go above or below zero, which will show us the speechiness of each track in the playlists. 
+
+```{r}
+# Plot for checking speechiness bars for all tracks
+fig <- ggplot(all_tracks, aes(x=reorder(track.name, -difference), y=difference, fill=playlist_name, text=(paste("Track:", track.name, "<br>","Speechiness:", speechiness))))+
+  geom_col()+
+  scale_fill_manual(values=c(green, yellow, pink, blue)) +
+  theme_minimal()+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank())+
+  ylab("Speechiness Difference")+
+  labs(
+    fill="Playlist"
+  ) +
+  facet_wrap(~playlist_name)+
+  ggtitle("Speechiness Difference")
+
+ggplotly(fig, tooltip=c("text"))
+
+```
+Brazil has more bars above 0, than any of the other countries. Furthermore, France has 3 distinct tracks, with a significant speechiness index in them. 
+"Baile No Morro" is the speechiest song in the Brazil playlist with a speechiness of 0.453 and France's speechiest song is "Canette dans les mains" with a speechiness of 0.4.
+India and US have lesser bars above 0, and also a smaller speechiness index comapred to the other 2 countries. 
+
+Moving on, we will now explore key, which describes the scale on which a song is based. This essentially means thta most of the notes in a song will come from the scale of that key. 
+
+For the purpose of representing this graphically, I created the below dataframe to find out how many songs from each playlist are in certain keys and the total number of songs in each key : 
+```{r}
+# Dataframe for getting key composition in tracks
+key_by_country <- all_tracks%>%
+  select(playlist_name, key)%>%
+  group_by(playlist_name, key)%>%
+  mutate(n=n())%>%
+  unique()%>%
+  group_by(key)%>%
+  mutate(total=sum(n))
+  #mutate(percent=round((n/total)*100))
+
+head(key_by_country, 10)
+```
+We now graph which keys are comprised in each of the playlists. 
+
+```{r}
+# Renaming playlist_name for purpose of simplicity
+key_by_country <- key_by_country %>%
+  rename(
+    Playlist = playlist_name
+  )
+```
+
+```{r}
+# Stacked bar chart for musical key proportions
+fig <- ggplot(key_by_country, aes(x=key, fill=Playlist, y = n, color = Playlist, 
+                                text = paste("Number of Songs: ", n, "<br>")))+
+  geom_bar(position="fill", width=0.5, stat = "identity")+
+  labs(x="Key", y="Number of Songs", fill="Playlist")+
+  guides(fill=guide_legend(title="Playlist"))+
+  theme_minimal()+
+  ggtitle("Musical Key Proportions by Playlist")
+  
+
+ggplotly(fig, tooltip=c("text"))
+```
+
+From the stacked graph, we observe that no single key has an even distribution for all 4 playlists. Furthermore, we also observe that Indian tracks are dominated by the higher keys and songs from France use the middle-order keys extensively. 
+
+We will now try to incorporate and analyse one of the most widely associated attributes with music data - genre. Obtaining the genre data was relatively difficult for this dataset, as Spotify does not provide tags for genres for each individual track. The genre typically comes from the artist who composed the song, and the genres associated with them. 
+
+```{r}
+# get_artist_name_id - Function to fetch artist name and artist id
+get_artist_name_id <- function(df){
+  for (i in 1:nrow(df)){
+        df[i, "artist_name"] <- list(df$track.artists[[i]]$name)
+        df[i, "artist_id"] <- list(df$track.artists[[i]]$id)
+    } 
+  return(df)
+}
+
+# get_track_genre - Function to get genres associated with each track
+get_track_genre <- function(df){
+  for(i in 1:nrow(df)){
+    get_artists_op <- get_artists(df[i, "artist_id"], 
+                                  authorization = get_spotify_access_token())
+    df[i, "genre"] <- stri_paste(unlist(get_artists_op$genre), collapse=',')
+  }
+  return(df)
+}
+```
+
+As a first step, we will fetch the artist name and artist_id, which will be required to further query and get the genre data. 
+We then use this data to call the get_artists() API, which uses the artist's id to get the genres associated with that artist. Some artists do not have any genres associated with them, we list them as "unlisted" in the interest of getting genre proportions. 
+
+```{r}
+# Fetch data to get genres mapped to each track
+filter_all_tracks <- all_tracks %>%
+  select(track.id, track.name, track.artists, duration_ms, track.uri, playlist_name)
+all_tracks_with_artist <- get_artist_name_id(filter_all_tracks)
+
+all_tracks_with_genres <- get_track_genre(all_tracks_with_artist)
+all_tracks_with_genres$genre <- ifelse(all_tracks_with_genres$genre=="", "unlisted", all_tracks_with_genres$genre)
+```
+```{r}
+#head(all_tracks_with_genres)
+```
+The genres are now available as comma separated values. For plotting a pie chart, we require a mapped set of the frequency of occurrence of each genre across the 4 playlists. I've written the below code chunk for creating a list with frequency counts. 
+
+```{r}
+# Create list for getting frequency count of genres across all tracks
+genre_dict <- list()
+
+for(i in 1:nrow(all_tracks_with_genres)){
+  if(!is.null(all_tracks_with_genres[i, "genre"])){
+    x <- str_split(all_tracks_with_genres[i, "genre"], ",")
+    for(j in 1:length(x[[1]])){
+      if(!x[[1]][j] %in% names(genre_dict)){
+        genre_dict[[x[[1]][j]]] <- as.numeric(1)
+      } else {
+        vals <- genre_dict[[x[[1]][j]]]
+        genre_dict[[x[[1]][j]]] <- (as.numeric(vals)+1)
+      }
+    }
+  } else {
+    next
+  }
+}
+```
+
+Finally, we create a dataframe in the interest of simplicity from the list above, to plot a pie chart. 
+
+```{r}
+# Transform list to dataframe for plotting pie chart
+genre_counts <- data.frame()
+genre_counts <- data.frame(genre_dict)
+col_names = names(genre_counts)
+
+genre_counts <- genre_counts %>%
+  pivot_longer(
+    cols = col_names,
+    names_to = "features",
+    values_to = "counts",
+    values_drop_na = TRUE
+  )
+
+plot_ly(genre_counts,values=~counts,labels=~factor(features),marker=list(colors=c('#FF7F0E', '#1F77B4')),type="pie")
+```
+
+This plot gives us a distribution of the genres for all tracks across all 4 playlists. We can see that 'pop' has the highest proportion amongst all tracks, with almost 10% representation, followed by 'dance.pop' with almost 6% tracks. 
+
+The initial effort was to create this pie chart grouped by playlist, however, implementing frequency counts and playlist name mapping became increasingly complex. 
+
+One last feature I analysed was track duration. The track duration was avialble in milliseconds, so I decided to first convert it to minutes to get a better idea for comparability. Below is the visualization of track durations across the 4 playlists. 
+
+```{r}
+# Boxplot for track duration (in mins) for the 4 playlists
+all_tracks_min <- all_tracks %>%
+  mutate(duration_mins = duration_ms/60000)
+
+fig_time_duration <- plot_ly(all_tracks_min, y=~duration_mins, color = ~playlist_name, type = "box") %>% 
+  layout(yaxis = list(title = c("Track Duration")))
+
+fig <- subplot(fig_time_duration, nrows=1, titleY=TRUE) %>%
+  layout(title=list(text="Time Duration across Playlists"),
+  plot_bgcolor='#e5ecf6', 
+         xaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'),
+         yaxis = list( 
+           zerolinecolor = '#ffff', 
+           zerolinewidth = 2, 
+           gridcolor = 'ffff'))
+
+fig
+```
+We can see that Indian songs in general have longer tracks, followed by USA. Brazil has a very compact range of track duration, ranging from 2 to ~3.5 minutes. 
+
+## Reflection
+
+Procuring, analysing, cleaning and visualizing data is a part of the day-to-day of any aspiring Data Scientist. This particular project was fascinating, yet challenging in terms of the data that it presented. Understanding the nuances of each acoustic feature, and the limitations of the Spotify wrapper was a whole new learning curve. 
+The Spotify wrapper presents a wide array of data. I think, perhaps, sticking to analyzing global playlists, instead of certain curated playlists, could have perhaps brought down the interestingness of the visualizations. However, I made the decision to analyze globally curated playlists to be backed by numbers, and not simply go on analyzing data on the basis on intuition. 
+
+Aother decision that I made to primariliy focus on the acoustic features, and not on other aspects, such as album statistics, or artists that fetaure in multiple playlists, was done in the interest of maintaining the aesthetics of the visualizations. 
+
+As previously mentioned, the most challenging part about this project was understanding how to procure the data, dabble with and gain an understanding of the different acoustic features, and generate a variety of visualizations.
+
+If I could carry on with this project, I would delve deeper into podcasts as a category, and try to analyse the acoustic features in podcast playlists. The Spotify wrapper also has API calls such as 'get_recommendations()', which essentially creates a playlist-style listening experience based on seed artists, tracks and genres. I would have wanted to experiment with recommendations, basis the Top 50 artists and tracks, and see what insights could be gained from the same. 
+
+In essence, I believe the Spotify package has some amazing API functions, and I would have liked to deep-dive into that documentation to have a more well-rounded project. 
+
+## Conclusion
+
+This project revolved around the Spotify data of the Top 50 tracks from 4 countries, namely, India, USA, Brazil and France. I chose these 4 countries very intuitively on the basis of the music that I personally have heard from these 4 countries, and know them to be extremely varied. Through the course of this project, I discovered that certain musical similarities do exists between the  tracks from the different countries. 
+
+Our initial analysis involved looking at the danceability, energy, loudness, acousticness and speechiness of the tracks. We observed that Brazil has the highest number of danceable songs, which was backed by the density distribution plot, France has a high energy factor in their Top 50 tracks, which was confirmed by the energy distribution plot and that the Brazilian songs have higher decibel levels than songs from the other playlists (which was also supported by the loudness density plot).
+
+Further, our heatmap suggested that loudness and energy have a likely linear relationship, which we observed via the scatterplot. The heatmap also suggested an inverse relationship between acousticness and danceability. Both of these conclusions intuitively make sense, as higher decibel music typically requires a greater energy performance, thus inciting a similar response. Also, it is not typical to seek out soft, acoustic covers when one is looking for some numbers to dance on, which supplements the inverse relationship. 
+
+We also observed that popularity bears no significance on the danceability of a track. We also delved into the speechiness of a track, where we went with the assumption that any track having speechiness difference > 0.33 would typically be classified to be a rap song, and saw the representation of speechiness across the 4 playlists. We also looked at the musical key composition of all 4 playlists.
+
+Finally, we looked at the genres of the tracks present in these playlists, which required extensive coding. We saw that pop and dance pop were the most popular genres. 
+
+It must be noted that this data was relevant as of 16th December, 2022. Given the volatility of these charts, the above analysis stands good for the data as of above mentioned date. There is a possibility that the playlists have since seen changes in tracks, which could perhaps affect the results of this analysis. 
+
+## Bibliography 
+
+- https://cran.r-project.org/web/packages/tinyspotifyr/tinyspotifyr.pdf - The Spotifyr wrapper documentation
+- https://towardsdatascience.com/what-makes-a-song-likeable-dbfdb7abe404 - Audio features definitions
+- https://www.rcharlie.com/spotifyr/ - Spotifyr package usage website
+- https://plotly.com/r/ - Plotly R Open Sourcing Graphing Library
+
