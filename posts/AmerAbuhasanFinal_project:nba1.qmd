@@ -1,0 +1,435 @@
+---
+title: "Jayson Tatum: A Future Hall of Famer?"
+description: "predicting if Jayson tatum will have a Hall of Fame Career"
+author: "Amer Abuhasan"
+date: "`r Sys.Date()`"
+output: distill::distill_article
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(plyr)
+library(tidyverse)
+library(rvest)
+library(ggrepel)
+library(readr)
+library(RCurl)
+library(jpeg)
+library(readxl)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(knitr)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, paged.print=TRUE)
+```
+
+# Introduction
+
+The NBA is one of the most popular leagues in the world.It is filled
+with a massive amount of excitement, heart breaks and history. From
+coast to coast, fans across the world tune in game after game to watch
+their favorite teams and players perform. The sport draws many debates
+between fan bases and fan favorites. In the NBA there are hundreds of
+cemented legendary players to step foot on the parcel and dedicate their
+lives to the sport they love. Some of the Best players to be named are
+Lebron James and Wilt Chamberlain, who both are considered one of the
+best offensive players in the sports history. Today We see lots of young
+new superstars who are expected to be generational players.
+
+How do we compare these new generational players to those of the past?
+The NBA is a point based league, the more points you put up the better
+chances the player has to be ranked amongst the greats. For this
+research I decided to use one young generational player in Jayson
+Tatum(Boston Celtics), and two from two different past Generations in
+Lebron James(LA Lakers) and Wilt Chamberlain(retired). Lebron is
+considered the best of all time, while Chamberlain is considered one of
+the best offensive scoring players of all time. Since Jayson Tatum is in
+his fifth season, it is only fitting that I compare the first 5 seasons
+between all the players' offensive statistics.
+
+# Research Question
+
+The goal is to comprehend Jayson's Offensive stats and compare them to
+Lebron James and Chamberlain's in order to see if Jayson will have a
+Hall of Fame career. Since Lebron has not retired yet, I would like to
+compare him to Jayson Tatum since he is directly the generation before
+Tatum's. I will then Compare Jayson to Wilt which is a few generations
+in the past. Also choosing Wilt is a great comparison because Wilt
+scored the most points in the first 5 seasons than any other player.
+
+Can we find a trend that indicates that Jayson Tatum will be in the
+conversation with the greatest players of all time?
+
+# Data
+
+The website where the data was collected from (Basketball Statistics &
+History). Basketball reference was created in 2004, the company teamed
+up with stat reference.com and has thousands of statistics on players in
+most sports. The data used is accurate and is easy to download into csv
+files in order to import the data into R.
+
+# **Data Reading**
+
+```{r message=FALSE, paged.print=TRUE}
+library(readxl)
+Jayson_Tatum_career_stats <- read_excel("_data/Jayson_Tatum_career_stats.xlsx")
+kable(
+ 
+Jayson_Tatum_career_stats)
+
+#insert lebron James stats/skip line for correct columns 
+Lebron_james_stats <- read_excel("_data/Lebron_james_stats.xlsx",skip = 1)
+
+kable(
+Lebron_james_stats)
+
+```
+
+The table above is the original data for Jayson
+Tatum(Jayson_Tatum_career_stats) and lebron
+james(lebron_James_career_stats). The raw data has a lot of unnecessary
+statistics(Defensive).
+
+# **Trimming and data cleaning** 
+
+Since we are only looking at offensive stats, the only option was to
+trim the data and tidy it to columns we only need.
+
+The select(c() allowed for the ability to select the column names we
+needed, this offered a cleaner look at the offensive data for
+Jayson,James and Chamberlain. Renaming the Data frame to
+X_relevant_stats
+
+I created two different sub data sets for each of the 2 players to
+separate columns with percentages and columns with decimals as well. The
+two sub datasets for each player contain main statistics and the other
+include shooting statistics. The tables were labeled (x_Shooting_stats),
+(x_Main_stats).
+
+```{r message=FALSE, paged.print=TRUE}
+# make a list of stats we care about
+Relevant_stats=Jayson_Tatum_career_stats %>%
+  select(c("Season","Age","Tm","G","MP","FG","FGA", "PTS","2P","2P%","3P","3P%","FT","FT%","FG%","AST"))
+(kable(Relevant_stats))
+
+
+#Create 2 Sub Data sets by selecting stats type for Jayson Tatum 
+Shooting_stats<- Relevant_stats %>% select(c("Season","Tm","2P%","3P%","FT%","FG%"))
+(kable(Shooting_stats))
+
+Main_stats<-Relevant_stats %>% select(c("Season","Tm","MP","FG","FGA", "PTS","AST","G"))
+(kable(Main_stats))
+  
+# make a list of stats we care about for lebron james 
+Lebron_Relevant_stats=Lebron_james_stats %>%
+  select(c("Season","Age","Tm","MP", "G","FG","FGA","PTS","2P","2P%","3P","3P%","FT","FT%","FG%","AST"))
+
+
+
+(kable(Lebron_Relevant_stats))
+#Create 2 Sub Data sets by selecting Stats type for Lebron James 
+Lebron_Shooting_stats<- Lebron_Relevant_stats %>% select(c("Season","Tm","2P%","3P%","FT%","FG%"))
+(kable(Lebron_Shooting_stats))
+
+Lebron_Main_stats<-Lebron_Relevant_stats %>% select(c("Season","Tm","MP","FG","FGA", "PTS","AST", "G"))
+
+(kable(Lebron_Main_stats))
+```
+
+```{r message=FALSE, paged.print=TRUE}
+#allow for decimals to convert to percentages
+myfun <- function(x) {
+  if(is.numeric(x)){ 
+    ifelse(is.na(x), x, paste0(round(x*100L, 1))) 
+  } else x 
+}
+```
+
+The Column name "Year" was not included in the original data set, I
+included a code to rank by year because the players did not all start
+their NBA careers at the same time, the Column "Season" was not feasible
+to rank the players alongside each other. Thus, the reasoning for the
+code below, I mutate the data to add a new column "Year" with ranking
+from 1-5
+
+```{r message=FALSE, paged.print=TRUE}
+
+#make stats percentages 
+Shooting_stats<-Shooting_stats%>% mutate_each(funs(myfun))
+
+Lebron_Shooting_stats<-Lebron_Shooting_stats%>% mutate_each(funs(myfun))
+
+
+#Selecting first 5 years for lebron and Jayson Tatum 
+Shooting_stats<-head(Shooting_stats,5)%>%mutate(player_name="Jayson Tatum",Year=c(1:5))
+
+Main_stats<-head(Main_stats,5)%>%mutate(player_name="Jayson Tatum",Year=c(1:5))
+
+Lebron_Shooting_stats<-head(Lebron_Shooting_stats,5)%>% mutate(player_name="Lebron James",Year=c(1:5))
+
+Lebron_Main_stats<-head(Lebron_Main_stats,5)%>% mutate(player_name="Lebron James",Year=c(1:5))
+```
+
+# Connecting the data between Lebron and Jayson
+
+In order to compare the Two players and set them up for charts and
+graphing, I needed to merge the different data sets that were cleaned
+for the players. Instead of the merge function I used rbind(). rbind()
+can be used to bind or combine several vectors, or data frames by rows.
+
+It is easier to look at side by side and includes player names just
+incase the player switches teams, which in this case did not happen but
+will happen when we add Wilt Chamberlain
+
+```{r message=FALSE, paged.print=TRUE}
+
+#merge by using rbind to compare the different stats between the 2 players 
+Shooting_stats_comparision<-rbind(Shooting_stats,Lebron_Shooting_stats )
+
+Main_stats_comparision<- rbind(Main_stats,Lebron_Main_stats)
+```
+
+# **visualization**
+
+\<-Using the first code below allowed for the creation of a gg plot that
+shows FG% between years of Jayson and Lebron. The graph shows a clear
+visualization comparing Lebrons and Tatum's Shooting percentages. We can
+see that in Tatum's first year he had a very high shooting % meanwhile
+Lebron not so much. Lebron Continued to trend upwards while Tatum
+Trended Down.
+
+\<- The second line of code created another GG line plot but this time
+For PTS by year. If you pay attention, You can realize that something
+doesn't add up between FG% and points, Especially comparing each other's
+first season. Tatum had a higher FG% than Lebron and still had way fewer
+made PTS. I wanted to see what other variables may have contributed to
+this cause.
+
+```{r message=FALSE, paged.print=TRUE}
+#creeating a GG plot(line chart) for shooting stats using FG% between the two players 
+Shooting_stats_comparision %>%
+  ggplot( aes(x=Year, y=Shooting_stats_comparision$`FG%`, group=player_name,color=player_name)) +
+    geom_line() +
+    geom_point()
+
+#Creating GG plot(line chart) for main stats using PTS between the two players 
+Main_stats_comparision %>%
+  ggplot( aes(x=Year, y=PTS, group=player_name,color=player_name)) +
+    geom_line() +
+    geom_point()
+```
+
+# Creating theories 
+
+I decided to see playing time(MP) and decipher if this has a substantial
+effect on why Tatum is not scoring as much, despite the high FG%. The
+code below allows for a creation of a box plot.Box Plots are a great
+chart to use when showing the distribution of data points across a
+selected measure.
+
+The First plot indicates that Lebron James playing time is much Higher
+than Jayson Tatums, We can also see the median between the two for
+minutes played through the first 5 years.
+
+The second plot(Bar) builds a case clarifying that Playing more minutes
+actually does result in more points especially for Jayson Tatum since
+his playing minutes went up tremendously since his first year. Seeing
+this chart most definitely indicates that Lebron is scoring more points
+due to minutes, but I want to see what other variables allow for PTS to
+be higher due to MP. We can see in Year 4 that Jayson with less minutes
+played(not by much) had almost equivalent points.
+
+[**What comes from playing more minutes?**]{.underline}
+
+```{r message=FALSE, paged.print=TRUE}
+
+Main_stats_comparision%>%
+  ggplot( aes(x=factor(player_name), y=MP, fill=player_name)) +
+    geom_boxplot() +
+    ggtitle("MP comparision") +
+    xlab("")
+
+
+Main_stats_comparision %>%
+  ggplot( aes(x=MP, y=PTS,fill=player_name)) + 
+   geom_bar(stat = "identity") +
+  facet_wrap(~Year)
+
+
+```
+
+Since Tatums points went up with more playing time, we can make an
+assumption that something changed, lets test out some variables that
+contribute to points(PTS) and see if there is any corolation.
+
+# **Analyzing different variables**
+
+The two codes will graph us
+
+\<-A: FGA(field goal attempts) by MP
+
+\<-B : FGA with FG (field goal made). I attempted this to study the
+charts and analyze what the graphs are trying to say.
+
+```{r message=FALSE, paged.print=TRUE}
+
+#A
+Main_stats_comparision %>%
+  ggplot( aes(x=FGA, y=MP, group=player_name,color=player_name)) +
+    geom_line() +
+    geom_point()
+#B
+Main_stats_comparision %>%
+  ggplot( aes(x=FGA, y=FG, group=player_name,color=player_name)) +
+    geom_line() +
+    geom_point()
+
+```
+
+What are we seeing here?
+
+In graph A it is showing that the more MP the more FGA Jayson is taking.
+For lebron it is fair to say that his minutes are already so
+high(39-42.5MP) so his FGA are always high(about 18-24) shots per game.
+Hence there is only 60 minutes in a game.
+
+In graph B We can see that with more FGA the more FG that are made for
+Jayson Tatum, the same goes for Lebron, So I will conclude that Tatum
+needs more minutes in order to take more FGA and that raises the chance
+of FG made.
+
+# Adding third comparision
+
+Inserting Wilt to see if theory is not a fluke and to see trends. Now
+for the steps we did early on, we need to (1)Read excel (2)select(c)
+data we need from massive table (3)creating the two subdata shooting and
+main stats tables (4)mutating and creating column "Year" so we can
+compare them since they are in different generations. (5)Rbind all the
+sub data into one main data between all three players (6)create graphs
+and analyze trends with the third player.
+
+```{r message=FALSE, paged.print=TRUE}
+
+
+library(readxl)
+Wilt_chamb_stats <- read_excel("_data/Wilt_chamb_stats.xlsx")
+Wilt_chamb_stats
+kable(Wilt_chamb_stats)
+
+
+Wilt_Relevant_stats= Wilt_chamb_stats %>% 
+  select(c("Season","Age","Tm","G","MP","FG","FGA", "PTS","FT","FT%","FG%","AST"))
+
+
+kable(Wilt_Relevant_stats)
+
+#select stats type for Wilt
+Wilt_Shooting_stats<- Wilt_Relevant_stats %>% select(c("Season","Tm","FT%","FG%"))
+kable(Wilt_Shooting_stats)
+
+Wilt_Main_stats<-Wilt_Relevant_stats %>% select(c("Season","Tm","MP","FG","FGA", "PTS","AST","G"))
+kable(Wilt_Main_stats)
+#Making wilts stats into percentages 
+Wilt_Shooting_stats<-Wilt_Shooting_stats%>% mutate_each(funs(myfun))
+
+#Comparing them by year so number 1-5
+Wilt_Shooting_stats<-head(Wilt_Shooting_stats,5)%>%mutate(player_name="Wilt Chamberlain",Year=c(1:5))
+
+Wilt_Main_stats<-head(Wilt_Main_stats,5)%>%mutate(player_name="Wilt Chamberlain",Year=c(1:5))
+kable(Wilt_Main_stats)
+      
+kable(Wilt_Shooting_stats)
+
+
+
+Ultimate_Shooting_stats<-rbind.fill(Shooting_stats,Lebron_Shooting_stats,Wilt_Shooting_stats )
+
+Ultimate_Main_stats<- rbind.fill(Main_stats,Lebron_Main_stats,Wilt_Main_stats)
+kable(Ultimate_Main_stats)
+kable(Ultimate_Shooting_stats)
+
+```
+
+# Analyze trend
+
+Analyzing the graphs: we can see that that when including Wilt, since he
+is the #1 most scoring player in the first 5 seasons of any NBA
+career(statistical Fact), Wilts MP is super high and So is his points,
+Wilt was almost putting up a point per minute! Unreal stat. You can
+notice a trend with all 3 players that the more Minutes they play the
+more Points they score. Jayson Tatum as we talked about earlier is
+gaining more minutes per season which is causing him to score more
+points, Ultimatley pushing him the right direction.
+
+```{r message=FALSE, paged.print=TRUE}
+#comparing the 3 players PTS by Minutes played 
+Ultimate_Main_stats %>%
+  ggplot( aes(x=MP, y=PTS,fill=player_name)) + 
+   geom_bar(stat = "identity") +
+  facet_wrap(~Year)
+
+#comparing the 3 players PTS By Field goal attempts
+Ultimate_Main_stats %>%
+  ggplot( aes(x=FGA, y=PTS,fill=player_name)) + 
+   geom_bar(stat = "identity") +
+  facet_wrap(~Year)
+
+#comparing the 3 players FG made by Field Goal Attemts 
+Ultimate_Main_stats %>%
+  ggplot( aes(x=FGA, y=FG,fill=player_name)) + 
+   geom_bar(stat = "identity") +
+  facet_wrap(~Year)
+
+```
+
+# Conclusion
+
+For Tatum to be considered one of the greats, he needs to get more
+playing time, which his trajectory looks like he is trending in the
+correct direction. We now know that with more minutes played, comes more
+opportunities to shoot the ball and the more you shoot the ball the more
+you will make, obviously Tatums FG% is high as we noted earlier, He is
+looking like he is going to be a star in this league.
+
+[**Keeping up to date on Jaysons 6th and current ongoing
+season.**]{.underline}
+
+Tatum is in the middle of completing his 6th season, through 27 games so
+far he is averaging 36.7 MP, 9.8 FG made,21 FGA, FG% 0.468%, 29.7 PTS.
+All those stats are higher than the previous seasons, His team is
+currently first in the NBA and he is the front runner for the MVP(most
+valuable player) award thus far, according to (Kia MVP Ladder).
+
+# bibliography
+
+1-Basketball Statistics & History of every Team & NBA and WNBA players.
+Basketball. (n.d.). Retrieved December 14, 2022, from
+https://www.basketball-reference.com/
+
+2-Jayson Tatum stats, height, weight, position, draft status and more
+(no date) Basketball. Available at:
+https://www.basketball-reference.com/players/t/tatumja01.html.
+
+3-"Lebron James Stats, Height, Weight, Position, Draft Status and More."
+Basketball,
+https://www.basketball-reference.com/players/j/jamesle01.html.
+
+4- Wilt Chamberlain Stats, Height, Weight, Position, Draft Status and
+more. (n.d.). Basketball-Reference.com.
+https://www.basketball-reference.com/players/c/chambwi01.html
+
+5- R Core Team (2022). R: A language and environment for statistical
+computing. R Foundation for Statistical Computing, Vienna, Austria. URL
+https://www.R-project.org/.
+
+6- Wright, Michael C. \"Kia MVP Ladder: Giannis and Luka battle, Morant
+surges into Top 5.\" NBA.com, 9 December 2022,
+https://www.nba.com/news/kia-mvp-ladder-dec-9-2022-edition. Accessed 17
+December 2022.
