@@ -1,0 +1,129 @@
+---
+title: "Challenge 7"
+author: "Neeharika Karanam"
+description: "Visualizing Multiple Dimensions"
+date: "12/04/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - australian_marriage
+  - air_bnb
+  - eggs
+  - abc_poll
+  - faostat
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(ggforce)
+library(plotly)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded [chart ink (Tufte)](https://www.edwardtufte.com/tufte/), but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.
+   - Explain why you choose the specific graph type
+5) If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his [fantastic books](https://www.edwardtufte.com/tufte/books_vdqi) and [courses on data visualizaton.](https://www.edwardtufte.com/tufte/courses)
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+I have used the same dataset as that of Challenge 6 which is the Debt dataset.
+
+```{r}
+debt <- read_excel("_data/debt_in_trillions.xlsx")
+debt
+```
+
+### Briefly describe the data
+
+The above dataset is about the cumulative debt which is held by some of the nation citizens which are most likely in the US and the dataset consists of 6 rows and 8 columns which explains the different kinds of debts in different quarters Like the auto loan, credit card, student loan.
+
+## Tidy Data (as needed)
+
+The dataset has a combined column for year and quarter of the US and corresponds to the associated debt spread to all of its citizens for the period. Therefore, I am splitting the year and quarter field.
+
+```{r}
+split_quarter_year <-  debt %>%
+  separate(`Year and Quarter`,c('Year','Quarter'),sep = ":")
+
+split_quarter_year
+```
+
+Once I am done with splitting the column now I am going to pivot the data in order to filter by the debt type. I want to add a new column called the debt_type and debt_percentage and pivot the data. I expect the rows and columns to be 518 and 4 respectively.
+
+```{r}
+pivot_debt<- split_quarter_year%>%
+  pivot_longer(!c(Year,Quarter), names_to = "Debt_Type",values_to = "Debt_Percentage" )
+
+pivot_debt
+```
+
+## Visualization with Multiple Dimensions
+
+From my previous challenge 6 I would like to improve the exploratory analysis graphs to add more dimensionality and add also use the ggplot functionality. 
+
+Before I make changes I would like to first display the original graph.
+
+```{r}
+pivot_debt_plot <- pivot_debt%>%
+  ggplot(mapping=aes(x = Year, y = Debt_Percentage))
+
+
+pivot_debt_plot + 
+  geom_point(aes(color = Debt_Type))
+```
+
+The main objective of the above graph is to display the different debt types and how they are changed throughout the years. I did add a legend, axis and also color codes it feels like except the mortgages and total all of the other values have been lost.
+
+Therefore, I want to improve my chart by adding  a title and also provide more information of the other debt types.
+
+```{r}
+pivot_debt_plot + 
+  geom_point(aes(color = Debt_Type))+
+  labs(title = "Total National Debt of the Mortgages",subtitle="Student and Auto loan are the secondary category" ,caption = "From the dataset.")+
+  theme(legend.position = "bottom")+
+  facet_zoom(y = Debt_Type == !c("Mortgage","Total"),ylim = c(0,2))
+```
+
+The second chart I would like to improve from the third chart of the previous challenge 6. This graph doesn't show anything and without the help of the free scale on each of the axis it makes it very difficult to see the patterns. Therefore, I want to experiment with a lot of them and also give the chart a title as well so as to adjust the axis which will help understanding how the different types of debt flows throughout the year.
+
+```{r}
+pivot_debt_plot+
+  geom_point() +
+  facet_wrap(~Debt_Type) +
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+```
+
+```{r}
+pivot_debt_plot+
+  geom_point(aes(color = Quarter,alpha=0.9,)) +
+  facet_wrap(~Debt_Type,scales = "free_y") +
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))+
+  theme_light() +
+  guides(alpha="none") +
+  labs(title = "Debt Types per year" ,caption = "From the dataset.")
+```
