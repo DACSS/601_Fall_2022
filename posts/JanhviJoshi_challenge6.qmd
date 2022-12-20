@@ -1,0 +1,115 @@
+---
+title: "Challenge 6 "
+author: "Janhvi Joshi"
+description: "Visualizing Time and Relationships"
+date: "11/17/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - debt  ⭐
+  - fed_rate ⭐⭐
+  - abc_poll ⭐⭐⭐
+  - usa_hh ⭐⭐⭐
+  - hotel_bookings ⭐⭐⭐⭐
+  - AB_NYC ⭐⭐⭐⭐⭐
+
+  
+
+```{r}
+fed_data <- read_csv("_data/FedFundsRate.csv")
+fed_data
+summary(fed_data)
+```
+
+### Briefly describe the data
+This dataset contains information about federal fund rates from years 1954 to 2017. It includes the exact day, month and year of these rates along with these upper and lower target of the funds, unemployment rate, GDP, and inflation rate. 
+
+## Tidy Data (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+To tidy data, I am combining the day, month, year into one and formatting them for easier analysis.
+
+```{r}
+fed_data$Date <- as.Date(with(fed_data,paste(Day,Month,Year,sep="-")),"%d-%m-%Y")
+fed_data
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+Document your work here.
+
+## Time Dependent Visualization
+```{r}
+select(fed_data, c('Date','Unemployment Rate'))
+
+ggplot(fed_data, aes(x=Date, y=fed_data$`Unemployment Rate`)) + 
+  geom_line() + 
+  xlab("Date") + 
+  ylab("Unemployment Rate") + 
+  ggtitle("Date vs Unemployment Rate")
+```
+```{r}
+data_filled <- fed_data %>% fill(`Unemployment Rate`, .direction = 'updown')
+ggplot(data_filled, aes(x=Date, y=data_filled$`Unemployment Rate`)) + 
+  geom_line() + 
+  xlab("Date") + 
+  ylab("Effective Federal Funds Rate") + 
+  ggtitle("Date vs Effective Federal Funds Rate")
+```
+## Visualizing Part-Whole Relationships
+
+I am visualizing the rate of unemployment over the years from 2000 to 2017 for a less cluttered graph.
+
+```{r}
+data_filtered <- data_filled[data_filled$Year>1999,]
+head(data_filtered)
+data_filtered %>%
+  treemap(index=c("Year"), vSize="Unemployment Rate", title="Unemployment Rate Comparison, 2000-2017", palette="RdYlBu")
+```

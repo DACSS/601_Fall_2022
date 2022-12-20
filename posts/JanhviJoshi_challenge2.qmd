@@ -1,0 +1,104 @@
+---
+title: "Challenge 2"
+author: "Janhvi Joshi"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+
+hotel_bookings <- read_csv('_data/hotel_bookings.csv')
+hotel_bookings
+```
+This dataset is a summarising details of hotel bookings which includes data like arrival time, month, year, number of nights, number of adults, children and babies staying. Other interesting details includes whether the guest has previously booked or cancelled bookings at the hotel, hotel room type etc. 
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+This dataset summarises various details about a hotel booking and contains 120k records dating from year 2015 to 2017. It can be seen by the summary command and other analysis of data done below that there are two types of hotels in this dataset - Resort Hotel and City Hotel. Customers from around the world; around 160-170 countries, book these hotels. It can also be seen that on an average, around 37% of the bookings are cancelled and around 3% of the guests are repeated. On an average, customers may need to wait for 2.3 days in the waitlist to confirm a booking and around 57% of these bookings include some special requests. The hotels provide 4 different types of meals to their customers. This dataset is likely gathered from various online and offline channels - from where the booking was made.
+
+```{r}
+#| label: summary
+summary(hotel_bookings)
+```
+```{r}
+as_tibble(hotel_bookings)
+```
+```{r}
+colnames(hotel_bookings)[1] <- c("hotel")
+unique_hotel <- unique(bird$hotel)
+unique_hotel
+```
+
+```{r}
+colnames(hotel_bookings)[14] <- c("country")
+unique_country <- unique(bird$country)
+unique_country
+```
+```{r}
+nrow(hotel_bookings)
+colnames(hotel_bookings)[13] <- c("meal")
+unique_meals <- unique(bird$meal)
+unique_meals
+```
+```{r}
+colnames(hotel_bookings)[15] <- c("market_segment")
+unique_m <- unique(bird$market_segment)
+unique_m
+```
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+grouped_by_customer_type <- hotel_bookings %>%
+  group_by(customer_type)
+grouped_by_customer_type %>%
+  summarise(
+    avg_stays_in_week_nights = mean(stays_in_week_nights, nr.rm = TRUE),
+    avg_stays_in_weekend_nights = mean(stays_in_weekend_nights, nr.rm = TRUE), 
+    avg_days_in_waiting_list = mean(days_in_waiting_list, nr.rm=TRUE), 
+    avg_total_of_special_requests = mean(total_of_special_requests, nr.rm=TRUE)
+  )
+```
+
+### Explain and Interpret
+
+I chose to group by the type of customers booking the two hotels and found the average days these customers stayed in week and weekend nights, the number of days they had to wait for and their special requests. I chose this group and these values because I think this shows important insights of the trends and patterns of different groups of customers. This type of information can be useful for the hotels to provide better service and maybe tier based prices based on the type of customer. For example, the "Transient-Party" customer type typically stay the longest on the waiting list while they stay on weekend nights the least. But we can see that "Transient" customers stay more in weekend nights and still have the second highest average days in waiting list. The hotels could try to make a priority queue from their waiting list and prioritise "Transient" customers on weekend nights over "Transient-Party". This might lead to better customer service and satisfaction.

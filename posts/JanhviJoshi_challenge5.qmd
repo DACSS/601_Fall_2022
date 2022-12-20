@@ -1,0 +1,132 @@
+---
+title: "Challenge 5"
+author: "Janhvi Joshi"
+description: "Introduction to Visualization"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+  - railroads
+  - cereal
+  - air_bnb
+  - pathogen_cost
+  - australian_marriage
+  - public_schools
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least two univariate visualizations
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+5)  Create at least one bivariate visualization
+   - try to make them "publication" ready
+   - Explain why you choose the specific graph type
+
+[R Graph Gallery](https://r-graph-gallery.com/) is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code.
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+-   cereal.csv ⭐
+-   Total_cost_for_top_15_pathogens_2018.xlsx ⭐
+-   Australian Marriage ⭐⭐ 
+-   AB_NYC_2019.csv ⭐⭐⭐
+-   StateCounty2012.xls ⭐⭐⭐
+-   Public School Characteristics ⭐⭐⭐⭐ 
+-   USA Households ⭐⭐⭐⭐⭐
+
+```{r}
+NYC_data <- read_csv("_data/AB_NYC_2019.csv")
+NYC_data
+```
+
+### Briefly describe the data
+This dataset is about different AirBNB properties listed in the New York City, in year 2019 and includes around 49000 and 16 columns. It includes data about each property's host name, neighborhood and the neighborhood group, property type, price, and location. 
+
+
+
+## Tidy Data (as needed)
+
+There are a few columns with null values and I will be tidying data for those columns. I noticed that each row has a unique id which eliminates the possibility of having duplicate records and hence no tidying is needed in that respect.
+```{r}
+table(NYC_data$reviews_per_month)
+replace_na(NYC_data, list(reviews_per_month = 0))
+```
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+From looking at the dataset, it looks like the data is pretty clean for the analysis I plan on doing and does not need any mutating.
+Document your work here.
+
+```{r}
+unique(NYC_data$room_type)
+unique(NYC_data$neighbourhood_group)
+```
+I am interested in finding out how much on an average the bnb apartments cost in NYC and what neibhorhoods or locations are the most popular. 
+## Univariate Visualizations
+
+```{r}
+NYC_data %>%
+  dplyr::count(neighbourhood_group) %>%
+  ggplot(aes(x = neighbourhood_group, y = n, fill = neighbourhood_group)) +
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label = n), vjust = -0.5) +
+  labs(title="Total Bookings vs Neighborhood Groups", x="Neighborhood Groups", y="Total Booking Count", fill="Neighborhoods")
+
+NYC_data %>%
+  ggplot(aes(x=price)) + 
+  geom_histogram() + 
+  xlim(0, 1500) + 
+  xlab("Price ($)") + 
+  ylab("Number of properties") + 
+  ggtitle("Histogram of property price distribution in dataset")
+
+NYC_data %>%
+  ggplot(aes(x=minimum_nights)) + 
+  geom_histogram() + 
+  xlim(0, 45) + 
+  xlab("Minimum Nights") + 
+  ylab("Number of properties") + 
+  ggtitle("Histogram of minimum nights stayed distribution in dataset")
+```
+From the visualizations, it can be seen that the most famous neighborhood groups are Manhattan, Brooklyn and then Queens. From the histogram about number of properties vs price, we can see that the price of most properties is less than $500. The second histogram about number of properties vs minimum nights stayed, we can see that mostly people like to stay between 1 to 10 nights, however, quite a large number of guests also book airBNBs for 30 nights.
+
+## Bivariate Visualization(s)
+```{r}
+ggplot(NYC_data) + 
+  geom_point(mapping = aes(x = minimum_nights, y = price)) + 
+  labs(x = "Minimum Nights",
+       y = "Price ($)",
+       title = "Price vs Minimum Nights Stayed")
+
+ggplot(NYC_data) +
+  geom_bar(aes(x = room_type, fill=neighbourhood_group)) + 
+  labs(x = "Type of room", y = "Number of Airbnbs", title = "Number of Airbnbs vs  Room Type",
+       fill = "Neighbourhood Group")
+```
+From the bivariate visualizations, we can see the relation between prices and the minimum nights stayed and also the type of rooms that are booked within different neighborhood groups.
