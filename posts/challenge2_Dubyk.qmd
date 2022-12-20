@@ -1,0 +1,96 @@
+---
+title: "Challenge 2"
+author: "Mariia Dubyk"
+desription: "Data wrangling: using group() and summarise()"
+date: "10/05/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroads
+  - faostat
+  - hotel_bookings
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in the Data
+
+
+```{r}
+birds<-read_csv("_data/birds.csv")
+```
+
+```{r}
+#| label: summary
+rename(birds,Domain.Code=п.їDomain.Code)
+birds <- birds [,c("Domain", "Area", "Element", "Item", "Year", "Unit", "Value", "Flag", "Flag.Description")]
+summary(birds)
+library(summarytools)
+print(dfSummary(birds))
+view(dfSummary(birds))
+arrange(birds, desc(Value))
+     
+```
+## Describe the data
+
+Data set gives information about number of stocks of 5 types of birds (Chickens; Ducks; Geese and guinea fowls; Pigeons, other birds; Turkeys). We have information about their existence and the quantity in different geographic areas (countries, continents, world) from 1961 to 2018. The data set contains 30977 rows, so we have 30977 cases. Each case contains the name of an animal ('Item'), geographic region ('Area') and year ('Year'). Columns 'Unit' and 'Value' give information about the number of certain type of birds. 'Unit' is 1000 heads and 'Value' contains numbers from 0 (min) to 23707134 (max, refers to world). We also observe columns ‘Flag’ and ‘Flag. Description’ which probably refer to data source or the way data was gathered.
+
+
+```{r}
+birds<-birds%>%
+  filter(Flag == c("M", "Im", "F","*", "(Empty string)"))%>%
+  filter(Item == 'Chickens')
+
+birds%>%
+  group_by(Year)%>%
+  select("Value")%>%
+  summarise(Median = median (Value, na.rm = TRUE), Mean = mean (Value, na.rm = TRUE), SD = sd (Value, na.rm = TRUE), Min = min (Value, na.rm = TRUE), Max = max (Value, na.rm = TRUE))
+
+```
+```{r}
+birds%>%
+  group_by(Year)%>%
+  select("Value")%>%
+  summarise(Quantile = quantile (Value, na.rm = TRUE))
+```
+
+```{r}
+birds%>%
+  group_by(Area)%>%
+  summarise(Median = median(Value, na.rm = TRUE), Mean = mean(Value, na.rm = TRUE), SD = sd (Value, na.rm = TRUE), Min = min (Value, na.rm = TRUE), Max = max (Value, na.rm = TRUE))
+
+```
+```{r}
+birds%>%
+  group_by(Area)%>%
+  select("Value")%>%
+  summarise(Quantile = quantile (Value, na.rm = TRUE))
+
+```
+## Provide Grouped Summary Statistics
+
+ - First, I filtered data to look at number of Chickens in different areas from 1961 to 2018.
+ - I also removed continents to have only countries.
+ - I organized data in two groups (By year and by area).
+
+First group organized by year. In the first table we can observe mean, median, sd, max, min of number of chicken stocks in each year. Quantile presented in the second table. In the third and fourth table, there are central tendency and dispersion for data grouped by area.
+
+### Explain and Interpret
+
+Summary statistics for the first group gives information on how the central tendency changed during observed years. We have only one type of birds, so we do not compare different birds, but look at how the number of stocks of chickens changed. Summary for the second group shows how central tendency and dispersion differs among countries.
+
+
+
