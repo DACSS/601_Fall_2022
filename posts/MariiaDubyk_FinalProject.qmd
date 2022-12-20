@@ -1,0 +1,523 @@
+---
+title: "Final Project"
+author: "Mariia Dubyk"
+desription: "Protest event analysis in 7 EU cointries"
+date: "12/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - final project
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(rmarkdown)
+library(viridis)
+library(summarytools)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+Political violence and its causes is a broad topic in sociology, political science, social psychology, etc. A lot of research papers on protests, social movements and radicalization are based on qualitative data analysis (storytelling, qualitative interviews, content analysis) with a focus on organizations, ideology, group interaction, etc. Armed Conflict Location & Event Data Project (ACLED) gathers political violence events all over the world into a database. This approach focuses not on specific ideology or organization but on changes of a number of different types of events (protests, riots, battles, etc.) It gives the opportunity to monitor radicalization dynamics in different regions and specific countries. 
+
+It is important to note that there is a discussion on which factors play role in protests and radicalization. Is that economic reasons, ideology, group dynamics, or specifics of the regime type (democracy vs authoritarian)? I chose data related to 7 European Union countries with similar populations for 2020-2021. These countries are all liberal democracies, members of the EU and have christian religious tradition. But they have economic differences. Some countries like Sweden, Belgium, and Austria have higher GDP per capita than Greece, Hungary, Portugal.
+
+My research questions are
+
+- if there are some differences in protest types and numbers between more and less rich countries
+
+- did the economic crisis related to covid19 change the level of protest and radicalization
+
+I understand that economic differences are relatively small because all countries are progressive high-income countries. However, we can look if there may be some trend in protest dynamics related specifically to more and less rich European countries.
+
+## Data reading and description
+The dataset was downloaded from Armed Conflict Location & Event Data Project (ACLED), https://acleddata.com/. On the website I chose 7 countries:
+
+1. Sweden
+
+2. Belgium
+
+3. Austria
+
+4. Greece
+
+5. Hungary
+
+6. Portugal
+
+7. Czech Republic
+
+Data includes years from 2020-2022. I could not include 2019 because data have been gathered from 2020 only. 
+
+```{r}
+protest_original <- read_csv("_data/protests eu.csv")
+paged_table(protest_original)
+```
+
+The dataset includes 11601 cases. Each case is an event (protest, riot, or other action related to political violence). Variables show when and where it happened and who participated (participant group is called actor). For the analysis, I will remove variables that include descriptive qualitative information. Also, I will delete variables with some numerical and categorical identifiers which I do not need for exploration.
+
+```{r}
+protest_selected <- select(protest_original, "data_id",
+                           "event_date", "year", "event_type",
+                           "sub_event_type", "inter1", "inter2",
+                           "interaction",
+                           "country",
+                           "admin1",
+                           "location",
+                           "latitude",
+                           "longitude",
+                           "source_scale",
+                           "fatalities")
+print(
+  dfSummary(protest_selected, 
+            varnumbers   = FALSE,
+            na.col       = FALSE,
+            style        = "multiline",
+            plain.ascii  = FALSE,
+            headings     = FALSE,
+            graph.magnif = .8),
+  method = "render"
+)
+```
+
+Now dataset includes 15 variables and 11601 cases. Variables are categorical.
+
+- First column is data id.
+
+- Column 2-3 show event date and year.
+
+- Variables "country", "admin1", "location", "longitude" and "latitude" contain information about which country, its division and its city or town the event took place (column 9-13).
+
+- "Inter1" and "inter2" contain information about actor who participated. Inter1 is the main group, the one that initiated an event. Inter2 is another group which participated, usually opposing like police or opposing organization. Variable "interaction" shows combination of two groups (column 6-8).
+
+- "Event_type" gives general information about what happened. Was is protest or riot, or battle? It has relatively small number of categories (5 categories). Each category has subcategories which are presented in "sub_event_type" (11 categories) (column 4-5).
+
+- Column 14 shows scale of source where news about event were published. 
+
+- Data in column 15 is numerical and shows number of fatalities during an event.
+
+## Preparing data
+First of all I am going to mutate data in inter1, inter2 and interaction due to the codebook. I will also rename two into actor1 and actor2. We will see categorical data which shows two parts participating in event and their interaction. I will also change dates so that I have full date in one column and month+year in another to group data by month if needed. 
+
+Also I will reorder variables so that bar charts or other visualization look better. Last but not least I will include some categories in variable "source scale" into one category. I will leave main categories that are mentioned in the codebook.
+
+If any other mutation or grouping will be needed they will be included i
+
+```{r}
+# Change variables due to the codebook
+protest <- protest_selected %>%
+  mutate(inter1 = case_when(
+         inter1 == 1 ~ "State Forces",
+         inter1 == 2 ~ "Rebel Groups",
+         inter1 == 3 ~ "Political Militas",
+         inter1 == 4 ~ "Identity Militas",
+         inter1 == 5 ~ "Rioters",
+         inter1 == 6 ~ "Protesters",
+         inter1 == 8 ~ "External/Other Forces"))
+protest <- protest %>%
+  mutate(inter2 = case_when(
+         inter2 == 1 ~ "State Forces",
+         inter2 == 3 ~ "Political Militas",
+         inter2 == 5 ~ "Rioters",
+         inter2 == 6 ~ "Protesters",
+         inter2 == 7 ~ "Civilians",
+         inter2 == 8 ~ "External/Other Forces",
+         inter2 == 0 ~ "No actor"))
+protest <- protest %>%
+  mutate(interaction = case_when(interaction == 10 ~ "sole military action",
+         interaction == 13 ~ "military vs political militia",
+         interaction == 15 ~ "military vs rioters",
+         interaction == 16 ~ "military vs protesters",
+         interaction == 17 ~ "military vs civilians",
+         interaction == 18 ~ "military vs other",
+         interaction == 27 ~ "rebels vs civilians",
+         interaction == 30 ~ "sole political militia action",
+         interaction == 33 ~ "political militia vs political militia",
+         interaction == 36 ~ "political militia vs protesters",
+         interaction == 37 ~ "political militia vs civilians",
+         interaction == 47 ~ "communal militia vs civilians",
+         interaction == 50 ~ "sole rioter action",
+         interaction == 55 ~ "rioters vs rioters",
+         interaction == 56 ~ "rioters vs protesters",
+         interaction == 57 ~ "rioters vs civilians",
+         interaction == 58 ~ "rioters vs others",
+         interaction == 60 ~ "sole protester action",
+         interaction == 66 ~ "protesters vs protesters",
+         interaction == 68 ~ "protesters vs other",
+         interaction == 78 ~ "other actor vs civilians",
+         interaction == 88 ~ "sole other action"))
+
+# Rename
+protest <- protest %>%
+  rename("actor1" = "inter1", "actor2" = "inter2", "admin" = "admin1")
+
+# Change dates 
+protest <- protest %>%
+  separate(col=event_date, into=c("day", "month", "y"), sep=" ", remove = FALSE)
+protest <- select(protest, !contains("day"))
+protest <- protest %>%
+  unite("m_y", month, y, remove = TRUE)
+protest$m_y <- str_replace(protest$m_y, "_", " ")
+protest <- protest %>%
+  mutate(event_date=str_replace_all(event_date, c(" December " = "-12-",
+                                                  " November " = "-11-")))
+protest <- protest %>%
+  mutate(event_date=str_replace_all(event_date, c(" October " = "-10-",
+                                                  " September " = "-09-",
+                                                  " August " = "-08-",
+                                                  " July " = "-07-",
+                                                  " June " = "-06-",
+                                                  " May " = "-05-",
+                                                  " April " = "-04-",
+                                                  " March " = "-03-",
+                                                  " February " = "-02-",
+                                                  " January " = "-01-")))
+
+# Reorder variables
+protest <- protest %>%
+  mutate(event_type = fct_relevel(event_type, "Protests",
+                                  "Riots",
+                                  "Violence against civilians",
+                                  "Explosions/Remote violence",
+                                  "Battles"))
+
+protest <- protest %>%
+  mutate(sub_event_type = fct_relevel(sub_event_type, "Peaceful protest",
+                                      "Protest with intervention",
+                                      "Violent demonstration",
+                                      "Mob violence",
+                                      "Attack",
+                                      "Remote explosive/landmine/IED",
+                                      "Armed clash",
+                                      "Excessive force against protesters",
+                                      "Sexual violence",
+                                      "Abduction/forced disappearance",
+                                      "Grenade"))
+protest <- protest %>%
+  mutate(actor1 = fct_relevel(actor1, "Protesters",
+                              "Rioters",
+                              "Political Militas",
+                              "State Forces",
+                              "External/Other Forces",
+                              "Identity Militas"))
+protest <- protest %>%
+   mutate(actor2_type = fct_relevel(actor2, "No actor",
+                                    "State Forces",
+                                    "Civilians",
+                                    "Protesters",
+                                    "Rioters",
+                                    "External/Other Forces",
+                                    "Political Militas"))
+protest <- protest %>%
+  mutate(country = fct_relevel(country, "Sweden",
+                               "Greece",
+                               "Belgium",
+                               "Portugal",
+                               "Austria",
+                               "Czech Republic",
+                               "Hungary"))
+
+# Recode source scale and relevel
+protest <- protest %>%
+  mutate(source_scale = case_when(source_scale == "National-Regional" ~ "Mixed other",
+         source_scale == "New media-National" ~ "Mixed other",
+         source_scale == "Other-New media" ~ "Mixed other",
+         source_scale == "Regional-International" ~ "Mixed other",
+         source_scale == "New media-Regional" ~ "Mixed other",
+         source_scale == "Other-International" ~ "Mixed other",
+         source_scale == "Other-Subnational" ~ "Mixed other",
+         source_scale == "New media-International" ~ "Mixed other",
+         source_scale == "New media-Subnational" ~ "Mixed other",
+         source_scale == "Subnational-International" ~ "Mixed other",
+         source_scale == "National" ~ "National",
+         source_scale == "Other" ~ "Other",
+         source_scale == "Subnational" ~ "Subnational",
+         source_scale == "New media" ~ "New media",
+         source_scale == "Regional" ~ "Regional",
+         source_scale == "Other-National" ~ "Other-National",
+         source_scale == "International" ~ "International",
+         source_scale == "National-International" ~ "National-International",
+         source_scale == "Subnational-National" ~ "Subnational-National"))
+
+protest <- protest %>%
+  mutate(source_scale = fct_relevel(source_scale, "National",
+                                    "Other", "Subnational",
+                                    "New media",
+                                    "Subnational-National",
+                                    "Mixed other",
+                                    "Other-National",
+                                    "National-International",
+                                    "International"))
+
+```
+
+## Overview of event types in all countries together
+Before we start comparing countries, we should look at general trend for all countries together to know what we speak about when we say protest and radicalization in EU countries. The vast majority of events are protests (93.5% of all events). Riots which include some level of violence like vandalism or making barricades constitute for 5.1% of events. The other three types of more violent events are 1,3% together. It means that the region is politically stable as expected. 
+```{r}
+ggplot(protest, aes(event_type)) + 
+  geom_bar(fill="#440154ff") + 
+  xlab("Event type") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Event type in 7 EU countries 2020-2022") + 
+  labs (fill = "Event type") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 7))
+
+```
+Next graph shows that most protest are peaceful. Rots are both "mob violence" (group against group) and "violent demonstration" (group against property).
+
+```{r}
+ggplot(protest, aes(y="", x=event_type, fill = sub_event_type)) +
+  geom_bar(position="fill", stat="identity") + 
+  coord_flip() + 
+  xlab("Event type") + 
+  ylab ("") + theme_bw() + 
+  scale_fill_viridis(discrete = T) + 
+  ggtitle ("Proportion of sub event type in five event types") + 
+  labs (fill = "Sub event type") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+Next chart shows that peaceful protest are most frequent (90,4%). Next goes protest with intervention, when protesters where stopped by police or other group (3,1%). On third and fourth places are violent demonstration (2,8%) and mob violence (2,4%). In general protests are not violent, police usually do not intervene political activists meetings and the region shows political stability.
+
+```{r}
+ggplot(protest, aes(sub_event_type)) + 
+  geom_bar(fill="#440154ff") + 
+  coord_flip() + 
+  xlab("Sub event type") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Sub event type in 7 EU countries 2020-2022") + 
+  labs (fill = "Sub event type") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 7))
+
+```
+## Comparing more and less rich countries
+The graph shows that Sweden has the largest number of protests. However, it belongs to countries with higher GDP per capita. Czech Republic and Hungary are less rich countries but have the lowest number of protests. It basically answers the research question. Economic situation in EU countries today does not play a visible role in protest and radicalization. This conclusion refers only to European countries.
+```{r}
+ggplot(protest, aes(country, fill = event_type)) + 
+  geom_bar() + 
+  xlab("Country") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Event type by country 2020-2022") + 
+  labs (fill = "Event type") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 7)) + scale_fill_viridis(discrete = T)
+```
+For the next graph I selected only 4 most frequent sub event types. The idea is to look if some specific sub event type is more common in certain countries. Again we see that in Sweden, Belgium, and Austria there are more events with radicalization like violent demonstration or mob violence than in Portugal, Czech Rebublic and Hungary that have lower GDP per capita. 
+
+Greece has the biggest number of violent events. GDP per capita of Greece is close to GDP per capita of Hungary. It is worth noting that protest with intervention in Greece is relatively the same as in other countries. So we may conclude that peaceful protesters can engage in political activism. But the number of violent events should probably be explored closer.
+
+```{r}
+myplot<-ggplot(protest, aes(country, fill = sub_event_type)) + 
+  geom_bar() + 
+  scale_fill_viridis(discrete = T) + 
+  xlab("Country") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Four frequent sub event types by country") + labs (fill = "Sub event type") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 7))
+myplot %+% subset(protest, sub_event_type %in% c("Peaceful protest",
+                                                 "Protest with intervention",
+                                                 "Violent demonstration",
+                                                 "Mob violence"))
+```
+The next charts are aimed to show if there is a difference between protest locations among countries. It might be that in some countries events are more concentrated in the capital city while other divisions have low number of protests. In our case, all countries have protests all over the country, with a concentration in the capital city. We can mention that Belgium events are more equally distributed than Hungary events. It may be interesting to look closer at the distribution of events in the future and check if it is related to the urbanization level or economy.
+```{r}
+library(magrittr)
+library(maps)
+library(mapproj)
+
+Sweden_protest <- subset(protest, country %in% c("Sweden"))
+World <- map_data("world")
+Sweden <- map_data("world") %>% filter(region=="Sweden")
+ 
+ggplot() + 
+  geom_polygon(data = Sweden, aes(x=long, y = lat, group = group),
+               fill="#B0E2FF", alpha=0.7) +
+  geom_point( data=Sweden_protest, aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) +
+  theme_minimal() +
+  ggtitle("Sweden events 2020-2021") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.text = element_blank(), 
+        axis.title = element_blank())
+
+```
+
+```{r}
+Belgium_protest <- subset(protest, country %in% c("Belgium"))
+Belgium <- map_data("world") %>% filter(region=="Belgium")
+ggplot() + 
+  geom_polygon(data = Belgium, aes(x=long, y = lat, group = group),
+               fill="#B0E2FF", alpha=0.7) +
+  geom_point( data=Belgium_protest, aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) +
+  ggtitle("Belgium events 2020-2021") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.text = element_blank(), 
+        axis.title = element_blank())
+
+```
+
+
+```{r}
+Austria_protest <- subset(protest, country %in% c("Austria"))
+Austria <- map_data("world") %>% filter(region=="Austria")
+ggplot() + 
+  geom_polygon(data = Austria, aes(x=long, y = lat, group = group),
+               fill="#B0E2FF", alpha=0.7) +
+  geom_point( data=Austria_protest, aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) +
+  ggtitle("Austria events 2020-2021") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.text = element_blank(), 
+        axis.title = element_blank())
+```
+```{r}
+Portugal_protest <- subset(protest, country %in% c("Portugal"))
+Portugal <- map_data("world") %>% filter(region=="Portugal")
+ggplot() + 
+  geom_polygon(data = Portugal, aes(x=long, y = lat, group = group),
+               fill="#FFB6C1", alpha=0.7) +
+  geom_point( data=Portugal_protest, aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) +
+  ggtitle("Portugal events 2020-2021") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank())
+```
+```{r}
+Hungary_protest <- subset(protest, country %in% c("Hungary"))
+Hungary <- map_data("world") %>% filter(region=="Hungary")
+ggplot() + 
+  geom_polygon(data = Hungary, aes(x=long, y = lat, group = group),
+               fill="#FFB6C1", alpha=0.7) +
+  geom_point( data=Hungary_protest, aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) +
+  ggtitle("Hungary events 2020-2021") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank())
+```
+
+
+```{r}
+Greece_protest <- subset(protest, country %in% c("Greece"))
+Greece <- map_data("world") %>% filter(region=="Greece")
+
+ggplot() + 
+  geom_polygon(data = Greece, aes(x=long, y = lat, group = group),
+               fill="#FFB6C1", alpha=0.7) +
+  geom_point( data=Greece_protest,
+              aes(x=longitude, y=latitude),
+              color="#404788FF",  alpha=1) + 
+  ggtitle("Greece events 2020-2022") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = 'none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank())
+```
+
+## Protest and COVID19 crisis
+The next chart compares number of protest during three years. We do not see the difference between years an protest types.
+
+```{r}
+ggplot(protest, aes(year, fill=event_type)) + geom_bar() + 
+  xlab("Year") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Changes in number of event types 2020-2022") + 
+  labs (fill = "Event type") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 10)) + 
+  scale_fill_viridis(discrete = T)
+
+```
+Unfortunately, there is no data for 2019 year so I decided to compare number of protests in 2 months before the pandemic (Jan, Feb 2020) and the same month in 2021 and 2022 to see if number of events changed as a response to the crisis. No difference was found, as we can see in the next graph. 
+
+```{r}
+protest_grouped <- protest %>%
+  add_column(value = 1)
+protest_grouped$value <- as.numeric(protest_grouped$value) 
+protest_grouped <- protest_grouped %>%
+  group_by(m_y) %>%
+  select(value) %>%
+  summarise_all(sum, na.rm = TRUE)
+protest_grouped <- protest_grouped %>%
+  separate(col=m_y, into=c("Month", "Year"), sep=" ", remove = FALSE)
+
+
+myplot<-ggplot(protest_grouped, aes(x=Month, y=value, fill=Year)) + geom_bar(position="dodge", stat="identity") + 
+  xlab("Month") + 
+  ylab ("Number of events") + 
+  theme_bw() + 
+  ggtitle ("Events in January, February 2020-2022") + 
+  labs (fill = "Year") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text = element_text(size = 7)) + 
+  scale_fill_viridis(discrete = T)
+myplot %+% subset(protest_grouped, Month %in% c("January", "February"))
+
+```
+
+## Reflection
+
+I am glad that I had the opportunity to work with protest data. It gave me some ideas of how to think about political violence research another way. Using these large datasets, I can quickly see trends and percentages of different events among countries. I can look not at violent ideology in some countries but at the number of violent events and understand the level of radicalization. 
+
+The most challenging for me was having doubts about completely changing data to have numerical data. In this dataset, we have categorical data so it is nice to look at percentages and create bar charts, etc. I was thinking if I should change the data so that month, event type and country would be cases. This way I would have values for each case. I still decided to leave the data as it is gathered and change piece of it for last visualization. In the future, I should practice more with ways to quickly organize datasets for my purpose.
+
+Speaking about the research idea I was also concerned about sample size and simplification of the exploration I did. My research is just a first glance and playing with data to find some assumptions about the economy and the number of protests. 
+
+## Conclusion
+
+- First of all I did not find any patterns for event number, event type and sub event type related to economic differences between countries. Rich EU countries may have the much higher number of protests than countries with lower GDP.
+
+- EU countries show political stability and low level of radicalization. Greece has higher level of political violence than other analyzed EU countries. It is related not to behavior of state forces but to repertories that protesters use. It would be reasonable to look closer at Greece case in the future.
+
+- Protests usually are distributed along the countries (not including geographical specifics). Events are concentrated in capital cities. In some countries (like Belgium) protests are more scattered along the country than in others (Hungary).
+
+- The number of events in January and February 2022 did not increase compared to the same months before COVID19 pandemic. It also implies the idea that other factors play a more visible role in political protest than the economy.
+
+## Bibliography
+1. ACLED. (2019). “Armed Conflict Location & Event Data Project (ACLED) Codebook, 2019.”
+2. Armed Conflict Location & Event Data Project (ACLED); www.acleddata.com.
+3. R Core Team (2021). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+4. Wickham, H., & Grolemund, G. (2016). R for data science: Visualize, model, transform, tidy, and import data. OReilly Media.
+
