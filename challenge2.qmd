@@ -1,0 +1,86 @@
+---
+title: "Challenge 2"
+author: "Emily Duryea"
+desription: "Data wrangling: using group() and summarise()"
+date: "11/25/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_2
+  - railroad
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to
+
+1)  read in a data set, and describe the data using both words and any supporting information (e.g., tables, etc)
+2)  provide summary statistics for different interesting groups within the data, and interpret those statistics
+
+## Read in the Data
+
+Read in one (or more) of the following data sets, available in the `posts/_data` folder, using the correct R package and command.
+
+-   railroad\*.csv or StateCounty2012.xls ⭐
+-   FAOstat\*.csv or birds.csv ⭐⭐⭐
+-   hotel_bookings.csv ⭐⭐⭐⭐
+
+```{r}
+# Importing the data file
+library(readr)
+railroad <- read_csv("_data/railroad_2012_clean_county.csv")
+View(railroad)
+```
+
+Add any comments or documentation as needed. More challenging data may require additional code chunks and documentation.
+
+## Describe the data
+
+Using a combination of words and results of R commands, can you provide a high level description of the data? Describe as efficiently as possible where/how the data was (likely) gathered, indicate the cases and variables (both the interpretation and any details you deem useful to the reader to fully understand your chosen data).
+
+```{r}
+#| label: summary
+summary(railroad)
+dim(railroad)
+str(railroad)
+mean(railroad$total_employees)
+min(railroad$total_employees)
+max(railroad$total_employees)
+median(railroad$total_employees)
+count(railroad, state)
+count(railroad, county)
+```
+
+This dataset includes 2,930 rows, with 3 columns. It contains data from 53 states & territories and 1,709. The mean number of employees at each of these railroads in this dataset was 87.17816. The minimum number of employees at any railroad in this data set is 1, and the max is 8,207. The median is 21. These results suggest that there are some major outliers that have increased the mean, since the median is much lower than the mean, and the maximum is an extremely large value. This maximum is located in Cook County, Illinois. 
+
+## Provide Grouped Summary Statistics
+
+Conduct some exploratory data analysis, using dplyr commands such as `group_by()`, `select()`, `filter()`, and `summarise()`. Find the central tendency (mean, median, mode) and dispersion (standard deviation, mix/max/quantile) for different subgroups within the data set.
+
+```{r}
+# Finding the central tendency for total employees by state
+railroad %>%
+  select(state, total_employees)%>%
+  group_by(state) %>%
+  summarize(mean(total_employees), median(total_employees), sd(total_employees))
+```
+
+### Explain and Interpret
+
+Be sure to explain why you choose a specific group. Comment on the interpretation of any interesting differences between groups that you uncover. This section can be integrated with the exploratory data analysis, just be sure it is included.
+
+I chose to examine the central tendency of the total number of employees at railroad countries by state. I was curious to see how states varied by total employees. There appears to be a higher average by states with higher populations. For example, California, which has a high population has an average of 238 employees, while a state like Maine, with a lower population, has an average of 40 employees. It would be interesting to see if this hypothesis would be correct in further analyses. 
