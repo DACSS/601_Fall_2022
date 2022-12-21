@@ -1,0 +1,633 @@
+---
+title: "Saisrinivas_Ambatipudi_Final_Project -  Analysis of Cryptocurrency Data"
+author: "Saisrinivas Ambatipudi"
+output: html_document
+date: "2022-12-20"
+---
+## Introduction
+
+Cryptocurrencies, the word makes people curious about what it is, why is so important, what kind of role does it play in the society. But cryptocurrencies are nothing but money which stored in digital format and it is designed to be an exchange medium whose records are saved on that digital format on something called the blockchain and smart contracts. But we can talk about blockchain and smart contracts in a different topic altogether.
+
+The term cryptocurrencies first came to be in the early 2010's as a form of digital assets and has now caused an economic boom where people who had invested back in the day are present day billionaires now.
+
+These digital assets are the talk of the town and this project we will find out how cryto currencies started out and developed in prices and market capitalization.
+
+The dataset was extracted from Kaggle.
+
+## About the Dataset
+
+In this project we have a data set about with about 20 different crytpo currencies including bitcoin, ethereum, solana, tether, etc., and it has the following features as well:
+
+1.Currency
+2.Date
+3.Open (Opening Price)
+4.High (Highest price of the crypto that day)
+5.Low (Lowest price of the crypto that day)
+6.Close (Closing Price)
+7.Volume (Total Volume of coins traded by day)
+8.Market Cap (Total Market Value of the coin by day)
+
+## My research question:
+
+In this project we want to vizualize the 23 different crypto-currenices in a time series, where we can see the respective crypto-currency along with its open, close, high and low prices and values based on the dates.   
+
+And we will also compare Bitcoin with tether in terms of prices and volume and find out:
+- which coin dominated in which years in terms of market capitalization.
+- the different prices of the cryptocurrencies from the years 2017 to 2021 because thats when these digital assets became a super hit.
+- Why Bitcoin's volume decreased during 2020-2021 while tether's volume kept increasing?
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quantmod) ## mostly used for quantitative trading and developing statistical models
+library(gridExtra) ## helps with higher functions on grid models
+library(ggplot2) 
+library(Hmisc) ## mostly used for higher level graphics and utility operations
+library(plotly) ## to make interactive, publication-quality graphs
+library(ggplotlyExtra)
+library(tidyverse)
+library(tidyquant)
+library(timetk)
+library(xts)
+library(reshape2)
+```
+
+## The full Dataset
+```{r}
+crypto <- read_csv("D:/UMass/Sem 1/DACSS601/601_Fall_2022/posts/_data/crypto_maa2.csv")
+crypto
+```
+## Summary of the Crypto Dataset
+
+Here we get the summary of the data set where we can check the full features of each and every column.
+
+We can see that the highest price any cryptocurrency has is 64863.10 and the lowest is 62208.96.
+
+And the highest market cap is 1186360000000. Which is $1,186,360,000,000. That is a huge amount of money. This value would most likely be for bitcoin as its has the highest value in the market till date.
+```{r}
+crypto$Date = as.Date(crypto$Date, format = "%d/%m/%Y")
+crypto$Open = as.numeric(gsub(pattern = ',','',crypto$Open))
+crypto$High = as.numeric(gsub(pattern = ',','',crypto$High))
+crypto$Low = as.numeric(gsub(pattern = ',','',crypto$Low))
+crypto$Close = as.numeric(gsub(pattern = ',','',crypto$Close))
+crypto$Volume = as.numeric(gsub(pattern = ',','',crypto$Volume))
+crypto$Marketcap = as.numeric(gsub(pattern = ',','',crypto$Marketcap))
+crypto$Year = as.numeric(format(crypto$Date,"%Y"))
+crypto$Currency = capitalize(crypto$Currency)
+summary(crypto)
+crypto
+
+
+```
+
+
+## Vizualizing the cryptocurrencies in the data set.
+
+We need to check if the dataset has no NA values and we can check that be creating a piechart plot
+
+```{r}
+plot_ly(as.data.frame(crypto$Currency),labels = crypto$Currency,type = 'pie', hole = 0.3) %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Prices, Market Values and Volume of the digital assets.
+
+In this visualization we will go ahead and check the opening prices and the closing prices in the plot. It will be clearly shown that the prices of all currencies didn't start picking up until the later half of 2017. The were a few interesting coins that picked up in the later half of 2017 and died down quickly after the first two years that is was introduced to the financial markets because of this. 
+
+The cause of the sudden surge in interest in Bitcoin in the middle of 2017 is still a mystery, but it is wildly speculative that a single whale artificially inflated the price of Bitcoin, sparking a surge in demand for the currency on a massive scale. As a result, the financial world began to take an interest in digital currencies, and the prices of practically all currencies increased, with Bitcoin emerging as the strongest and most well-liked currency in the field.
+
+We need to make a visualization to get the market values for all the coins to make it easier to navigate through the data. The data set will be divided into 23 subsets of each currency. 
+
+As The subsetted data is in the form ‘OHLC’ (open,High,Low,Close) it is in the ideal format to work with the Quantmod library and hence is converted to XTS type.
+
+```{r}
+Bitcoin = subset(crypto,crypto$Currency == 'Bitcoin')
+Bitcoin$Currency = NULL
+colnames(Bitcoin) = c('BitcoinDate','BitcoinOpen','BitcoinHigh','BitcoinLow','BitcoinClose','BitcoinVolume','BitcoinMarketcap', 'BitcoinYear')
+Bitcoin = xts(Bitcoin[,-1], order.by=as.Date(Bitcoin$BitcoinDate))
+
+Litecoin = subset(crypto,crypto$Currency == 'Litecoin')
+Litecoin$Currency = NULL
+colnames(Litecoin) = c('LitecoinDate','LitecoinOpen','LitecoinHigh','LitecoinLow','LitecoinClose','LitecoinVolume','LitecoinMarketcap', 'LitecoinYear')
+Litecoin = xts(Litecoin[,-1], order.by=as.Date(Litecoin$LitecoinDate))
+
+XRP = subset(crypto,crypto$Currency == 'XRP')
+XRP$Currency = NULL
+colnames(XRP) = c('XRPDate','XRPOpen','XRPHigh','XRPLow','XRPClose','XRPVolume','XRPMarketcap', 'XRPYear')
+XRP = xts(XRP[,-1], order.by=as.Date(XRP$XRPDate))
+
+Dogecoin = subset(crypto,crypto$Currency == 'Dogecoin')
+Dogecoin$Currency = NULL
+colnames(Dogecoin) = c('DogecoinDate','DogecoinOpen','DogecoinHigh','DogecoinLow','DogecoinClose','DogecoinVolume','DogecoinMarketcap', 'DogecoinYear')
+Dogecoin = xts(Dogecoin[,-1], order.by=as.Date(Dogecoin$DogecoinDate))
+
+Monero = subset(crypto,crypto$Currency == 'Monero')
+Monero$Currency = NULL
+colnames(Monero) = c('MoneroDate','MoneroOpen','MoneroHigh','MoneroLow','MoneroClose','MoneroVolume','MoneroMarketcap', 'MoneroYear')
+Monero = xts(Monero[,-1], order.by=as.Date(Monero$MoneroDate))
+
+Stellar = subset(crypto,crypto$Currency == 'Stellar')
+Stellar$Currency = NULL
+colnames(Stellar) = c('StellarDate','StellarOpen','StellarHigh','StellarLow','StellarClose','StellarVolume','StellarMarketcap', 'StellarYear')
+Stellar = xts(Stellar[,-1], order.by=as.Date(Stellar$StellarDate))
+
+Tether = subset(crypto,crypto$Currency == 'Tether')
+Tether$Currency = NULL
+colnames(Tether) = c('TetherDate','TetherOpen','TetherHigh','TetherLow','TetherClose','TetherVolume','TetherMarketcap', 'TetherYear')
+Tether = xts(Tether[,-1], order.by=as.Date(Tether$TetherDate))
+
+NEM = subset(crypto,crypto$Currency == 'NEM')
+NEM$Currency = NULL
+colnames(NEM) = c('NEMDate','NEMOpen','NEMHigh','NEMLow','NEMClose','NEMVolume','NEMMarketcap', 'NEMYear')
+NEM = xts(NEM[,-1], order.by=as.Date(NEM$NEMDate))
+
+Ethereum = subset(crypto,crypto$Currency == 'Ethereum')
+Ethereum$Currency = NULL
+colnames(Ethereum) = c('EthereumDate','EthereumOpen','EthereumHigh','EthereumLow','EthereumClose','EthereumVolume','EthereumMarketcap', 'EthereumYear')
+Ethereum = xts(Ethereum[,-1], order.by=as.Date(Ethereum$EthereumDate))
+
+IOTA = subset(crypto,crypto$Currency == 'IOTA')
+IOTA$Currency = NULL
+colnames(IOTA) = c('IOTADate','IOTAOpen','IOTAHigh','IOTALow','IOTAClose','IOTAVolume','IOTAMarketcap', 'IOTAYear')
+IOTA = xts(IOTA[,-1], order.by=as.Date(IOTA$IOTADate))
+
+EOS = subset(crypto,crypto$Currency == 'EOS')
+EOS$Currency = NULL
+colnames(EOS) = c('EOSDate','EOSOpen','EOSHigh','EOSLow','EOSClose','EOSVolume','EOSMarketcap', 'EOSYear')
+EOS = xts(EOS[,-1], order.by=as.Date(EOS$EOSDate))
+
+TRON = subset(crypto,crypto$Currency == 'TRON')
+TRON$Currency = NULL
+colnames(TRON) = c('TRONDate','TRONOpen','TRONHigh','TRONLow','TRONClose','TRONVolume','TRONMarketcap', 'TRONYear')
+TRON = xts(TRON[,-1], order.by=as.Date(TRON$TRONDate))
+
+Chainlink = subset(crypto,crypto$Currency == 'Chainlink')
+Chainlink$Currency = NULL
+colnames(Chainlink) = c('ChainlinkDate','ChainlinkOpen','ChainlinkHigh','ChainlinkLow','ChainlinkClose','ChainlinkVolume','ChainlinkMarketcap', 'ChainlinkYear')
+Chainlink = xts(Chainlink[,-1], order.by=as.Date(Chainlink$ChainlinkDate))
+
+Cardano = subset(crypto,crypto$Currency == 'Cardano')
+Cardano$Currency = NULL
+colnames(Cardano) = c('CardanoDate','CardanoOpen','CardanoHigh','CardanoLow','CardanoClose','CardanoVolume','CardanoMarketcap', 'CardanoYear')
+Cardano = xts(Cardano[,-1], order.by=as.Date(Cardano$CardanoDate))
+
+Cosmos = subset(crypto,crypto$Currency == 'Cosmos')
+Cosmos$Currency = NULL
+colnames(Cosmos) = c('CosmosDate','CosmosOpen','CosmosHigh','CosmosLow','CosmosClose','CosmosVolume','CosmosMarketcap', 'CosmosYear')
+Cosmos = xts(Cosmos[,-1], order.by=as.Date(Cosmos$CosmosDate))
+
+Solana = subset(crypto,crypto$Currency == 'Solana')
+Solana$Currency = NULL
+colnames(Solana) = c('SolanaDate','SolanaOpen','SolanaHigh','SolanaLow','SolanaClose','SolanaVolume','SolanaMarketcap', 'SolanaYear')
+Solana = xts(Solana[,-1], order.by=as.Date(Solana$SolanaDate))
+
+Polkadot = subset(crypto,crypto$Currency == 'Polkadot')
+Polkadot$Currency = NULL
+colnames(Polkadot) = c('PolkadotDate','PolkadotOpen','PolkadotHigh','PolkadotLow','PolkadotClose','PolkadotVolume','PolkadotMarketcap', 'PolkadotYear')
+Polkadot = xts(Polkadot[,-1], order.by=as.Date(Polkadot$PolkadotDate))
+
+Uniswap = subset(crypto,crypto$Currency == 'Uniswap')
+Uniswap$Currency = NULL
+colnames(Uniswap) = c('UniswapDate','UniswapOpen','UniswapHigh','UniswapLow','UniswapClose','UniswapVolume','UniswapMarketcap', 'UniswapYear')
+Uniswap = xts(Uniswap[,-1], order.by=as.Date(Uniswap$UniswapDate))
+
+Aave = subset(crypto,crypto$Currency == 'Aave')
+Aave$Currency = NULL
+colnames(Aave) = c('AaveDate','AaveOpen','AaveHigh','AaveLow','AaveClose','AaveVolume','AaveMarketcap', 'AaveYear')
+Aave = xts(Aave[,-1], order.by=as.Date(Aave$AaveDate))
+
+
+
+
+
+```
+
+
+Now we talk a look at the the price series of the cryptocurrencies. 
+
+First we will combine the time-series data into one singe data frame for easier plotting.
+
+```{r}
+combined_df <- merge(Bitcoin, Ethereum, by = "Date")
+combined_df <- merge(combined_df, Aave, by = "Date")
+combined_df <- merge(combined_df, Cardano, by = "Date")
+combined_df <- merge(combined_df, Chainlink, by = "Date")
+combined_df <- merge(combined_df, Cosmos, by = "Date")
+combined_df <- merge(combined_df, Dogecoin, by = "Date")
+combined_df <- merge(combined_df, EOS, by = "Date")
+combined_df <- merge(combined_df, Ethereum, by = "Date")
+combined_df <- merge(combined_df, IOTA, by = "Date")
+combined_df <- merge(combined_df, Litecoin, by = "Date")
+combined_df <- merge(combined_df, Monero, by = "Date")
+combined_df <- merge(combined_df, NEM, by = "Date")
+combined_df <- merge(combined_df, XRP, by = "Date")
+combined_df <- merge(combined_df, Polkadot, by = "Date")
+combined_df <- merge(combined_df, Stellar, by = "Date")
+combined_df <- merge(combined_df, Tether, by = "Date")
+combined_df <- merge(combined_df, TRON, by = "Date")
+combined_df <- merge(combined_df, Uniswap, by = "Date")
+combined_df <- merge(combined_df, XRP, by = "Date")
+
+combined_df[is.na(combined_df)] <- 0
+
+
+```
+And then we will plot the data in a line graph, we will reduce bitcoin's opening price by 1000 to see the other prices more clearly.
+
+```{r}
+ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinOpen/100, color = "Bitcoin")) +
+  geom_line() +
+  ggtitle("Crypto Opening price series") + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(
+  x = "Date",
+  y = "Opening Prices",
+  color = "Currencies",
+  caption = "Sai") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "6 months") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.key.width = unit(2,"cm"))+
+  geom_line(aes(y = EthereumOpen, color = "Ethereum"))+
+geom_line(aes(y = AaveOpen, color = "Aave"))+
+geom_line(aes(y = CardanoOpen, color = "Cardano"))+
+geom_line(aes(y = ChainlinkOpen, color = "Chainlink"))+
+geom_line(aes(y = CosmosOpen, color = "Cosmos"))+
+geom_line(aes(y = DogecoinOpen, color = "Dogecoin"))+
+geom_line(aes(y = EOSOpen, color = "EOS"))+
+geom_line(aes(y = IOTAOpen, color = "IOTA"))+
+geom_line(aes(y = LitecoinOpen, color = "Litecoin"))+
+geom_line(aes(y = MoneroOpen, color = "Monero"))+
+geom_line(aes(y = NEMOpen, color = "NEM"))+
+geom_line(aes(y = PolkadotOpen, color = "Polkadot"))+
+geom_line(aes(y = StellarOpen, color = "Stellar"))+
+geom_line(aes(y = TetherOpen, color = "Tether"))+
+geom_line(aes(y = TRONOpen, color = "TRON"))+
+geom_line(aes(y = UniswapOpen, color = "Uniswap"))+
+geom_line(aes(y = XRPOpen, color = "XRP"))
+```
+From the line graph above we can see that the price of bitcoin rose in 2017 and the dropped and almost all the crytocurriences had the same trend until 2021 where they skyrocketted.
+
+## Market Capitalization
+
+Now we will check the total market capitalization in a the same line graph format.
+
+```{r}
+ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinMarketcap/100000000, color = "Bitcoin")) +
+  geom_line() +
+  ggtitle("Crypto Market Cap") + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(
+  x = "Date",
+  y = "Total Mean Capital",
+  color = "Currencies",
+  title = "Crypto Market Capitalization",
+  subtitle = "in 100 millions", 
+  caption = "Sai") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "6 months") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.key.width = unit(2,"cm"))+
+  geom_line(aes(y = EthereumMarketcap/100000000, color = "Ethereum"))+
+geom_line(aes(y = AaveMarketcap/100000000, color = "Aave"))+
+geom_line(aes(y = CardanoMarketcap/100000000, color = "Cardano"))+
+geom_line(aes(y = ChainlinkMarketcap/100000000, color = "Chainlink"))+
+geom_line(aes(y = CosmosMarketcap/100000000, color = "Cosmos"))+
+geom_line(aes(y = DogecoinMarketcap/100000000, color = "Dogecoin"))+
+geom_line(aes(y = EOSMarketcap/100000000, color = "EOS"))+
+geom_line(aes(y = IOTAMarketcap/100000000, color = "IOTA"))+
+geom_line(aes(y = LitecoinMarketcap/100000000, color = "Litecoin"))+
+geom_line(aes(y = MoneroMarketcap/100000000, color = "Monero"))+
+geom_line(aes(y = NEMMarketcap/100000000, color = "NEM"))+
+geom_line(aes(y = PolkadotMarketcap/100000000, color = "Polkadot"))+
+geom_line(aes(y = StellarMarketcap/100000000, color = "Stellar"))+
+geom_line(aes(y = TetherMarketcap/100000000, color = "Tether"))+
+geom_line(aes(y = TRONMarketcap/100000000, color = "TRON"))+
+geom_line(aes(y = UniswapMarketcap/100000000, color = "Uniswap"))+
+geom_line(aes(y = XRPMarketcap/100000000, color = "XRP"))
+```
+The market capitalisation of Bitcoin throughout time is depicted in the plot below. It's interesting to note that in the beginning, in terms of market capitalization, Bitcoin and Ethereum were practically equal. But as Bitcoin became more and more well-known over time, its value multiplied.
+
+As previously noted, it is still somewhat unclear what caused the unexpected interest and growth in the value of digital currencies 10 years after their creation, including that of Bitcoin past 2017. However, some of the primary factors are as follows:
+
+1. The regulation of digital currencies is not very strict:
+Digital currencies are unregulated, in contrast to fiat currencies like the US Dollar or the Euro, which means that no central bank or specific government of any country has as much authority over them as they do over other financial products.
+
+Remember that the world was experiencing the 2008 banking crises when "Satoshi Nakamoto," the person who invented Bitcoin, wrote the code that enabled it to exist back in 2009. The need for an alternative to fiat currencies, which were subject to heavy regulation and the speculative dynamics of the financial markets, led to the creation of digital currencies.
+
+2. They are very discrete:
+Compared to bank accounts or other forms of money storage, cryptocurrencies provide a lot more privacy. The alpha-numeric account numbers or "addresses" of cryptocurrencies are used as pointers to digital wallets and are unrelated to the personal data of the organization or person who owns the wallet. thereby offering a considerably stronger sense of protection against fraud and financial watchdog rules than traditional currencies.
+
+3. Only twenty million Bitcoins are available at any given time, which is a fairly small and consistent supply for this particular currency. Unlike traditional currencies, Bitcoins cannot be produced indefinitely in a money mint after a major natural disaster or a financial crisis. This not only increases the value of the existing Bitcoins over time but also lends consistency to their monetary values.
+
+## Price Indicators of all the currencies.
+
+Here in this visualization below we will check the prices of all the crypto currencies from 2017 to 2021
+
+```{r}
+crypto$Year <- as.character(crypto$Year)
+
+  crypto %>%
+  dplyr::filter(Year == "2017" | Year == "2018" | Year == "2019" | Year == "2020" | Year == "2021") %>%
+  plot_ly(type = 'box',x = ~High,transforms = list(list(type = 'filter',
+                                                        target = ~Currency,
+                                                        operation = '=',
+              value = unique(crypto$Currency)[1])),name="High") %>%
+  add_boxplot(x = ~Low,name = 'Low') %>%
+  add_boxplot(x = ~Open,name = 'Open') %>%
+  add_boxplot(x = ~Close,name = 'Close') %>%
+  
+  layout(title = 'All Price Indicators of all Currencies',
+         xaxis = list(title = 'Value'), 
+         updatemenus = list(list(type = 'dropdown',buttons = list(
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[1]),
+         label = unique(crypto$Currency)[1]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[2]),
+         label = unique(crypto$Currency)[2]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[3]),
+         label = unique(crypto$Currency)[3]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[4]),
+         label = unique(crypto$Currency)[4]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[5]),
+         label = unique(crypto$Currency)[5]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[6]),
+         label = unique(crypto$Currency)[6]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[7]),
+         label = unique(crypto$Currency)[7]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[8]),
+         label = unique(crypto$Currency)[8]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[9]),
+         label = unique(crypto$Currency)[9]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[10]),
+         label = unique(crypto$Currency)[10]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[11]),
+         label = unique(crypto$Currency)[11]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[12]),
+         label = unique(crypto$Currency)[12]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[13]),
+         label = unique(crypto$Currency)[13]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[14]),
+         label = unique(crypto$Currency)[14]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[15]),
+         label = unique(crypto$Currency)[15]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[16]),
+         label = unique(crypto$Currency)[16]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[17]),
+         label = unique(crypto$Currency)[17]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[18]),
+         label = unique(crypto$Currency)[18]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[19]),
+         label = unique(crypto$Currency)[19]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[20]),
+         label = unique(crypto$Currency)[20]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[21]),
+         label = unique(crypto$Currency)[21]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[22]),
+         label = unique(crypto$Currency)[22]),
+    list(method = "restyle",args = list("transforms[0].value", unique(crypto$Currency)[23]),
+         label = unique(crypto$Currency)[23]))))) %>%
+  layout(annotations = list(list(text = "For the years 2017-21",  xref = "paper", yref = "paper",
+                            yanchor = "bottom",xanchor = "center", align = "center",
+                            x = 0.5, y = .97, showarrow = FALSE)))
+```
+
+## Yearly Capitalization Representation
+
+```{r}
+crypto %>%
+  plot_ly(labels = ~Currency,values = ~Marketcap, type = 'pie',
+          transforms = list(list(type = 'filter',target = ~Year,operation = '=',
+                          value = unique(crypto$Year)[1])),name="2013") %>%
+  layout(title = "Currency Yearly Market Capitalization Representation",
+         xaxis = list(title = 'Value'), 
+updatemenus = list(list(type = 'dropdown',buttons = list(
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[1]),
+       label = unique(crypto$Year)[1]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[2]),
+       label = unique(crypto$Year)[2]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[3]),
+       label = unique(crypto$Year)[3]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[4]),
+       label = unique(crypto$Year)[4]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[5]),
+       label = unique(crypto$Year)[5]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[6]),
+       label = unique(crypto$Year)[6]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[7]),
+       label = unique(crypto$Year)[7]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[8]),
+       label = unique(crypto$Year)[8]),
+  list(method = "restyle",args = list("transforms[0].value", unique(crypto$Year)[9]),
+       label = unique(crypto$Year)[9])))))
+```
+
+
+## Traded Crypto Visualization
+
+The volume traded data from 2017 onward is shown here because there was scarcely any interest in digital currency before to that year. It is clear that after the middle of 2017, there was an increase in market interest, which led to significant volume being traded on international financial markets.
+
+Although Tether's price range (96 cents to $1.04 vs. 4k to 18k for Bitcoin) and market capitalization are vastly different from those of Bitcoin, it is also extremely fascinating to notice that Tether rivals and occasionally surpasses Bitcoin in terms of trading volume.
+
+```{r}
+  ggplot(combined_df['2017-08/'], aes(x = index(Bitcoin['2017-08/']), y = BitcoinVolume['2017-08/']/100000000, color = "Bitcoin")) +
+  geom_line() +
+  ggtitle("Traded Crypto") + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(
+  x = "Date",
+  y = "Total Mean Volume",
+  color = "Currencies",
+  title = "All crypto traded",
+  subtitle = "in 100 millions", 
+  caption = "Sai") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "6 months") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.key.width = unit(2,"cm"))+
+  geom_line(aes(y = EthereumVolume/100000000, color = "Ethereum"))+
+geom_line(aes(y = AaveVolume/100000000, color = "Aave"))+
+geom_line(aes(y = CardanoVolume/100000000, color = "Cardano"))+
+geom_line(aes(y = ChainlinkVolume/100000000, color = "Chainlink"))+
+geom_line(aes(y = CosmosVolume/100000000, color = "Cosmos"))+
+geom_line(aes(y = DogecoinVolume/100000000, color = "Dogecoin"))+
+geom_line(aes(y = EOSVolume/100000000, color = "EOS"))+
+geom_line(aes(y = IOTAVolume/100000000, color = "IOTA"))+
+geom_line(aes(y = LitecoinVolume/100000000, color = "Litecoin"))+
+geom_line(aes(y = MoneroVolume/100000000, color = "Monero"))+
+geom_line(aes(y = NEMVolume/100000000, color = "NEM"))+
+geom_line(aes(y = PolkadotVolume/100000000, color = "Polkadot"))+
+geom_line(aes(y = StellarVolume/100000000, color = "Stellar"))+
+geom_line(aes(y = TetherVolume/100000000, color = "Tether"))+
+geom_line(aes(y = TRONVolume/100000000, color = "TRON"))+
+geom_line(aes(y = UniswapVolume/100000000, color = "Uniswap"))+
+geom_line(aes(y = XRPVolume/100000000, color = "XRP"))
+```
+
+As expected, the graphical illustration below demonstrates that in 2020 and in 2021, Tether currency traded at a bigger volume on the financial markets than Bitcoin.
+
+The project goes on to investigate the causes of this as well as the relationships between the market capitalization and volume of trading of the two currencies.
+
+```{r}
+Bitcoin$Year = as.numeric(format(index(Bitcoin),"%Y"))
+Tether$Year = as.numeric(format(index(Tether),"%Y"))
+
+Vol_yrly_BT = aggregate(BitcoinVolume ~ Year, data=Bitcoin , FUN= mean)
+Vol_yrly_TT = aggregate(TetherVolume ~ Year, data=Tether , FUN= mean)
+
+Vol_yrly_combined = merge(Vol_yrly_BT, Vol_yrly_TT, by="Year")
+
+# Merge the data for Bitcoin and Tether into a single data frame
+merged_data <- merge(Vol_yrly_BT, Tether, by = "Year")
+
+# Create the plot using the merged data
+plot_ly(merged_data, x =~Year ,y = ~BitcoinVolume, type = 'bar',name = 'Bitcoin Volume',
+        marker = list(color = 'rgb(49,130,189)')) %>%
+  add_trace(y = ~TetherVolume, name = 'Tether Volume',
+            marker = list(color = 'rgb(204,204,204)')) %>%
+  layout(title = 'Yearly Volume Traded by Bitcoin & Tether',
+         xaxis = list(title = 'Years',tickangle = -45),
+         yaxis = list(title = 'Total Volume Traded'),
+         margin = list(b=100),
+         barmode = 'group')
+
+```
+
+
+
+## Distribution and Correlation of the Volume
+
+The distribution of the volume variable for the currencies Tether and Bitcoin is shown in the graphs below. The graph clearly shows that it is a right-skewed distribution. They are both positively skewed, in other words. The data's means and standard deviations are also noted.
+
+That mean is far lower than the median in both cases, as can be seen quite plainly. This may indicate that the left side of the data contains many outliers.
+
+
+```{r}
+Bitcoin2021 = subset(Bitcoin,Year == '2020' | Year == '2021')
+Tether2021 = subset(Tether,Year == '2020' | Year == '2021')
+
+ggplot(Bitcoin2021,aes(x = BitcoinVolume/100000000, fill = cut(BitcoinVolume,30))) +
+  geom_histogram(show.legend = FALSE,bins = 50,color = 'black') + 
+  scale_fill_discrete(h = c(240,10)) + 
+  theme_minimal() +
+  labs(x = 'Bitcoin Volume', y = 'Frequency',title = 'Bitcoin Volume for 2020-21',
+  subtitle = 'in Hundred Millions',caption = "Sai" ) +
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  annotate("text", x=2000, y=92, label= paste("Mean =",round(mean(Bitcoin2021$BitcoinVolume/100000000),2))) +
+  annotate("text", x=2000, y=97, label= paste("SD =",round(sd(Bitcoin2021$BitcoinVolume/100000000),2))) +
+  annotate("text", x=2000, y=87, label= paste("Median =",round(median(Bitcoin2021$BitcoinVolume/100000000),2))) +
+  scale_x_continuous(breaks = seq(0, 3500, 100)) +
+  scale_y_continuous(limits = c(0, 100))+
+  geom_vline(aes(xintercept = mean(Bitcoin2021$BitcoinVolume/100000000)), linetype = "dashed")
+```
+```{r}
+ggplot(Tether2021,aes(TetherVolume/100000000, fill = cut(TetherVolume,30))) + 
+  geom_histogram(show.legend = FALSE,bins = 50,color = 'black',linewidth = .001) + 
+  scale_fill_discrete(h = c(240,10)) + 
+  theme_minimal() +
+  labs(x = 'Tether Volume', y = 'Frequency',title = 'Tether Volume for 2020-21',
+  subtitle = 'in Hundred Millions' ) +
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_continuous(breaks = seq(0, 3500, 100)) +
+  annotate("text", x=452, y=95, label= paste("Mean =",round(mean(Tether2021$TetherVolume/100000000),2))) +
+  annotate("text", x=454, y=100, label= paste("SD =",round(sd(Tether2021$TetherVolume/100000000),2))) +
+  annotate("text", x=450, y=90, label= paste("Median =",round(median(Tether2021$TetherVolume/100000000),2))) +
+  scale_y_continuous(limits = c(0, 100)) +
+  geom_vline(aes(xintercept = mean(Tether2021$TetherVolume/100000000)), linetype = "dashed")
+
+```
+
+
+Now we check the correlation between the volume of tether and bitcoin.We investigate the relationship between market capitalization and volume traded for the currencies Tether and Bitcoin in the plot below. Both currencies display a positive correlation between their volume of trades and market capitalization, with Tether displaying a larger correlation of 0.64 and Bitcoin displaying a relatively smaller, but still very strong correlation of 0.56. 
+
+In essence, this indicates that the Market Capitalization of other currencies—more specifically, Tether than Bitcoin—directly affects the volume of trading. Which is not very surprising given that, among other factors, the level of public trust has a significant impact on a product's or company's market value. For instance, when news broke that Mordena and other pharmaceutical companies had perhaps discovered a vaccine for COVID-19, their stock values skyrocketed. despite the fact that there was initially no evidence or definitive tests.
+
+We are still trying to figure out why Tether trades at volumes that are practically identical to those of Bitcoin, despite being so far behind on every other metric.
+
+
+```{r}
+ggplot(Tether2021, aes(x=scale(TetherMarketcap), y=scale(TetherVolume))) + 
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE, fullrange=TRUE,color = 'red') + 
+  geom_rug()+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  labs(x = 'Scaled Tether Market Capatalization ', y = 'Scaled Tether Volume',
+       title = 'Tether Volume and Market Capatalization for 2020-21',
+       subtitle = 'Scaled',caption = "Sai" ) +
+  theme(panel.background = element_rect(colour = "orange",size = 2,linetype = "solid")) +
+  annotate("text", x= 0, y=4,size = 3.5, label= paste("Correlation =",
+            round(cor(Tether2021$TetherVolume,Tether2021$TetherMarketcap),2)))
+```
+
+
+```{r}
+ggplot(Bitcoin2021, aes(x=scale(BitcoinMarketcap), y=scale(BitcoinVolume))) + 
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE, fullrange=TRUE,color = 'red') + 
+  geom_rug()+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  labs(x = 'Scaled Bitcoin Market Capatalization ', y = 'Scaled Bitcoin Volume',
+       title = 'Bitcoin Volume and Market Capatalization for 2018-19',
+       subtitle = 'Scaled',caption = "Sai" ) +
+  theme(panel.background = element_rect(colour = 'orange',size = 2, 
+                                        linetype = "solid"))+
+  annotate("text", x=-0.5, y=7.5,size = 3.5, label= paste("Correlation =",
+        round(cor(Bitcoin2021$BitcoinVolume,Bitcoin2021$BitcoinMarketcap),2)))
+```
+The closing prices of the two currencies, as depicted in the graph below, provide the answers to the aforementioned question.
+
+The volatility of Bitcoin's price is one of the main causes of the high levels of trading trust in Tether. As you can see from the graph below, Bitcoin's price has decreased from more than 4000 to approximately upwards of 18000 in just two years. The price difference in the instance of Tether, however, has not exceeded a measly 6 cents.
+
+The base price of the stock is another factor in Tether's high trading volume. Tether's pricing is so low that it allows both low risk mutual fund companies and those who aren't big investors to enter the market for digital currencies without taking on too much risk. But compared to Bitcoin, this also results in very little reward because reward is always inversely correlated with risk.
+
+This does raise the question of why Tether and not another currency that competes with Bitcoin and has a low base price and low price volatility. The only cryptocurrency that is backed by US dollars is Tether, which is the solution to this query. Investor confidence in the stock is increased because no other currency is backed by real money.
+
+
+```{r}
+bitcoin_close = plot_ly(as.data.frame(Bitcoin2021),y = ~BitcoinClose, x = ~index(Bitcoin2021), 
+        type = 'scatter',mode = 'lines',name = 'Bitcoin Closing Price') %>%
+layout(xaxis = list(title = 'Years',tickangle = -45,tickfont = list(size = 10)),
+       yaxis = list(title = 'Price Range',tickfont = list(size = 10)))
+
+tether_close = plot_ly(as.data.frame(Tether2021),y = ~TetherClose, x = ~index(Tether2021), 
+        type = 'scatter',mode = 'lines',name = 'Tether Closing Price') %>%
+    layout(xaxis = list(title = 'Years',tickangle = 45,tickfont = list(size = 10)),
+           yaxis = list(title = 'Price Range',tickfont = list(size = 10)))
+
+subplot(bitcoin_close, tether_close) %>% layout(title="Closing Prices of Bitcoin and Tether",font = 10)
+```
+
+
+## Conclusion:
+
+We have successfully analyzed the crytocurrencies and to conclude my analysis:
+
+- We have found out which coin dominated the market based on the year.
+    2013 - There were only 4 digital assets on the market, so BITCOIN dominated by 93.4%.
+    2014 - The was an addition of 2 more digital assets to the market but BITCOIN still dominated by 93.7%. A 0.4 increase in            market capitalization mean the volume of the coins were increasing.
+    2015 - BITCOIN still dominated but there was an addition of 3 more digital assets which let to market cap of BITCOIN                dropping to 89.7% and XRP having 6.94% of the market share
+    2016 - No new cryptocurrencies were added but the market capitalization of BITCOIN decreased to 87% and we can see other            digital assets climbing up like ethereum taking 7.82% of the market.
+    2017 - This year is where the crypto boom happened and we can see that new digital assets were added and ethereum took              20.1% of the market and bitcoin dropped to 63.2% and XRP having 7.47 %
+    2018 - More coins added and BITCOIN dropped to 53% and ethereum had close to 20% while XRP had 10%. 
+    2019 - BITCOIN made a comeback with taking 70% of the market share back from the other digital assets by taking 70% of              the market.
+    2020 - Around 8-10 cryptocurrencies were introduced to the market but BITCOIN still maintained 71% market share.
+    2021 - BITCOIN had 60% of the market share, 17% was ethereum's and there were more crypto currencies made that year.
+
+- Using the Price vizualization above with the drop down of different cryptocurrencies we see that:
+    - We see that BITCOIN's prices are mostly outliers due to the heavy rise from the years 2017 - 2021
+    - Ethereum also competes with the market capitalization but not as much as BITCOIN.
+    - Other Crypto currencies had less market share but due to their small prices and sudden gains and drops people gained         and lost a lot of money, hence they did have major volatility making it uninvestable. 
+    - Usually crypto currencies depend on the popularity for it price to increase.
+  
+- Why Bitcoin's volume decreased during 2020-2021 while tether's volume kept increasing?
+    Mostly due to the high volatility in the prices the volume decreased whereas tether had a stable prices hence the volume     kept increasing.
