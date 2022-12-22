@@ -1,0 +1,16 @@
+{
+  "hash": "213ecbcf94b023116a383fa6e8412e34",
+  "result": {
+    "markdown": "---\ntitle: \"Homework 2\"\nauthor: \"Michaela Bowen\"\ndesription: \"\"\ndate: \"10/12/2022\"\nformat:\n  html:\n    toc: true\n    code-fold: true\n    code-copy: true\n    code-tools: true\ncategories:\n  - hw2\n  - Michaela Bowen\n  - dataset\n  - ggplot2\n---\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(tidyverse)\nlibrary(readr)\nlibrary(summarytools)\nlibrary(lubridate)\n\nknitr::opts_chunk$set(echo = TRUE)\n```\n:::\n\n\n\n:::panel-tabset\n### Read In Data\nThis is the current cannabis inventory. This is including products that have been sold out or contain 0 quantities in order to have the THC and expiration date information for products that have already been sold out.\n\nBelow I have read in the current cannabis inventory. There are 6741 instances of 12 variables, meaning these current products are on the Sales Floor Room, Quarantine room, or vault. I have renamed \"ID\" columns `sku`, and `product ID` to \"delete\" and selected relevant columns. I have separated the THC column into the numeric value and a column that contains the unit of that value. For some non-cannabis items, \"expiration date\" is unnecessary and those values of \"invalid date\" have been changed to `NA`. I then arranged the data by room, category and product. The last column, `isCannabis` has been categorized and ordered as a boolean because it is a yes or no variable. The `price`, `cost`, and `thc` columns are numeric. The expiration date column was separated and formated according to the date and date. All other columns are character columns\n\n::: {.cell}\n\n```{.r .cell-code}\nCurrent_Inventory <- read_csv(\"../posts/2022-11-16 Export inventory.csv\",\n                                         skip = 1,\n                                         col_names = c(\"delete\",\"product\",\"package ID\",\"batch\",\"available\",\"room\",\"price\",\"cost\",\"category\",\"expiration_date\",\"thc\",\"isCannabis\"))%>%\n  select(!contains(\"delete\"))%>%\n  separate(col = \"thc\", into = c(\"thc\",\"unit_thc (%/mg)\"), sep = \" \")%>%\n  mutate(thc = as.numeric(thc),\n        isCannabis = case_when(\n           isCannabis == \"Yes\" ~ TRUE,\n           isCannabis == \"No\" ~ FALSE\n         ))%>%\n  mutate(expiration_date = na_if(expiration_date, \"Invalid date\"),\n         expiration_date = mdy(expiration_date))%>%\n  mutate(\n    date = as.Date(expiration_date),\n    day = day(expiration_date))%>%\n  mutate(\n    format_date = format(date, \"%m/%d/%Y\")\n  )%>%\n  arrange(desc(room), category, product)\n```\n:::\n\n:::\n\n\n\n\n\n\n\n\n",
+    "supporting": [
+      "MichaelaBowen_HW2_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
