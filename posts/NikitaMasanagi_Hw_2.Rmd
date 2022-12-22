@@ -1,0 +1,322 @@
+---
+title: "Homework-2"
+author: "Nikita Masanagi"
+date: "10/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - hotel_bookings
+  
+---
+
+```{r setup}
+
+library(tidyverse)
+library(psych)
+library(summarytools)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+
+## Read Data
+
+The dataset I have chosen is the Hotel Bookings dataset.
+
+```{r }
+
+hotel.bookings <- read.csv("_data/hotel_bookings.csv")
+
+```
+
+
+## Describe Data
+
+We can use summary tools to view the different components of the data better.
+
+```{r}
+head(hotel.bookings)
+```
+```{r}
+tail(hotel.bookings)
+```
+
+
+
+```{r }
+
+dim(hotel.bookings)
+```
+In this dataset there are 32 variables(columns) and 119,390 observations(rows).By looking at the variable names, we can say that the it consists of reservation data of some hotels. 
+
+```{r}
+colnames(hotel.bookings)
+
+
+```
+We can change the column name of column 28 from adr to average_daily_rate to make it more readable.
+```{r}
+colnames(hotel.bookings)[28] <- "average_daily_rate"
+```
+
+We can see the distinct datatypes for each column.
+
+```{r}
+sapply(hotel.bookings, function(x) n_distinct(x))
+
+```
+
+
+
+We can observe the unique values, for some columns with repeated values.
+
+```{r}
+
+unique(hotel.bookings$hotel)
+unique(hotel.bookings$arrival_date_year)
+unique(hotel.bookings$reservation_status)
+unique(hotel.bookings$distribution_channel)
+unique(hotel.bookings$customer_type)
+
+```
+
+
+There are two types of hotels in the dataset: Resort Hotel and City Hotel. Reservations are made in 2015, 2016 and 2017. The data covers reservations from 178 countries. So the data should belong to a big worldwide hotels chain. Both canceled and completed reservations are stored in the dataset as well as no-shows. Thus, each observation includes information about a reservation such as what type of hotel and in which country the reservation is for, number of visitors, dates, daily rates, stay durations and some categorical info about customer and the channel of reservation.
+
+We do not need to pivot the data as each column repsresent a variable and each row is an observation. 
+
+
+```{r }
+
+hotel.bookings <- mutate(
+  hotel.bookings, 
+  number_of_guests = adults + children + babies,
+  total_stay = stays_in_weekend_nights + stays_in_week_nights) # adding two new variables
+
+print(dfSummary(hotel.bookings, 
+                varnumbers= FALSE, 
+                plain.ascii= FALSE, 
+                style= "grid", 
+                graph.magnif= 0.80, 
+                valid.col= TRUE),
+      method= 'render', 
+      table.classes= 'table-condensed')
+
+```
+From the above detail we get a lot more information about the descriptive statistics for numeric variables in the data.
+The percentage of cancelled reservation sis 37.On average, reservations are made 104 days before date of stay. On average, every reservation is made for 1.97 people. 
+Out of the bookings,one out of 10 reservations included a infant present.
+The daily rate of hotels is $101 on an average and average stay duration is 3.34 days. Around average stay duration is 3.43 days. 22% of the booking is changed afterwards. 
+
+
+```{r }
+
+colSums(is.na(hotel.bookings))
+
+```
+
+
+Of the numerical variables, only 4 value is missing. 
+However, when we examine the summary table above and the dataset itself we can see that there are some "NULL" entries that shows up as string. From summary table, `agent` and `company` variables have "NULL" values. 
+
+We can check the null values individually.
+
+```{r}
+nulls <- sapply(hotel.bookings, function(x) table(grepl("NULL", x)))
+
+for (i in 1:32) {
+  if (!is.na(nulls[[i]][2])) {
+    print(nulls[i])
+    }
+}
+  
+```
+
+So, actully 3 variables, `country`, `agent` and `company` have "NULL" values. 
+
+```{r}
+round(100*prop.table(table(grepl("NULL", hotel.bookings$country))), 2)
+round(100*prop.table(table(grepl("NULL", hotel.bookings$agent))), 2)
+round(100*prop.table(table(grepl("NULL", hotel.bookings$company))), 2)
+
+
+
+```
+
+
+0.41% of `country` data, 13.89% of `agent` data and 94.31% of `company` data of reservations are missing.
+
+
+
+## Some analysis
+
+According to the summary table, daily rate of a city hotel may go up to 5400 dollars while it is only 508 dollars for resort hotels. 
+This seems suspicious.
+
+
+```{r}
+hotel.bookings %>% 
+  arrange(desc(average_daily_rate)) %>% 
+  slice_head(n=10) %>% 
+  select(hotel, arrival_date_year, 
+         country, 
+         agent, 
+         number_of_guests, 
+         total_stay, 
+         reservation_status, 
+         average_daily_rate)
+
+```
+
+```{r}
+hotel.bookings %>% 
+  arrange(average_daily_rate) %>% 
+  slice_head(n=10) %>% 
+  select(hotel, arrival_date_year, 
+         country, 
+         agent, 
+         number_of_guests, 
+         total_stay, 
+         reservation_status, 
+         average_daily_rate)
+
+```
+
+We can observe that the row with 5,400 dollars average daily rate is a wrong entry. There is also a row with negative average daily rate. 
+We can remove both of them.
+
+
+```{r}
+hotel.bookings <- hotel.bookings %>% filter(average_daily_rate>=0 & average_daily_rate<=510)
+
+```
+
+
+```{r}
+hotel.bookings %>% 
+  select(hotel, average_daily_rate) %>% 
+  group_by(hotel) %>% 
+  summarise_if(is.numeric, list(min = min, max = max, mean = mean, std_dev = sd, median = median), na.rm = TRUE)
+
+```
+
+```{r}
+hotel.bookings %>% 
+  select(country) %>% 
+  group_by(country) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  head(n=10)
+```
+```{r}
+
+hotel.bookings %>% 
+  select(country, is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled)) %>% 
+  head(n=10)
+```
+
+
+
+
+
+```{r}
+hotel.bookings %>% 
+  filter(country %in% c("PRT", "GBR", "ESP", "FRA", "ITA")) %>% 
+  select(country,is_canceled) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(is_canceled))
+```
+
+
+```{r}
+hotel.bookings %>% 
+  filter(reservation_status == "Check-Out") %>% 
+  select(country, number_of_guests) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(number_of_guests)) %>% 
+  head(n=10)
+```
+
+
+```{r}
+
+hotel.bookings %>% 
+  filter(reservation_status == "Check-Out") %>% 
+  select(country, number_of_guests) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, sum, na.rm = TRUE) %>% 
+  arrange(desc(number_of_guests)) %>% 
+  head(n=10)
+```
+
+
+
+```{r}
+hotel.bookings %>% 
+  select(country, average_daily_rate) %>% 
+  group_by(country) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE) %>% 
+  arrange(desc(average_daily_rate)) %>% 
+  head(n=10)
+```
+
+
+```{r}
+table(hotel.bookings$arrival_date_month)
+```
+
+
+From the above tables we can form some observations.
+
+The average daily rate for City Hotels is 11 dollars higher than Resort Hotels. However the variance in price of Resort Hotels is greater than that of City Hotels.
+
+The most popular 10 countries in terms of total reservations are Portugal, Great Britain, France, Spain, Germany, Italy, Ireland, Belgium, Brasil and Netherlands. However, we can see that 56% reservations made for Portugal hotels are actually canceled. This ratio is 35% for Italy and 25% for Spain. 
+Among all of them, the country that hosts the highest number of guests is Portugal with total of 37,670 guests in 3 years.
+
+Interestingly, in terms of average daily rate, the most expensive hotels are in Djibouti, Anguilla, Andorra, United States Minor Outlying Islands, Laos and so on. It looks that hotels in small countries that host a small number of guests are much more expensive.
+
+August, July and May, respectively, are the months when hotels are the busiest throughout the year.
+
+
+We can check the bookings with zero daily rate.
+
+```{r}
+hotel.bookings %>% 
+  filter(average_daily_rate == 0) %>% 
+  count()
+
+
+```
+
+There are 1959 reservations with zero daily rate.
+
+```{r}
+hotel.bookings %>% 
+  filter(average_daily_rate == 0) %>% 
+  group_by(country) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  head()
+
+```
+
+We can observe that most of the zero values from Portugal.So we need to delve further into the the accuracy.
+
+
+## Potential research questions
+
+1. How do hotel room rates change seasonally?
+2. Are the room rates change according to the length of stay or not?
+3. How is the performance of agents in terms of number of reservations and length of stay?
+4. How the preferences of families with children differ from other visitors?
+

@@ -1,0 +1,605 @@
+---
+title: "Final Project"
+author: "Neeharika Karanam"
+description: "Boston Crime Rate - 2017-2022"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - final_project
+---
+
+```{r}
+
+library(tidyverse)
+library(psych)
+library(ggplot2)
+library(dplyr)
+library(summarytools)
+library(leaflet)
+library(gganimate)
+library(gapminder)
+library(ggplotify)
+library(ggridges)
+library(hrbrthemes)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+## Introduction
+
+Living and studying in Amherst, Massachusetts and the Boston Metro being the closest I always wondered how safe it was to explore the place. Boston Metro is in the 69th percentile in terms of safety which means that 31% of the metro areas are safer and the 69% of the metro areas are very dangerous. The crime rate in Boston is about 19.92 per every 1000 residents during a typical year and majority of the residents and locals believe that Southwest part of the Boston metro to be very safe. Therefore, the chance of you being the victim in the central neighborhoods is as high as 1 in 32 and in the southwest part of the Boston Metro it is as low as 1 in 92. As per the researchers the abandoned buildings, areas filled with graffiti, panhandling and all of the various signs which make it look suspicious in the neighborhoods generally tend to create an environment leading to more crimes. Therefore, I wanted to perform an in-depth analysis on the crime data of Boston Metro and visualize my observations.. All of the data used for this analysis applies to the actual Boston Metro boundaries only and the data ranges from 2017 to 2022(Till March).
+
+I want to understand and analyze on the following and more:
+
+1. If there is any kind of a relationship between the crimes and the region that they actually take place
+2. What has changed in the criminal activities in the past few years?
+3. What is the crime rate on a daily basis in each of the districts in Boston?
+
+## Dataset Description
+
+I have collected the Boston Crime dataset from Kaggle from the year 2017 to 2022(till March). The dataset consists of 4,46,093 rows/records and 18 different columns/categories to help analyze the data. Let us now understand what each category of the dataset tells us.
+
+## Column Names along with their descriptions
+
+1. S.No - Gives the serial number of the crime record.
+
+2. Incident Number - Gives the internal BPD report number for each of the incidents and it   cannot be NULL.
+
+3. Offense Code - Gives the numerical code value of the offense description.
+
+4. Offense Code Group - Gives the high level offense code group name.
+
+5. Offense Description - Gives the detailed description of the offense and the internal categorization of the offense.
+
+6. District - Gives the district where the crime has taken place.
+
+7. Reporting Area - Gives the number of the reporting area where the crime has taken place.
+
+8. Shooting - Gives the numerical value of any kinds of shootings that have taken place.
+
+9. Occurred on Date - Gives the date and time of when the crime has taken place.
+
+10. Year - Gives the year when the crime has taken place.
+
+11. Month - Gives the month when the crime has taken place.
+
+12. Day of Week - Gives the day of the week when the crime has taken place.
+
+13. Hour - Gives the hour when the crime has taken place.
+
+14. UCR part - Gives the Universal Crime Reporting Part Number.
+
+15. Street - Gives the Street name of where the crime has taken place. 
+
+16. Lat - Gives the latitude of where the crime has taken place.
+
+17. Long - Gives the longitude of where the crime has taken place.
+
+18. Location - Gives the location of where the crime has taken place.	
+
+## Read Data
+
+Now, let us read our dataset into our dataframe.
+
+```{r}
+#Read the data
+boston_crime <- read.csv("_data/Boston_crime_2017_2022.csv")
+
+head(boston_crime)
+```
+The dimensions of the dataset.
+
+```{r}
+dim(boston_crime)
+```
+
+The various column names of the dataset.
+
+```{r}
+colnames(boston_crime)
+```
+
+The summary of the dataset.
+
+```{r}
+summary(boston_crime)
+```
+
+## Tidy Data
+
+Let us now check if there are any NA values in the dataset.
+
+```{r}
+na_values <- colSums(is.na(boston_crime))
+na_values
+```
+
+Now we use str() which is used for compactly displaying the internal structure of a R object. 
+
+```{r}
+str(boston_crime)
+```
+
+We can now get all of the classes/data type of all of the columns in the dataset.
+
+```{r}
+sapply(boston_crime, class)
+```
+
+We now observe that the MONTH column is an integer and the values are in integer values of the different months. Let us first convert the MONTH column from integer to character.
+
+```{r}
+boston_crime <- transform(boston_crime, MONTH = as.character(MONTH))
+```
+
+```{r}
+sapply(boston_crime, class)
+```
+
+We can now observe that the class/data type of the column MONTH has been changed to character. Now let us replace all of the numeric values in the MONTHS to their corresponding character months.
+
+```{r}
+boston_crime <- boston_crime %>% 
+  mutate(MONTH = str_replace(MONTH, "3", "March"), MONTH = str_replace(MONTH, "4", "April"), MONTH = str_replace(MONTH, "5", "May"), MONTH = str_replace(MONTH, "6", "June"), MONTH = str_replace(MONTH, "7", "July"), MONTH = str_replace(MONTH, "8", "August"), MONTH = str_replace(MONTH, "9", "September"), MONTH = str_replace(MONTH, "10", "October"), MONTH = str_replace(MONTH, "11", "November"), MONTH = str_replace(MONTH, "12", "December"), MONTH = str_replace(MONTH, "1", "Janurary"), MONTH = str_replace(MONTH, "2", "February"))
+head(boston_crime)
+```
+
+```{r}
+head(boston_crime)
+```
+
+We can observe that the values of the column MONTH have been changed successfuly. Let us now perform our analysis.
+
+## Research Questions
+
+Once I am done with cleaning and observing the data, now I want to perform my analysis/visualization to answer my research questions. My major focus is to understand the relation between the crime and the region, time of the day and the crime and various other interesting observations. 
+
+Let us now look at each one of them in detail along with my observation.
+
+## 1. What are the different crime categories in Boston and what are the most common crimes among them from 2017-2022?
+
+First, let us find out what are all the various crime categories and how many records we have for each one of these crime categories in their decreasing order..
+
+```{r}
+common_crimes <- as.data.frame(table(boston_crime$OFFENSE_DESCRIPTION))
+colnames(common_crimes) <- c("Offense_code_group", "Total")
+common_crimes <- common_crimes[order(common_crimes$Total, decreasing = T),]
+common_crimes
+```
+
+We can see that there are 257 different crime categories in the Boston metro region. I have also observed that there are few categories of crime which are extremely minimal and which are quite rare in the few years which are not our main focus. We need to mainly focus on the crime categories which are very high in number and are contributing to the crime rate in the Boston metro. To identify these crime categories we now select the top 10 crime categories from the decreasing order.
+
+```{r}
+top_crime_data <- common_crimes[1:10,]
+top_crime_data
+```
+
+We now plot a bar graph to represent the crime categories and the number of the crimes from 2017- 2022.
+
+```{r}
+ggplot(data = top_crime_data, mapping = aes(x= Total, y= reorder(Offense_code_group, Total)))+
+  geom_col(aes(fill = Offense_code_group))+
+  geom_text(data = top_crime_data[c(1,39),],mapping = aes(label = Total))+
+   theme_minimal()+
+  labs(title = "Common Crime Category in Boston Metro",
+       y = "Crime categories",
+       x = "Total number of crimes") +
+ theme(legend.position = "none")
+
+```
+
+## Interpretation
+
+I have chosen a bar graph as it conveys the relational information more easily and quickly. Each of the bars display the value of the particular crime category. I have used geom_col() instead of geom_bar() because I want the height of the bars to represent/show the values. From the graph it is very clear that “INVESTIGATE PERSON” is the most common crime category which is then followed by the “M/V - LEAVING SCENE - PROPERTY DAMAGE” then “SICK/INJURED/MEDICAL -PERSON” and so on.
+
+## 2. Which year has contributed for the maximum number of crimes in the Boston Metro and did the crimes increase of decrease from 2017-2022
+
+Let us check if the class/data_type of the column YEAR to check if it is a numeric value or not if it isn’t then let's transform the YEAR to a numeric value. 
+
+```{r}
+sapply(boston_crime, class)
+```
+We can see that the column YEAR is a numeric value and there is no need for us to transform.
+
+Now, let us get the count of the crime records for each year from 2017 to 2022.
+
+```{r}
+crimes_per_year <- boston_crime %>% 
+  group_by(YEAR) %>% 
+  summarise(Total = n())
+
+crimes_per_year
+```
+
+We now plot a line graph to represent the different years and the number of the crimes in each of the years  from 2017- 2022(Till March).
+
+```{r}
+ggplot(crimes_per_year, aes(x = YEAR, y = Total))+
+  geom_line(color = "grey")+
+  geom_point(size = 3, color = "red")+
+  theme_minimal()+
+  labs(title = "Crimes per Year in Boston Metro",
+       x = "Years",
+       y = "Total number of crimes")
+```
+
+## Interpretation
+
+I have chosen a line graph as it helps in tracking the changes that have taken place over a short of a long period of time. It also helps us in making observations if they are consistently increasing or decreasing. From the graph we can observe that it is a downward slope which is an extremely positive sign as it indicates that the crimes per year have decreased over time. From 2017-2018 there is a slight decrease in the crimes where there is a significant decrease in the number of crimes from 2018-2020 . We can also observe that from 2020-2021 the number of crimes have very slightly increased. We can ignore the downward slope to 2022 because our dataset consists of the crime records for only the first 3 months of 2022 thereby, not providing the accurate analysis for 2022. We can conclude that 2017 has the maximum number of crimes.
+
+## 3. Which months of the year have seen the highest number of crimes? Is it during the holiday months or not?
+
+Let us now check if there is any difference in the number of crimes that happen based on the months.
+
+```{r}
+monthly_crimes <- boston_crime %>% 
+  group_by(MONTH) %>% 
+  summarise(Total = n())
+monthly_crimes
+```
+
+We now plot a bar graph to represent the monthly crimes and the number of the crimes for the 12 months.
+
+```{r}
+ggplot(monthly_crimes, aes(x = reorder(MONTH, -Total), y = Total))+
+  geom_col(fill = "salmon")+
+  geom_text(aes(label = Total), col = "black")+
+  theme_minimal()+
+  labs(title = "Monthly Crime in Boston Metro",
+       y = "Total Number of Crimes",
+       x = "Months")
+```
+
+## Interpretation
+
+I have chosen a bar graph as it conveys the relational information more easily and quickly. Each of the bars display the value of the particular crime category. I have used geom_col() instead of geom_bar() because I want the height of the bars to represent/show the values. From this graph we can observe that there is not a very huge difference between the crime rate in different months but we can observe that the crime during the holiday season like December and November have a low crime rate than the other months. We can also observe that the month right after the holiday month January is almost the highest month with the crime rate.
+
+We know that the year with the highest crimes is 2017. Now, let us know the month of 2017 with the highest crime rate.
+
+```{r}
+monthly_crimes_2017 <- boston_crime %>% 
+  filter(YEAR == 2017) %>%
+  group_by(MONTH) %>% 
+  summarise(Total = n())
+monthly_crimes_2017
+```
+
+We now plot a bar graph to represent the monthly crimes for the year 2017 and the number of the crimes for the 12 months.
+
+```{r}
+ggplot(monthly_crimes_2017, aes(x = reorder(MONTH, -Total), y = Total))+
+  geom_col(fill = "pink")+
+  geom_text(aes(label = Total), col = "black")+
+  theme_minimal()+
+  labs(title = "Monthly Crime in Boston Metro",
+       y = "Total Number of Crimes",
+       x = "Months")
+```
+
+## Interpretation
+
+From this graph we can observe the same interpretation as that of the monthly crimes graph for the past 6 years. Now we also understand that the highest crime month of the year 2017 is August which is very closely followed by July, June and so on. Again we can observe that the holiday months December and November are among the bottom 3 months.
+
+## 4. What is the daily crime rate in the different streets of the Boston Metro?
+
+Let us first filter, group_by and summarize based on the year with the highest number of crimes and then with the month with the highest number of crimes.
+
+```{r}
+daily_crime <- boston_crime %>% 
+  filter(YEAR == 2017, MONTH == "August") %>% 
+  group_by(DAY_OF_WEEK, DISTRICT) %>% 
+  summarise(Total = n())
+head(daily_crime)
+```
+
+We now have the count for the total number of crimes based on the day of the week and the street in which they have taken place.
+
+We now plot a 2-dimensional frequency graph using the geom_count() to represent the crime rate in the different districts of the Boston Metro.
+
+```{r}
+ggplot(daily_crime, aes(x = DAY_OF_WEEK, y = DISTRICT))+
+  geom_count(aes(size = Total), col = "turquoise3")+
+  theme_minimal()+
+  labs(
+    title = "Daily Crime in Boston Metro - 2017",
+    subtitle = "Crimes in August",
+    x= NULL,
+    y = "Districts"
+  )
+```
+
+## Interpretation
+
+I have chosen a 2-dimensional frequency graph using the geom_count as it helps in counting a different number of observations at each of the locations and then maps the count in order to point to the area. From the above graph we can understand that maximum intensity of the dots is maximum on the districts of B2, B3, C11 and D4. However, the crime rate is relatively less in the A and E.This graph also represents which day of the week has the highest number of crimes.
+
+Now, let us visualize the data for the second month with the high crime rate.
+
+```{r}
+daily_crime <- boston_crime %>% 
+  filter(YEAR == 2017, MONTH == "July") %>% 
+  group_by(DAY_OF_WEEK, DISTRICT) %>% 
+  summarise(Total = n())
+head(daily_crime)
+```
+
+We now have the count for the total number of crimes based on the day of the week and the street in which they have taken place.
+
+We now plot a 2-dimensional frequency graph using the geom_count() to represent the crime rate in the different districts of the Boston Metro.
+
+```{r}
+ggplot(daily_crime, aes(x = DAY_OF_WEEK, y = DISTRICT))+
+  geom_count(aes(size = Total), col = "turquoise4")+
+  theme_minimal()+
+  labs(
+    title = "Daily Crime in Boston Metro - 2017",
+    subtitle = "Crimes in July",
+    x= NULL,
+    y = "Districts"
+  )
+```
+
+## Interpretation
+
+From the above graph we can understand that maximum intensity of the dots is maximum on the districts of B2, C11. However, the crime rate is relatively less in the A and E. When compared with the month of August, we can observe that the districts of B3 and D4 have slightly less crimes in July. However, B2 and C11 districts are ranked as the top crime districts in both the months. We can now conclude that these two districts are the districts with the highest crime rate.
+
+
+## 5. Which day of the week, the top crime category have taken place the most? Is it most during the weekends or during the weekdays?
+
+We know that the top crime category of the Boston Metro is the INVESTIGATE PERSON so, let us now check on which days of the week it is the highest.
+
+```{r}
+top_crime <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION == "INVESTIGATE PERSON") %>% 
+  group_by(DAY_OF_WEEK) %>% 
+  summarise(Total = n())
+top_crime
+
+```
+
+We have the total number of crimes taken place based on our top category of crime.
+
+We now plot a bar graph to represent the day of the week the of when the crime has happened and the number of the crimes.
+
+```{r}
+ggplot(top_crime, aes(x = Total, y = reorder(DAY_OF_WEEK, Total)))+
+  geom_col(fill = "aquamarine2")+
+  geom_text(aes(label = Total), col= "azure4")+
+  geom_vline(xintercept = mean(top_crime$Total))+
+  geom_label(label = paste("Mean ", round(mean(top_crime$Total))),
+             x = mean(top_crime$Total),
+             y = 9)+
+  labs(
+    title = "INVESTIGATE PERSON - Crime by day of the week",
+    subtitle = "From 2017 - 2022",
+    x = "Total Crime ",
+    y = NULL
+  )+
+  theme_minimal()
+```
+
+## Interpretation
+
+I have chosen a bar graph as it conveys the relational information more easily and quickly. Each of the bars display the value of the particular crime category. I have used geom_col() instead of geom_bar() because I want the height of the bars to represent/show the values. From this graph we can observe that the crime for this category has majorly happened during the weekdays than on the weekends. There is a significant decrease in the count during the weekends. During the weekends people like to spend time with their families and enjoy the weekend. Whereas, on the weekdays/business hours it is much probable to investigate a person.
+
+Now, let us check for the top second crime category and present our analysis. Our second top crime category is "M/V - LEAVING SCENE - PROPERTY DAMAGE".
+
+```{r}
+top_crime <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION == "M/V - LEAVING SCENE - PROPERTY DAMAGE") %>% 
+  group_by(DAY_OF_WEEK) %>% 
+  summarise(Total = n())
+top_crime
+
+```
+
+We have the total number of crimes taken place based on our top second category of crime.
+
+We now plot a bar graph to represent the day of the week the of when the crime has happened and the number of the crimes.
+
+```{r}
+ggplot(top_crime, aes(x = Total, y = reorder(DAY_OF_WEEK, Total)))+
+  geom_col(fill = "aquamarine4")+
+  geom_text(aes(label = Total), col= "black")+
+  geom_vline(xintercept = mean(top_crime$Total))+
+  geom_label(label = paste("Mean ", round(mean(top_crime$Total))),
+             x = mean(top_crime$Total),
+             y = 9)+
+  labs(
+    title = "IM/V - LEAVING SCENE - PROPERTY DAMAGE - Crime by day of the week",
+    subtitle = "From 2017 - 2022",
+    x = "Total Crime ",
+    y = NULL
+  )+
+  theme_minimal()
+```
+
+## Interpretation
+
+On the contrary from the graph on the top crime we can observe that the crime has taken place the most during the weekends and has significantly decreased during the weekdays. Friday has the maximum number of property damage crime reports logged followed by Saturday and Sunday. It is also very clear that the business working days have seen comparatively less crimes.
+
+## 6. When did the top 10 crime categories actually take place? Is it during the morning, evening or the night?
+
+Let us first list out our top 10 crime categories.
+
+```{r}
+top10_crimes <- unique(common_crimes$Offense_code_group)[1:10]
+top10_crimes <- droplevels(top10_crimes)
+top10_crimes
+```
+
+Now, we have our top 10 crime categories listed. Let us write a fucntion in order to segregate our column hour into the different time zones say "12am to 8am" , "8am to 4pm" and "4pm to 12am".
+
+```{r}
+pw <- function(x){ 
+    if(x < 8){
+      x <- "12am to 8am"
+    }else if(x >= 8 & x < 16){
+      x <- "8am to 4pm"
+    }else{
+      x <- "4pm to 12am"
+    }
+}
+```
+
+Let us create a new column called the "Hour_category" which reflects the time zone the crime has actually taken place.
+
+```{r}
+boston_crime$Hour_category <- sapply(boston_crime$HOUR, pw)
+boston_crime$Hour_category <- as.factor(boston_crime$Hour_category)
+head(boston_crime)
+```
+
+We know that maximum number of crimes have taken place in the year 2017 so let us check at what time these top 10 crime categories have taken place in 2017.
+
+```{r}
+crime_when <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION %in% top10_crimes, YEAR == "2017") %>% 
+  group_by(OFFENSE_DESCRIPTION, Hour_category) %>% 
+  summarise(Total = n())
+
+crime_when
+```
+
+We have the data now based on the crime category, hour category and the total number of crimes that have taken place.
+
+We now plot a bar graph to represent the the time category of when the crime has taken placed for the top 10 crimes.
+
+```{r}
+ggplot(data = crime_when, mapping = aes(x = Total, y = reorder(OFFENSE_DESCRIPTION, Total))) +
+  geom_col(mapping = aes(fill = Hour_category), position = "dodge") + 
+  labs(x = "Total Count", y = NULL,
+       fill = NULL,
+       title = "Crime categories with the time frame of occurrence.",
+       subtitle = "Year 2017") +
+  scale_fill_brewer(palette = 4) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+## Interpretation
+
+I have chosen a bar graph as it conveys the relational information more easily and quickly. Each of the bars display the value of the particular crime category. I have used geom_col() instead of geom_bar() because I want the height of the bars to represent/show the values. From the above graph we can understand very clearly of which time period each of the crime has taken place. Like, INVESTIGATE PERSON crime category has taken place mostly during the evenings or during the business working hours than compared to the late night. In the similar way, we can observe that the LARENCY SHOPLIFTING has taken place mostly during the business working hours of 8am to 4pm than late in the night. This may be because the shops/malls are generally closed during the night. In the similar fashion we can draw conclusions for all of the crime categories and this graph gives us an in-depth analysis of the time frame of the crime.
+
+Let us now check if we will observe similar observations for the year 2021 which has has the least numer of crimes.
+
+```{r}
+crime_when <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION %in% top10_crimes, YEAR == "2021") %>% 
+  group_by(OFFENSE_DESCRIPTION, Hour_category) %>% 
+  summarise(Total = n())
+
+crime_when
+```
+
+We have the data now based on the crime category, hour category and the total number of crimes that have taken place.
+
+We now plot a bar graph to represent the the time category of when the crime has taken placed for the top 10 crimes.
+
+```{r}
+ggplot(data = crime_when, mapping = aes(x = Total, y = reorder(OFFENSE_DESCRIPTION, Total))) +
+  geom_col(mapping = aes(fill = Hour_category), position = "dodge") + 
+  labs(x = "Total Count", y = NULL,
+       fill = NULL,
+       title = "Crime categories with the time frame of occurrence.",
+       subtitle = "Year 2021") +
+  scale_fill_brewer(palette = 5) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+## Interpretation
+
+From the graph from 2017 and 2021 we can still draw the same conclusions on the time frame that the crimes have taken place. It is very evident that the crimes are still taking place in the same time frames. For LARENCY SHOPLIFTING the crime is still taking place during the business working hours than in the night and even INVESTIGATE PERSON is happening more during the evenings and the mornings than late in the night. This shows that the time frame of occurrence has not changed as the time passed.
+
+## 7. How does the density of the top 3 crime categories change each year?
+
+Let us make a list of the top 3 crime categories and then find the total crimes based on the year.
+
+```{r}
+list <- c("INVESTIGATE PERSON", "M/V - LEAVING SCENE - PROPERTY DAMAGE", "SICK/INJURED/MEDICAL - PERSON")
+crime_density <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION %in% list) %>% 
+  group_by(OFFENSE_DESCRIPTION, YEAR) %>% 
+  summarise(Total = n())
+crime_density
+```
+
+We now have all of the data ready for us to make a density plot.
+
+Let us know plot a density graph to help us represent the top 3 crime categories based on the total crime count and how it changes for different years.
+
+```{r}
+ggplot(crime_density, aes(x =Total, y= OFFENSE_DESCRIPTION, fill = OFFENSE_DESCRIPTION))+
+  geom_density_ridges2()+
+  labs(x = "Total Count", y = NULL,
+       title = "Density of the top 3 crime categories.") +
+  theme(legend.position = "none")
+```
+
+## Interpretation
+
+I have chosen density plot as it shows how the data is distributed over a period of time and the value peaks in the region where there is a maximum concentration. It is also used to smooth out the distribution of the values and thereby reduce the noise of the data. From the above graph we can observe that the values are in a high low format and it clearly indicates how the values are distributed for the entire interval. 
+
+## 8. In which streets did the maximum crime take place for a crime category. Can we predict which parts of the Boston Metro are safer than the others?
+
+Let us get all the latitudes and the longitudes of the crime category.
+
+```{r}
+map_drug <- boston_crime %>% 
+  filter(OFFENSE_DESCRIPTION == "ROBBERY",
+         YEAR == "2019",
+         STREET != "BROOKSIDE AVE") %>% 
+  select(STREET, Long, Lat)
+map_drug
+```
+
+Now, we have all the data required to plot.
+
+I have chosen a icon which will act as a marker to help in locating the street where the crime has taken place on the map. Also, the map can we zoom IN and zoom OUT and when we click on the pointer we can see the name of the street.
+
+```{r}
+ico <- makeIcon(iconUrl = "https://cdn.iconscout.com/icon/free/png-256/drugs-26-129384.png",iconWidth=47/2, iconHeight=41/2)
+map2 <- leaflet()
+map2 <- addTiles(map2)
+map2 <- addMarkers(map2, data = map_drug, icon = ico, popup = map_drug[,"STREET"])
+map2
+```
+
+## Interpretation
+
+I have chosen this map view in order to help understand where exactly the crime is concentrated i.e, which parts of the Boston Metro region so as to understand the safer streets in comparison. This map also helps us understand which streets are densely populated with the crimes. From the above map we can observe that most of the crime is densely present in the northern part of the Boston Metro and Southern part has much less crimes. As per our dataset description and prediction we can visually see it on the map the South-western parts of the Boston Metro have much less crime and is safer than the streets on the North or the North-eastern parts of the Boston metro.
+
+## Reflection
+
+This is my first time working with R and I am truly impressed with the various possibilities in terms of the visualizations and analysis. Being a Computer Science student R plays an extremely important part in Data Science and we can run the code in R without the help of any compiler because R is an interpreted language. Data cleaning is an essential task when it comes to analyze a dataset as the dataset may contain dirty data or NULL values or there might be some columns that are completely irrelevant for the analysis. Therefore, cleaning the dataset is very important. As they help in understanding the various relationships between the variables and how one variable affects the value of the other variable. We can find the dependencies of the values in order to help understand the dataset and the possibilities of the visualizations. 
+
+When I initially chose the Boston Metro crime data I expected it to very straight forward and informative as is but when I kept diving into the dataset I have encountered the different kinds of crimes and the area where they have taken place. Thereby, making me interested in trying to find out which parts of the Boston Metro were safe and which ones were not. I would like to say that the Boston Metro dataset has left me with some interesting findings from the visualizations.
+
+I have started out by initially trying to understand the different columns in the dataset and understand what each one of them are reflecting. Then I started checking if there are any NULL values in the dataset and changed the class of the columns. I have also replaced the values of the columns in the dataset in order to increase the understandability of the dataset and thereby help us in a better visualization and analysis. I have then made my visualizations on the dataset by starting out with most common crimes categories of the Boston Metro and then analyse in-dept based on the year, month, time and day of the week and make my own analysis from the dataset.
+
+This project has been very interesting and challenging at the same time as I wanted to understand the various types of visualizations and how they help us in our analysis. I have done my research in trying to find out some interesting visualizations like the density graph and on how to plot the crimes that have taken place in a particular area onto the map. It was quite challenging for me to understand and interpret the same in my dataset but I had lots of fun doing it. This class has been extremely helpful to me and helped me learn in perform different kinds of analysis.
+
+## Conclusion
+
+Let us start with the different number of crime categories that are present in the Boston Metro region and I have observed that there are 257 different crime categories. I have also observed that there are some of the categories with very less reported records in the past 6 years which do not provide much information. I have then found the top 10 crime categories of the Boston metro and found that the INVESTIGATE PERSON crime category tops the list of crimes. 
+
+I have found that the crimes per year have been decreasing over the past 6 years and there is a significant decrease from 2017-2020 whereas there is an extremely slight increase in the number of cases for 2020-2021. I have not considered the year 2022 because there is only data for the first 3 months and it will not be helpful in analyzing the data year-wise. 
+
+Interestingly, I have also observed that there is a low crime rate in the holiday months of the year namely December and November when compared to the other months. Also, there is a very high crime rate in the month after the holiday season. The crime rate is relatively higher during the weekdays than the weekends for the majority of the crime categories which was surprising. 
+
+When do most of the crimes take place? They are very specific to each of the crime categories as the INVESTIGATE PERSON takes place majorly in the evening whereas the LARCENY SHOPLIFTING takes place during the business working hours where most of the shops/malls are open. This is very specific to each of the crime categories as they all are from different genres and they take place during different timings. 
+
+I was very interested in trying to understand in which parts of the Boston Metro most of the crime takes place. As this will help us understand which streets are safer when compared to the others. I have plotted the crimes using the markers on the graph to help us understand the streets with the higher crime in comparison to the other streets. I have observed that the Northern part or the North-eastern part of the city is densely populated with the various crimes whereas the Southern part or the South-western part of the Boston Metro are much safer. Even after all of the analysis there are still a few questions that are not answered. How does the region and a specific district related	to each other? Which crime categories have reduced over time?
+
+## Bibliography
+
+1. http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Density%20Plot - for the various kinds of graphs.
+2. https://www.kaggle.com/datasets/shivamnegi1993/boston-crime-dataset-2022 - Boston crime dataset.
+3. https://plotly.com/r/ - Plotly R Open Sourcing Graphing Library
+4. Wickham, H., & Grolemund, G. (2016). R for data science: Visualize, model, transform, tidy, and import data. OReilly Media. - Textbook
+5. Wickham, H. (2019). Advanced R. Chapman and Hall/CRC. - Textbook
+6. Wickham, H. (2010). A layered grammar of graphics. Journal of Computational I and Graphical Statistics, 19(1), 3-28. - Textbook

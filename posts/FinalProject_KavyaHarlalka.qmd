@@ -1,0 +1,312 @@
+---
+title: "Final Project - Layoffs since pandemic"
+author: "Kavya Harlalka"
+desription: "Mass layoffs since March 2020"
+date: "`r Sys.Date()`"
+output: distill::distill_article
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+---
+
+```{r Libraries}
+#| label: setup
+#| warning: false
+#| message: false
+
+# Import important libraries needed for functions
+library(tidyverse)
+library(rmarkdown)
+library(summarytools)
+library(dplyr)
+library(formattable)
+library(lubridate)
+library(gridExtra)
+library(treemapify)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Introduction
+
+One of the biggest challenges faced by people today are the layoffs going on across the globe. The layoffs are affecting not just a single country or industry but almost all of them. Companies like Amazon, Meta, Twitter, Netflix, Coinbase have all had mass layoffs this year. And it seems to be continuing further with more and more companies joining the list. Mass layoffs are devastating not just for the individuals being laid off but also for the economony as a whole.
+
+The layoffs are a result of the overhiring that happened when the economy recovered after the pandemic. Tech companies were especially prone to it - Microsoft, Meta and Alphabet increased their company size by 20% after the pandemic. Now, all these companies have to deal with the costs of overhiring and the result is cutting jobs. More than 105,000 people have lost their jobs and as per Bloomberg, the layoff count has hit near pandemic level. Some companies have imposed a hiring freeze instead of laying employees off.
+
+The tech sector is not the only one affected, housing sales have also slowed with high home prices and rising interest rates on loans and this has caused large layoffs in the real estate market. Investment banks and financial institutions have been affected as well with mass layoffs being announced in companies like Goldman Sachs, Wells Fargo and Credit Suisse.
+
+The aim of this research project is to delve into these layoffs and analyze which countries and industries have been affected the most by it. We will also look into finding some useful insights and patterns to these layoffs.
+
+## Dataset
+
+The dataset being used is a pre-existing one originally picked from layoffs.fyi, a crowdsourced database of tech layoffs, taken till 12/29/22. It gives details of all the layoffs that have happened since March 2020 when the pandemic hit. It contains 1696 mass layoff details which have taken place in 161 cities of 55 countries and affecting 28 industries since March 2020. The data shows that 1,495 tech companies have sacked 246,267 employees since the onset of Covid-19, but 2022 has been the worst year for the tech sector and early 2023 can be even grimmer.
+
+The following columns in the dataset are of note :-
+
+* Company - The organization from which the layoffs took place. This piece of information would give us an idea which companies are having the largest layoffs all over the world.
+* Location - This gives us the City in which the layoff has happened. This can give us an idea about which areas are affected the most.
+* Laid_Off_Count - This gives us the number of employees laid off. It will give the total counts for any kind of grouping we would want to do to further analyze the data.
+* Percentage - It gives the value of percentage that the laid off employees form giving an insight on how much percent of employees were let go and which companies are going through the highest percentage lay offs.
+* Date - Gives the date on which the layoff took place, will help give a distribution of the layoffs taking place providing a good idea about the peaks and the lowest points of the layoff periods.
+* Stage - The stage of funding for the company, giving an insight into which categories are facing the biggest problems in this period.
+* Country - The country in which the layoff took place. The highest layoffs are currently going on in the United States and that is clearly reflected in the data analysis done below of this dataset.
+
+
+## Possible research queries
+Some of the possible research questions that come up when we look at this dataset are :-
+
+* Which sector/industry has been impacted the most with this layoffs trend?
+* Which countries are suffering from the highest number of layoffs?
+* What kind of funding stage are most companies at when laying off people?
+* When was the peak observed in the layoffs trend? What could be the possible reason for it?
+
+
+## The Data
+
+We are now going to fetch the data and view it. There are two columns that are there in the dataset we do not need for our analysis. These are Source (the source of the lay off information) and List_of_Employees_Laid_Off. Hence, after reading in the data, we ignore these two columns before continuing analysis on it.
+
+```{r Read In Data}
+# Read data from the csv file
+data <- read.csv('_data/Dataset_detailing_layoffs.csv')
+
+# Remove unnecessary columns
+data <- subset(data, select = -c(Source, List_of_Employees_Laid_Off))
+
+# Printing the read data as a paged table
+paged_table(data)
+```
+
+We can see all of the data in the paged table above. As it can be seen, the dataset is huge and hence cannot be analyzed as is. We will have to order and sort the dataset to get a better idea of what it can convey.
+
+## Summary of data
+
+First step is going to be printing and analyzing the summary of the complete dataset to give us an idea how to approach it.
+
+```{r Data Summary}
+# Get and print summary of the dataset to help us analyze it.
+print(dfSummary(data))
+```
+
+We can see that there are more than 1400 companies data, 161 cities in 55 countries and affecting 28 industries. Thus we cannot analyze each and every value of each and every column since. We will only be analyzing the ones that have been impacted the most since it would not give us in-depth insight we need if we consider all the values of such a large datasets. Reducing the number of values also produce better and more insightful visualizations.
+
+## Analysis of Country wise data
+
+Let us start with the most critical analysis, which countries have been impacted the most by this layoff trend. We have 28 countries in the dataset and the data needs to be grouped for each unique country for us to be able to get this information.
+
+```{r Country-Wise Analysis}
+# Group dataset by Country, ignoring values that have country as NA
+dataGroupedByCountry <- data %>%
+  group_by(Country) %>% 
+  filter(!is.na(Country))
+
+# Analyze the grouped data by finding the total laid off count per country
+dataGroupedByCountry <- dataGroupedByCountry %>%
+  summarise(
+    Total_Laid_Off = sum(Laid_Off_Count, na.rm = TRUE)
+  ) %>%
+  arrange(Country)
+paged_table(dataGroupedByCountry)
+
+```
+
+Though we get an idea on the number of layoffs in each country, we do not get any real comparison just from the table. We need visualizations to be able to better compare and analyze the data we see in this table.
+
+```{r Country to Layoffs graph, fig.width=14, fig.height=8}
+dataGroupedByCountry %>%
+  top_n(20) %>%
+  ggplot(aes(y=Country, x=Total_Laid_Off, fill = Country)) +
+      geom_col() +
+      theme(axis.text.x=element_text(size=20, angle=30, hjust=1),
+            axis.title.x = element_text(size=20),
+            axis.text.y=element_text(size=20),
+            axis.title.y = element_text(size=20)) +
+       labs(title = "Layoffs by Country 2022",
+            x = "Country", 
+            y = "Laid off count")
+
+
+```
+
+This graph helps us gain perspective of layoffs in the highest 20 countries. As can be seen from the bar chart, the United States has the highest layoff count with more than 150000 layoffs. None of the other countries has such a significant number of layoffs. The second highest is India with around 30000 layoffs.
+
+The above visualization gives us an idea in count, now we should consider percentages and composition.
+
+```{r Layoffs distribution}
+dataGroupedByCountryPercentage <- dataGroupedByCountry %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(./sum(.)))) %>%
+  arrange(desc(Total_Laid_Off)) %>%
+  top_n(20)
+
+ggplot(dataGroupedByCountryPercentage, aes(x="", y=Total_Laid_Off, fill=Country)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0)
+```
+
+The above pie chart gives us the distribution of layoffs taking place across the top 20 countries. United States constitutes almost 65% of the total layoffs all across the world.
+
+There are a few main reasons that one could speculate for the United States having the highest number of layoffs. 
+
+* One of the biggest reasons is the inflation that is currently affecting the country. A lot of United States Dollars was printed during the pandemic which resulted in the inflation. In response to higher inflation, the Federal Reserve has raised the effective Federal Funds interest rate from 0.08% in January 2022 to 3.08% at the end of September 2022. Hence this brought about recession, taking debit has become costlier for the startups and investors are also not readily investing. This has directly affected the economy and caused the startups and organizations to compensate with laying off employees.
+* Another reason is the overhiring that occured especially in the FAANG companies (Facebook, Apple, Amazon, Netflix and Google) mainly in the United States during the post pandemic period. They increased their headcount by over 80% between 2019 and 2021 and are now correcting for their optimism.
+
+## Citywise Layoffs in the United States
+
+Now we check citywise layoffs in the country with the highest layofffs - United States.
+
+```{r United States City wise distribution, fig.width = 10}
+dataUnitedStates <- data %>%
+  subset(Country=='United States') %>%
+  group_by(Location) %>%
+  summarise(
+              Total_Laid_Off = sum(Laid_Off_Count, na.rm = TRUE)
+            ) %>%
+  mutate(across(where(is.numeric), ~ formattable::percent(./sum(.))))
+
+dataUnitedStates %>%
+  ggplot(aes(area = Total_Laid_Off, fill = Location, label = Location)) +
+  geom_treemap() +
+  geom_treemap_text() +
+  theme(legend.position="none")
+
+```
+
+SF Bay Area has been the center of Mass layoffs. From Salesforce to Twitter to Meta, thousands of U.S. workers have lost their jobs in brutal mass layoffs in 2022.
+
+For a growing number of companies, there have been second and third rounds of cuts. These include Stripe, which cut around 1,000 in November after laying off around 50 people (from TaxJar, a Stripe acquisition) earlier this year, and Lyft, which slashed 683 from its team after laying off 60 people in July. In May, Netflix cut 150 staff members from its workforce and laid off 450 more in June.
+
+Meta announced it is laying off 13% of its staff, or more than 11,000 employees, through a staff letter CEO Mark Zuckerberg wrote on Nov. 3. The company saw overall sales fall 4% to $27.71 billion in the latest quarter. Operating income dropped 46% from the previous year, while costs and expenses rose 19% to $22.1 billion.
+
+After the deal to take over Twitter for $44 billion closed, the social media company's new owner, Elon Musk, fired Twitter's CEO along with several top executives. It was previously suggested he would cut 75% of its pre-takeover workforce. He has since walked that notion back but the company did announce layoffs to half its workforce, with smaller cuts for the team responsible for preventing the spread of misinformation.
+
+Most of the tech companies are based off SF Bay Area and hence the highest number of layoffs can be observed to be there itself.
+
+## Companies with highest layoffs
+
+Out of the complete dataset, we check which companies have had the highest number of layoffs.
+
+```{r Companies with highest layoffs, fig.width = 10}
+dataTop20Companies <- data %>%
+  top_n(10, Laid_Off_Count)
+
+dataTop20Companies %>%
+  mutate(Company = fct_reorder(Company, Laid_Off_Count)) %>%
+  ggplot(aes(x=Company, y=Laid_Off_Count)) + 
+  geom_col()
+
+```
+
+The companies with the highest layoffs are clearly Meta and Amazon
+
+Facebook parent company Meta announced last week it would cut 13% of its staff or 11,000 workers, with Meta CEO Mark Zuckerberg saying he overestimated how long the pandemic’s e-commerce boom would last.
+
+Early last week, reports indicated Amazon expected to cut 10,000 employees -- a small fraction of its 1.5 million workers -- would include tech as well as corporate staffers, according the The New York Times. The layoffs, which would be the largest in the company's history, are expected to continue into next year.
+
+One common thread among the companies laying off large numbers of workers in a booming economy is a mismatch between the number of managers and the number of lower-end workers,
+
+## Funding Stages
+
+Now we look at the distribution of layoffs among the funding stage in each of the top 20 countries.
+
+```{r Funding Stage with respect to layoffs and countries, fig.width = 10}
+dataTop20Countries <- data[data$Country %in% dataGroupedByCountryPercentage$Country,]
+
+dataTop20Countries %>%
+  ggplot(aes(fill=Stage, y=Country, x=Laid_Off_Count)) + 
+      geom_bar(position="stack", stat="identity")
+
+```
+
+As can be seen from the graph, companies at the funding stage of IPO have the highest layoffs count. This is because the largest mass layoffs were all in the big tech firms (FAANG). So even though startups did have a lot of layoffs due to the debt crisis and recession, the number of people laid off is much higher for the large firms. Also, the publicly traded firms (like Meta) saw huge stock price tanks and had to reduce workforce to compensate for the huge losses. 
+
+## Layoffs from industry perspective
+
+Let us now compare layoffs with the industries for each of the top 20 countries.
+
+```{r Layoffs by industry, fig.width = 10, fig.height = 20}
+test <- dataTop20Countries %>% 
+  group_by(Country) %>%
+  nest() %>% 
+  # Add a new column with the ggplot objects
+  mutate(plots = pmap(.l = list(data, as.character(Country)), 
+                      ~ ggplot(data = (..1 %>%      # first element of .l
+                                         group_by(Industry) %>%
+                                         summarise(
+                                            Total_Laid_Off = sum(Laid_Off_Count, na.rm = TRUE)
+                                          )  %>%
+                                          arrange(desc(Total_Laid_Off))) %>%
+                                          mutate(across(where(is.numeric), ~ formattable::percent(./sum(.))))) + 
+                          aes(x = Industry, # expose the x and y variables
+                              y = Total_Laid_Off) +
+                          geom_point(size=3) +
+                          geom_segment(aes(x=Industry, 
+                             xend=Industry, 
+                             y=0, 
+                             yend=Total_Laid_Off)) +
+                          coord_flip() +
+                          labs(title = str_to_title(str_glue('{..2}')))))
+
+grid.arrange( grobs = test$plots, nrow = 5 )
+
+```
+
+COVID 19 affected specific sectors badly like transportation, consumer and real estate due to social distancing to control outbreak. As vaccination rates inched up, these sectors did start performing better, but 2022 recession fears have led to renewed layoffs in almost all industries. Retail and consumer are again hit the hardest because of inflation in 2022.
+
+Food sector was also hit in some countries first because of supply-demand crunch during COVID 19 and then due to inflation in 2022. Finance was also affected because of rapid economic downturns since 2020.
+
+Healthcare, media, marketing and logistics remained relatively prone to layoffs and were doing fine during COVID 19 outbreak. Vaccinations for COVID 19 is still crucial so healthcare is doing fine in 2022 as well. Crypto noticed a rapid rise with bitcoin halving in 2020. Several crypto startups were found and the field thrived in 2020 and 2021. In 2022 there were layoffs in crypto sector as well. Fitness industry took a hit because of social distancing as well.
+
+## Layoffs over time
+
+Let us now analyze layoffs since 2020.
+
+```{r Layoffs over time, fig.width = 10}
+data %>%
+  mutate(
+    Date2 = ymd(Date) # convert date field to date type (currently string)
+  ) %>%
+  ggplot(aes(y=Laid_Off_Count, x=Date2)) + 
+      geom_point() +
+       labs(title = "Layoffs over time",
+            x = "Date", 
+            y = "Laid off count")
+
+```
+In 2020 there was a surge in layoffs, especially for startups and specific sectors, due to the efforts to contain COVID 19 and it led businesses to suspend operations or close, resulting in a record number of temporary layoffs.
+
+Big tech was generally doing fine. After COVID 19, there was an immediate recovery in the economy, which was not stable at all. Startups that were benefitting from pandemic boom are feeling the pressure in 2022 because debt has become costlier in FED's efforts to control inflation. Massive overhiring in tech sector during periods of rapid growth is leading to mass layoffs in 2022. The public markets have been hit hard in 2022, and that’s trickled down to the private markets. Recession concerns, rising interest rates and geopolitical issues have all contributed to a roller-coaster stock market.
+
+One more reason for layoffs could be that the publicly traded companies working on a fiscal or calendar year are about to hit a very important stockholder time frame. For example, it's Q4 earnings report and business review for calendar year operating corporations, which usually means hiring freezes and quarterly reviews. Hence, combined with recession fears, this adds to the huge surge in layoffs during Q4 of 2022.
+
+## Reflection
+
+I learnt a lot throughout the process of analyzing and visualizing from the Layoffs dataset. The reason I chose this dataset is its relevance today and how it is affecting everyone around me. The dataset in itself is interesting and taken from a crowdsourced site. I initially started off with getting a summary of the dataset. This helps me understand the kind of values that are there in each of the columns and how I could possibly use the columns to answer important research queries. I began the project with the most basic research query that came to my mind when I looked at the dataset - which country is most affected by this layoffs season. To gain an insight into this, I had to group the dataset by country and then get the total number of layoffs in each of the countries. Then selecting the top 20 countries with the highest total laid off count gave me an idea on which countries were impacted the most. In this case, it was the United States.
+
+Upon further analysis, I found that the layoffs were occuring in higher amounts not just in specific countries but also in specific locations. So I decided to check the country with the highest layoffs (United States) and group them using location. This helped my gain insight into the fact that SF Bay Area was affected the most by the layoffs and most of these layoffs were from big tech firms. Then I looked at the companies with highest layoffs by simply sorting the dataset by number of layoffs and getting the top ones. Indeed Meta, Amazon and Uber were the among top ones.
+
+I also looked at the funding stages that the layoffs were occuring at. This helped me understand whether the startups or big firms were the ones causing higher lay offs. To get these, I took the countries with the highes layoffs and got their distribution with respect to the Funding Stage. It was clear that layoffs were highest for organizations at the IPO stage.
+
+Next, I faced my biggest challenge in the project. It was time to delve into the industries being affected. I did not want to visualize it for just one country but for all the ones with high layoff count. To do this, I had to learn to print graphs with clarity on a small scale and print multiple graphs in the same row. It took research but I was able to figure out a relatively clean implementation that clearly conveyed what I wanted to show. The sectors affected in each of the countries were clearly visible and we are able to draw inferences from those visualizations.
+
+Finally, I decided to look at layoffs over the period of time starting with the pandemic till the last date in the dataset. I used scatterplot to plot the layoffs taking place on each date. I had to convert the date column from a char column to a proper date column to be able to print a visually clear and correct scatterplot. It helped me analyze further into the topic and draw conclusions on the layoffs trend that has been going on since the pandemic period.
+
+THough I am happy with the results, I believe I could provide better visualizations. There are certain features I could not get as properly working like facet wrap and could be made better use of. Also, there could be more versatile kinds of graphs that could be used throughout for the visualizations instead of mainly the bar graph.
+
+## Conclusion
+
+In this research, we analyzed the layoffs that have been taking place since the start of the pandemic and upto the recent recession. We have delved into the various aspect of the layoffs and compared it with respect to the location, industry, company, funding stage and date. We have seen that the highest layoffs have taken place in the United States (especially in the SF Bay Area) and analyzed what factors could possibly be the reason contributing to such mass layoffs. We have also looked at the companies like Meta and Amazon having the highest layoffs and the possible reasons behind them. We checked the funding stages at which the companies are laying off to see how much startups are contributing to the lay offs as compared to big firms. Finally, we looked at the trend of layoffs that have been continuing since the pandemic period.
+
+The winter of layoffs is here. Large-scale layoffs have taken place across the world, as the US is staring at an impending recession.In 2008, tech companies laid off about 65,000 employees, and a similar number of workers lost their livelihoods in 2009, according to data by global outplacement & career transitioning firm Challenger, Gray & Christmas. In comparison, 965 tech companies have laid off more than 150,000 employees this year globally, surpassing the Great Recession levels of 2008-2009, According to a MarketWatch report, layoffs are part of a strategy by tech firms to maintain viability through 2023 and beyond.
+
+## References
+
+* layoffs.fyi
+* R programming language
+* Wickham, H., & Grolemund, G. (2016). R for data science: Visualize, model, transform, tidy, and import data. OReilly Media.
+* https://www.investopedia.com/biggest-layoffs-2022-6826521
+* https://mondo.com/insights/mass-layoffs-in-2022-whats-next-for-employees/
+* https://www.bloomberg.com/news/articles/2022-11-08/the-pace-of-tech-job-cuts-is-reaching-early-pandemic-levels?leadSource=uverify%20wall
+* https://abc7news.com/tech-layoff-tracker-bay-area-layoffs-doordash-meta/12434385/
+* https://www.computerworld.com/article/3680448/what-amazon-twitter-meta-and-others-got-wrong-with-layoffs.html
