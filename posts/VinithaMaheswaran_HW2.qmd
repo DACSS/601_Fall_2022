@@ -1,0 +1,334 @@
+---
+title: "Homework 2"
+author: "Vinitha Maheswaran"
+date: "12/10/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - hw2
+  - Olympics
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Read in data
+
+
+For this homework I will be working with the 120 years of Olympic history: athletes and results dataset. The Olympics data has two csv files - "athlete_events.csv" and "noc_regions.csv". This historical dataset contains information on the modern Olympic Games, including all the Games from Athens 1896 to Rio 2016. This data was scraped from www.sports-reference.com in May 2018 and is available on Kaggle. 
+
+```{r}
+# Reading the "athlete_events.csv" and "noc_regions.csv" files
+
+athlete_data <- read_csv("_data/athlete_events.csv")
+noc_data <- read_csv("_data/noc_regions.csv")
+```
+
+```{r}
+# Displaying athlete_data dataset
+
+athlete_data
+```
+
+```{r}
+# Displaying noc_data dataset
+
+noc_data
+```
+
+```{r}
+# Finding dimension of both datasets
+
+dim(athlete_data)
+dim(noc_data)
+```
+
+```{r}
+# Structure of athlete_data dataset
+
+str(athlete_data)
+```
+
+```{r}
+# Structure of noc_data dataset
+
+str(noc_data)
+```
+
+```{r}
+#Summary of athlete_data
+
+library(summarytools)
+print(summarytools::dfSummary(athlete_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+#Summary of noc_data
+
+library(summarytools)
+print(summarytools::dfSummary(noc_data,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+
+### Briefly describe the data
+
+The dataset contains information on the modern Olympic Games, including all the Games from Athens 1896 to Rio 2016 (the past 120 years). The Winter and Summer Games were held in the same year until 1992. After that, they were staggered such that the Winter Games occur once every 4 years starting with 1994, and the Summer Games occur once every 4 years starting with 1996. The "athlete_events.csv" file has 271,116 observations and 15 variables/attributes. Each row in this csv file corresponds to an individual athlete competing in an individual Olympic event (athlete-events). It includes information about the athlete's name, gender, age, height (in cm), weight (in kg), team/country they represent, National Olympic Committee (3-letter code) they are representing, year and season participated, Olympic games host city for that year and season, sport, athlete event and medal won. Each athlete will have multiple observations in the data as they would have participated in multiple events and during different seasons. This csv file has 1385 duplicates which I will be investigating in the next steps. The "noc_regions.csv" file has 230 observations and 3 variables/attributes. This file contains information about the 'NOC' National Olympic Committee which is a 3-letter code, the corresponding region and notes. The file has 230 unique codes for the NOC variable. Few of the regions have same NOC code which in some cases is distinguished using the notes. The notes has missing value for 209 observations. The NOC variable is present in both the files and can be used as a key to join both the files into a single dataset.
+
+### Looking into duplicate data
+
+```{r}
+# Displaying the duplicate observations in "athlete_events.csv" file
+
+duplicate_athlete_data <- athlete_data[duplicated(athlete_data),]
+duplicate_athlete_data
+```
+
+```{r}
+table(duplicate_athlete_data$Sport)
+```
+
+The "athlete_events.csv" file has 1385 duplicates as shown above. The table() shows that more than 90% of the duplicate observations are for the Sport 'Art Competitions'. These duplicates could have been introduced during the data collection while performing scraping. The duplicates can be removed from the athlete_data during the data cleaning process and before joining the datasets.
+
+
+## Tidy Data and Mutate Variables (as needed)
+
+The noc_data has some missing value in 212 observations. Hence, I start by cleaning the noc_data.
+
+```{r}
+#Check for missing/null data in the noc_data
+
+sum(is.na(noc_data))
+sum(is.null(noc_data))
+```
+
+```{r}
+# Checking which columns have NA values in noc_data
+
+col <- colnames(noc_data)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(noc_data[,c]))))
+}
+```
+
+The 'region' variable in noc_data has missing values for 3 observations. The corresponding NOC code for these 3 observations are ROT, TUV, and UNK. I have displayed the 3 observations below.
+
+```{r}
+# Displaying the observations with missing value in 'region' variable
+
+noc_data%>%filter(is.na(region))
+```
+
+```{r}
+# Displaying the observations with same value for both 'region' and 'notes' variables
+
+noc_data%>%filter(region==notes)
+``` 
+
+Although the 'region' value is missing for these observations, we have the 'notes' for them. From the notes it is evident that ROT stands for Refugee Olympic Team, TUV stands for Tuvalu and UNK stands for Unknown. I further analyzed whether there are any observations in noc_data with the same value for both 'region' and 'notes' variables and found 1 observation. For the NOC code 'IOA', the region and notes is given the value 'Individual Olympic Athletes'. Hence, for the NOC codes 'ROT', 'TUV' and 'UNK' I decided to impute the missing 'region' values with the corresponding 'notes' values.
+
+```{r}
+# Imputing the missing 'region' values with the corresponding 'notes' values in noc_data
+
+noc_data <- noc_data%>%
+  mutate(region = coalesce(region,notes))
+
+# Sanity Check: Checking that the 3 observations no longer have missing 'region' values
+
+noc_data%>%filter(is.na(region))
+```
+
+
+The 'notes' variable in noc_data has missing values for 209 observations. Since, this is more than 90% I decided to drop the 'notes' variable. After dropping the 'notes' variable from the noc_data, it is left with 230 observations and 2 variables.
+
+```{r}
+# Dropping the 'notes' variable from noc_data
+noc_data <- noc_data%>%
+  select(-c(3))
+
+# Displaying the noc_data after tidying
+
+noc_data
+```
+
+Next, I cleaned the athlete_data. As the first step of cleaning the athlete_data, I dropped the 1385 duplicate observations which I had identified earlier while exploring the data. After dropping the duplicate observations, the athlete_data has 269,731 observations and 15 variables.
+
+```{r}
+# Dropping the 1385 duplicate observations from athlete_data
+
+athlete_data <- athlete_data%>%
+  distinct()
+```
+
+The athlete_data has 359615 instances of missing values.
+
+```{r}
+#Check for missing/null data in the athlete_data
+
+sum(is.na(athlete_data))
+sum(is.null(athlete_data))
+```
+
+The variables 'Age', 'Height', 'Weight' and 'Medal' have missing values in the athlete_data.
+
+```{r}
+# Checking which columns have NA values in athlete_data
+
+col <- colnames(athlete_data)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(athlete_data[,c]))))
+}
+```
+
+The 'Medal' variable has 13295 observations with value Bronze, 13108 observations with value Silver, and 13369 observations with value Gold. The remaining values are missing for 'Medal' variable. The missing values indicate that the athlete did not win a medal for that sport event during that year and season.
+
+```{r}
+table(athlete_data$Medal)
+```
+
+I handled the missing data in 'Medal' variable by imputing the missing values with 'No Medal' as the athlete did not win a medal.
+
+```{r}
+# Handling missing data in 'Medal' variable
+
+athlete_data <- athlete_data%>%
+  mutate(Medal = replace(Medal, is.na(Medal), "No Medal"))
+
+#Sanity Check: Checking that the 'Medal' variable has no missing values after data imputation
+
+sum(is.na(athlete_data$Medal))
+table(athlete_data$Medal)
+```
+
+The variables 'Age', 'Height', and 'Weight' have 9315, 58814, and 61527 missing values respectively. This is equivalent to 0.03%, 0.22% and 0.23% of missing values. This is a significantly large number and I performed data imputation for these variables. I imputed the missing values with the average Age, Height and Weight of the athletes grouped by Sex, Season, Year, and Event. I grouped based on those variables as the athletes participating in the various events are usually in the same age, height and weight range. For example, the male athletes participating in the heavy weight wrestling belong to weight categories like 55kg/60kg/etc.
+
+```{r}
+# Finding the percentage of missing values for the variables 'Age', 'Height', and 'Weight'
+
+athlete_data %>% summarize_all(funs(sum(is.na(.)) / length(.)))
+```
+
+
+```{r}
+# Handling the missing data in 'Age', 'Height', and 'Weight' variables using data imputation
+
+# Storing the average age, height, and weight for each group
+average_athlete_data <- athlete_data%>%
+  group_by(Sex, Season, Year, Event)%>%
+  summarise(average_Age = mean(Age, na.rm = TRUE),
+            average_Height = mean(Height, na.rm = TRUE),
+            average_Weight = mean(Weight, na.rm = TRUE))
+
+# Joining the athlete_data and average_athlete_data using Sex, Season, Year and Event as the key
+cleaned_athlete_data = merge(x=athlete_data, y=average_athlete_data, by=c("Sex", "Season", "Year", "Event"), all.x=TRUE)
+cleaned_athlete_data <- tibble(cleaned_athlete_data)
+
+# Replacing the missing values in 'Age', 'Height', and 'Weight' variables with the corresponding values in 'Average_Age', 'Average_Height', and 'Average_Weight' variables
+cleaned_athlete_data <- cleaned_athlete_data%>%
+    mutate(Age = coalesce(Age, average_Age),
+           Height = coalesce(Height, average_Height),
+           Weight = coalesce(Weight, average_Weight))
+
+# Dropping the variables 'Average_Age', 'Average_Height', and 'Average_Weight' from cleaned_athlete_data as they are no longer needed
+
+cleaned_athlete_data <- cleaned_athlete_data%>%
+  select(-c(16,17,18))
+
+# Rounded off the Age', 'Height', and 'Weight' variables to the nearest integer
+
+cleaned_athlete_data <- cleaned_athlete_data%>%
+  mutate(Age = round(Age, digits = 0),
+         Height = round(Height, digits = 0),
+         Weight = round(Weight, digits = 1))
+
+# Finding the percentage of missing values for the variables 'Age', 'Height', and 'Weight' to check whether the percentage of missing values has decreased
+
+cleaned_athlete_data %>% summarize_all(funs(sum(is.na(.)) / length(.)))
+```
+
+```{r}
+# Displaying the count of missing values in cleaned_athlete_data for each variable
+
+col <- colnames(cleaned_athlete_data)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(cleaned_athlete_data[,c]))))
+}
+```
+
+The percentage of missing values for the variables 'Age', 'Height', and 'Weight' has reduced from 0.03%, 0.22% and 0.23% to 0.00056%, 0.02% and 0.046 % respectively which is a significant improvement. The remaining missing values could not be imputed as all the observations in the groups (grouped by Sex, Season, Year and Event) had missing values for 'Age'/'Height'/'Weight' which makes it impossible to get the mean values. One possible solution is to remove all the observations with missing values in any of the variables. This would result in 12,792 observations being dropped which is about 5% of the total data. For now, I am keeping the observations with missing values. However, I can remove the 12,792 observations and store it in another tibble for performing visualization in the future.
+
+
+The 'Games' variable is redundant as it contains information about the year and season of the Olympic games which is already present in the 'Year' and 'Season' variables. Hence, I dropped the 'Games' variable.
+
+```{r}
+# Dropping the 'Games' variable from cleaned_athlete_data
+
+cleaned_athlete_data <- cleaned_athlete_data%>%
+  select(-c(12))
+```
+
+The cleaned_athlete_data is left with 269731 observations and 14 variables after cleaning.
+
+
+## Join Data
+
+As the next step after tidying the datasets, I joined the cleaned_athlete_data and noc_data using 'NOC' as the key, into a single dataset. The joined dataset has 269731 observations and 15 variables which makes sense as the cleaned_athlete_data had 269731 observations and cleaned_athlete_data and noc_data datasets had 14 and 2 attributes respectively. Since, the "NOC" attribute is common in both datasets we count it only once.
+
+```{r}
+# performed left join for cleaned_athlete_data and noc_data datasets.
+olympic_data = merge(x=cleaned_athlete_data, y=noc_data, by="NOC", all.x=TRUE)
+olympic_data <- tibble(olympic_data)
+olympic_data
+```
+
+I rearranged the order of variables in olympic_data to make the data more understandable and easier for analyzing. I also sorted the olympic_data in ascending order based on 'Season' and 'Year'.
+
+```{r}
+# Rearranging the columns in olympic_data
+
+olympic_data <- olympic_data%>%
+  select(c("Season", "Year", "ID", "Name", "Sex", "Age", "Height", "Weight", "Team", "NOC", "region", "City", "Sport", "Event", "Medal"))
+
+# Sorting the olympic_data in ascending order based on 'Season' and 'Year'
+
+olympic_data <- olympic_data%>%
+  arrange(Season, Year)
+```
+
+The olympic_data is cleaned and can be used for answering various research questions related to the Olympic games.
+
+
+## Potential Research Questions
+
+I have arrived at few potential research questions that can be answered or analyzed using the cleaned olympic_data.
+
+1) What is the ratio of male to female athletes participating in the Olympic games and has gender equality of athletes participating increased over the past 120 years?
+2) Has the performance of female athletes improved over the years for teams?
+3) Does the host city have any advantage in Olympic games in terms of winning more medals?
+4) Is it possible to identify which sport event wins more medals for each team?
+5) Has there been a significant change in the age/height/weight of athletes participating in the various events over the years?
