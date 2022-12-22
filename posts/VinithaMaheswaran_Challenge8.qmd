@@ -1,0 +1,323 @@
+---
+title: "Challenge 8 Solutions"
+author: "Vinitha Maheswaran"
+description: "Joining Data"
+date: "12/06/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - military marriages ⭐⭐
+  - faostat ⭐⭐
+  - railroads  ⭐⭐⭐
+  - fed_rate ⭐⭐⭐
+  - debt ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - snl ⭐⭐⭐⭐⭐
+
+
+For this challenge I will be working with the SNL data set.
+
+```{r}
+# Reading the SNL csv files
+
+snl_actors <- read_csv("_data/snl_actors.csv")
+snl_casts <- read_csv("_data/snl_casts.csv")
+snl_seasons <- read_csv("_data/snl_seasons.csv")
+```
+
+```{r}
+# Displaying snl_actors dataset
+snl_actors
+```
+
+```{r}
+# Displaying snl_casts dataset
+snl_casts
+```
+
+```{r}
+# Displaying snl_seasons dataset
+snl_seasons
+```
+
+
+```{r}
+# Finding dimension of all 3 snl datasets
+dim(snl_actors)
+dim(snl_casts)
+dim(snl_seasons)
+```
+
+```{r}
+# Structure of snl_actors dataset
+str(snl_actors)
+```
+
+```{r}
+# Structure of snl_casts dataset
+str(snl_casts)
+```
+
+```{r}
+# Structure of snl_seasons dataset
+str(snl_seasons)
+```
+
+```{r}
+#Summary of snl_actors
+library(summarytools)
+print(summarytools::dfSummary(snl_actors,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+#Summary of snl_casts
+library(summarytools)
+print(summarytools::dfSummary(snl_casts,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+```{r}
+#Summary of snl_seasons
+library(summarytools)
+print(summarytools::dfSummary(snl_seasons,
+                        varnumbers = FALSE,
+                        plain.ascii  = FALSE, 
+                        style        = "grid", 
+                        graph.magnif = 0.60, 
+                        valid.col    = FALSE),
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+
+### Briefly describe the data
+
+Saturday Night Live is an American late-night live television sketch comedy and variety show that premiered on NBC in 1975. The snl has 3 datasets “snl_actors.csv”, “snl_casts.csv”, “snl_seasons.csv”.  There are no duplicates in all 3 datasets. The “snl_actors.csv” dataset has 2306 observations and 4 variables/attributes and contains information (such as actor name, url, type and gender) about the list of actors who have featured in the SNL show. The “aid” variable has 2306 unique values and acts as the primary key / unique identifier for the dataset. All 4 attributes in this dataset are of datatype character. The “snl_casts.csv” dataset has 614 observations and 8 attributes. This dataset contains information about the cast name “aid”, the seasons in which they have been featured, the number of times they have featured in the show along with each cast’s first and last episode. The “snl_seasons.csv” dataset has 46 observations and 5 attributes. The “sid” variable has 46 unique values and acts as a unique identifier for the dataset. This also indicates that SNL has 46 seasons. All the variables in this dataset are of numerical datatype and contains information about the season number, year it was telecasted, date of the first episode of that season, date of the last episode of that season and the number of episodes in that season. The first premiered season had 24 episodes which is the highest and the season 33 had the lowest number of episodes i.e 12.
+
+
+
+## Tidy Data and Mutate Variables (as needed)
+
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?
+
+We observe that the "url" attribute in snl_actors dataset has 57 missing values.
+
+```{r}
+#Check for missing/null data in the snl_actors
+sum(is.na(snl_actors))
+sum(is.null(snl_actors))
+```
+
+```{r}
+# Checking which columns have NA values in snl_actors
+col <- colnames(snl_actors)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(snl_actors[,c]))))
+}
+```
+
+We observe that out of the 57 observations which have missing "url" value, 56 of them have "unknown" value for 'type' attribute. This may be the reason for missing "url" value.
+
+```{r}
+# Displaying the 57 actors with missing "url" value.
+filter(snl_actors,is.na(snl_actors$url))
+```
+
+The "url" contains information in the form of type of actor enclosed in '/' and '/?' followed by a identifier for each actor. Since, we have a unique identifier "aid" and there are no duplicates in the dataset, the attribute "url" seems unnecessary and I am dropping it. We are now left with 2306 observations and 3 attributes for snl_actors.
+
+```{r}
+# Dropping the attribute "url" from the snl_actors
+snl_actors <- snl_actors%>%
+  subset(select = -c(2))
+snl_actors
+```
+
+The "type" attribute has 56 "unknown" values. We are retaining these observations for now as we have less data.
+
+```{r}
+table(snl_actors$type)
+```
+
+```{r}
+# Displaying the 56 actors with type as "unknown".
+filter(snl_actors,snl_actors$type=="unknown")
+```
+
+The "gender" attribute has 388 "unknown" values. 21 actors have been assigned the gender as "andy" which seems to be a mistake. I changed the value from "andy" to "unknown" for these 21 actors.
+
+```{r}
+table(snl_actors$gender)
+```
+
+```{r}
+# Changing the gender from "andy" to "unknown" for the 21 observations
+snl_actors <- snl_actors%>%
+  mutate(gender = replace(gender, gender == "andy", "unknown"))
+snl_actors
+```
+
+```{r}
+# Sanity check: Check that the "gender" attribute does not have "andy" values. There should be 388+21 = 409 "unknown" values.
+table(snl_actors$gender)
+```
+
+The "snl_actors" dataset is now tidy. Next, we move on to the "snl_casts" dataset.
+
+We observe that the "first_epid" and "last_epid" attributes have 564 and 597 missing values respectively.
+
+```{r}
+#Check for missing/null data in the snl_casts.
+sum(is.na(snl_casts))
+sum(is.null(snl_casts))
+```
+
+```{r}
+# Checking which columns have NA values in snl_casts
+col <- colnames(snl_casts)
+for (c in col){
+  print(paste0("NA values in ", c, ": ", sum(is.na(snl_casts[,c]))))
+}
+```
+
+Since the attributes "first_epid" and "last_epid" have more than 90% of the values missing and it is difficult to impute the  missing values, I decided to drop them from the dataset.
+
+```{r}
+# Dropping the attributes "first_epid" and "last_epid" from the snl_casts
+snl_casts <- snl_casts%>%
+  subset(select = -c(4,5))
+snl_casts
+```
+
+The "snl_casts" dataset is tidy and left with 614 observations and 6 variables. Finally, we move on to the last dataset "snl_seasons".
+
+The snl_seasons dataset has no missing/null data.
+
+```{r}
+#Check for missing/null data in the snl_seasons.
+sum(is.na(snl_seasons))
+sum(is.null(snl_seasons))
+```
+
+I converted the "first_epid" and "last_epid" attributes to ymd date format which will be useful while creating visualizations.
+
+```{r}
+# Converting "first_epid" and "last_epid" attributes to ymd date format
+library(lubridate)
+snl_seasons$first_epid <- ymd(snl_seasons$first_epid)
+snl_seasons$last_epid <- ymd(snl_seasons$last_epid)
+snl_seasons
+```
+
+Since, the attribute "n_episodes" is present in both snl_casts and snl_seasons datasets, I renamed the attribute "n_episodes" to "seasons_n_episodes" in the snl_seasons dataset.
+
+```{r}
+# Renaming the "n_episodes" column
+snl_seasons <- snl_seasons%>%
+  rename(seasons_n_episodes = n_episodes)
+# Displaying the renamed column names
+colnames(snl_seasons)
+```
+
+
+## Join Data
+
+Be sure to include a sanity check, and double-check that case count is correct!
+
+I performed left join on snl_casts and snl_actors datasets by using the "aid" attribute as the key. The joined dataset snl_actors_casts has 614 observations and 8 attributes which makes sense as the snl_casts dataset had 614 observations and snl_casts and snl_actors datasets had 6 and 3 attributes respectively. Since, the "aid" attribute is common in both datasets we count it only once.
+
+```{r}
+# performed left join for snl_casts and snl_actors datasets.
+snl_actors_casts = merge(x=snl_casts, y=snl_actors, by="aid", all.x=TRUE)
+snl_actors_casts
+```
+Next, I performed left join on snl_actors_casts and snl_seasons datasets by using the "sid" attribute as the key. The joined dataset snl_actors_casts_seasons has 614 observations and 12 attributes which makes sense as the snl_actors_casts dataset has 614 observations and snl_actors_casts and snl_seasons datasets had 8 and 5 attributes respectively. Since, the "sid" attribute is common in both datasets we count it only once.
+
+```{r}
+# performed left join for snl_actors_casts and snl_seasons datasets.
+snl_actors_casts_seasons = merge(x=snl_actors_casts, y=snl_seasons, by="sid", all.x=TRUE)
+snl_actors_casts_seasons
+```
+
+We have successfully merged all three datasets and the snl_actors_casts_seasons final dataset contains information about the actors, casts and seasons in a single dataset. We can now use this dataset for creating visualizations and analyzing the data.
+
+
+For the first visualization, I created a bar graph representing the distribution of casts for each season of the SNL show. We can observe that the number of casts involved in each season of the SNL show has been more than 10 consistently from the 13th season. It would be interesting to visualize whether the number of episodes in a season has any impact on the number of casts featured in a season.
+
+```{r fig.height = 5, fig.width = 10}
+# Bar graph representing the distribution of casts over the seasons.
+
+library(ggplot2)
+
+ggplot(snl_actors_casts_seasons, aes(x = sid)) + 
+  geom_bar(fill="#F8766D", width = 0.8) +
+  labs(title = "Distribution of casts over the seasons", 
+       y = "Count", x = "Season Number") +
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+```
+
+
+For the next visualization, I created a bar graph representing the gender distribution of casts over the years. This would help us understand more about the representation of male and female casts in the show which cannot be interpreted from the previous visualization. Since one season is premiered each year, representing the gender distribution over the years or over the seasons would result in the same visualization. It is quite evident from the visualization below that more than 50% of the casts involved in the SNL show from the beginning of the show are male. It would be nice to see more female casts in the SNL show in future.
+
+
+```{r fig.height = 5, fig.width = 10}
+# Bar graph representing the gender distribution of casts over the years.
+
+ggplot(snl_actors_casts_seasons, aes(x = year, fill = gender)) + 
+  geom_bar(width = 0.8) +
+  labs(title = "Gender distribution of casts over the years", 
+       y = "Count", x = "Year") +
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+```
+
+
