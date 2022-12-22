@@ -9,6 +9,7 @@ format:
     code-fold: true
     code-copy: true
     code-tools: true
+    number-sections: true
 
 categories:
   - food sample
@@ -53,19 +54,19 @@ library(ggplot2)
 library(fmsb)
 library(scales)
 library(plotly)
+library(knitr)
 ```
 </details>
 
-# {.tabset}
 
 ## Introduction 
-  There is a growing demand on plant-based meat analogs due to ethical, environmental and health concerns associated associated with the production of real meat and seafood. Meat and seafood analogs should mimic the desirable appearance, texture, and flavor of the real versions. In this study, we investigated on the texture of animal meat analogs, expecially on their texture profile of adipose tissue(know as fat meat). 
+  There is a growing demand on plant-based meat analogs due to ethical, environmental and health concerns associated associated with the production of real meat and seafood. Meat and seafood analogs should mimic the desirable appearance, texture, and flavor of the real versions. In this study, we investigated on the texture of animal meat and lab made analogs, especially on their texture profile of adipose tissue(know as fat meat). 
   
   In this data, I have 5 samples. Control is beef fat.Sample 1-4 composed of different plant-based ingredients such as soybean oil, coconut oil, soybean protein and agar to combine them into a emulsion or gel that looks similar as fat meat under microscope. However, they still have huge differences on the macro texture. 
   
-  Texture profile anaylsis mimics motion and force in human oral cavity. the measurement including two times of compression and raw data including time and corresponding time. From this data set, many other parameters can be calculated from the graph. The automatic calculation sometimes can be confusing and messy data have to be processed by excels and individual calculations.  
+  Texture profile analysis mimics motion and force in human oral cavity. the measurement including two times of compression and raw data including time and corresponding time. From this data set, many other parameters can be calculated from the graph. The automatic calculation sometimes can be confusing and messy data have to be processed by excels and individual calculations.  
   
-  Parameter including hardness, adhersiveness, resilience, cohesion and chewiness. The defenition and calculation will be introduced in below section. 
+  Parameter including hardness, adhesiveness, resilience, cohesion and chewiness. The definition and calculation will be introduced in below section. 
 
   In this report, the raw data of texture profile analysis will be tidied and calculated.  The 5 parameter data will be calculated either from raw data or graph and will be visualized. Interpret of comparison in different samples will be performed. Using R may provide an efficient way to process the raw data with better visualization compare to traditional excel plotting and calculation. 
 
@@ -124,17 +125,17 @@ head(TDdata)
 </details>
 
 
-### Calculation -
+### Calculation
 
   Below is a sample graph of how raw data plotted out as time VS force looks like.
 ```{r}
 # In this section, other parameter described above will be calculated
 # Below includes a sample graph
-include_graphics("/Users/cassie199/Desktop/22fall/DACSS601/601_Fall_2022/posts/—_data/TPA1.png")
+include_graphics("/Users/cassie199/Desktop/22fall/DACSS601/601_Fall_2022/posts/_data/TPA1.png")
 ```
   In the texture profile analysis, the highest point of first peak represents the hardness of the sample.The F1 force is defined as hardness of sample. In below block, a function is written to filter out the maximum force of one sample.  Below table in force column present the highest peak in each sample as the hardness.
     
-find hardness F1
+#### find hardness F1
 ```{r}
 # Hardness = F1
 # group by sample and filter the sample you want to calculate
@@ -182,7 +183,7 @@ F1<-mergefunc(df1,df2,df3,df4,df5)%>%print()
 Resilience is defined as area b/area and can be understand as how much sample regain after first compression. And calculated as area b/area a.
 Therefore, the next trunk finds out the endpoint of first peak. the cumulative area from end of first peak minus cumulative area of the maximum force(calculated above) will be the area b.
 
-find area b    
+#### find area b    
 ```{r}
 #function to find the endpoint of peak 1 is wroted as finding the first time point after F1 that cooresponding force cross 0. 
 #lead function align the force in next time point, therefore, the first point where force+1 is negative, and force is positive, implies the first point cross 0, which is the first peak end point. 
@@ -225,7 +226,7 @@ The cohesion stands for How well the product withstands a second deformation rel
 
 In this section, similar functions were wrote to finding the function. The data was cutted after endpoint 1 to find the maximum which is the F2.
 
-find F2
+#### find F2
 ```{r}
 #finding F2 by filtering the sample after the first peak and then slice tha maximum
 F2func<-function(x,y){
@@ -249,7 +250,7 @@ F2<- mergefunc(df11, df12, df13, df14, df15)
 ```
 The start point of second peak was filtered back to find the cross 0 point. And the end point is also selected by the cross 0 point after F2.
 
-    find the start point of area d
+#### find the start point of area d
 ```{r }
 #find the start point of area d
 start2<-function(x,y){
@@ -279,7 +280,7 @@ mergefunc3<-function(a,b,c,d,e){
 start2<-mergefunc3(dfd1, dfd2,dfd3,dfd4,dfd5)
 ```
 
-find the ending point of area e
+#### find the ending point of area e
 ```{r}
 #find the ending point of area e
 END2func<-function(x, y){
@@ -316,7 +317,7 @@ aread = F2 %>% full_join(start2,by = c( "sample"))%>%mutate(aread =  area1 -area
     
     therefore, the critical point we need to find out from the data is the coordinate of F1, the time where area b ends, F2, and where the second peak starts and ends. After obtaining these data, the calculation can be performed.
     
-combine all calculated value into a new data frame
+#### combine all calculated value into a data frame for visualization
 ```{r}
 # all value calculated above are sorted into a new table
 # Gumminess = Hardness*cohesion
@@ -334,6 +335,7 @@ parameters<-parameters%>%mutate(chewiness = parameters$hardness * parameters$coh
 ## Visualizition
 In texture analysis, comparing the values sometimes can be difficult to interpret the data. By visualizing, we can easily compare the single parameters in each sample and analysis how the material brings the strength and weakness separately. We can also compare the overall similarity of each sample to the control ro select a good candidate to continue research on. 
 
+### overview of raw data
 Below is an overview of all five samples. As we can see, all the parameters were calculated from this graph. 
 
 ```{r}
@@ -342,6 +344,9 @@ p_force = ggplot(data = TDdata) +
   labs(title = "force v.s. time")
 p_force %>% ggplotly()
 ```
+
+### hardness
+
 All the parameters was plotted in bar chart first to compare each single parameter individually. This helps understand the specific strength of each material. 
 Control which is the beef sample shows good hardness implies the inner structure of beef provide a good support to the over all material. The lab created samples we can see that emulsion samples(S1 and S3) are less hard than gelled samples(S2 and S4) while solid coconut oil under room temperature(S3 and S4) are better than liquid soybean oil(S1 and S2)
 ```{r}
@@ -352,19 +357,21 @@ ggplot(parameters, aes(x= sample_name, y= hardness, fill = hardness)) +
   labs(title = 'Hardness')+ 
   scale_color_gradient(low = "royalblue", high = "steelblue")
 ```
- 
+### resilience
 Resilience is how much the sample bounce back from the first compression. Still, the control sample raise most. And the soybean gelled emulsion (S3) remains highest. This indicates the liquid oil gives the best recovery to the gelling agent.
 ```{r}
 
 ggplot(parameters, aes(x= sample_name, y= resilience,fill = resilience)) +
     geom_bar(stat='identity',colour = 'black') + scale_y_log10()+ labs(title = 'Resilience')+ scale_fill_gradient(low = "hotpink3", high = "lightpink")
 ```
+### cohesion
 The cohesion measure how the sample stand at second compression, which can be understand as how much hardness remains in second compression. Some brittle sample may broke during this time. From the graph we can easily tell, emulsion samples (S1S3) have relative high cohesion under second compress. 
 ```{r}
 ggplot(parameters, aes(x= sample_name, y= cohesion, fill = cohesion)) +
     geom_bar(stat='identity',colour = 'black') + labs(title = 'Cohesion') + scale_fill_gradient(low = "turquoise4", high = "steelblue1") 
 
 ```
+### spinginess
 The springiness indicate the relative time sample bounce back. There was no significant differenceb between each samples. 
 ```{r}
 ggplot(parameters, aes(x= sample_name, y= springiness, fill = springiness)) +
@@ -372,11 +379,13 @@ ggplot(parameters, aes(x= sample_name, y= springiness, fill = springiness)) +
   labs(title = 'Springiness')+ 
   scale_fill_gradient(low = "cadetblue4", high = "cadetblue1")
 ```
+### chewiness
 The chewiness expresses the overall behavior of second compression. Here we can see, our control have the relatively high chewiness while samples are gradually gaining chewiness by adding factors such as solid oil and gelling agent. 
 ```{r}
 ggplot(parameters, aes(x= sample_name, y= chewiness, fill = chewiness)) +
     geom_bar(stat='identity',colour = 'black') +  scale_y_log10 ()+ labs(title = 'chewiness')+ scale_fill_gradient(low = "mediumorchid4", high = "plum")
 ```
+### overall comparison
 The radar chart gives a better idea of overall balance overall samples. From the radar chart, we can easily understandthe control still have strength over power all lab-made samples, especially when some parameters were plotted in log scale. However, between samples, we can also differenciate that overall S3 and S4 have a similar area than S1 and S2. This indicates the solid fat contributes more to the fat structure instead of the gelling agent (S3,S4 is overall better than S1,S2). Also looking at S1 and S2, gelling agent provide much improvement  while did not work in S3 and S4. The solid oil somehow restricted the impovement of gelling agent. Overall, S3 and S4 performed best and overall close the character of control. 
 ```{r}
 max<-c('max',25000, 4000, 1,1,15000)
@@ -407,21 +416,24 @@ parameters3<-parameters3[-c(1:3,6)]
 
 
 ## Reflection
+
 ### Why I choose this project
+
 In this project, I selected a measurement data that we used daily in our lab. I want to chose this data because the machine can calculate the value, however sometime with mistakes. In this case, we have to import the data into excel, plot it, find value we need among thousands of data point and then calculate. This process is boring and redunant. By learning r, I found it might be a food idea that I can find a easier way to calculated all this value automatically to avoid human labor. And by the time this programming works, the future data can be imported, organized and visualized automatically which can save much time. Therefore, I decided to work on this project. 
 
-###Difficultes I met
+### Difficultes I met
+
 By looking at others projects and examples in the class, I found most of them are aiming at visualization and analysis. However, in my case, the most heavy work was in calculation. The raw data was simple and easy to tidy, however, finding the significant values in this data requires a lot of work. The measurements were human tested samples and there are many interference data points. For example, I want to find the end point of the first peak, where force = 0. However, how would I select the point since the nears point to 0 may be 10, and the next wil be -10, where 0 doesn't actually have a physically point. In this case, I have to using functions to filter and understand where the value I want exactly and not taking in those interference points. 
 
-Also, reducing the redundant steps has also been a difficulty for me to solve. By learning functions, I found that repeated steps can be easily 
+Also, reducing the redundant steps has also been a difficulty for me to solve. By learning functions, I found that repeated steps can be easily archieved by some package or functions.
 
   Another thing I have learnt from this class and this project is how to brainstorm the steps that you reach to your final goals. My data looks like a simple data set but considering the interference, it became very difficult to make it accurate. More and more steps were added when i wrote the code and repeat and reduced. So there are tons of effort which may not been present in the code. The learning process was really interesting but tiring, with understanding varies packages and functions. The accumulation will make the future coding much more easier. 
   
-###Next step of this project
+### Next step of this project
 
-I haven't optimized the calculation into a best, easiest and shortest steps to calculate all the values which can be done in the future. Another problem I left was indexing of table into tables. This
+I haven't optimized the calculation into a best, easiest and shortest steps to calculate all the values which can be done in the future. Another problem I left was indexing of table into tables. This code may be simplified without writing functions and creating much tables. 
 
-Also, there might be a way to cooperate the sample ingredients into data presenting. However, most of my work was done in descriptions. It may also be difficult to visualize or make those numeric to consider about the ingredients.This could also be innovative in presenting scentific research results to help other understand. 
+Also, there might be a way to cooperate the sample ingredients into data presenting. However, most of my work was done in descriptions. It may also be difficult to visualize or make those numeric to consider about the ingredients.This could also be innovative in presenting scientific research results to help other understand. 
 
 
 
@@ -432,6 +444,7 @@ In conclusion, this project calculated the value of texture analysis profile and
 In terms of R, this project help me helps me build up idea of how to approach data in a desired manner and how to make the coding easy and simple. Althought I haven't make it perfect in this project, it is a really great process to learn the idea with processing data. 
 
 ## Bibliography
+
 1) Hu, X. and D. J. McClements (2022). "Construction of plant-based adipose tissue using high internal phase emulsions and emulsion gels." Innovative Food Science & Emerging Technologies 78: 103016.
 2) Centre for Indutrial, R. (2022). Texture Analysis And Texture Profile Analysis - Rheology Lab.
 3)Wickham, H. and G. Grolemund (2016). R for Data Science: Import, Tidy, Transform, Visualize, and Model Data, O'Reilly Media.
