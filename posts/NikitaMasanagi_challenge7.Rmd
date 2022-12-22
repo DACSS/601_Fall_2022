@@ -16,7 +16,7 @@ categories:
   - eggs
   - abc_poll
   - faostat
-  
+  - usa_households
 ---
 
 ```{r}
@@ -47,70 +47,46 @@ Today's challenge is to:
 
 ## Read in data
 
-Choosing the debt data from last week
+Read in one (or more) of the following datasets, using the correct R package and command.
+
+  - eggs ⭐
+  - abc_poll ⭐⭐
+  - australian_marriage ⭐⭐
+  - hotel_bookings ⭐⭐⭐
+  - air_bnb  ⭐⭐⭐
+  - us_hh ⭐⭐⭐⭐
+  - faostat ⭐⭐⭐⭐
 
 ```{r}
-RawData <- read_excel("_data/debt_in_trillions.xlsx")
-head(RawData)
+faostat <- read_csv("_data/FAOSTAT_livestock.csv",
+                          skip = 1,
+                          col_names = c("delete", "domain", "delete", "area", "delete", "delete", "animal code", "type", "delete", "year",
+"unit", "value", "flag", "delete")) %>%
+  select(!starts_with("delete")) %>%
+  na_if("Skipped")
 ```
 
 ### Briefly describe the data
 
-The data represents the year and quarter in the US and the associated debt spread of its citizens during that time period.
-
 ## Tidy Data (as needed)
 
-Pivoting the data here to filter by debt type
+Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.
+
+I tidied the data by deleting some of the columns that were not needed or I thought wouldn't be useful in visualizing the data. For example, I deleted the year code column because the values there were the same values as the year column. I deleted the element and element code column because I didn't see what value those provided in visualizing the data. 
+
 
 ```{r}
-longerSplitData<- splitData%>%
-  pivot_longer(!c(Year,Quarter), names_to = "DebtType",values_to = "DebtPercent" )
-
-longerSplitData
-
+  ggplot(faostat, aes(year, value, color = type)) + 
+  geom_point()
 ```
 
 ## Visualization with Multiple Dimensions
 
-Original second graph from last challenge
-
 ```{r}
-longerSplitDataPlot <- longerSplitData%>%
-  ggplot(mapping=aes(x = Year, y = DebtPercent))
-
-
-longerSplitDataPlot + 
-  geom_point(aes(color = DebtType))
+faostat %>%
+  filter(year >= 2010) %>%
+   ggplot(aes(unit, value, color = type)) + 
+   geom_point()  +
+  facet_wrap("year")
 ```
-Only the value of the total and mortgage is shown,rest of the data is lost.Hence we can improve the chart to show debt types.
-
-```{r}
-longerSplitDataPlot + 
-  geom_point(aes(color = DebtType))+
-  labs(title = "Total National Debt most closely follows Mortgages",subtitle="Student and Auto drive the secondary category" ,caption = "data from posts/_data")+
-  theme(legend.position = "bottom")+
-  facet_zoom(y = DebtType == !c("Mortgage","Total"),ylim = c(0,2))
-```
-Original third graph from previous challenge
-
-It is difficult to observe the patterns without changing the scales.We can adjust the axis to see how thr debt flows through the years.
-```{r}
-longerSplitDataPlot+
-  geom_point() +
-  facet_wrap(~DebtType) +
-  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
-
-```
-```{r}
-longerSplitDataPlot+
-  geom_point(aes(color = Quarter,alpha=0.9,)) +
-  facet_wrap(~DebtType,scales = "free_y") +
-  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))+
-  theme_light() +
-  guides(alpha="none") +
-  labs(title = "Debt Types per year" ,caption = "data from posts/_data")
-```
-
-
-
-
+It seems that cattle have the most value for each head in the most recent years. Pigs and goats heads are also listed at a pretty high value. Conversely, sheep's heads are at the lowest value. Most of the recent years have basically the same  data on each animal type's value.
