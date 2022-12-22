@@ -21,15 +21,18 @@ categories:
 #| warning: false
 #| message: false
 
+# Packages 
 library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(summarytools)
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
 ## Challenge Overview
 
-Today's challenge is to
-
+Today's challenge is to read in and explore the data 'birds.csv'
 
 ```{r}
 # 1. Read in the data
@@ -41,22 +44,38 @@ bird_data
 
 ## Describe the data
 
-This "bird" data includes the some value related to birds livestock animals (number of chickens, ducks, goose?) of 248 countries/regions all over the world from 1961 to 2018. 
-
-It is consisted of 30977 rows and 14 columns.
+It consists of 3077 rows and 14 columns.
+This "bird" data documents the number of five livestock birds (chickens, ducks, geese and guinea fowls, pigeons, turkeys) of each year from 1960 to 2018 of 248 countries/regions. 
 
 ```{r}
 #| label: summary
-print(dim(bird_data))# count of columns and rows
 
-
-n_country <- length(unique(bird_data$Area))
-print(n_country)
+print(summarytools::dfSummary(bird_data),
+      varnumbers = FALSE,
+      plain.ascii  = FALSE,
+      style        = "grid",
+      graph.magnif = 0.80,
+      valid.col    = FALSE,
+      method = 'render',
+      table.classes = 'table-condensed')
 ```
-This data includes 4 numeric data and the below table shows their basic statistics information
+
+
+This data looks tidy, however, the column "Area" is not well organized as it has the name of the countries and the regions. For example, there are "Africa" and "Algeria" for the Area column, but "Algeria" is a part of "Africa".
+
 ```{r}
-summary(bird_data) # View the basic statistics information of each variables
+bird_data %>% 
+  select(Area) %>%
+  arrange(Area) %>%
+  unique()
+```
+It seems like that the Area consists of 
+- [1-220] 220 countris (Afghanistan - Zimbabwe)
+- [221] World
+- [222-248] 27 regions
+
+```{r}
+unique(bird_data$Area)
 ```
 
-```
 
