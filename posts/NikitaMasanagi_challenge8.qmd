@@ -1,0 +1,103 @@
+---
+title: "Challenge 8"
+author: "Nikita Masanagi"
+description: "Joining Data"
+date: "08/25/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  join two or more data sets and analyze some aspect of the joined data
+
+(be sure to only include the category tags for the data you use!)
+
+## Read in data
+
+Using the FAOSTAT dataset
+
+```{r}
+codes <- read_csv("_data/FAOSTAT_country_groups.csv")
+cattle <- read_csv("_data/FAOSTAT_cattle_dairy.csv")
+```
+
+
+
+### Briefly describe the data
+
+The primary dataset I have chosen is the Fao Stat Cattle dataset.It has information about available food and agriculture data from 245 countries.
+It contains information about cow milk, units sold and price of the product.the data ranges from 1960,s to 2018.
+
+The next file I will using to perform the join is codebook, which groups the data by countries to provide a high level overview, instead of at the country level.
+
+We can then perform join within these datasets and analyze within the country groups.
+
+
+## Tidy Data (as needed)
+
+Matching the column name of the two tables, as one has Area code and one has Country Code. Renaming the cattle Area Code with Country Code.
+
+```{r}
+cattlenew <- rename (cattle, "Country Code"= "Area Code" )
+head(cattlenew)
+
+
+```
+
+
+
+## Join Data
+
+We can perform left join by using the Country Code
+
+```{r}
+cattlefinal <- left_join(cattlenew, codes, by = "Country Code" )
+head(cattlefinal)
+```
+After performing join, we can now display the graph by Country Code.
+
+```{r}
+cattlefinal %>%
+  filter(Year >= 2000) %>%
+  filter(`Flag Description` == "Official data") %>%
+  filter(`Country Group`=="Central Asia") %>%
+  filter(`Unit` == "tonnes") %>%
+  ggplot(aes(x=`Area`, y=`Value`)) + 
+  geom_point(
+    color="blue",
+    fill="#69b3a2",
+    size=.5,
+    alpha=.5
+  )+
+  labs(title = "Official Tonnes of Milk Produced in Central Asia from the Year 2000-2018", x="Country", y="Price of Milk") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) 
+```
+
+
+
