@@ -52,7 +52,7 @@ library(pracma)
 library(ggplot2)
 library(fmsb)
 library(scales)
-
+library(plotly)
 ```
 </details>
 
@@ -334,13 +334,13 @@ parameters<-parameters%>%mutate(chewiness = parameters$hardness * parameters$coh
 ## Visualizition
 In texture analysis, comparing the values sometimes can be difficult to interpret the data. By visualizing, we can easily compare the single parameters in each sample and analysis how the material brings the strength and weakness separately. We can also compare the overall similarity of each sample to the control ro select a good candidate to continue research on. 
 
-Below is an overview of control data. As we can see, all the parameters were calculated from this graph. 
+Below is an overview of all five samples. As we can see, all the parameters were calculated from this graph. 
 
 ```{r}
-#sample graph of control data
-
-ggplot(data1, aes(x= control0time, y= control0force)) +
-    geom_line()
+p_force = ggplot(data = TDdata) + 
+  geom_line(mapping = aes(x = time, y = force1, color = sample)) +
+  labs(title = "force v.s. time")
+p_force %>% ggplotly()
 ```
 All the parameters was plotted in bar chart first to compare each single parameter individually. This helps understand the specific strength of each material. 
 Control which is the beef sample shows good hardness implies the inner structure of beef provide a good support to the over all material. The lab created samples we can see that emulsion samples(S1 and S3) are less hard than gelled samples(S2 and S4) while solid coconut oil under room temperature(S3 and S4) are better than liquid soybean oil(S1 and S2)
