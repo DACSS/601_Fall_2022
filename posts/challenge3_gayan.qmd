@@ -51,13 +51,24 @@ Read in one (or more) of the following datasets, using the correct R package and
 ```{r}
 animal_weights <-  read_csv("_data/animal_weight.csv")
 animal_weights
-
 ```
 ```{r}
 animal_weights %>% 
   summary()
 ```
+```{r}
+ railroad<-read_excel("_data/StateCounty2012.xls",
+                     skip = 4,
+                     col_names= c("state", "delete",  "county",
+                                  "delete", "employees")) %>% 
+  select(!contains("delete"))%>%
+  filter(!str_detect(state, "Total"))
 
+railroad<-head(railroad, -2)%>%
+  mutate(county = ifelse(state=="CANADA", "CANADA", county))
+
+railroad
+```
 
 ### Briefly describe the data
 
