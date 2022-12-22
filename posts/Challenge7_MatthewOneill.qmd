@@ -1,0 +1,76 @@
+---
+title: "Challenge 7"
+author: "Matthew O'Neill"
+description: "Visualizing Multiple Dimensions"
+date: "08/24/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+  - hotel_bookings
+  - australian_marriage
+  - air_bnb
+  - eggs
+  - abc_poll
+  - faostat
+  - usa_households
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+
+## Read in data
+
+```{r}
+data<- read_csv("_data/australian_marriage_tidy.csv",show_col_types = FALSE)
+```
+
+```{r}
+colnames(data)
+
+dim(data)
+
+data
+```
+
+### Data Description
+
+The dataset is fairly simple, showing marraige data for different provinces of Australia. Respondants divulge whether or not they are married and the data comes with a percentage of each province which is married. There are sixteen rows, two for each territory marking yes to being married or no, and there are 4 total columns.
+
+## Tidy Data
+
+The data is already tidy, but it would be helpful to have some aggregate data, to see the number of people married in Australia and the percentage of the population that makes up.
+
+We could mutate the data a bit to help create a useful visualization with multiple dimensions. I am interested in seeing how marriage rates differ accross territories with different sizes of population, so having the total population of each territory and the marriage rate will be useful.
+
+```{r}
+
+married <- aggregate(count ~ territory, data = data, FUN = sum)
+married['Married%'] = subset(data, resp =="yes")['percent']
+
+married
+
+```
+
+
+## Visualization with Multiple Dimensions
+
+```{r}
+ggplot(married, aes(x=`count`, y=`Married%`,color=`territory`)) + geom_point()+
+  theme_bw() +
+  labs(title ="Married Rate vs Population", y = "Married Rate", x = "Territory Population")
+
+```
+There doesn't appear to be any clear correlation with population size and most provinces are hovering between 60% and 65%. The Australian Capital Territory is an outlier on the lower end, and the Western Australian is an outlier on the higher end.

@@ -1,0 +1,134 @@
+---
+title: "Challenge 6 "
+author: "Matthew O'Neill"
+description: "Visualizing Time and Relationships"
+date: "08/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - hotel_bookings
+  - air_bnb
+  - fed_rate
+  - debt
+  - usa_households
+  - abc_poll
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+
+```{r}
+
+data<- read_csv("_data/FedFundsRate.csv",show_col_types = FALSE)
+
+```
+
+```{r}
+
+colnames(data)
+
+dim(data)
+
+data
+
+range(data$Year, na.rm=TRUE)
+
+```
+
+### Data Description
+
+The data contains various economic and financial metrics for the United States from 1954 to 2017 including the federal interest rate, GDP, the unemployment rate, and the inflation rate.
+Most of these metrics are reported monthly but some metrics, like GDP, are reported quarterly. No metrics are reported more often than monthly however. Overall there are 904 months reports in the dataset. The target rate of the federal funds rate is reports in different ways during different time periods, but for the purposes of this assignment, this probably will not matter.
+
+## Tidy Data
+
+Since we will be working with our data on a month to month to month basis, it makes sense to combine the month, day, and year values into one data. Further than that, we don't really need the day value, as we will never have more than one value per month. 
+```{r}
+
+data<-data%>%
+  mutate(date = str_c(`Year`,`Month`, `Day`, sep="/"),date = ymd(date))
+
+data$Month_Yr <- format(as.Date(data$date), "%Y-%m")
+
+data <- data[-c(1,2,3)]
+data <- data[-8]
+data <- select(data, Month_Yr, everything())
+
+
+```
+
+We could mutate the data to have categories inflation rate to show how it relates to the Federal Funds rate, as right now, the federal funds rate has been increasing due to inflation.
+
+```{r}
+
+range(data$`Inflation Rate`, na.rm = TRUE)
+range(data$`Effective Federal Funds Rate`, na.rm = TRUE)
+
+```
+```{r}
+data <- mutate(data, `Inflation Bracket` = case_when(
+        `Inflation Rate` < 2 ~ "Low Inflation",
+        `Inflation Rate` < 5 ~ "Normal Inflation",
+        `Inflation Rate` < 8 ~ "Above Average Inflation",
+        `Inflation Rate` < 10 ~ "High Inflation",
+        `Inflation Rate` >= 10 ~ "Hyperinflation"
+))
+
+data <- mutate(data, `Interest Rate Bracket` = case_when(
+        `Effective Federal Funds Rate` < 0.5 ~ "Low Interest",
+        `Effective Federal Funds Rate` < 3.0 ~ "Normal Interest",
+        `Effective Federal Funds Rate` < 7.0 ~ "High Interest",
+        `Effective Federal Funds Rate` < 20.0 ~ "Very High Interest",
+))
+```
+
+
+## Time Dependent Visualization
+
+```{r}
+ggplot(data, aes(x=`Month_Yr`, y=`Real GDP (Percent Change)`)) + 
+  geom_point()+
+  theme_bw() +
+  labs(title ="GDP over time", y = "GDP", x = "Time(months)")
+
+ggplot(data=subset(data,!is.na(`Inflation Rate`)), aes(x=`Month_Yr`, y=`Effective Federal Funds Rate`)) + 
+  geom_point()+
+  theme_bw() +
+  labs(title ="Interest Rates over time", y = "Federal Funds Rate", x = "Time(months)")
+
+```
+The above two graphs are very basic time series graphs of GDP and Interest Rates.Since GDP is a change relative to a previous quarter, it makes sense that the GDP doesn't have a clear trend and tends to fluxuate around around 4-5%. The interest rate time series plot is much clearer and easier to understand, as interest rates are not representation of changes. 
+
+## Visualizing Part-Whole Relationships
+
+Finally we can check the relationship with interest rates and inflation using a part-whole relationship visualization. We can compare the count of months with various levels of inflation during months of various rate rate levels.
+
+
+```{r}
+
+rem <- subset(data,!is.na(`Inflation Rate`),!is.na(`Effective Federal Funds Rate`))
+rem <- count(rem, `Inflation Bracket`, `Interest Rate Bracket`)
+
+ggplot(rem, aes(fill=rem$`Interest Rate Bracket`, y=rem$n, x=rem$`Inflation Bracket`)) + 
+    geom_bar(position="dodge", stat="identity")+
+  labs(title ="Interest Rates by Inflation", y = "Count", x = "Inflation Rate Bracket")
+
+```
+
+The visualization is consistent with what you might expect. High interest rates leads to less lending, which leads to lower inflation. Periods of low inflation have lower interest rates to pair with it, because there is less worry of inflation. During periods of high inflation, there is almost strictly high interest rates because the economy needs to reduce the money supply.
