@@ -1,0 +1,338 @@
+---
+title: "Homework 3"
+author: "Vishnupriya Varadharaju"
+desription: "Homework 3"
+date: "12/22/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+    smooth-scroll: true
+    highlight-style: github
+    df-print: paged
+    
+categories:
+  - hw3
+  - Global Terrorism Data 
+  
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+library("readxl")
+library(summarytools)
+library(mapdata)
+library(maptools)
+library(moments)
+
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+## Overview
+
+Working with the Global Terrorism Dataset for my final project.
+
+## Introduction
+
+26/11 (26 Nov) is a very heartbreaking day to remember for a lot of Indians. It was the day when India had one of its deadliest terror attacks. It happened in 2008 and I still remember watching the news for hourly updates on the terror attack. Every year when I come across this day, I always have a lot of questions in my head. How have the trends of Terrorism been over the years? Why are certain cities targeted more than others? What kind of weapons do different extremist groups use? Which is the most deadly extremist group? Is the extremism international or home-grown? and a lot more.
+The topic for my final project was inspired by this and I decided to do this study on Global Terrorism to help answer my questions. 
+The Global Terrorism Database (GTD) contains more than 200,000 records of terrorist attacks that have taken place around the world from 1970 till 2022. This Database is maintained by the National Consortium for the Study of Terrorism and Responses to Terrorism (START) at the University of Maryland. The database has a codebook wherein detailed explanations for each of the categories are provided. The database has been used by popular news channels to showcase trends in Regional Terror activities.
+It has all the necessary elements that can help me answer various questions that I hope to find with this study.
+
+
+## Data
+
+### Reading The Dataset
+The dataset is in the form of an excel file. It has nearly 209706 rows and 135 columns. Each row corresponds to a terror incident. The various fields include GTD ID, incident date, incident location, incident information, attack information, target/victim information, perpetrator information, perpetrator statistics, claims of responsibility, weapon information, casualty information, consequences, kidnapping/hostage taking information, additional and source information and many more. 
+These fields need to be analysed and only the important ones are to be chosen for the study.
+
+```{r}
+#reading in data set which is in excel format
+gtd <- read_excel('_data/globalterrorismdb_0522dist.xlsx')
+head(gtd, n=100)
+```
+
+### Describing The Data
+
+On having an initial overview of the data, there seems to be a lot of columns with plenty of NA values. Given that there are 135 columns, it will be good to remove those columns that might not add enough value to the analysis. 
+This data has values that are a mix of different types ranging from numerical, character, logical and much more. There is some redundant data as well. Certain fields have categories that are encoded. But along with it the corresponding text variable is also given. For instance, *country* has codes for which *country_txt* has the corresponding text. Such fields can be removed to avoid redundancy. 
+Some fields like *summary*, *weapdetail* have entirely textual data which is not useful for statistical analysis and can be removed.
+
+```{r}
+str(gtd)
+```
+
+### Tidying Data
+
+There are different aspects to look into while cleaning a data set. Null values can be removed, redundant values can be avoided, re-coding data categories and much more. 
+
+#### 1. Removing null values
+
+Generally, it is good to have data which has less than 5% of NA values for analysis. But for my study, I am pushing it to 10%. I am dropping all those fields that have more than 10% of Null values. This is to ensure generalization and to avoid incorrect results. 
+
+```{r}
+# To find those columns which have more than 10% of null values
+cols <- list()
+for (col in names(gtd)) {
+  nullVal <- (sum(is.na(gtd[,col]))/nrow(gtd))*100
+  if (nullVal > 10){
+    cols <- append(cols, col)
+  }
+}
+print(paste("Number of columns with NA > 10% is", length(cols)))
+gtd_select <- gtd %>% select(-(unlist(cols)))
+```
+
+After removing the null values there are 45 fields that are remaining. 
+
+##### 2. Data Summary & Cleaning
+
+The column *eventID* 12 digit event ID system where in the first 8 numbers correspond to the date in "yyyymmdd" format. The last 4 numbers are sequential case number for that given day of the format 0001, 0002, etc. This can be removed and new column *incDate* is created combining the *iyear*, *imonth* and *iday*. This field will be useful for creating time-series plot. Fields with encoded text categories are also removed.
+
+```{r}
+gtd_select <- gtd_select %>% mutate(
+  incDate = ymd(str_c(iyear,imonth,iday, sep="/")),.before = iyear) %>%
+  select(-c(eventid, country,region,specificity,doubtterr,attacktype1,targtype1,targsubtype1,natlty1,weaptype1))
+```
+
+
+Using summarytools to get an overview of the data. The min, max, most frequently occurring categories, the percentage of null values, the data types and more information can be obtained from this.
+
+```{r}
+dfSummary(gtd_select)
+```
+
+
+From the above table we can see that the range of the data is from January 1970 to December 2020, spanning over 50 years. For the columns *imonth* and *iday*, there are entries of 0. This is done for those incidents where the date and month are not surely known. There are 891 values like that which can be retained for now and modified when needed for the visualizations.
+
+```{r}
+gtd_select %>% filter(imonth == 0 | iday ==0) %>% count()
+```
+
+We can see how the number of incidents has changed over time using a time series plot. 
+
+```{r}
+incCount <- gtd_select %>% group_by(iyear) %>% summarise(incidents = n())
+ggplot(incCount, aes(x=iyear, y=incidents, color="red")) + ggtitle("Global Terror Incidents 1970-2020") +labs(y="Incidents", x ="Year") + theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  geom_line() + geom_point() + theme(legend.position = "none")
+  
+```
+
+The *extended* column tells if the duration of an incident is more than 24 hours (then 1) or if it's less than 24 hours (then 0).
+The *country_txt* column shows the top countries where the most terror incidents have occurred. We can see that Iraq has the highest number of incidents, then comes Afghanistan, Pakistan, India and Columbia. A lot of middle east and Asian countries have the highest terror incidents.
+On plotting *region_txt*, we can see the distribution of the incidents across 12 different regions. The countries that come under each of these regions can be referred from the GTD Codebook. The plot shows that Middle East & North Africa and South Asia have nearly same number of terror incidents and constitute for nearly 53% of global terror incidents.
+
+```{r}
+# top regions with most terror attacks over the years
+regionCnt <- gtd_select %>% group_by(region_txt) %>% summarise(Incidents = n()) %>% arrange(desc(Incidents)) %>% head(n=10)
+
+regionCnt %>% arrange(desc(Incidents)) %>%  
+  mutate(name=factor(region_txt, levels=Incidents))  %>%
+  ggplot(aes(x=reorder(region_txt, +Incidents), y=Incidents)) +
+    geom_segment(aes(xend=region_txt, yend=0)) +
+    geom_point(size=4, color="red") +
+    coord_flip() +
+    theme_bw() + ggtitle("Region-Wise Terror Incidents 1970-2020") + labs(y="Incidents", x ="Regions")
+
+```
+
+
+Next, I want to see those cities in Western Europe (specifically) where highest number of terror incidents have occurred. Plotting the top 10 cities. There is an entry called unknown which can be ignored for this analysis.
+
+```{r fig.height= 5, fig.width=8}
+cities <- gtd_select %>% filter(region_txt == "North America" & city != "Unknown") %>% group_by(city, longitude, latitude) %>% summarise(count = n()) %>% arrange(desc(count)) %>% head(n=11)
+
+usa <- map_data("usa")
+canada <- map_data("worldHires", "Canada")
+mexico <- map_data("worldHires", "Mexico")
+
+NAmap <- ggplot() + geom_polygon(data = usa, 
+                                 aes(x=long, y = lat, group = group), 
+                                 fill = "white", 
+                                 color="black") +
+    geom_polygon(data = canada, aes(x=long, y = lat, group = group), 
+                 fill = "white", color="black") + 
+    geom_polygon(data = mexico, aes(x=long, y = lat, group = group), 
+                 fill = "white", color="black") +
+    coord_fixed(xlim = c(-140, -55),  ylim = c(10, 85), ratio = 1.2) 
+
+NAmap + geom_point(data=cities, aes(x=longitude, y=latitude, color=city, label=city), size=3.0) + ggtitle("Cities with highest terror rate in North America 1970-2020") +
+  theme(line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+          rect = element_blank()) + labs(x="", y="",color="City")
+```
+
+
+The next column *vicinity* has 1, if the incident happened in immediate vicinity of the city or has 0, if the incident happened in the city itself.
+The fields *crit1*, *crit2* and *crit3* indicate the criteria under which the incident has occurred. 
+* Criterion 1: POLITICAL, ECONOMIC, RELIGIOUS, OR SOCIAL GOAL
+* Criterion 2: INTENTION TO COERCE, INTIMIDATE OR PUBLICIZE TO LARGER AUDIENCE(S)
+* Criterion 3: OUTSIDE INTERNATIONAL HUMANITARIAN LAW
+There are incidents where there is an overlap of all three criterias. These can be filtered for further analysis later on.
+
+*multiple* corresponds to 1, if the incident was part of multiple attacks, else it is 0. The percentage of single incidents is much higher than multiple incidents. 
+*success* corresponds to 1, if the attack was successful, else it is 0. The attacks can be assassination, armed assault, bombing/explosion, hijacking, hostage taking(barricade or kidnapping), facility/infrastructure attack and unarmed assault. There have been nearly 88% of successful attacks compared to 12% of unsuccessful attacks.
+*suicide* corresponds to 1, if it was a suicide attack where the perpetrator did not intend to escape from the attack alive, 0 otherwise. Only 3.5% of the attacks were suicide attacks. This can mean that the perpetrators intended to live to carry out future attacks.
+
+*attacktype1_txt* has 9 subcategories of the type of terror attack. One of the field is unknown wherein the attack type could not be determined from the available information. We can see from the plot, that through all years, Bombing/Explosin has been the most common attack type.
+
+
+```{r fig.width=10}
+# bar plot
+attck <- gtd_select %>% filter(attacktype1_txt != 'Unknown') %>% group_by(iyear, attacktype1_txt) %>% summarise(incidents = n())
+ggplot(attck, aes(fill=attacktype1_txt, y=incidents, x=iyear)) + 
+    geom_bar(position="stack", stat="identity") + labs(x="Year", y="Incidents", title ="Terror Attack Types Over The Years", fill="Attack Type")
+```
+
+
+*targtype1_txt* corresponds to the general type of target/victim. There are 22 categories with the highest category being Private Citizens and Property. Next comes the Military, then the Police, then the Government and then Business. There is an Unknown category here as well. We can ignore *targsubtype1_txt* for now as it has nearly 112 different subcategories of the main target type. *target1* is also too broad a category and is ignored for now.
+
+*natlty1_txt* is the nationality of the Target/Victim. Here, in most cases it is same as that of the country in which the incident took place, but for Hijacking incidents, it is the nationality of the plane and not the passengers. Plotting a graph to see the nationalities of the planes in Hijacking incidents. The most number of such incidents has happened in India followed by Colombia. We can also see a category called International, which might imply that the incident happened while flying over more than one country.
+
+```{r}
+ntlt <- gtd_select %>% filter(attacktype1_txt == 'Hijacking') %>% group_by(natlty1_txt) %>% summarise(incidents = n()) %>% arrange(desc(incidents)) %>% head(n=10)
+
+ntlt %>% ggplot(aes(x=reorder(natlty1_txt, +incidents), y=incidents)) +
+  geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4)+
+    coord_flip() +
+    theme_bw() + ggtitle("Flight Hijakcing Incidents 1970-2020") + labs(x="Country", y ="Incidents")
+```
+
+*gname* tells us about the extremist group that was responsible for the terror attack. For nearly 43% of the incidents, the group that is responsible is unknown. From the known groups, the highest is Taliban followed by ISIS, then Shining Path (SL) and then Al-Shabaab.
+
+*guncertain1* corresponds to 1, if the information reported about the attack group is based on speculation or dubious claims of responsibility. It is 0, if the perpetrator for the incident is not suspected. This value is nearly 92.4% for 0.
+
+*individual* is 1, if the perpetrator was not affliated to any known group and was by themselves. It was 0 otherwise. Only 0.4% of the incidents were caused by such individuals.
+
+*weaptype1_txt* correspond to the different categories of weapons used. There are 13 different categories including Other (weapons that do not fit into the other categories) and Unknown (weapon type could not be determined). The most used weapon is explosives, followed by Firearms.
+
+```{r fig.width = 8}
+
+weap <- gtd_select %>% group_by(weaptype1_txt) %>% summarise(incidents = n()) %>%
+  mutate(weaptype1_txt = 
+    case_when(
+      weaptype1_txt == "Vehicle (not to include vehicle-borne explosives, i.e., car or truck bombs)" ~ "Vehicle",
+      TRUE ~ as.character(weaptype1_txt)
+    ), fraction = incidents/sum(incidents), ymax = cumsum(fraction), ymin = c(0,head(ymax, n=-1))
+  ) 
+
+
+# Make the plot
+ggplot(weap, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=weaptype1_txt)) +
+     geom_rect() +
+     coord_polar(theta="y") + scale_fill_brewer(palette = "Paired") +
+     xlim(c(2, 4)) + guides(fill = guide_legend(title = "Weapon Type")) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank()) + ggtitle("Weapons Used for Terror Incidents 1970-2020")
+  
+```
+
+
+*nkill* and *nwound* are numerical fields that correspond to the number of people killed and the number of people wounded respectively. From these fields less than 10% of the data are Nulls. We can combine these two into a single field to find the total number of casualties due to a terror incident. The mean casualties is near 5, the median is 1. The min is 0 and max is 12263. On plotting the histogram, it is seen that the plot is severely right skewed (highly positive skewness value).
+
+```{r fig.width=3, fig.height=2}
+gtd_select <- gtd_select %>% mutate(
+  ncasual = nkill+nwound, .before = nkill
+) 
+cas <- gtd_select %>% filter(is.na(ncasual)==FALSE)
+
+summary(cas$ncasual)
+skewness(cas$ncasual)
+ggplot(cas, aes(x=ncasual))+
+  geom_histogram(color="darkblue", fill="lightblue") + ggtitle("Casualties Histogram") +
+  labs(x="Casualties", y="Incidents Count")
+
+
+```
+
+*property* is 1 (49.1%), if property was damaged, else it is 0 (37.5%). There is also another entry of '-9' (13.4%) which corresponds to those incidents for which there is not enough data. This can be ignored during visualization.
+
+*ishostkid* is 1 (8.0%), if the victim was taken hostage or kidnapped, else it is 0 (91.7%). The '-9' (0.3%) category corresponds to unknown entries which can be ignored during visualization.
+
+*dbsource* had details about the teams that took efforts to collect and consolidate all this data. Currently, it is being maintained and constantly updated by the START team at University of Maryland. But, there have been other groups that have helped with this data collection through the years. From the summarytable, we can see that nearly 50% of the data was collected by START and nearly 30% of the data was collected by PGIS. But I would like to know which team was responsible for the collection of the data through the years.
+From the plot, we can see that during the early years, PGIS played a major role in collecting the data, then CETIS for a couple of years, followed by ISVG. Finally START took over to maintain the database entirely. Overlapping of these major teams is not seen from the plot. There are however, other smaller teams which have contributed occasionally to the database.
+
+
+```{r fig.width=8}
+#Grouping the data and choosing only the top 8 teams (START, PGIS, ISVG, CETIS, CAIN, UMD Schmid 2012, Hewitt Project, UMD Algeria 2010-2012) that have aided with the data collection process.
+
+sources <- c('START', 'PGIS', 'ISVG', 'CETIS', 'CAIN', 'UMD Schmid 2012', 'Hewitt Project', 'UMD Algeria 2010-2012')
+dbsrc <- gtd_select %>% filter(str_detect(dbsource, str_c(sources, collapse = "|")), is.na(incDate) == FALSE)
+
+new <- dbsrc %>% mutate(
+  yrmon = ym(str_c(iyear,imonth, sep="/"))) %>% select(c(yrmon,dbsource)) %>% group_by(yrmon, dbsource) %>%
+  summarise(count= n())
+
+ggplot(new, aes(x=yrmon, y=count, fill=dbsource)) + 
+    geom_area() + ggtitle("Database Collection from 1970 through 2020") +
+  labs(x="Year", y="Incidents", fill="Source")
+
+```
+
+*INT_LOG*, *INT_IDEO*,*INT_MISC*, *INT_ANY* are representations of international attacks. If the value is 1, it implies that the nationality of the attack group/perpetrator is different from that of the victim/target. It is 0 otherwise. There is also '-9' for those incidents that do not have enough information. Here I am ignoring *INT_MISC* and combining the remaining three columns into a single column. Even if any one of the fields have 1, then it will be considered international. If all have '-9', then those rows are dropped for visualization.
+
+On dropping the unknown values, we can see that International Terror incidents were nearly 37% and domestic events were nearly 63%. To explore further, I want to see how many terror attacks were domestic and how many were by international extremists in Western Europe Vs South Asia. 
+
+```{r}
+gtd_select <- gtd_select %>% select(-c(INT_MISC)) %>% 
+  mutate(intNew = 
+    case_when(
+      INT_ANY == -9 & INT_LOG == -9 & INT_IDEO == -9 ~ -9,
+      INT_ANY == 1 | INT_LOG == 1 | INT_IDEO == 1 ~ 1,
+      INT_ANY == 0 | INT_LOG == 0 | INT_IDEO == 0 ~ 0,
+      TRUE ~ as.numeric(-9)
+    )
+  ) %>% select(-c(INT_ANY,INT_LOG,INT_IDEO))
+```
+
+```{r fig.width=10, fig.height= 6}
+int <- gtd_select %>% filter(intNew!=-9) %>%  group_by(intNew, region_txt) %>% 
+  summarise(fatal = sum(ncasual, na.rm=TRUE)) %>% 
+  mutate(intNew = 
+    case_when(
+      intNew == 1 ~ 'International',
+      intNew == 0 ~ 'Domestic',
+      TRUE ~ as.character("na")
+    )
+  ) 
+
+ggplot(int, aes(y=fatal, x=intNew, fill=intNew)) + 
+    geom_bar(position="stack", stat="identity") + labs(x="", y="Incidents", title ="Domestic Vs International Terror Attacks across regions from 1970-2020", fill="Category" ) +
+  facet_wrap(~region_txt)
+```
+
+From the above plot, we can see the variations between different regions. In South Asia, South America, Sub-Saharan Africa we see more domestic attacks than international. While in North America, Western Europe, Middle East & North Africa, we see more international attacks than domestic. More analysis can be done on the origin of the extreme groups and their targets. This can help us understand if there is a direct relation between the main location of the extremist group and the location of their target. It could explain the higher number of domestic threats in South Asia, which could be because of higher number of extremist groups from that region.
+
+
+So far, I have included descriptive statistics of the data. I've retained all the necessary fields and values upon which I can perform further analysis to find answers to my research questions.
+
+
+### Research Questions
+
+1. How has terrorism spread throughout the world since 1970 until now? Are there some regions which have constantly faced terror attacks? Are there regions that had previously no terror attacks, but are suddenly under plenty of terror attacks?
+
+2. Can correlations be drawn between different numerical fields of this dataset? This can help look at relations between certain factors in the dataset.
+
+3. In each region, which group was the reason for the most deadliest attack? This is to check how expanded the extremist groups are. Or do these extremist groups prefer to terrorize their own domicile regions?
+
+4. Trends of the most popular terror groups throughout the years. It'll be good to visualize the rise and fall of different extremist groups over the years. This visualization can help us ponder into why a particular group thrived during certain periods.
+
+5. What is the average number of people who are killed per terror attack? How does this change region-wise?
+
+6. Draw relations between the weapon used and the target/victim. Do the terror groups use explosives while having their target as citizens and public property? 
+
+
+
+
+Note: I had previously done Homework 2 with a different dataset. Homework 3 is a precursor to my final project. Hence, stopping this homework until the Research Questions. Will be continued in Final Project.
+
