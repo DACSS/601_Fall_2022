@@ -1,0 +1,184 @@
+---
+title: "Challenge 8 Solutions"
+author: "Caitlin Rowley"
+description: "Joining Data"
+date: "11/15/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - railroads
+  - snl
+  - faostat
+  - debt
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data:
+
+I will be using the 'birds' data set and the 'FAOstat Regions' data set.
+
+**\*Please note that I added 'print(head())' to each data frame to shorten the output, but the codes are not rendering.**\*
+
+------------------------------------------------------------------------
+
+```{r}
+# read in data sets:
+
+birds <- read_csv("_data/birds.csv")
+  select(birds, -contains("Code"))
+  unique(birds$Item)
+  unique(birds$Flag)
+
+birds_aggregated <- birds%>%
+  filter(Flag=="A")
+
+birds_split <- birds%>%
+  filter(Flag!="A")
+unique(birds_split$Flag)
+
+print(head(birds_split))
+
+print(head(birds_aggregated))
+
+unique(birds_aggregated$Area)
+```
+
+```{r}
+FAO_region <- read_csv("_data\\FAOSTAT_country_groups.csv")
+FAO_region_country <- FAO_region%>%
+  select(`Country Group`, `Country`)%>%
+  rename(country_group = `Country Group`)%>%
+  distinct()
+
+head(FAO_region_country)
+unique(FAO_region_country$country_group)
+
+# test:
+
+FAO_region_country%>%
+  filter(country_group == "Africa")
+```
+
+## Briefly describe the data
+
+The 'birds' data set contains information related to stocks of different types of poultry: chickens, ducks, geese and guinea fowls, turkeys, and pigeons or other birds. After filtering out the aggregate data by area (my new data set now has 14 columns and 13716 rows), we can see the 28 regions included in the data set.
+
+The 'FAO_region_country' data set contains information from the United Nation's Food and Agriculture Association. This data set includes more detailed information related to the regions referenced in the 'birds' data set, specifically, the countries that are in each region. After creating a subset of the original data set that includes only "country" and "country_group", I now have a data set with 2 columns and 1943 rows of data.
+
+## Tidy Data (as needed)
+
+After reviewing the values within the 'FAO_region_country' data set, I can see that there is a value for "World" in the "country_group" column. So, I will remove this, as its data will overlap with that of other distinct countries.
+
+```{r}
+install.packages("kableExtra")
+library(kableExtra)
+library(readxl)
+
+# remove "World" group
+
+FAO_region_cln <- FAO_region_country%>%
+  filter(country_group!="World")
+
+# create kable:
+
+FAO_region_cln%>%
+  group_by(country_group)%>%
+  summarize(n=n())%>%
+  arrange(desc(n))
+half <- c(1:round(nrow(FAO_region_cln)/2))
+knitr::kable(list(FAO_region_cln[half,],  
+           matrix(numeric(), nrow=0, ncol=1),
+           FAO_region_cln[-half,]), 
+           caption = "Countries in Country Groups")%>%
+  kableExtra::kable_styling(font_size=12)
+
+```
+
+There is still some overlap among country groups even after removing "World." I need to extract country-level or regional groupings to see what information was aggregated in the original data set. Using Professor Rolfe's example, I will identify four major grouping categories (annex, income, OECD, and major region) and the 277 countries nested within those categories.
+
+```{r}
+FAO_region_cln%>%
+  summarise(n=n())/277
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[aA]nnex"))%>%
+  group_by(country_group)%>%
+  summarise(n=n())
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[aA]nnex"))%>%
+  summarise(n=n())
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[iI]ncome"))%>%
+  group_by(country_group)%>%
+  summarise(n=n())
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[iI]ncome"))%>%
+  summarise(n=n())
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[Dd]evelop|OECD"))%>%
+  group_by(country_group)%>%
+  summarise(n=n())
+
+FAO_region_cln%>%
+  filter(str_detect(country_group, "[Dd]evelop|OECD"))%>%
+  summarise(n=n())
+
+# group by major regions:
+
+major_regions <- c("Africa", "Asia", "Europe", "Americas", 
+                 "Oceania", "Antarctic Region")
+
+FAO_region_cln%>%
+  filter(country_group %in% major_regions)%>%
+  summarise(n=n())
+```
+
+I will now pivot the data and create four new categorical variables corresponding to the four groupings (annex, income, OECD, and major region) that contain most or all of the 277 countries included in the 'FAO_region_cln" data set.
+
+```{r}
+# pivot and unite
+
+FAO_regions_wide <- FAO_region_cln%>%
+  pivot_wider(names_from=country_group, values_from = 1)%>%
+  unite("gp_annex", contains("Annex"), 
+        sep="", na.rm=TRUE, remove=TRUE)%>%
+  unite("gp_major_region", any_of(major_regions), 
+        sep="", na.rm=TRUE, remove=TRUE)%>%
+  unite("gp_income", contains("Income")|contains("income"),
+        sep="", na.rm=TRUE, remove=TRUE)%>%
+  unite("gp_develop", contains("Develop")|contains("OECD"),
+        sep="", na.rm=TRUE, remove=TRUE)%>%
+  select(Country, starts_with("gp"))
+```
+
+## Join Data
+
+I will now join the 'birds_split' data set ("Area") with the pivoted 'FAO_regions_wide' data set (country and regional variables). I will do a left join, as each case includes a country, and each country should match the four regional indicators. I will also set the two key fields as the "Area" variable in the 'birds_split' data set and the "country" variable in the 'FAO_regions_wide' data set.
+
+I can see based on the number of observations that the joined data set includes the correct number of observations (13716).
+
+```{r}
+
+nrow(birds_split)
+
+birds_join <- left_join(birds_split, FAO_regions_wide,
+                   by = c("Area" = "Country"))
+```
