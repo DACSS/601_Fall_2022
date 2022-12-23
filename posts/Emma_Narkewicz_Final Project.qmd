@@ -105,7 +105,7 @@ For easier visualization & analysis, rows & columns containing demographic categ
 ```{r}
 
 # Reading in necessary variables
-CTE_DF <- read_excel("/Users/Emma/Desktop/Koding is Kewl/CTE_Enrollment_2020-2021.xlsx",
+CTE_DF <- read_excel("_Data/CTE_Enrollment_2020-2021.xlsx",
                        skip = 2,
                      col_names = c("State", 
                                    "Year", 
@@ -146,9 +146,9 @@ CTE_DF <- read_excel("/Users/Emma/Desktop/Koding is Kewl/CTE_Enrollment_2020-202
   filter(!str_detect(`State`, "Palau")) 
 
 ```
-The CTE data set after read in is below:
+**Below is the Perkins V CTE data set after read in:**
 
-```{r}
+```{r, cache=TRUE}
 CTE_DF
 ```
 
@@ -258,7 +258,7 @@ To calculate relative racial diversity of students participating in CTE I:
  
  - Calculated relative CTE racial diversity in a state using the formula **Delta RaceX  CTE = (% of High Students in State CTE who are of X Race) - (% of People of X Race in State Census)**
 
-```{r, results='hide', message=FALSE, error = TRUE}
+```{r, results='hide', message=FALSE, error = TRUE, cache=TRUE}
 
 #Loading tidycensus & 2020 decennial variables
 
@@ -271,7 +271,7 @@ census_api_key("da16c3123512601e6f0d959c73fab921103c382d")
   
 ```
 
-```{r, results='hide', message=FALSE}
+```{r, results='hide', message=FALSE, cache=TRUE}
 
 # creating 2020 decennial census race data frame with desired variables and geometry
 census_2020_race_df <- get_decennial(
@@ -317,7 +317,7 @@ Census_Race_Data_Percent  <- Census_Race_Date_Wider %>%
 
 After some experimentation I discovered that joining the CTE data to the census data maintained the inherent tidycensus() geometry needed for mapping for the joined data set. I therefore left joined the CTE_Data_Percentage data set to the Census_Race_Data_Percent using the categorical State variable as the key.
 
-```{r}
+```{r, cache=TRUE}
 #Left join of CTE_Data in Percents to Census_Data in Percents
 Joined_CTE_Data <- Census_Race_Data_Percent %>%
   left_join (CTE_Data_Percentage, by = "State")
@@ -369,7 +369,7 @@ summarise(`TotalCountFemaleCTE` = sum(`Female`, na.rm=TRUE),  `SumGrandTotalCTE`
 
 *Fig. 1* below is a heat map below of the percentage of female high school student in CTE statewide for the 2020-2011 year. The majority of states had CTE programs with 45%-50% female students. Across all career clusters, the majority of states came close to gender parity in total CTE participation. A handful of Southern states & Puerto Rico exceed total 55% female participation in CTE. In contrast, several Northeastern states and Alaska had total female participation under 40% or in the low 40%.
 
-```{r}
+```{r, cache=TRUE}
 #Select only CTE total rows for statewide CTE clusters
 TotCTEPercent <- Delta_CTE_Data %>%
   filter(str_detect(`Career Cluster`, "Total_CTE_Students"))
@@ -434,7 +434,7 @@ Potential Health Science careers can have a lower earning potential than STEM & 
 *Fig. 2* below is a heat map of CTE participation of female students by CTE career cluster for the 2020-2021 high school year using facet_wrap(). The over-representation of female students in Health Science courses is shown by the deep purple-pink fill representing 80% female participation. The Total CTE heat map in *Fig. 2* is paler than the heat map in *Fig. 1*, while had a much maximum female participation scale of only 55%. By visual contrast, there are far fewer than 50% female participating in IT & STEM. The IT & STEM heat maps are much lighter than the Total CTE Students one, showing the under-representation of female high school students in these 2 career clusters. Female participation in STEM courses was particularly low, resulting in a very pale pink heat map. 
 *Note that Nebraska is white in this heat map as there was participation data at the STEM level in the state*
 
-```{r}
+```{r, cache=TRUE}
 #Graph comparing female CTE participation between IT, Health Science, STEM, Overall
 
 ggplot(data = Delta_CTE_Data, aes(fill = `Percent_Female`)) +  geom_sf() + scale_fill_distiller(palette = "RdPu", direction = 1) + labs(title = "Figure 2: % Female High School Students in CTE by Career Type (2020-2021)",
@@ -468,7 +468,7 @@ summarise(`TotalCountSWDCTE` = sum(`Individuals With Disabilities (ESEA/IDEA)`, 
 *Fig. 3* below is a heat map of percentage of high school students with a disability in CTE statewide for the 2020-2011 year. The majority of states have CTE programs made up of ~10% students with disabilities (SWDs). No states appear to have extremely low participation of students with disabilities. Several Northeastern states appear to have CTE programs made up of between 20-35% SWDs.
 
 
-```{r}
+```{r, cache=TRUE}
 #Graph  Total Student with Disabilities Participation in CTE 
 ggplot(data = TotCTEPercent, aes(fill = `Percent_Disabilities`)) +  geom_sf() + scale_fill_distiller(palette = "Blues", direction = 1) + labs(title = "Figure 3: % High School Students w Disabilities in CTE Statewide (2020-2021)",
        caption = "Source: US Department of Education 2020-2021 Perkins V Enrollment Data",
@@ -532,7 +532,7 @@ These results suggest SWDs may have been tracked out of Health Science & STEM CT
 
 The STEM heat map is slightly lighter than the Total CTE or IT heat maps in *Fig. 4*, suggesting a slight under-representation of SWDs. in STEM course, with the exception of in Puerto Rico. *Note that Nebraska is white in this heat map as there was participation data at the STEM level in the state *  The Health Science heat map is the lightest of all career clusters in *Fig. 4*, corresponding to the lowest percentage of SWDs in any career cluster. The difference in participation of students with disabilities between CTE clusters in *Fig. 4* is much less dramatic than the difference in participation of female student in CTE clusters in *Fig. 2*.
 
-```{r}
+```{r, cache=TRUE}
 #Graph comparing SWD CTE participation between IT, Health Science, STEM, Overall
 ggplot(data = Delta_CTE_Data, aes(fill = `Percent_Disabilities`)) +  geom_sf() + scale_fill_distiller(palette = "Blues", direction = 1) + labs(title = "Figure 4: % High School Students w Disabilities in CTE by Career Type (2020-2021)",
        caption = "Source: US Department of Education 2020-2021 Perkins V Enrollment Data",
@@ -664,7 +664,7 @@ Pivoted_Perc_CTE_Race  <- Percent_TotRaceCTE %>%
  - Lastly, there was a lower percentage of Asian students in Health Science & Total CTE than in STEM & IT, the opposite of what was observed for most racial/ethnic groups
 
 
-```{r}
+```{r, cache=TRUE}
 #Figure 5, CTE Race Bar Chart by %
 ggplot(Pivoted_Perc_CTE_Race, aes(fill= `Race or Ethnicity`, y=`Percent Students in CTE (%)`, x = `Career Cluster`)) + geom_bar(position="fill", stat="identity") + ggtitle("Figure 5: % National CTE HS Participation by Race/Ethnicity & Cluster (2020-2021)") + labs(x= "Career Cluster", y="Percentage Students in CTE (%)") 
   
@@ -683,7 +683,7 @@ The relative percentage of White secondary students in CTE shown in *Fig.6* rang
 There appears to be slightly lower percentage of White students in Health Science as opposed to IT & STEM, as indicated by deeper blue & green fill.
 
 
-```{r}
+```{r, cache=TRUE}
  ##Plot Relative White
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentWhite`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral", 
@@ -699,7 +699,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentWhite`)) +  geom_sf() + sc
 The relative over-representation of Hispanic high school students in CTE in the 2020-2021 school year compared to Census diversity is apparent in *Fig. 7*. This is both because of the heat map scale ranging from **-5% to +15%**, & the orange-red South West portion of the Total CTE map, indicating 15% more Hispanic participation in CTE than % of Hispanic individuals in the state. Hispanic students are under-represented in IT courses in Utah & in STEM courses in New York, shown with the blue fill in those states. Hispanic high school students have higher relative participation in Health Science career courses than in IT or STEM courses.
 
 
-```{r}
+```{r, cache=TRUE}
  ##Plot Relative Hispanic
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentHispanic`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral", 
@@ -715,7 +715,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentHispanic`)) +  geom_sf() +
 *Fig. 8* below shows that while Black students were relatively over represented in CTE when to census data, it was only slightly. This is indicated by *Fig. 8's* fully positive scale of Delta % Black students in CTE in combination with all 4 facet_wrapped heat maps filled with green-blue indicating a Delta % Blacks students close to zero. Lastly, Black high school students participated less in STEM than in IT or Health Science CTE courses in 2020-2021.
 
 
-```{r}
+```{r, cache=TRUE}
 #Plot Relative Black
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentBlack`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral", 
@@ -729,7 +729,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentBlack`)) +  geom_sf() + sc
 *Fig. 9* is strikingly red & orange, but based on the legend scale of **-50% to 0%** this does not indicate high relative TE participation of students of Two or More Race. After closer examination, it appears that the heat map & scale is skewed by the dark blue outlier of  Puerto Rico, which has a Delta % Students of Two or More Races as **-50%**. This suggests that there are 50% more students of Two or More Races in Puerto Rico Census data in high school CTE courses in 2020-2021.
 
 
-```{r}
+```{r, cache=TRUE}
 #Plot Delta Two More Races
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentTwoMoreRaces`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral",  direction = -1) + 
@@ -740,7 +740,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentTwoMoreRaces`)) +  geom_sf
 I confirmed from the original Census & Perkins V the percentage of Puerto Rican's of Two or More Races in the 2020-2021 was high, at 50%. In contrast, 0% of high school CTE students in Puerto Rico in 2020-2021 were of Two or More Races. This could be due to either disparities in participation or in how two or more races are measured in the Census vs. Perkins V.
 
 
-```{r}
+```{r, cache=TRUE}
 
 # % Puerto Rico Two More Races Census 
 PR_Race_Percent <- Census_Race_Data_Percent %>%
@@ -767,7 +767,7 @@ PR_CTE_Percent
 As shown in *Fig. 10* below, Asian Students were one of the racial & ethnic groups under represented in high school CTE courses in 2020-2021 when compared to Census diversity. Asian students were relatively under represented in Health Science in New York (**Delta% = -5%**), & over represented in Health Science in Hawaii (**Delta% = +15%**). Asian students were also relatively over represented in IT in the state of California (**Delta% = +10%**).
 
 
-```{r}
+```{r, cache=TRUE}
 #Plot Delta Asian
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentAsian`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral",  direction = -1) + 
@@ -788,7 +788,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentAsian`)) +  geom_sf() + sc
  -  Indigenous students were relatively under represented in Arizona & South Dakota STEM courses 
  
 
-```{r}
+```{r, cache=TRUE}
 #Plot DeltaPercentAmIndNtv
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentAmIndNtv`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral",  direction = -1) + 
@@ -802,7 +802,7 @@ ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentAmIndNtv`)) +  geom_sf() +
 While nearly all states in *Fig. 12* has a relative percentage of Pacific Islanders & Native Hawaiians of **Delta% = 0%** in CTE courses, in Hawaii, Pacific Islanders & Native Hawaiians were under represented in STEM courses, as indicated by the deep blue state in the STEM heat map facet (**Delta% = -5%**).
 
 
-```{r}
+```{r, cache=TRUE}
 #Plot DeltaPercentNtvHIPacIsld
 
 ggplot(data = Delta_CTE_Data, aes(fill = `DeltaPercentNtvHIPacIsld`)) +  geom_sf() + scale_fill_distiller(palette = "Spectral", direction = -1) + 
