@@ -1,0 +1,293 @@
+---
+title: "Challenge 6 Instructions"
+author: "Erika Nagai"
+description: "Visualizing Time and Relationships"
+date: "10/23/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+  - bechdel_test
+  - movies
+  - Female_Representation
+  - Erika_Nagai
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(rjson)
+library(jsonlite)
+library(summarytools)
+library(ggridges)
+library(grid)
+
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Challenge Overview
+
+Today's challenge is to:
+
+1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)
+2)  tidy data (as needed, including sanity checks)
+3)  mutate variables as needed (including sanity checks)
+4)  create at least one graph including time (evolution)
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+5)  Create at least one graph depicting part-whole or flow relationships
+   - try to make them "publication" ready (optional)
+   - Explain why you choose the specific graph type
+
+
+
+This week, I chosed to analyze data about female representation in movies, specifically focusing on Bechdel test.
+According to "Merriam-Webster", Bechdel test is "a set of criteria used as a test to evaluate a work of fiction (such as a film) on the basis of its inclusion and representation of female characters" (<https://www.merriam-webster.com/dictionary/Bechdel%20Test>)
+
+
+It usually includes 
+1)  At least two women are featured
+2)  These women talk to each other
+3)  They discuss something other than a man
+
+I used two datasets.
+
+1)  `imdb_df`: The reviews information taken from IMDb (Internet Movie Database) <https://www.imdb.com/interfaces/>
+2)  `bechdel_df`: <https://bechdeltest.com/api/v1/doc>
+
+
+### Read in data
+
+**`bechdel_df`**
+
+This data is extracted from `bechdeltest` API, so I used `jsonlite`'s `read_json` function.
+The values in `imdbid` are missing "tt" in the beginning and don't match with the original imdb id so I made a new column `new_imdbid`that concatnate "tt" and the value of `imdbid`
+
+```{r}
+
+# json_file <- "http://bechdeltest.com/api/v1/getAllMovies"
+# bechdel_df <- read_json(path = json_file, simplifyVector = TRUE)
+# bechdel_df$titleId <- paste("tt",bechdel_df$imdbid, sep = "")
+# 
+# 
+# head(bechdel_df)
+
+
+```
+
+**`imdb_rating`**
+
+I downloaded the tsv file compressed in a gz file from this website. <https://www.imdb.com/interfaces/>
+First, I decompressed the gz file by `R.usills::gunzip` function, and then read in the tsv file.
+
+I do NOT read in the original tsv file in this R Quarto because it is huge and it may cause issues.
+However, if you want to see what I did to read in the tsv file, you can refer to the below coding.
+```{r}
+
+# I ran the below code to read in a huge gz file. I didn't include this in this quarto file because it doesn't allow me to submit a huge data file and it will cause errors.
+
+
+# R.utils::gunzip("title.ratings.tsv.gz")
+# imdb_rating <- read.delim(file = "title.ratings.tsv", sep = "\t")
+# 
+# write.csv(imdb_rating, "imdb_rating.csv")
+
+#imdb_rating <- read_csv()
+
+# colnames(imdb_rating)[1] <- "titleId"
+# imdb_rating
+
+
+```
+
+Then I joined `bechdel_df` and `imdb_rating` using `titleId` and named the new dataset as `bechdel_imdb`
+Again, you can see the below code to see how I joined two datasets.
+
+```{r}
+# bechdel_imdb <- left_join(bechdel_df, imdb_rating, by="titleId" )
+# 
+# write.csv(bechdel_imdb, "~/DACSS/601/601_Fall_2022/posts/_data/bechdel_imdb.csv")
+bechdel_imdb <- read_csv("~/DACSS/601/601_Fall_2022/posts/_data/bechdel_imdb.csv")
+bechdel_imdb
+```
+
+### Describe the dataset
+
+As mentioned, `bechdel_imdb` dataset is made of two different data, (1) Reviews on movies from IMDb (2) Rating of Bechdel test of movies.
+This data set contains 9802 rows and 8 columns. Each row represents a movie and the below information about each movie is contained:
+
+* year: a year when movie was released
+* id: Bechdeltest.com unique id
+* rating: Bechdel test rating (0 means no two women, 1 = no talking between women, 2 = talking about a man, 3 means it passes the test)
+* title: Title of movies
+* imdbid: IMDb unique id 
+* titleId: IMDb unique id with "tt" in the beginning (this column was used as foreign key when joining the datasets)
+* average rating: weighted average of all the individual user ratings from IMDb
+* numVotes: number of votes the title has received
+
+
+
+```{r}
+print(summarytools::dfSummary(bechdel_imdb),
+      varnumbers = FALSE,
+      plain.ascii  = FALSE,
+      style        = "grid",
+      graph.magnif = 0.80,
+      valid.col    = FALSE,
+      method = 'render',
+      table.classes = 'table-condensed')
+```
+
+## Tidy data
+
+There are three different id columns "id", "imdbid", and "titleId".
+Only one ID column will be enough so I decided to delete "id" and "imdbid".
+
+Also the column "...1" is not necessary because this colums only shows the row number, thus I removed the column "...1" as well.
+
+```{r}
+
+bechdel_imdb <- bechdel_imdb %>% select(-c(id, imdbid, ...1))
+colnames(bechdel_imdb)
+```
+
+Also I changed the name of columns to make them easier to understand.
+
+```{r}
+colnames(bechdel_imdb) <- c("title", "rating", "year", "titleId", "averageRating", "numVotes")
+bechdel_imdb
+```
+
+I realized that the released year of "inazuma eleven: the movie" is 1010, which doesn't seem correct. According to the information on the internet, this movie was released in 2010, so I manually corrected this information.
+
+```{r}
+bechdel_imdb$year[bechdel_imdb$year==1010] <- 2010
+```
+
+
+
+After cleaning the data, the data contains the following information:
+ *  year: a year when movie was released
+ *  id: Bechdeltest.com unique id
+ *  rating: Bechdel test rating (0 means no two women, 1 = no talking between women, 2 = talking about a man, 3 means it passes the test)
+ *  title: Title of movies
+ *  imdbid: IMDb unique id 
+ *  titleId: IMDb unique id with "tt" in the beginning (this column was added to join two datasets)Ha
+ *  average rating: weighted average of all the individual user ratings from IMDb
+ *  numVotes: number of votes the title has received
+
+
+## Visualization 
+
+Before analyzing the data, please note that not all movies have the Bechdel test available on http://bechdeltest.com.
+I'm able to analyze only the movies that have the Bechdel test rating available and the number of these movies is as follows.
+
+
+```{r}
+vis <- bechdel_imdb %>%
+  group_by(year) %>%
+  summarize(
+    Total_number_of_movie = n()
+  )
+
+ggplot(vis, aes(x=year, y=Total_number_of_movie)) + 
+  geom_line() +
+  labs(title = "The number of movies that have Bechdel test rating available")
+```
+
+
+**1: Has female representation in movies improved over time?** 
+
+It seems like the number of movies that pass the Bechdel test is increasing however we cannot see if it's true because the total number of movies is also increasing.
+
+```{r}
+
+bechdel_imdb$rating <- as.factor(bechdel_imdb$rating)
+vis1 <- bechdel_imdb %>% group_by(year, rating) %>%
+  dplyr::summarize(count = n())
+
+```
+
+
+```{r}
+ggplot(vis1, aes(x = year, y = count, fill = rating))+
+  geom_area()+
+  labs(title="Number of movies by Bechdel test rating", y = "Number of movies", x = "Year") +
+  scale_fill_discrete(name = "Bechdel Test Rating", labels = c("0: No two women", "1: No women talking each other", "2: Talking about a man", "3: Passes the test"))
+  
+```
+
+I created the graph of proportion of Bechdel Rating instead of number.
+This graph shows that the % of movies that pass the Bechdel test is constantly increasing since around 1970.
+Currently, over 70% of the released movies passes the Bechdel test.
+Even though most movies feature more than one female, however around 25% of movies still do NOT show two females talking each other.
+
+
+```{r}
+
+ggplot(vis1, aes(x = year, y = count, fill = rating))+
+  geom_area(position = "fill")+
+  labs(title="% of movies by Bechdel test rating", y = "Number of movies", x = "Year") +
+  scale_y_continuous(labels = scales::percent)+
+  scale_fill_discrete(name = "Bechdel Test Rating", labels = c("0: No two women", "1: No women talking each other", "2: Talking about a man", "3: Passes the test")) +
+  annotate("segment", x =1970, xend = 2000, y = 0.35, yend = 0.50, colour = "black", arrow = arrow())
+  
+
+```
+Since there is only a small number of rated movies before 1950, the percentage graph does not appear smooth.
+I decided to focus on the movies released in 1950 or after.
+
+```{r}
+ggplot(vis1 %>% filter(year >= 1950), aes(x = year, y = count, fill = rating))+
+  geom_area(position = "fill")+
+  labs(title="% of movies by Bechdel test rating", y = "Number of movies", x = "Year") +
+  scale_y_continuous(labels = scales::percent)+
+  scale_fill_discrete(name = "Bechdel Test Rating", labels = c("0: No two women", "1: No women talking each other", "2: Talking about a man", "3: Passes the test"))+
+  annotate("segment", x =1970, xend = 2000, y = 0.35, yend = 0.50, colour = "black", arrow = arrow())
+  
+```
+
+
+**2: Are movies in which women are represented more popular?**
+
+If people value female representation in movies, the movies that have a better rating of Bechdel test will score higher on the reviews.
+However, the below graph doesn't show such trend clearly.
+
+```{r}
+ggplot(bechdel_imdb %>% filter(year >= 1950), aes(x=year, y=averageRating)) + 
+  geom_point(aes(colour=factor(rating))) +
+  xlab("Year") +
+  ylab("IBDm Review Score") +
+  scale_color_discrete(name = "Bechdel Test Rating", labels = c("0: No two women", "1: No women talking each other", "2: Talking about a man", "3: Passes the test"))
+  
+```
+I created a facet graph to see the trend more clearly, however, it seems that the rating of Bechdel test doesn't affect the review rating.
+
+```{r}
+
+
+ggplot(bechdel_imdb %>% filter(year >= 1950), aes(x=year, y=averageRating)) + 
+  geom_point() +
+  xlab("Year") +
+  labs(title = "IMDb review rating by bechdel test rating")+
+  ylab("IBDm Review Score") +
+  scale_color_discrete(name = "Bechdel Test Rating", labels = c("0: No two women", "1: No women talking each other", "2: Talking about a man", "3: Passes the test")) +
+  
+  
+  facet_wrap(vars(factor(rating)))
+
+```
+# Violin plot or line of average 
+
+
+For further study, I would like to find out:
+1)  The trend of the number of proportion of the movies that pass Bechdel Test in different regions (Europe, Asia, Middle East, etc)
+2)  Whether or not a movie passes the Bechdel Test affects the movie's success (audience and expert reviews, revenue)?
