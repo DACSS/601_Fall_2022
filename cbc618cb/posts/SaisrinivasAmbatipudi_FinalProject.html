@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Saisrinivas Ambatipudi">
+<meta name="dcterms.date" content="2022-12-20">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Saisrinivas_Ambatipudi_Final_Project - Analysis of Cryptocurrency Data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Saisrinivas_Ambatipudi_Final_Project - Analysis of Cryptocurrency Data">
+<meta name="twitter:description" content="Cryptocurrencies, the word makes people curious about what it is, why is so important, what kind of role does it play in the society.">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Saisrinivas_Ambatipudi_Final_Project - Analysis of Cryptocurrency Data</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#about-the-dataset" id="toc-about-the-dataset" class="nav-link" data-scroll-target="#about-the-dataset">About the Dataset</a></li>
+  <li><a href="#my-research-question" id="toc-my-research-question" class="nav-link" data-scroll-target="#my-research-question">My research question:</a></li>
+  <li><a href="#the-full-dataset" id="toc-the-full-dataset" class="nav-link" data-scroll-target="#the-full-dataset">The full Dataset</a></li>
+  <li><a href="#summary-of-the-crypto-dataset" id="toc-summary-of-the-crypto-dataset" class="nav-link" data-scroll-target="#summary-of-the-crypto-dataset">Summary of the Crypto Dataset</a></li>
+  <li><a href="#vizualizing-the-cryptocurrencies-in-the-data-set." id="toc-vizualizing-the-cryptocurrencies-in-the-data-set." class="nav-link" data-scroll-target="#vizualizing-the-cryptocurrencies-in-the-data-set.">Vizualizing the cryptocurrencies in the data set.</a></li>
+  <li><a href="#prices-market-values-and-volume-of-the-digital-assets." id="toc-prices-market-values-and-volume-of-the-digital-assets." class="nav-link" data-scroll-target="#prices-market-values-and-volume-of-the-digital-assets.">Prices, Market Values and Volume of the digital assets.</a></li>
+  <li><a href="#market-capitalization" id="toc-market-capitalization" class="nav-link" data-scroll-target="#market-capitalization">Market Capitalization</a></li>
+  <li><a href="#price-indicators-of-all-the-currencies." id="toc-price-indicators-of-all-the-currencies." class="nav-link" data-scroll-target="#price-indicators-of-all-the-currencies.">Price Indicators of all the currencies.</a></li>
+  <li><a href="#yearly-capitalization-representation" id="toc-yearly-capitalization-representation" class="nav-link" data-scroll-target="#yearly-capitalization-representation">Yearly Capitalization Representation</a></li>
+  <li><a href="#traded-crypto-visualization" id="toc-traded-crypto-visualization" class="nav-link" data-scroll-target="#traded-crypto-visualization">Traded Crypto Visualization</a></li>
+  <li><a href="#distribution-and-correlation-of-the-volume" id="toc-distribution-and-correlation-of-the-volume" class="nav-link" data-scroll-target="#distribution-and-correlation-of-the-volume">Distribution and Correlation of the Volume</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion:</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Saisrinivas_Ambatipudi_Final_Project - Analysis of Cryptocurrency Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Saisrinivas Ambatipudi </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 20, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Cryptocurrencies, the word makes people curious about what it is, why is so important, what kind of role does it play in the society. But cryptocurrencies are nothing but money which stored in digital format and it is designed to be an exchange medium whose records are saved on that digital format on something called the blockchain and smart contracts. But we can talk about blockchain and smart contracts in a different topic altogether.</p>
+<p>The term cryptocurrencies first came to be in the early 2010’s as a form of digital assets and has now caused an economic boom where people who had invested back in the day are present day billionaires now.</p>
+<p>These digital assets are the talk of the town and this project we will find out how cryto currencies started out and developed in prices and market capitalization.</p>
+<p>The dataset was extracted from Kaggle.</p>
+</section>
+<section id="about-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="about-the-dataset">About the Dataset</h2>
+<p>In this project we have a data set about with about 20 different crytpo currencies including bitcoin, ethereum, solana, tether, etc., and it has the following features as well:</p>
+<p>1.Currency 2.Date 3.Open (Opening Price) 4.High (Highest price of the crypto that day) 5.Low (Lowest price of the crypto that day) 6.Close (Closing Price) 7.Volume (Total Volume of coins traded by day) 8.Market Cap (Total Market Value of the coin by day)</p>
+</section>
+<section id="my-research-question" class="level2">
+<h2 class="anchored" data-anchor-id="my-research-question">My research question:</h2>
+<p>In this project we want to vizualize the 23 different crypto-currenices in a time series, where we can see the respective crypto-currency along with its open, close, high and low prices and values based on the dates.</p>
+<p>And we will also compare Bitcoin with tether in terms of prices and volume and find out: - which coin dominated in which years in terms of market capitalization. - the different prices of the cryptocurrencies from the years 2017 to 2021 because thats when these digital assets became a super hit. - Why Bitcoin’s volume decreased during 2020-2021 while tether’s volume kept increasing?</p>
+</section>
+<section id="the-full-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="the-full-dataset">The full Dataset</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>crypto <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"D:/UMass/Sem 1/DACSS601/601_Fall_2022/posts/_data/crypto_maa2.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error: 'D:/UMass/Sem 1/DACSS601/601_Fall_2022/posts/_data/crypto_maa2.csv' does not exist.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>crypto</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'crypto' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="summary-of-the-crypto-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-the-crypto-dataset">Summary of the Crypto Dataset</h2>
+<p>Here we get the summary of the data set where we can check the full features of each and every column.</p>
+<p>We can see that the highest price any cryptocurrency has is 64863.10 and the lowest is 62208.96.</p>
+<p>And the highest market cap is 1186360000000. Which is $1,186,360,000,000. That is a huge amount of money. This value would most likely be for bitcoin as its has the highest value in the market till date.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Date <span class="ot">=</span> <span class="fu">as.Date</span>(crypto<span class="sc">$</span>Date, <span class="at">format =</span> <span class="st">"%d/%m/%Y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.Date(crypto$Date, format = "%d/%m/%Y"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Open <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>Open))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>High <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>High))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Low <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>Low))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Close <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>Close))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Volume <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>Volume))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Marketcap <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">','</span>,<span class="st">''</span>,crypto<span class="sc">$</span>Marketcap))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Year <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(crypto<span class="sc">$</span>Date,<span class="st">"%Y"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in format(crypto$Date, "%Y"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Currency <span class="ot">=</span> <span class="fu">capitalize</span>(crypto<span class="sc">$</span>Currency)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.factor(x): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(crypto)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>crypto</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'crypto' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="vizualizing-the-cryptocurrencies-in-the-data-set." class="level2">
+<h2 class="anchored" data-anchor-id="vizualizing-the-cryptocurrencies-in-the-data-set.">Vizualizing the cryptocurrencies in the data set.</h2>
+<p>We need to check if the dataset has no NA values and we can check that be creating a piechart plot</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_ly</span>(<span class="fu">as.data.frame</span>(crypto<span class="sc">$</span>Currency),<span class="at">labels =</span> crypto<span class="sc">$</span>Currency,<span class="at">type =</span> <span class="st">'pie'</span>, <span class="at">hole =</span> <span class="fl">0.3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">showgrid =</span> <span class="cn">FALSE</span>, <span class="at">zeroline =</span> <span class="cn">FALSE</span>, <span class="at">showticklabels =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">showgrid =</span> <span class="cn">FALSE</span>, <span class="at">zeroline =</span> <span class="cn">FALSE</span>, <span class="at">showticklabels =</span> <span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(crypto$Currency): object 'crypto' not found</code></pre>
+</div>
+</div>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</section>
+<section id="prices-market-values-and-volume-of-the-digital-assets." class="level2">
+<h2 class="anchored" data-anchor-id="prices-market-values-and-volume-of-the-digital-assets.">Prices, Market Values and Volume of the digital assets.</h2>
+<p>In this visualization we will go ahead and check the opening prices and the closing prices in the plot. It will be clearly shown that the prices of all currencies didn’t start picking up until the later half of 2017. The were a few interesting coins that picked up in the later half of 2017 and died down quickly after the first two years that is was introduced to the financial markets because of this.</p>
+<p>The cause of the sudden surge in interest in Bitcoin in the middle of 2017 is still a mystery, but it is wildly speculative that a single whale artificially inflated the price of Bitcoin, sparking a surge in demand for the currency on a massive scale. As a result, the financial world began to take an interest in digital currencies, and the prices of practically all currencies increased, with Bitcoin emerging as the strongest and most well-liked currency in the field.</p>
+<p>We need to make a visualization to get the market values for all the coins to make it easier to navigate through the data. The data set will be divided into 23 subsets of each currency.</p>
+<p>As The subsetted data is in the form ‘OHLC’ (open,High,Low,Close) it is in the ideal format to work with the Quantmod library and hence is converted to XTS type.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>Bitcoin <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Bitcoin'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Bitcoin"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>Bitcoin<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Bitcoin$Currency = NULL: object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Bitcoin) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'BitcoinDate'</span>,<span class="st">'BitcoinOpen'</span>,<span class="st">'BitcoinHigh'</span>,<span class="st">'BitcoinLow'</span>,<span class="st">'BitcoinClose'</span>,<span class="st">'BitcoinVolume'</span>,<span class="st">'BitcoinMarketcap'</span>, <span class="st">'BitcoinYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Bitcoin) = c("BitcoinDate", "BitcoinOpen", "BitcoinHigh", : object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>Bitcoin <span class="ot">=</span> <span class="fu">xts</span>(Bitcoin[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Bitcoin<span class="sc">$</span>BitcoinDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Bitcoin[, -1], order.by = as.Date(Bitcoin$BitcoinDate)): object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>Litecoin <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Litecoin'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Litecoin"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>Litecoin<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Litecoin$Currency = NULL: object 'Litecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Litecoin) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'LitecoinDate'</span>,<span class="st">'LitecoinOpen'</span>,<span class="st">'LitecoinHigh'</span>,<span class="st">'LitecoinLow'</span>,<span class="st">'LitecoinClose'</span>,<span class="st">'LitecoinVolume'</span>,<span class="st">'LitecoinMarketcap'</span>, <span class="st">'LitecoinYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Litecoin) = c("LitecoinDate", "LitecoinOpen", "LitecoinHigh", : object 'Litecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>Litecoin <span class="ot">=</span> <span class="fu">xts</span>(Litecoin[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Litecoin<span class="sc">$</span>LitecoinDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Litecoin[, -1], order.by = as.Date(Litecoin$LitecoinDate)): object 'Litecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>XRP <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'XRP'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "XRP"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>XRP<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in XRP$Currency = NULL: object 'XRP' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(XRP) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'XRPDate'</span>,<span class="st">'XRPOpen'</span>,<span class="st">'XRPHigh'</span>,<span class="st">'XRPLow'</span>,<span class="st">'XRPClose'</span>,<span class="st">'XRPVolume'</span>,<span class="st">'XRPMarketcap'</span>, <span class="st">'XRPYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(XRP) = c("XRPDate", "XRPOpen", "XRPHigh", "XRPLow", : object 'XRP' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>XRP <span class="ot">=</span> <span class="fu">xts</span>(XRP[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(XRP<span class="sc">$</span>XRPDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(XRP[, -1], order.by = as.Date(XRP$XRPDate)): object 'XRP' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>Dogecoin <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Dogecoin'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Dogecoin"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>Dogecoin<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Dogecoin$Currency = NULL: object 'Dogecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Dogecoin) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'DogecoinDate'</span>,<span class="st">'DogecoinOpen'</span>,<span class="st">'DogecoinHigh'</span>,<span class="st">'DogecoinLow'</span>,<span class="st">'DogecoinClose'</span>,<span class="st">'DogecoinVolume'</span>,<span class="st">'DogecoinMarketcap'</span>, <span class="st">'DogecoinYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Dogecoin) = c("DogecoinDate", "DogecoinOpen", "DogecoinHigh", : object 'Dogecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>Dogecoin <span class="ot">=</span> <span class="fu">xts</span>(Dogecoin[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Dogecoin<span class="sc">$</span>DogecoinDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Dogecoin[, -1], order.by = as.Date(Dogecoin$DogecoinDate)): object 'Dogecoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>Monero <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Monero'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Monero"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>Monero<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Monero$Currency = NULL: object 'Monero' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Monero) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'MoneroDate'</span>,<span class="st">'MoneroOpen'</span>,<span class="st">'MoneroHigh'</span>,<span class="st">'MoneroLow'</span>,<span class="st">'MoneroClose'</span>,<span class="st">'MoneroVolume'</span>,<span class="st">'MoneroMarketcap'</span>, <span class="st">'MoneroYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Monero) = c("MoneroDate", "MoneroOpen", "MoneroHigh", : object 'Monero' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>Monero <span class="ot">=</span> <span class="fu">xts</span>(Monero[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Monero<span class="sc">$</span>MoneroDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Monero[, -1], order.by = as.Date(Monero$MoneroDate)): object 'Monero' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>Stellar <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Stellar'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Stellar"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>Stellar<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Stellar$Currency = NULL: object 'Stellar' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Stellar) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'StellarDate'</span>,<span class="st">'StellarOpen'</span>,<span class="st">'StellarHigh'</span>,<span class="st">'StellarLow'</span>,<span class="st">'StellarClose'</span>,<span class="st">'StellarVolume'</span>,<span class="st">'StellarMarketcap'</span>, <span class="st">'StellarYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Stellar) = c("StellarDate", "StellarOpen", "StellarHigh", : object 'Stellar' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>Stellar <span class="ot">=</span> <span class="fu">xts</span>(Stellar[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Stellar<span class="sc">$</span>StellarDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Stellar[, -1], order.by = as.Date(Stellar$StellarDate)): object 'Stellar' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>Tether <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Tether'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Tether"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>Tether<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Tether$Currency = NULL: object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Tether) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'TetherDate'</span>,<span class="st">'TetherOpen'</span>,<span class="st">'TetherHigh'</span>,<span class="st">'TetherLow'</span>,<span class="st">'TetherClose'</span>,<span class="st">'TetherVolume'</span>,<span class="st">'TetherMarketcap'</span>, <span class="st">'TetherYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Tether) = c("TetherDate", "TetherOpen", "TetherHigh", : object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>Tether <span class="ot">=</span> <span class="fu">xts</span>(Tether[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Tether<span class="sc">$</span>TetherDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Tether[, -1], order.by = as.Date(Tether$TetherDate)): object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>NEM <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'NEM'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "NEM"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>NEM<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in NEM$Currency = NULL: object 'NEM' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(NEM) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'NEMDate'</span>,<span class="st">'NEMOpen'</span>,<span class="st">'NEMHigh'</span>,<span class="st">'NEMLow'</span>,<span class="st">'NEMClose'</span>,<span class="st">'NEMVolume'</span>,<span class="st">'NEMMarketcap'</span>, <span class="st">'NEMYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(NEM) = c("NEMDate", "NEMOpen", "NEMHigh", "NEMLow", : object 'NEM' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>NEM <span class="ot">=</span> <span class="fu">xts</span>(NEM[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(NEM<span class="sc">$</span>NEMDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(NEM[, -1], order.by = as.Date(NEM$NEMDate)): object 'NEM' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>Ethereum <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Ethereum'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Ethereum"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>Ethereum<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Ethereum$Currency = NULL: object 'Ethereum' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Ethereum) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'EthereumDate'</span>,<span class="st">'EthereumOpen'</span>,<span class="st">'EthereumHigh'</span>,<span class="st">'EthereumLow'</span>,<span class="st">'EthereumClose'</span>,<span class="st">'EthereumVolume'</span>,<span class="st">'EthereumMarketcap'</span>, <span class="st">'EthereumYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Ethereum) = c("EthereumDate", "EthereumOpen", "EthereumHigh", : object 'Ethereum' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>Ethereum <span class="ot">=</span> <span class="fu">xts</span>(Ethereum[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Ethereum<span class="sc">$</span>EthereumDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Ethereum[, -1], order.by = as.Date(Ethereum$EthereumDate)): object 'Ethereum' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>IOTA <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'IOTA'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "IOTA"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>IOTA<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in IOTA$Currency = NULL: object 'IOTA' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(IOTA) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'IOTADate'</span>,<span class="st">'IOTAOpen'</span>,<span class="st">'IOTAHigh'</span>,<span class="st">'IOTALow'</span>,<span class="st">'IOTAClose'</span>,<span class="st">'IOTAVolume'</span>,<span class="st">'IOTAMarketcap'</span>, <span class="st">'IOTAYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(IOTA) = c("IOTADate", "IOTAOpen", "IOTAHigh", "IOTALow", : object 'IOTA' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>IOTA <span class="ot">=</span> <span class="fu">xts</span>(IOTA[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(IOTA<span class="sc">$</span>IOTADate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(IOTA[, -1], order.by = as.Date(IOTA$IOTADate)): object 'IOTA' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>EOS <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'EOS'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "EOS"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>EOS<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in EOS$Currency = NULL: object 'EOS' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(EOS) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'EOSDate'</span>,<span class="st">'EOSOpen'</span>,<span class="st">'EOSHigh'</span>,<span class="st">'EOSLow'</span>,<span class="st">'EOSClose'</span>,<span class="st">'EOSVolume'</span>,<span class="st">'EOSMarketcap'</span>, <span class="st">'EOSYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(EOS) = c("EOSDate", "EOSOpen", "EOSHigh", "EOSLow", : object 'EOS' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>EOS <span class="ot">=</span> <span class="fu">xts</span>(EOS[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(EOS<span class="sc">$</span>EOSDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(EOS[, -1], order.by = as.Date(EOS$EOSDate)): object 'EOS' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>TRON <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'TRON'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "TRON"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>TRON<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in TRON$Currency = NULL: object 'TRON' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(TRON) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'TRONDate'</span>,<span class="st">'TRONOpen'</span>,<span class="st">'TRONHigh'</span>,<span class="st">'TRONLow'</span>,<span class="st">'TRONClose'</span>,<span class="st">'TRONVolume'</span>,<span class="st">'TRONMarketcap'</span>, <span class="st">'TRONYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(TRON) = c("TRONDate", "TRONOpen", "TRONHigh", "TRONLow", : object 'TRON' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>TRON <span class="ot">=</span> <span class="fu">xts</span>(TRON[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(TRON<span class="sc">$</span>TRONDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(TRON[, -1], order.by = as.Date(TRON$TRONDate)): object 'TRON' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>Chainlink <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Chainlink'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Chainlink"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>Chainlink<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Chainlink$Currency = NULL: object 'Chainlink' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Chainlink) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'ChainlinkDate'</span>,<span class="st">'ChainlinkOpen'</span>,<span class="st">'ChainlinkHigh'</span>,<span class="st">'ChainlinkLow'</span>,<span class="st">'ChainlinkClose'</span>,<span class="st">'ChainlinkVolume'</span>,<span class="st">'ChainlinkMarketcap'</span>, <span class="st">'ChainlinkYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Chainlink) = c("ChainlinkDate", "ChainlinkOpen", "ChainlinkHigh", : object 'Chainlink' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>Chainlink <span class="ot">=</span> <span class="fu">xts</span>(Chainlink[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Chainlink<span class="sc">$</span>ChainlinkDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Chainlink[, -1], order.by = as.Date(Chainlink$ChainlinkDate)): object 'Chainlink' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb133"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>Cardano <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Cardano'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Cardano"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb135"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>Cardano<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Cardano$Currency = NULL: object 'Cardano' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Cardano) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'CardanoDate'</span>,<span class="st">'CardanoOpen'</span>,<span class="st">'CardanoHigh'</span>,<span class="st">'CardanoLow'</span>,<span class="st">'CardanoClose'</span>,<span class="st">'CardanoVolume'</span>,<span class="st">'CardanoMarketcap'</span>, <span class="st">'CardanoYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Cardano) = c("CardanoDate", "CardanoOpen", "CardanoHigh", : object 'Cardano' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a>Cardano <span class="ot">=</span> <span class="fu">xts</span>(Cardano[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Cardano<span class="sc">$</span>CardanoDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Cardano[, -1], order.by = as.Date(Cardano$CardanoDate)): object 'Cardano' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb141"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" aria-hidden="true" tabindex="-1"></a>Cosmos <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Cosmos'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Cosmos"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb143"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a>Cosmos<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Cosmos$Currency = NULL: object 'Cosmos' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Cosmos) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'CosmosDate'</span>,<span class="st">'CosmosOpen'</span>,<span class="st">'CosmosHigh'</span>,<span class="st">'CosmosLow'</span>,<span class="st">'CosmosClose'</span>,<span class="st">'CosmosVolume'</span>,<span class="st">'CosmosMarketcap'</span>, <span class="st">'CosmosYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Cosmos) = c("CosmosDate", "CosmosOpen", "CosmosHigh", : object 'Cosmos' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a>Cosmos <span class="ot">=</span> <span class="fu">xts</span>(Cosmos[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Cosmos<span class="sc">$</span>CosmosDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Cosmos[, -1], order.by = as.Date(Cosmos$CosmosDate)): object 'Cosmos' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a>Solana <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Solana'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Solana"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>Solana<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Solana$Currency = NULL: object 'Solana' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Solana) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'SolanaDate'</span>,<span class="st">'SolanaOpen'</span>,<span class="st">'SolanaHigh'</span>,<span class="st">'SolanaLow'</span>,<span class="st">'SolanaClose'</span>,<span class="st">'SolanaVolume'</span>,<span class="st">'SolanaMarketcap'</span>, <span class="st">'SolanaYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Solana) = c("SolanaDate", "SolanaOpen", "SolanaHigh", : object 'Solana' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb155"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1" aria-hidden="true" tabindex="-1"></a>Solana <span class="ot">=</span> <span class="fu">xts</span>(Solana[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Solana<span class="sc">$</span>SolanaDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Solana[, -1], order.by = as.Date(Solana$SolanaDate)): object 'Solana' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a>Polkadot <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Polkadot'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Polkadot"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb159"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a>Polkadot<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Polkadot$Currency = NULL: object 'Polkadot' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Polkadot) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'PolkadotDate'</span>,<span class="st">'PolkadotOpen'</span>,<span class="st">'PolkadotHigh'</span>,<span class="st">'PolkadotLow'</span>,<span class="st">'PolkadotClose'</span>,<span class="st">'PolkadotVolume'</span>,<span class="st">'PolkadotMarketcap'</span>, <span class="st">'PolkadotYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Polkadot) = c("PolkadotDate", "PolkadotOpen", "PolkadotHigh", : object 'Polkadot' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>Polkadot <span class="ot">=</span> <span class="fu">xts</span>(Polkadot[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Polkadot<span class="sc">$</span>PolkadotDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Polkadot[, -1], order.by = as.Date(Polkadot$PolkadotDate)): object 'Polkadot' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb165"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb165-1"><a href="#cb165-1" aria-hidden="true" tabindex="-1"></a>Uniswap <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Uniswap'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Uniswap"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a>Uniswap<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Uniswap$Currency = NULL: object 'Uniswap' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb169"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Uniswap) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'UniswapDate'</span>,<span class="st">'UniswapOpen'</span>,<span class="st">'UniswapHigh'</span>,<span class="st">'UniswapLow'</span>,<span class="st">'UniswapClose'</span>,<span class="st">'UniswapVolume'</span>,<span class="st">'UniswapMarketcap'</span>, <span class="st">'UniswapYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Uniswap) = c("UniswapDate", "UniswapOpen", "UniswapHigh", : object 'Uniswap' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb171"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" aria-hidden="true" tabindex="-1"></a>Uniswap <span class="ot">=</span> <span class="fu">xts</span>(Uniswap[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Uniswap<span class="sc">$</span>UniswapDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Uniswap[, -1], order.by = as.Date(Uniswap$UniswapDate)): object 'Uniswap' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a>Aave <span class="ot">=</span> <span class="fu">subset</span>(crypto,crypto<span class="sc">$</span>Currency <span class="sc">==</span> <span class="st">'Aave'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(crypto, crypto$Currency == "Aave"): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb175"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" aria-hidden="true" tabindex="-1"></a>Aave<span class="sc">$</span>Currency <span class="ot">=</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in Aave$Currency = NULL: object 'Aave' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Aave) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'AaveDate'</span>,<span class="st">'AaveOpen'</span>,<span class="st">'AaveHigh'</span>,<span class="st">'AaveLow'</span>,<span class="st">'AaveClose'</span>,<span class="st">'AaveVolume'</span>,<span class="st">'AaveMarketcap'</span>, <span class="st">'AaveYear'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in colnames(Aave) = c("AaveDate", "AaveOpen", "AaveHigh", "AaveLow", : object 'Aave' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a>Aave <span class="ot">=</span> <span class="fu">xts</span>(Aave[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">order.by=</span><span class="fu">as.Date</span>(Aave<span class="sc">$</span>AaveDate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in xts(Aave[, -1], order.by = as.Date(Aave$AaveDate)): object 'Aave' not found</code></pre>
+</div>
+</div>
+<p>Now we talk a look at the the price series of the cryptocurrencies.</p>
+<p>First we will combine the time-series data into one singe data frame for easier plotting.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb181"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(Bitcoin, Ethereum, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(Bitcoin, Ethereum, by = "Date"): object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb183"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb183-1"><a href="#cb183-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Aave, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Aave, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb185"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb185-1"><a href="#cb185-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Cardano, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Cardano, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb187"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Chainlink, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Chainlink, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb189"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb189-1"><a href="#cb189-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Cosmos, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Cosmos, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb191"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Dogecoin, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Dogecoin, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb193"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, EOS, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, EOS, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb195"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb195-1"><a href="#cb195-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Ethereum, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Ethereum, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb197"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb197-1"><a href="#cb197-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, IOTA, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, IOTA, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb199"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb199-1"><a href="#cb199-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Litecoin, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Litecoin, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb201"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb201-1"><a href="#cb201-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Monero, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Monero, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb203"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb203-1"><a href="#cb203-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, NEM, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, NEM, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb205"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb205-1"><a href="#cb205-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, XRP, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, XRP, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb207"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb207-1"><a href="#cb207-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Polkadot, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Polkadot, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb209"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb209-1"><a href="#cb209-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Stellar, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Stellar, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb211"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb211-1"><a href="#cb211-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Tether, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Tether, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb213"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb213-1"><a href="#cb213-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, TRON, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, TRON, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb215"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb215-1"><a href="#cb215-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, Uniswap, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, Uniswap, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb217"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb217-1"><a href="#cb217-1" aria-hidden="true" tabindex="-1"></a>combined_df <span class="ot">&lt;-</span> <span class="fu">merge</span>(combined_df, XRP, <span class="at">by =</span> <span class="st">"Date"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(combined_df, XRP, by = "Date"): object 'combined_df' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb219"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb219-1"><a href="#cb219-1" aria-hidden="true" tabindex="-1"></a>combined_df[<span class="fu">is.na</span>(combined_df)] <span class="ot">&lt;-</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in combined_df[is.na(combined_df)] &lt;- 0: object 'combined_df' not found</code></pre>
+</div>
+</div>
+<p>And then we will plot the data in a line graph, we will reduce bitcoin’s opening price by 1000 to see the other prices more clearly.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb221"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb221-1"><a href="#cb221-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(combined_df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">index</span>(Bitcoin), <span class="at">y =</span> BitcoinOpen<span class="sc">/</span><span class="dv">100</span>, <span class="at">color =</span> <span class="st">"Bitcoin"</span>)) <span class="sc">+</span></span>
+<span id="cb221-2"><a href="#cb221-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb221-3"><a href="#cb221-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Crypto Opening price series"</span>) <span class="sc">+</span> </span>
+<span id="cb221-4"><a href="#cb221-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="sc">+</span> </span>
+<span id="cb221-5"><a href="#cb221-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb221-6"><a href="#cb221-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb221-7"><a href="#cb221-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb221-8"><a href="#cb221-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"Opening Prices"</span>,</span>
+<span id="cb221-9"><a href="#cb221-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="st">"Currencies"</span>,</span>
+<span id="cb221-10"><a href="#cb221-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Sai"</span>) <span class="sc">+</span></span>
+<span id="cb221-11"><a href="#cb221-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_labels =</span> <span class="st">"%b %y"</span>, <span class="at">date_breaks =</span> <span class="st">"6 months"</span>) <span class="sc">+</span> </span>
+<span id="cb221-12"><a href="#cb221-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb221-13"><a href="#cb221-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb221-14"><a href="#cb221-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>,<span class="st">"cm"</span>))<span class="sc">+</span></span>
+<span id="cb221-15"><a href="#cb221-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EthereumOpen, <span class="at">color =</span> <span class="st">"Ethereum"</span>))<span class="sc">+</span></span>
+<span id="cb221-16"><a href="#cb221-16" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> AaveOpen, <span class="at">color =</span> <span class="st">"Aave"</span>))<span class="sc">+</span></span>
+<span id="cb221-17"><a href="#cb221-17" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CardanoOpen, <span class="at">color =</span> <span class="st">"Cardano"</span>))<span class="sc">+</span></span>
+<span id="cb221-18"><a href="#cb221-18" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> ChainlinkOpen, <span class="at">color =</span> <span class="st">"Chainlink"</span>))<span class="sc">+</span></span>
+<span id="cb221-19"><a href="#cb221-19" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CosmosOpen, <span class="at">color =</span> <span class="st">"Cosmos"</span>))<span class="sc">+</span></span>
+<span id="cb221-20"><a href="#cb221-20" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> DogecoinOpen, <span class="at">color =</span> <span class="st">"Dogecoin"</span>))<span class="sc">+</span></span>
+<span id="cb221-21"><a href="#cb221-21" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EOSOpen, <span class="at">color =</span> <span class="st">"EOS"</span>))<span class="sc">+</span></span>
+<span id="cb221-22"><a href="#cb221-22" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> IOTAOpen, <span class="at">color =</span> <span class="st">"IOTA"</span>))<span class="sc">+</span></span>
+<span id="cb221-23"><a href="#cb221-23" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> LitecoinOpen, <span class="at">color =</span> <span class="st">"Litecoin"</span>))<span class="sc">+</span></span>
+<span id="cb221-24"><a href="#cb221-24" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> MoneroOpen, <span class="at">color =</span> <span class="st">"Monero"</span>))<span class="sc">+</span></span>
+<span id="cb221-25"><a href="#cb221-25" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> NEMOpen, <span class="at">color =</span> <span class="st">"NEM"</span>))<span class="sc">+</span></span>
+<span id="cb221-26"><a href="#cb221-26" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> PolkadotOpen, <span class="at">color =</span> <span class="st">"Polkadot"</span>))<span class="sc">+</span></span>
+<span id="cb221-27"><a href="#cb221-27" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> StellarOpen, <span class="at">color =</span> <span class="st">"Stellar"</span>))<span class="sc">+</span></span>
+<span id="cb221-28"><a href="#cb221-28" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TetherOpen, <span class="at">color =</span> <span class="st">"Tether"</span>))<span class="sc">+</span></span>
+<span id="cb221-29"><a href="#cb221-29" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TRONOpen, <span class="at">color =</span> <span class="st">"TRON"</span>))<span class="sc">+</span></span>
+<span id="cb221-30"><a href="#cb221-30" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> UniswapOpen, <span class="at">color =</span> <span class="st">"Uniswap"</span>))<span class="sc">+</span></span>
+<span id="cb221-31"><a href="#cb221-31" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> XRPOpen, <span class="at">color =</span> <span class="st">"XRP"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinOpen/100, : object 'combined_df' not found</code></pre>
+</div>
+</div>
+<p>From the line graph above we can see that the price of bitcoin rose in 2017 and the dropped and almost all the crytocurriences had the same trend until 2021 where they skyrocketted.</p>
+</section>
+<section id="market-capitalization" class="level2">
+<h2 class="anchored" data-anchor-id="market-capitalization">Market Capitalization</h2>
+<p>Now we will check the total market capitalization in a the same line graph format.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb223"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb223-1"><a href="#cb223-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(combined_df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">index</span>(Bitcoin), <span class="at">y =</span> BitcoinMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Bitcoin"</span>)) <span class="sc">+</span></span>
+<span id="cb223-2"><a href="#cb223-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb223-3"><a href="#cb223-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Crypto Market Cap"</span>) <span class="sc">+</span> </span>
+<span id="cb223-4"><a href="#cb223-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="sc">+</span> </span>
+<span id="cb223-5"><a href="#cb223-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb223-6"><a href="#cb223-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb223-7"><a href="#cb223-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb223-8"><a href="#cb223-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"Total Mean Capital"</span>,</span>
+<span id="cb223-9"><a href="#cb223-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="st">"Currencies"</span>,</span>
+<span id="cb223-10"><a href="#cb223-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Crypto Market Capitalization"</span>,</span>
+<span id="cb223-11"><a href="#cb223-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"in 100 millions"</span>, </span>
+<span id="cb223-12"><a href="#cb223-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Sai"</span>) <span class="sc">+</span></span>
+<span id="cb223-13"><a href="#cb223-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_labels =</span> <span class="st">"%b %y"</span>, <span class="at">date_breaks =</span> <span class="st">"6 months"</span>) <span class="sc">+</span> </span>
+<span id="cb223-14"><a href="#cb223-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb223-15"><a href="#cb223-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb223-16"><a href="#cb223-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>,<span class="st">"cm"</span>))<span class="sc">+</span></span>
+<span id="cb223-17"><a href="#cb223-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EthereumMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Ethereum"</span>))<span class="sc">+</span></span>
+<span id="cb223-18"><a href="#cb223-18" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> AaveMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Aave"</span>))<span class="sc">+</span></span>
+<span id="cb223-19"><a href="#cb223-19" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CardanoMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Cardano"</span>))<span class="sc">+</span></span>
+<span id="cb223-20"><a href="#cb223-20" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> ChainlinkMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Chainlink"</span>))<span class="sc">+</span></span>
+<span id="cb223-21"><a href="#cb223-21" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CosmosMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Cosmos"</span>))<span class="sc">+</span></span>
+<span id="cb223-22"><a href="#cb223-22" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> DogecoinMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Dogecoin"</span>))<span class="sc">+</span></span>
+<span id="cb223-23"><a href="#cb223-23" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EOSMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"EOS"</span>))<span class="sc">+</span></span>
+<span id="cb223-24"><a href="#cb223-24" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> IOTAMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"IOTA"</span>))<span class="sc">+</span></span>
+<span id="cb223-25"><a href="#cb223-25" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> LitecoinMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Litecoin"</span>))<span class="sc">+</span></span>
+<span id="cb223-26"><a href="#cb223-26" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> MoneroMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Monero"</span>))<span class="sc">+</span></span>
+<span id="cb223-27"><a href="#cb223-27" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> NEMMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"NEM"</span>))<span class="sc">+</span></span>
+<span id="cb223-28"><a href="#cb223-28" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> PolkadotMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Polkadot"</span>))<span class="sc">+</span></span>
+<span id="cb223-29"><a href="#cb223-29" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> StellarMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Stellar"</span>))<span class="sc">+</span></span>
+<span id="cb223-30"><a href="#cb223-30" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TetherMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Tether"</span>))<span class="sc">+</span></span>
+<span id="cb223-31"><a href="#cb223-31" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TRONMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"TRON"</span>))<span class="sc">+</span></span>
+<span id="cb223-32"><a href="#cb223-32" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> UniswapMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Uniswap"</span>))<span class="sc">+</span></span>
+<span id="cb223-33"><a href="#cb223-33" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> XRPMarketcap<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"XRP"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinMarketcap/1e+08, : object 'combined_df' not found</code></pre>
+</div>
+</div>
+<p>The market capitalisation of Bitcoin throughout time is depicted in the plot below. It’s interesting to note that in the beginning, in terms of market capitalization, Bitcoin and Ethereum were practically equal. But as Bitcoin became more and more well-known over time, its value multiplied.</p>
+<p>As previously noted, it is still somewhat unclear what caused the unexpected interest and growth in the value of digital currencies 10 years after their creation, including that of Bitcoin past 2017. However, some of the primary factors are as follows:</p>
+<ol type="1">
+<li>The regulation of digital currencies is not very strict: Digital currencies are unregulated, in contrast to fiat currencies like the US Dollar or the Euro, which means that no central bank or specific government of any country has as much authority over them as they do over other financial products.</li>
+</ol>
+<p>Remember that the world was experiencing the 2008 banking crises when “Satoshi Nakamoto,” the person who invented Bitcoin, wrote the code that enabled it to exist back in 2009. The need for an alternative to fiat currencies, which were subject to heavy regulation and the speculative dynamics of the financial markets, led to the creation of digital currencies.</p>
+<ol start="2" type="1">
+<li><p>They are very discrete: Compared to bank accounts or other forms of money storage, cryptocurrencies provide a lot more privacy. The alpha-numeric account numbers or “addresses” of cryptocurrencies are used as pointers to digital wallets and are unrelated to the personal data of the organization or person who owns the wallet. thereby offering a considerably stronger sense of protection against fraud and financial watchdog rules than traditional currencies.</p></li>
+<li><p>Only twenty million Bitcoins are available at any given time, which is a fairly small and consistent supply for this particular currency. Unlike traditional currencies, Bitcoins cannot be produced indefinitely in a money mint after a major natural disaster or a financial crisis. This not only increases the value of the existing Bitcoins over time but also lends consistency to their monetary values.</p></li>
+</ol>
+</section>
+<section id="price-indicators-of-all-the-currencies." class="level2">
+<h2 class="anchored" data-anchor-id="price-indicators-of-all-the-currencies.">Price Indicators of all the currencies.</h2>
+<p>Here in this visualization below we will check the prices of all the crypto currencies from 2017 to 2021</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb225"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb225-1"><a href="#cb225-1" aria-hidden="true" tabindex="-1"></a>crypto<span class="sc">$</span>Year <span class="ot">&lt;-</span> <span class="fu">as.character</span>(crypto<span class="sc">$</span>Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'crypto' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb227"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb227-1"><a href="#cb227-1" aria-hidden="true" tabindex="-1"></a>  crypto <span class="sc">%&gt;%</span></span>
+<span id="cb227-2"><a href="#cb227-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(Year <span class="sc">==</span> <span class="st">"2017"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"2018"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"2019"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"2020"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"2021"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb227-3"><a href="#cb227-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">'box'</span>,<span class="at">x =</span> <span class="sc">~</span>High,<span class="at">transforms =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">type =</span> <span class="st">'filter'</span>,</span>
+<span id="cb227-4"><a href="#cb227-4" aria-hidden="true" tabindex="-1"></a>                                                        <span class="at">target =</span> <span class="sc">~</span>Currency,</span>
+<span id="cb227-5"><a href="#cb227-5" aria-hidden="true" tabindex="-1"></a>                                                        <span class="at">operation =</span> <span class="st">'='</span>,</span>
+<span id="cb227-6"><a href="#cb227-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">value =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">1</span>])),<span class="at">name=</span><span class="st">"High"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb227-7"><a href="#cb227-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_boxplot</span>(<span class="at">x =</span> <span class="sc">~</span>Low,<span class="at">name =</span> <span class="st">'Low'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb227-8"><a href="#cb227-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_boxplot</span>(<span class="at">x =</span> <span class="sc">~</span>Open,<span class="at">name =</span> <span class="st">'Open'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb227-9"><a href="#cb227-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_boxplot</span>(<span class="at">x =</span> <span class="sc">~</span>Close,<span class="at">name =</span> <span class="st">'Close'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb227-10"><a href="#cb227-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb227-11"><a href="#cb227-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">title =</span> <span class="st">'All Price Indicators of all Currencies'</span>,</span>
+<span id="cb227-12"><a href="#cb227-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Value'</span>), </span>
+<span id="cb227-13"><a href="#cb227-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">updatemenus =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">type =</span> <span class="st">'dropdown'</span>,<span class="at">buttons =</span> <span class="fu">list</span>(</span>
+<span id="cb227-14"><a href="#cb227-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">1</span>]),</span>
+<span id="cb227-15"><a href="#cb227-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">1</span>]),</span>
+<span id="cb227-16"><a href="#cb227-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">2</span>]),</span>
+<span id="cb227-17"><a href="#cb227-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">2</span>]),</span>
+<span id="cb227-18"><a href="#cb227-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">3</span>]),</span>
+<span id="cb227-19"><a href="#cb227-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">3</span>]),</span>
+<span id="cb227-20"><a href="#cb227-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">4</span>]),</span>
+<span id="cb227-21"><a href="#cb227-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">4</span>]),</span>
+<span id="cb227-22"><a href="#cb227-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">5</span>]),</span>
+<span id="cb227-23"><a href="#cb227-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">5</span>]),</span>
+<span id="cb227-24"><a href="#cb227-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">6</span>]),</span>
+<span id="cb227-25"><a href="#cb227-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">6</span>]),</span>
+<span id="cb227-26"><a href="#cb227-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">7</span>]),</span>
+<span id="cb227-27"><a href="#cb227-27" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">7</span>]),</span>
+<span id="cb227-28"><a href="#cb227-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">8</span>]),</span>
+<span id="cb227-29"><a href="#cb227-29" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">8</span>]),</span>
+<span id="cb227-30"><a href="#cb227-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">9</span>]),</span>
+<span id="cb227-31"><a href="#cb227-31" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">9</span>]),</span>
+<span id="cb227-32"><a href="#cb227-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">10</span>]),</span>
+<span id="cb227-33"><a href="#cb227-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">10</span>]),</span>
+<span id="cb227-34"><a href="#cb227-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">11</span>]),</span>
+<span id="cb227-35"><a href="#cb227-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">11</span>]),</span>
+<span id="cb227-36"><a href="#cb227-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">12</span>]),</span>
+<span id="cb227-37"><a href="#cb227-37" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">12</span>]),</span>
+<span id="cb227-38"><a href="#cb227-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">13</span>]),</span>
+<span id="cb227-39"><a href="#cb227-39" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">13</span>]),</span>
+<span id="cb227-40"><a href="#cb227-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">14</span>]),</span>
+<span id="cb227-41"><a href="#cb227-41" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">14</span>]),</span>
+<span id="cb227-42"><a href="#cb227-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">15</span>]),</span>
+<span id="cb227-43"><a href="#cb227-43" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">15</span>]),</span>
+<span id="cb227-44"><a href="#cb227-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">16</span>]),</span>
+<span id="cb227-45"><a href="#cb227-45" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">16</span>]),</span>
+<span id="cb227-46"><a href="#cb227-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">17</span>]),</span>
+<span id="cb227-47"><a href="#cb227-47" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">17</span>]),</span>
+<span id="cb227-48"><a href="#cb227-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">18</span>]),</span>
+<span id="cb227-49"><a href="#cb227-49" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">18</span>]),</span>
+<span id="cb227-50"><a href="#cb227-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">19</span>]),</span>
+<span id="cb227-51"><a href="#cb227-51" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">19</span>]),</span>
+<span id="cb227-52"><a href="#cb227-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">20</span>]),</span>
+<span id="cb227-53"><a href="#cb227-53" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">20</span>]),</span>
+<span id="cb227-54"><a href="#cb227-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">21</span>]),</span>
+<span id="cb227-55"><a href="#cb227-55" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">21</span>]),</span>
+<span id="cb227-56"><a href="#cb227-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">22</span>]),</span>
+<span id="cb227-57"><a href="#cb227-57" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">22</span>]),</span>
+<span id="cb227-58"><a href="#cb227-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">23</span>]),</span>
+<span id="cb227-59"><a href="#cb227-59" aria-hidden="true" tabindex="-1"></a>         <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Currency)[<span class="dv">23</span>]))))) <span class="sc">%&gt;%</span></span>
+<span id="cb227-60"><a href="#cb227-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">annotations =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">text =</span> <span class="st">"For the years 2017-21"</span>,  <span class="at">xref =</span> <span class="st">"paper"</span>, <span class="at">yref =</span> <span class="st">"paper"</span>,</span>
+<span id="cb227-61"><a href="#cb227-61" aria-hidden="true" tabindex="-1"></a>                            <span class="at">yanchor =</span> <span class="st">"bottom"</span>,<span class="at">xanchor =</span> <span class="st">"center"</span>, <span class="at">align =</span> <span class="st">"center"</span>,</span>
+<span id="cb227-62"><a href="#cb227-62" aria-hidden="true" tabindex="-1"></a>                            <span class="at">x =</span> <span class="fl">0.5</span>, <span class="at">y =</span> .<span class="dv">97</span>, <span class="at">showarrow =</span> <span class="cn">FALSE</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(., Year == "2017" | Year == "2018" | Year == "2019" | : object 'crypto' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="yearly-capitalization-representation" class="level2">
+<h2 class="anchored" data-anchor-id="yearly-capitalization-representation">Yearly Capitalization Representation</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb229"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb229-1"><a href="#cb229-1" aria-hidden="true" tabindex="-1"></a>crypto <span class="sc">%&gt;%</span></span>
+<span id="cb229-2"><a href="#cb229-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_ly</span>(<span class="at">labels =</span> <span class="sc">~</span>Currency,<span class="at">values =</span> <span class="sc">~</span>Marketcap, <span class="at">type =</span> <span class="st">'pie'</span>,</span>
+<span id="cb229-3"><a href="#cb229-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">transforms =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">type =</span> <span class="st">'filter'</span>,<span class="at">target =</span> <span class="sc">~</span>Year,<span class="at">operation =</span> <span class="st">'='</span>,</span>
+<span id="cb229-4"><a href="#cb229-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">value =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">1</span>])),<span class="at">name=</span><span class="st">"2013"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb229-5"><a href="#cb229-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">title =</span> <span class="st">"Currency Yearly Market Capitalization Representation"</span>,</span>
+<span id="cb229-6"><a href="#cb229-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Value'</span>), </span>
+<span id="cb229-7"><a href="#cb229-7" aria-hidden="true" tabindex="-1"></a><span class="at">updatemenus =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">type =</span> <span class="st">'dropdown'</span>,<span class="at">buttons =</span> <span class="fu">list</span>(</span>
+<span id="cb229-8"><a href="#cb229-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">1</span>]),</span>
+<span id="cb229-9"><a href="#cb229-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">1</span>]),</span>
+<span id="cb229-10"><a href="#cb229-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">2</span>]),</span>
+<span id="cb229-11"><a href="#cb229-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">2</span>]),</span>
+<span id="cb229-12"><a href="#cb229-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">3</span>]),</span>
+<span id="cb229-13"><a href="#cb229-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">3</span>]),</span>
+<span id="cb229-14"><a href="#cb229-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">4</span>]),</span>
+<span id="cb229-15"><a href="#cb229-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">4</span>]),</span>
+<span id="cb229-16"><a href="#cb229-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">5</span>]),</span>
+<span id="cb229-17"><a href="#cb229-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">5</span>]),</span>
+<span id="cb229-18"><a href="#cb229-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">6</span>]),</span>
+<span id="cb229-19"><a href="#cb229-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">6</span>]),</span>
+<span id="cb229-20"><a href="#cb229-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">7</span>]),</span>
+<span id="cb229-21"><a href="#cb229-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">7</span>]),</span>
+<span id="cb229-22"><a href="#cb229-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">8</span>]),</span>
+<span id="cb229-23"><a href="#cb229-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">8</span>]),</span>
+<span id="cb229-24"><a href="#cb229-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">method =</span> <span class="st">"restyle"</span>,<span class="at">args =</span> <span class="fu">list</span>(<span class="st">"transforms[0].value"</span>, <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">9</span>]),</span>
+<span id="cb229-25"><a href="#cb229-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">label =</span> <span class="fu">unique</span>(crypto<span class="sc">$</span>Year)[<span class="dv">9</span>])))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(data): object 'crypto' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="traded-crypto-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="traded-crypto-visualization">Traded Crypto Visualization</h2>
+<p>The volume traded data from 2017 onward is shown here because there was scarcely any interest in digital currency before to that year. It is clear that after the middle of 2017, there was an increase in market interest, which led to significant volume being traded on international financial markets.</p>
+<p>Although Tether’s price range (96 cents to $1.04 vs.&nbsp;4k to 18k for Bitcoin) and market capitalization are vastly different from those of Bitcoin, it is also extremely fascinating to notice that Tether rivals and occasionally surpasses Bitcoin in terms of trading volume.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb231"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb231-1"><a href="#cb231-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(combined_df[<span class="st">'2017-08/'</span>], <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">index</span>(Bitcoin[<span class="st">'2017-08/'</span>]), <span class="at">y =</span> BitcoinVolume[<span class="st">'2017-08/'</span>]<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Bitcoin"</span>)) <span class="sc">+</span></span>
+<span id="cb231-2"><a href="#cb231-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb231-3"><a href="#cb231-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Traded Crypto"</span>) <span class="sc">+</span> </span>
+<span id="cb231-4"><a href="#cb231-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>) <span class="sc">+</span> </span>
+<span id="cb231-5"><a href="#cb231-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb231-6"><a href="#cb231-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb231-7"><a href="#cb231-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb231-8"><a href="#cb231-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">"Total Mean Volume"</span>,</span>
+<span id="cb231-9"><a href="#cb231-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="st">"Currencies"</span>,</span>
+<span id="cb231-10"><a href="#cb231-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"All crypto traded"</span>,</span>
+<span id="cb231-11"><a href="#cb231-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"in 100 millions"</span>, </span>
+<span id="cb231-12"><a href="#cb231-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"Sai"</span>) <span class="sc">+</span></span>
+<span id="cb231-13"><a href="#cb231-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_labels =</span> <span class="st">"%b %y"</span>, <span class="at">date_breaks =</span> <span class="st">"6 months"</span>) <span class="sc">+</span> </span>
+<span id="cb231-14"><a href="#cb231-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb231-15"><a href="#cb231-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb231-16"><a href="#cb231-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>,<span class="st">"cm"</span>))<span class="sc">+</span></span>
+<span id="cb231-17"><a href="#cb231-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EthereumVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Ethereum"</span>))<span class="sc">+</span></span>
+<span id="cb231-18"><a href="#cb231-18" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> AaveVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Aave"</span>))<span class="sc">+</span></span>
+<span id="cb231-19"><a href="#cb231-19" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CardanoVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Cardano"</span>))<span class="sc">+</span></span>
+<span id="cb231-20"><a href="#cb231-20" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> ChainlinkVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Chainlink"</span>))<span class="sc">+</span></span>
+<span id="cb231-21"><a href="#cb231-21" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> CosmosVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Cosmos"</span>))<span class="sc">+</span></span>
+<span id="cb231-22"><a href="#cb231-22" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> DogecoinVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Dogecoin"</span>))<span class="sc">+</span></span>
+<span id="cb231-23"><a href="#cb231-23" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> EOSVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"EOS"</span>))<span class="sc">+</span></span>
+<span id="cb231-24"><a href="#cb231-24" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> IOTAVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"IOTA"</span>))<span class="sc">+</span></span>
+<span id="cb231-25"><a href="#cb231-25" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> LitecoinVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Litecoin"</span>))<span class="sc">+</span></span>
+<span id="cb231-26"><a href="#cb231-26" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> MoneroVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Monero"</span>))<span class="sc">+</span></span>
+<span id="cb231-27"><a href="#cb231-27" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> NEMVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"NEM"</span>))<span class="sc">+</span></span>
+<span id="cb231-28"><a href="#cb231-28" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> PolkadotVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Polkadot"</span>))<span class="sc">+</span></span>
+<span id="cb231-29"><a href="#cb231-29" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> StellarVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Stellar"</span>))<span class="sc">+</span></span>
+<span id="cb231-30"><a href="#cb231-30" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TetherVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Tether"</span>))<span class="sc">+</span></span>
+<span id="cb231-31"><a href="#cb231-31" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> TRONVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"TRON"</span>))<span class="sc">+</span></span>
+<span id="cb231-32"><a href="#cb231-32" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> UniswapVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"Uniswap"</span>))<span class="sc">+</span></span>
+<span id="cb231-33"><a href="#cb231-33" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> XRPVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">color =</span> <span class="st">"XRP"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(combined_df["2017-08/"], aes(x = index(Bitcoin["2017-08/"]), : object 'combined_df' not found</code></pre>
+</div>
+</div>
+<p>As expected, the graphical illustration below demonstrates that in 2020 and in 2021, Tether currency traded at a bigger volume on the financial markets than Bitcoin.</p>
+<p>The project goes on to investigate the causes of this as well as the relationships between the market capitalization and volume of trading of the two currencies.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb233"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb233-1"><a href="#cb233-1" aria-hidden="true" tabindex="-1"></a>Bitcoin<span class="sc">$</span>Year <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(<span class="fu">index</span>(Bitcoin),<span class="st">"%Y"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in index(Bitcoin): object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb235"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb235-1"><a href="#cb235-1" aria-hidden="true" tabindex="-1"></a>Tether<span class="sc">$</span>Year <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(<span class="fu">index</span>(Tether),<span class="st">"%Y"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in index(Tether): object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb237"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb237-1"><a href="#cb237-1" aria-hidden="true" tabindex="-1"></a>Vol_yrly_BT <span class="ot">=</span> <span class="fu">aggregate</span>(BitcoinVolume <span class="sc">~</span> Year, <span class="at">data=</span>Bitcoin , <span class="at">FUN=</span> mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(m$data, parent.frame()): object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb239"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb239-1"><a href="#cb239-1" aria-hidden="true" tabindex="-1"></a>Vol_yrly_TT <span class="ot">=</span> <span class="fu">aggregate</span>(TetherVolume <span class="sc">~</span> Year, <span class="at">data=</span>Tether , <span class="at">FUN=</span> mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(m$data, parent.frame()): object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb241"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb241-1"><a href="#cb241-1" aria-hidden="true" tabindex="-1"></a>Vol_yrly_combined <span class="ot">=</span> <span class="fu">merge</span>(Vol_yrly_BT, Vol_yrly_TT, <span class="at">by=</span><span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(Vol_yrly_BT, Vol_yrly_TT, by = "Year"): object 'Vol_yrly_BT' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb243"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb243-1"><a href="#cb243-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the data for Bitcoin and Tether into a single data frame</span></span>
+<span id="cb243-2"><a href="#cb243-2" aria-hidden="true" tabindex="-1"></a>merged_data <span class="ot">&lt;-</span> <span class="fu">merge</span>(Vol_yrly_BT, Tether, <span class="at">by =</span> <span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in merge(Vol_yrly_BT, Tether, by = "Year"): object 'Vol_yrly_BT' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb245"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb245-1"><a href="#cb245-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the plot using the merged data</span></span>
+<span id="cb245-2"><a href="#cb245-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_ly</span>(merged_data, <span class="at">x =</span><span class="sc">~</span>Year ,<span class="at">y =</span> <span class="sc">~</span>BitcoinVolume, <span class="at">type =</span> <span class="st">'bar'</span>,<span class="at">name =</span> <span class="st">'Bitcoin Volume'</span>,</span>
+<span id="cb245-3"><a href="#cb245-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">'rgb(49,130,189)'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb245-4"><a href="#cb245-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(<span class="at">y =</span> <span class="sc">~</span>TetherVolume, <span class="at">name =</span> <span class="st">'Tether Volume'</span>,</span>
+<span id="cb245-5"><a href="#cb245-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">'rgb(204,204,204)'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb245-6"><a href="#cb245-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">title =</span> <span class="st">'Yearly Volume Traded by Bitcoin &amp; Tether'</span>,</span>
+<span id="cb245-7"><a href="#cb245-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Years'</span>,<span class="at">tickangle =</span> <span class="sc">-</span><span class="dv">45</span>),</span>
+<span id="cb245-8"><a href="#cb245-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Total Volume Traded'</span>),</span>
+<span id="cb245-9"><a href="#cb245-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">margin =</span> <span class="fu">list</span>(<span class="at">b=</span><span class="dv">100</span>),</span>
+<span id="cb245-10"><a href="#cb245-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">barmode =</span> <span class="st">'group'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(data): object 'merged_data' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="distribution-and-correlation-of-the-volume" class="level2">
+<h2 class="anchored" data-anchor-id="distribution-and-correlation-of-the-volume">Distribution and Correlation of the Volume</h2>
+<p>The distribution of the volume variable for the currencies Tether and Bitcoin is shown in the graphs below. The graph clearly shows that it is a right-skewed distribution. They are both positively skewed, in other words. The data’s means and standard deviations are also noted.</p>
+<p>That mean is far lower than the median in both cases, as can be seen quite plainly. This may indicate that the left side of the data contains many outliers.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb247"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb247-1"><a href="#cb247-1" aria-hidden="true" tabindex="-1"></a>Bitcoin2021 <span class="ot">=</span> <span class="fu">subset</span>(Bitcoin,Year <span class="sc">==</span> <span class="st">'2020'</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">'2021'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(Bitcoin, Year == "2020" | Year == "2021"): object 'Bitcoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb249"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb249-1"><a href="#cb249-1" aria-hidden="true" tabindex="-1"></a>Tether2021 <span class="ot">=</span> <span class="fu">subset</span>(Tether,Year <span class="sc">==</span> <span class="st">'2020'</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">'2021'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(Tether, Year == "2020" | Year == "2021"): object 'Tether' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb251"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb251-1"><a href="#cb251-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Bitcoin2021,<span class="fu">aes</span>(<span class="at">x =</span> BitcoinVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">fill =</span> <span class="fu">cut</span>(BitcoinVolume,<span class="dv">30</span>))) <span class="sc">+</span></span>
+<span id="cb251-2"><a href="#cb251-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>,<span class="at">bins =</span> <span class="dv">50</span>,<span class="at">color =</span> <span class="st">'black'</span>) <span class="sc">+</span> </span>
+<span id="cb251-3"><a href="#cb251-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_discrete</span>(<span class="at">h =</span> <span class="fu">c</span>(<span class="dv">240</span>,<span class="dv">10</span>)) <span class="sc">+</span> </span>
+<span id="cb251-4"><a href="#cb251-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb251-5"><a href="#cb251-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Bitcoin Volume'</span>, <span class="at">y =</span> <span class="st">'Frequency'</span>,<span class="at">title =</span> <span class="st">'Bitcoin Volume for 2020-21'</span>,</span>
+<span id="cb251-6"><a href="#cb251-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">'in Hundred Millions'</span>,<span class="at">caption =</span> <span class="st">"Sai"</span> ) <span class="sc">+</span></span>
+<span id="cb251-7"><a href="#cb251-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">65</span>, <span class="at">vjust=</span><span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb251-8"><a href="#cb251-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb251-9"><a href="#cb251-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb251-10"><a href="#cb251-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">2000</span>, <span class="at">y=</span><span class="dv">92</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Mean ="</span>,<span class="fu">round</span>(<span class="fu">mean</span>(Bitcoin2021<span class="sc">$</span>BitcoinVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb251-11"><a href="#cb251-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">2000</span>, <span class="at">y=</span><span class="dv">97</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"SD ="</span>,<span class="fu">round</span>(<span class="fu">sd</span>(Bitcoin2021<span class="sc">$</span>BitcoinVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb251-12"><a href="#cb251-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">2000</span>, <span class="at">y=</span><span class="dv">87</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Median ="</span>,<span class="fu">round</span>(<span class="fu">median</span>(Bitcoin2021<span class="sc">$</span>BitcoinVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb251-13"><a href="#cb251-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">3500</span>, <span class="dv">100</span>)) <span class="sc">+</span></span>
+<span id="cb251-14"><a href="#cb251-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>))<span class="sc">+</span></span>
+<span id="cb251-15"><a href="#cb251-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="fu">aes</span>(<span class="at">xintercept =</span> <span class="fu">mean</span>(Bitcoin2021<span class="sc">$</span>BitcoinVolume<span class="sc">/</span><span class="dv">100000000</span>)), <span class="at">linetype =</span> <span class="st">"dashed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(Bitcoin2021, aes(x = BitcoinVolume/1e+08, fill = cut(BitcoinVolume, : object 'Bitcoin2021' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb253"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb253-1"><a href="#cb253-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Tether2021,<span class="fu">aes</span>(TetherVolume<span class="sc">/</span><span class="dv">100000000</span>, <span class="at">fill =</span> <span class="fu">cut</span>(TetherVolume,<span class="dv">30</span>))) <span class="sc">+</span> </span>
+<span id="cb253-2"><a href="#cb253-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>,<span class="at">bins =</span> <span class="dv">50</span>,<span class="at">color =</span> <span class="st">'black'</span>,<span class="at">linewidth =</span> .<span class="dv">001</span>) <span class="sc">+</span> </span>
+<span id="cb253-3"><a href="#cb253-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_discrete</span>(<span class="at">h =</span> <span class="fu">c</span>(<span class="dv">240</span>,<span class="dv">10</span>)) <span class="sc">+</span> </span>
+<span id="cb253-4"><a href="#cb253-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb253-5"><a href="#cb253-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Tether Volume'</span>, <span class="at">y =</span> <span class="st">'Frequency'</span>,<span class="at">title =</span> <span class="st">'Tether Volume for 2020-21'</span>,</span>
+<span id="cb253-6"><a href="#cb253-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">'in Hundred Millions'</span> ) <span class="sc">+</span></span>
+<span id="cb253-7"><a href="#cb253-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">65</span>, <span class="at">vjust=</span><span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb253-8"><a href="#cb253-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb253-9"><a href="#cb253-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb253-10"><a href="#cb253-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">3500</span>, <span class="dv">100</span>)) <span class="sc">+</span></span>
+<span id="cb253-11"><a href="#cb253-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">452</span>, <span class="at">y=</span><span class="dv">95</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Mean ="</span>,<span class="fu">round</span>(<span class="fu">mean</span>(Tether2021<span class="sc">$</span>TetherVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb253-12"><a href="#cb253-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">454</span>, <span class="at">y=</span><span class="dv">100</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"SD ="</span>,<span class="fu">round</span>(<span class="fu">sd</span>(Tether2021<span class="sc">$</span>TetherVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb253-13"><a href="#cb253-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="dv">450</span>, <span class="at">y=</span><span class="dv">90</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Median ="</span>,<span class="fu">round</span>(<span class="fu">median</span>(Tether2021<span class="sc">$</span>TetherVolume<span class="sc">/</span><span class="dv">100000000</span>),<span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb253-14"><a href="#cb253-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>)) <span class="sc">+</span></span>
+<span id="cb253-15"><a href="#cb253-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="fu">aes</span>(<span class="at">xintercept =</span> <span class="fu">mean</span>(Tether2021<span class="sc">$</span>TetherVolume<span class="sc">/</span><span class="dv">100000000</span>)), <span class="at">linetype =</span> <span class="st">"dashed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(Tether2021, aes(TetherVolume/1e+08, fill = cut(TetherVolume, : object 'Tether2021' not found</code></pre>
+</div>
+</div>
+<p>Now we check the correlation between the volume of tether and bitcoin.We investigate the relationship between market capitalization and volume traded for the currencies Tether and Bitcoin in the plot below. Both currencies display a positive correlation between their volume of trades and market capitalization, with Tether displaying a larger correlation of 0.64 and Bitcoin displaying a relatively smaller, but still very strong correlation of 0.56.</p>
+<p>In essence, this indicates that the Market Capitalization of other currencies—more specifically, Tether than Bitcoin—directly affects the volume of trading. Which is not very surprising given that, among other factors, the level of public trust has a significant impact on a product’s or company’s market value. For instance, when news broke that Mordena and other pharmaceutical companies had perhaps discovered a vaccine for COVID-19, their stock values skyrocketed. despite the fact that there was initially no evidence or definitive tests.</p>
+<p>We are still trying to figure out why Tether trades at volumes that are practically identical to those of Bitcoin, despite being so far behind on every other metric.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb255"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb255-1"><a href="#cb255-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Tether2021, <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">scale</span>(TetherMarketcap), <span class="at">y=</span><span class="fu">scale</span>(TetherVolume))) <span class="sc">+</span> </span>
+<span id="cb255-2"><a href="#cb255-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb255-3"><a href="#cb255-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span>lm, <span class="at">se=</span><span class="cn">FALSE</span>, <span class="at">fullrange=</span><span class="cn">TRUE</span>,<span class="at">color =</span> <span class="st">'red'</span>) <span class="sc">+</span> </span>
+<span id="cb255-4"><a href="#cb255-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rug</span>()<span class="sc">+</span></span>
+<span id="cb255-5"><a href="#cb255-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb255-6"><a href="#cb255-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb255-7"><a href="#cb255-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Scaled Tether Market Capatalization '</span>, <span class="at">y =</span> <span class="st">'Scaled Tether Volume'</span>,</span>
+<span id="cb255-8"><a href="#cb255-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">'Tether Volume and Market Capatalization for 2020-21'</span>,</span>
+<span id="cb255-9"><a href="#cb255-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">'Scaled'</span>,<span class="at">caption =</span> <span class="st">"Sai"</span> ) <span class="sc">+</span></span>
+<span id="cb255-10"><a href="#cb255-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">colour =</span> <span class="st">"orange"</span>,<span class="at">size =</span> <span class="dv">2</span>,<span class="at">linetype =</span> <span class="st">"solid"</span>)) <span class="sc">+</span></span>
+<span id="cb255-11"><a href="#cb255-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span> <span class="dv">0</span>, <span class="at">y=</span><span class="dv">4</span>,<span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Correlation ="</span>,</span>
+<span id="cb255-12"><a href="#cb255-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">round</span>(<span class="fu">cor</span>(Tether2021<span class="sc">$</span>TetherVolume,Tether2021<span class="sc">$</span>TetherMarketcap),<span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(Tether2021, aes(x = scale(TetherMarketcap), y = scale(TetherVolume))): object 'Tether2021' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb257"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb257-1"><a href="#cb257-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Bitcoin2021, <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">scale</span>(BitcoinMarketcap), <span class="at">y=</span><span class="fu">scale</span>(BitcoinVolume))) <span class="sc">+</span> </span>
+<span id="cb257-2"><a href="#cb257-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb257-3"><a href="#cb257-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span>lm, <span class="at">se=</span><span class="cn">FALSE</span>, <span class="at">fullrange=</span><span class="cn">TRUE</span>,<span class="at">color =</span> <span class="st">'red'</span>) <span class="sc">+</span> </span>
+<span id="cb257-4"><a href="#cb257-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rug</span>()<span class="sc">+</span></span>
+<span id="cb257-5"><a href="#cb257-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb257-6"><a href="#cb257-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb257-7"><a href="#cb257-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Scaled Bitcoin Market Capatalization '</span>, <span class="at">y =</span> <span class="st">'Scaled Bitcoin Volume'</span>,</span>
+<span id="cb257-8"><a href="#cb257-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">'Bitcoin Volume and Market Capatalization for 2018-19'</span>,</span>
+<span id="cb257-9"><a href="#cb257-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">'Scaled'</span>,<span class="at">caption =</span> <span class="st">"Sai"</span> ) <span class="sc">+</span></span>
+<span id="cb257-10"><a href="#cb257-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">colour =</span> <span class="st">'orange'</span>,<span class="at">size =</span> <span class="dv">2</span>, </span>
+<span id="cb257-11"><a href="#cb257-11" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">linetype =</span> <span class="st">"solid"</span>))<span class="sc">+</span></span>
+<span id="cb257-12"><a href="#cb257-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x=</span><span class="sc">-</span><span class="fl">0.5</span>, <span class="at">y=</span><span class="fl">7.5</span>,<span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">label=</span> <span class="fu">paste</span>(<span class="st">"Correlation ="</span>,</span>
+<span id="cb257-13"><a href="#cb257-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">round</span>(<span class="fu">cor</span>(Bitcoin2021<span class="sc">$</span>BitcoinVolume,Bitcoin2021<span class="sc">$</span>BitcoinMarketcap),<span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(Bitcoin2021, aes(x = scale(BitcoinMarketcap), y = scale(BitcoinVolume))): object 'Bitcoin2021' not found</code></pre>
+</div>
+</div>
+<p>The closing prices of the two currencies, as depicted in the graph below, provide the answers to the aforementioned question.</p>
+<p>The volatility of Bitcoin’s price is one of the main causes of the high levels of trading trust in Tether. As you can see from the graph below, Bitcoin’s price has decreased from more than 4000 to approximately upwards of 18000 in just two years. The price difference in the instance of Tether, however, has not exceeded a measly 6 cents.</p>
+<p>The base price of the stock is another factor in Tether’s high trading volume. Tether’s pricing is so low that it allows both low risk mutual fund companies and those who aren’t big investors to enter the market for digital currencies without taking on too much risk. But compared to Bitcoin, this also results in very little reward because reward is always inversely correlated with risk.</p>
+<p>This does raise the question of why Tether and not another currency that competes with Bitcoin and has a low base price and low price volatility. The only cryptocurrency that is backed by US dollars is Tether, which is the solution to this query. Investor confidence in the stock is increased because no other currency is backed by real money.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb259"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb259-1"><a href="#cb259-1" aria-hidden="true" tabindex="-1"></a>bitcoin_close <span class="ot">=</span> <span class="fu">plot_ly</span>(<span class="fu">as.data.frame</span>(Bitcoin2021),<span class="at">y =</span> <span class="sc">~</span>BitcoinClose, <span class="at">x =</span> <span class="sc">~</span><span class="fu">index</span>(Bitcoin2021), </span>
+<span id="cb259-2"><a href="#cb259-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">type =</span> <span class="st">'scatter'</span>,<span class="at">mode =</span> <span class="st">'lines'</span>,<span class="at">name =</span> <span class="st">'Bitcoin Closing Price'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb259-3"><a href="#cb259-3" aria-hidden="true" tabindex="-1"></a><span class="fu">layout</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Years'</span>,<span class="at">tickangle =</span> <span class="sc">-</span><span class="dv">45</span>,<span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">10</span>)),</span>
+<span id="cb259-4"><a href="#cb259-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Price Range'</span>,<span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">10</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(Bitcoin2021): object 'Bitcoin2021' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb261"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb261-1"><a href="#cb261-1" aria-hidden="true" tabindex="-1"></a>tether_close <span class="ot">=</span> <span class="fu">plot_ly</span>(<span class="fu">as.data.frame</span>(Tether2021),<span class="at">y =</span> <span class="sc">~</span>TetherClose, <span class="at">x =</span> <span class="sc">~</span><span class="fu">index</span>(Tether2021), </span>
+<span id="cb261-2"><a href="#cb261-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">type =</span> <span class="st">'scatter'</span>,<span class="at">mode =</span> <span class="st">'lines'</span>,<span class="at">name =</span> <span class="st">'Tether Closing Price'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb261-3"><a href="#cb261-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Years'</span>,<span class="at">tickangle =</span> <span class="dv">45</span>,<span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">10</span>)),</span>
+<span id="cb261-4"><a href="#cb261-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Price Range'</span>,<span class="at">tickfont =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">10</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(Tether2021): object 'Tether2021' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb263"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb263-1"><a href="#cb263-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subplot</span>(bitcoin_close, tether_close) <span class="sc">%&gt;%</span> <span class="fu">layout</span>(<span class="at">title=</span><span class="st">"Closing Prices of Bitcoin and Tether"</span>,<span class="at">font =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dots2plots(...): object 'bitcoin_close' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion:</h2>
+<p>We have successfully analyzed the crytocurrencies and to conclude my analysis:</p>
+<ul>
+<li><p>We have found out which coin dominated the market based on the year. 2013 - There were only 4 digital assets on the market, so BITCOIN dominated by 93.4%. 2014 - The was an addition of 2 more digital assets to the market but BITCOIN still dominated by 93.7%. A 0.4 increase in market capitalization mean the volume of the coins were increasing. 2015 - BITCOIN still dominated but there was an addition of 3 more digital assets which let to market cap of BITCOIN dropping to 89.7% and XRP having 6.94% of the market share 2016 - No new cryptocurrencies were added but the market capitalization of BITCOIN decreased to 87% and we can see other digital assets climbing up like ethereum taking 7.82% of the market. 2017 - This year is where the crypto boom happened and we can see that new digital assets were added and ethereum took 20.1% of the market and bitcoin dropped to 63.2% and XRP having 7.47 % 2018 - More coins added and BITCOIN dropped to 53% and ethereum had close to 20% while XRP had 10%. 2019 - BITCOIN made a comeback with taking 70% of the market share back from the other digital assets by taking 70% of the market. 2020 - Around 8-10 cryptocurrencies were introduced to the market but BITCOIN still maintained 71% market share. 2021 - BITCOIN had 60% of the market share, 17% was ethereum’s and there were more crypto currencies made that year.</p></li>
+<li><p>Using the Price vizualization above with the drop down of different cryptocurrencies we see that:</p>
+<ul>
+<li>We see that BITCOIN’s prices are mostly outliers due to the heavy rise from the years 2017 - 2021</li>
+<li>Ethereum also competes with the market capitalization but not as much as BITCOIN.</li>
+<li>Other Crypto currencies had less market share but due to their small prices and sudden gains and drops people gained and lost a lot of money, hence they did have major volatility making it uninvestable.</li>
+<li>Usually crypto currencies depend on the popularity for it price to increase.</li>
+</ul></li>
+<li><p>Why Bitcoin’s volume decreased during 2020-2021 while tether’s volume kept increasing? Mostly due to the high volatility in the prices the volume decreased whereas tether had a stable prices hence the volume kept increasing.</p></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Vinitha Maheswaran">
+<meta name="dcterms.date" content="2022-12-03">
+<meta name="description" content="Visualizing Multiple Dimensions">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 7 Solutions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 7 Solutions">
+<meta name="twitter:description" content="Visualizing Multiple Dimensions">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 7 Solutions</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#read-in-data" id="toc-read-in-data" class="nav-link" data-scroll-target="#read-in-data">Read in data</a>
+  <ul class="collapse">
+  <li><a href="#briefly-describe-the-data" id="toc-briefly-describe-the-data" class="nav-link" data-scroll-target="#briefly-describe-the-data">Briefly describe the data</a></li>
+  </ul></li>
+  <li><a href="#tidy-data-and-mutate-variables-as-needed" id="toc-tidy-data-and-mutate-variables-as-needed" class="nav-link" data-scroll-target="#tidy-data-and-mutate-variables-as-needed">Tidy Data and Mutate Variables (as needed)</a></li>
+  <li><a href="#visualization-with-multiple-dimensions" id="toc-visualization-with-multiple-dimensions" class="nav-link" data-scroll-target="#visualization-with-multiple-dimensions">Visualization with Multiple Dimensions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 7 Solutions</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_7</div>
+    <div class="quarto-category">hotel_bookings</div>
+    <div class="quarto-category">australian_marriage</div>
+    <div class="quarto-category">air_bnb</div>
+    <div class="quarto-category">eggs</div>
+    <div class="quarto-category">abc_poll</div>
+    <div class="quarto-category">faostat</div>
+    <div class="quarto-category">usa_households</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Visualizing Multiple Dimensions
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Vinitha Maheswaran </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 3, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to:</p>
+<ol type="1">
+<li>read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</li>
+<li>tidy data (as needed, including sanity checks)</li>
+<li>mutate variables as needed (including sanity checks)</li>
+<li>Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded <a href="https://www.edwardtufte.com/tufte/">chart ink (Tufte)</a>, but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.</li>
+</ol>
+<ul>
+<li>Explain why you choose the specific graph type</li>
+</ul>
+<ol start="5" type="1">
+<li>If you haven’t tried in previous weeks, work this week to make your graphs “publication” ready with titles, captions, and pretty axis labels and other viewer-friendly features</li>
+</ol>
+<p><a href="https://r-graph-gallery.com/">R Graph Gallery</a> is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his <a href="https://www.edwardtufte.com/tufte/books_vdqi">fantastic books</a> and <a href="https://www.edwardtufte.com/tufte/courses">courses on data visualizaton.</a></p>
+<p>(be sure to only include the category tags for the data you use!)</p>
+</section>
+<section id="read-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data">Read in data</h2>
+<p>Read in one (or more) of the following datasets, using the correct R package and command.</p>
+<ul>
+<li>eggs ⭐</li>
+<li>abc_poll ⭐⭐</li>
+<li>australian_marriage ⭐⭐</li>
+<li>hotel_bookings ⭐⭐⭐</li>
+<li>air_bnb ⭐⭐⭐</li>
+<li>us_hh ⭐⭐⭐⭐</li>
+<li>faostat ⭐⭐⭐⭐⭐</li>
+</ul>
+<p>For this challenge I will be working with the “USA Households*.xlsx” data set.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Reading the USA Households\*.xlsx data set and storing in a data frame</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>column_names <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Year"</span>, <span class="st">"Household_Number_Thousands"</span>, <span class="st">"Total_Percent_Distribution"</span>, <span class="st">"Under $15,000"</span>, <span class="st">"$15,000 to $24,999"</span>, <span class="st">"$25,000 to $34,999"</span>, <span class="st">"35,000 to $49,999"</span>, <span class="st">"$50,000 to $74,999"</span>, <span class="st">"$75,000 to $99,999"</span>, <span class="st">"$100,000 to $149,999"</span>, <span class="st">"$150,000 to $199,999"</span>, <span class="st">"$200,000 and over"</span>, <span class="st">"Median_Income_Estimate"</span>, <span class="st">"Median_Income_MOE"</span>, <span class="st">"Mean_Income_Estimate"</span>, <span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx"</span>, <span class="at">col_names =</span> column_names, <span class="at">skip =</span> <span class="dv">5</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(usa_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 383 × 16
+   Year  House…¹ Total…² Under…³ $15,0…⁴ $25,0…⁵ 35,00…⁶ $50,0…⁷ $75,0…⁸ $100,…⁹
+   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 ALL … &lt;NA&gt;         NA    NA      NA      NA      NA      NA      NA      NA  
+ 2 2019  128451      100     9.1     8       8.3    11.7    16.5    12.3    15.5
+ 3 2018  128579      100    10.1     8.8     8.7    12      17      12.5    15  
+ 4 2017… 127669      100    10       9.1     9.2    12      16.4    12.4    14.7
+ 5 2017  127586      100    10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 6 2016  126224      100    10.4     9       9.2    12.3    16.7    12.2    15  
+ 7 2015  125819      100    10.6    10       9.6    12.1    16.1    12.4    14.9
+ 8 2014  124587      100    11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 9 2013… 123931      100    11.4    10.3     9.5    12.5    16.8    12      13.9
+10 2013… 122952      100    11.3    10.4     9.7    13.1    17      12.5    13.6
+# … with 373 more rows, 6 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​Total_Percent_Distribution, ³​`Under $15,000`, ⁴​`$15,000 to $24,999`,
+#   ⁵​`$25,000 to $34,999`, ⁶​`35,000 to $49,999`, ⁷​`$50,000 to $74,999`,
+#   ⁸​`$75,000 to $99,999`, ⁹​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<p>Since the “USA Households*.xlsx” data set is in Excel format, I am using the ‘readxl’ package for reading the data. After reading, the data is stored in a dataframe “usa_data”. The first three rows in the dataframe contains description about the data and the 4th and 5th row contains the column headings. I resolve this issue by skipping the first 5 rows while reading the data set and storing in a dataframe “usa_data” with the renamed column names.</p>
+<section id="briefly-describe-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="briefly-describe-the-data">Briefly describe the data</h3>
+<p>The USA household data contains information on the mean and median income grouped by Race and Hispanic Origin of householder for the period 1967 - 2019. The data is split into 12 different categories based on Races and we have the total number of households surveyed in a given year along with the total percentage distribution (100 for all observations), percentage distribution for various income levels, and the mean and median (estimated and margin of error) income. For some races, data is not available for all the years in the period 1967 - 2019.</p>
+</section>
+</section>
+<section id="tidy-data-and-mutate-variables-as-needed" class="level2">
+<h2 class="anchored" data-anchor-id="tidy-data-and-mutate-variables-as-needed">Tidy Data and Mutate Variables (as needed)</h2>
+<p>Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here. Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?</p>
+<p>The data is not tidy and requires data cleaning. (Note: I renamed the column names while reading the data.) First, I removed the last 31 rows from the dataframe “usa_data” as they are just footnotes and not observations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the last 31 rows as they are just footnotes and not observations</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> <span class="fu">head</span>(usa_data,<span class="sc">-</span><span class="dv">31</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(usa_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 352 × 16
+   Year  House…¹ Total…² Under…³ $15,0…⁴ $25,0…⁵ 35,00…⁶ $50,0…⁷ $75,0…⁸ $100,…⁹
+   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 ALL … &lt;NA&gt;         NA    NA      NA      NA      NA      NA      NA      NA  
+ 2 2019  128451      100     9.1     8       8.3    11.7    16.5    12.3    15.5
+ 3 2018  128579      100    10.1     8.8     8.7    12      17      12.5    15  
+ 4 2017… 127669      100    10       9.1     9.2    12      16.4    12.4    14.7
+ 5 2017  127586      100    10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 6 2016  126224      100    10.4     9       9.2    12.3    16.7    12.2    15  
+ 7 2015  125819      100    10.6    10       9.6    12.1    16.1    12.4    14.9
+ 8 2014  124587      100    11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 9 2013… 123931      100    11.4    10.3     9.5    12.5    16.8    12      13.9
+10 2013… 122952      100    11.3    10.4     9.7    13.1    17      12.5    13.6
+# … with 342 more rows, 6 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​Total_Percent_Distribution, ³​`Under $15,000`, ⁴​`$15,000 to $24,999`,
+#   ⁵​`$25,000 to $34,999`, ⁶​`35,000 to $49,999`, ⁷​`$50,000 to $74,999`,
+#   ⁸​`$75,000 to $99,999`, ⁹​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<p>Currently, the dataset does not have a separate column for “Race”. The “Race” was mentioned in the “Year” column (the remaining columns were empty for such observations) and were inserted as separators for different race groups in the data. So, I created a new column for “Race” (muatated variable) and filled it with non-numerical values from “Year” column. I also filled the empty values in “Race” with the previous value in that column. Then, I removed the rows from the dataset which had Race value in the “Year” column.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating new column for Race and filling the empty values for Race with the previous value in that column</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">case_when</span>(<span class="fu">str_detect</span>(Year,(<span class="st">"([A-Z])"</span>)) <span class="sc">~</span> Year))<span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Race, <span class="at">.direction =</span> <span class="st">"down"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the rows from usa_data which has non-numerical values in Year column (these rows have Race value in the Year column and were inserted as separators for different Race groups)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(Year,(<span class="st">"([A-Z])"</span>)))</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>usa_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 17
+   Year  House…¹ Total…² Under…³ $15,0…⁴ $25,0…⁵ 35,00…⁶ $50,0…⁷ $75,0…⁸ $100,…⁹
+   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 2019  128451      100     9.1     8       8.3    11.7    16.5    12.3    15.5
+ 2 2018  128579      100    10.1     8.8     8.7    12      17      12.5    15  
+ 3 2017… 127669      100    10       9.1     9.2    12      16.4    12.4    14.7
+ 4 2017  127586      100    10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 5 2016  126224      100    10.4     9       9.2    12.3    16.7    12.2    15  
+ 6 2015  125819      100    10.6    10       9.6    12.1    16.1    12.4    14.9
+ 7 2014  124587      100    11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 8 2013… 123931      100    11.4    10.3     9.5    12.5    16.8    12      13.9
+ 9 2013… 122952      100    11.3    10.4     9.7    13.1    17      12.5    13.6
+10 2012  122459      100    11.4    10.6    10.1    12.5    17.4    12      13.9
+# … with 330 more rows, 7 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   Race &lt;chr&gt;, and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​Total_Percent_Distribution, ³​`Under $15,000`, ⁴​`$15,000 to $24,999`,
+#   ⁵​`$25,000 to $34,999`, ⁶​`35,000 to $49,999`, ⁷​`$50,000 to $74,999`,
+#   ⁸​`$75,000 to $99,999`, ⁹​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<p>Next, I removed the footnote number next to the year value and race value from the columns “Year” and “Race” respectively as they had no purpose in visualization.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the footnote number next to the year value in the "Year" column</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">str_remove</span>(Year, <span class="st">" .*"</span>))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the footnote number next to the race value in the "Race" column</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">str_remove</span>(Race, <span class="st">"[0-9]+"</span>))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>usa_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 17
+   Year  House…¹ Total…² Under…³ $15,0…⁴ $25,0…⁵ 35,00…⁶ $50,0…⁷ $75,0…⁸ $100,…⁹
+   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 2019  128451      100     9.1     8       8.3    11.7    16.5    12.3    15.5
+ 2 2018  128579      100    10.1     8.8     8.7    12      17      12.5    15  
+ 3 2017  127669      100    10       9.1     9.2    12      16.4    12.4    14.7
+ 4 2017  127586      100    10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 5 2016  126224      100    10.4     9       9.2    12.3    16.7    12.2    15  
+ 6 2015  125819      100    10.6    10       9.6    12.1    16.1    12.4    14.9
+ 7 2014  124587      100    11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 8 2013  123931      100    11.4    10.3     9.5    12.5    16.8    12      13.9
+ 9 2013  122952      100    11.3    10.4     9.7    13.1    17      12.5    13.6
+10 2012  122459      100    11.4    10.6    10.1    12.5    17.4    12      13.9
+# … with 330 more rows, 7 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   Race &lt;chr&gt;, and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​Total_Percent_Distribution, ³​`Under $15,000`, ⁴​`$15,000 to $24,999`,
+#   ⁵​`$25,000 to $34,999`, ⁶​`35,000 to $49,999`, ⁷​`$50,000 to $74,999`,
+#   ⁸​`$75,000 to $99,999`, ⁹​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<p>Following that, I removed the “Total_Percent_Distribution” column form the dataset as the value was same (100) for all the observations and had no purpose in visualization.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the "Total_Percent_Distribution" column as that value is 100 for all observations</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(<span class="dv">3</span>))</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>usa_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 16
+   Year  House…¹ Under…² $15,0…³ $25,0…⁴ 35,00…⁵ $50,0…⁶ $75,0…⁷ $100,…⁸ $150,…⁹
+   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 2019  128451      9.1     8       8.3    11.7    16.5    12.3    15.5     8.3
+ 2 2018  128579     10.1     8.8     8.7    12      17      12.5    15       7.2
+ 3 2017  127669     10       9.1     9.2    12      16.4    12.4    14.7     7.3
+ 4 2017  127586     10.1     9.1     9.2    11.9    16.3    12.6    14.8     7.5
+ 5 2016  126224     10.4     9       9.2    12.3    16.7    12.2    15       7.2
+ 6 2015  125819     10.6    10       9.6    12.1    16.1    12.4    14.9     7.1
+ 7 2014  124587     11.4    10.5     9.6    12.6    16.4    12.1    14       6.6
+ 8 2013  123931     11.4    10.3     9.5    12.5    16.8    12      13.9     6.7
+ 9 2013  122952     11.3    10.4     9.7    13.1    17      12.5    13.6     6.3
+10 2012  122459     11.4    10.6    10.1    12.5    17.4    12      13.9     6.3
+# … with 330 more rows, 6 more variables: `$200,000 and over` &lt;dbl&gt;,
+#   Median_Income_Estimate &lt;dbl&gt;, Median_Income_MOE &lt;dbl&gt;,
+#   Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;, Race &lt;chr&gt;, and
+#   abbreviated variable names ¹​Household_Number_Thousands, ²​`Under $15,000`,
+#   ³​`$15,000 to $24,999`, ⁴​`$25,000 to $34,999`, ⁵​`35,000 to $49,999`,
+#   ⁶​`$50,000 to $74,999`, ⁷​`$75,000 to $99,999`, ⁸​`$100,000 to $149,999`,
+#   ⁹​`$150,000 to $199,999`</code></pre>
+</div>
+</div>
+<p>Finally, I reordered the columns in the dataframe in order to have “Race” as the first column followed by “Year” and the remaining columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reorder the columns in the usa_data dataframe so that "Race" is the first column followed by "Year"</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select=</span><span class="fu">c</span>(<span class="dv">16</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>usa_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 16
+   Race    Year  House…¹ Under…² $15,0…³ $25,0…⁴ 35,00…⁵ $50,0…⁶ $75,0…⁷ $100,…⁸
+   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 ALL RA… 2019  128451      9.1     8       8.3    11.7    16.5    12.3    15.5
+ 2 ALL RA… 2018  128579     10.1     8.8     8.7    12      17      12.5    15  
+ 3 ALL RA… 2017  127669     10       9.1     9.2    12      16.4    12.4    14.7
+ 4 ALL RA… 2017  127586     10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 5 ALL RA… 2016  126224     10.4     9       9.2    12.3    16.7    12.2    15  
+ 6 ALL RA… 2015  125819     10.6    10       9.6    12.1    16.1    12.4    14.9
+ 7 ALL RA… 2014  124587     11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 8 ALL RA… 2013  123931     11.4    10.3     9.5    12.5    16.8    12      13.9
+ 9 ALL RA… 2013  122952     11.3    10.4     9.7    13.1    17      12.5    13.6
+10 ALL RA… 2012  122459     11.4    10.6    10.1    12.5    17.4    12      13.9
+# … with 330 more rows, 6 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​`Under $15,000`, ³​`$15,000 to $24,999`, ⁴​`$25,000 to $34,999`,
+#   ⁵​`35,000 to $49,999`, ⁶​`$50,000 to $74,999`, ⁷​`$75,000 to $99,999`,
+#   ⁸​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<p>I checked for missing/null data in the “usa_data” dataframe and found that there are no NA or NULL values.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing/null data in the hotel_data</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">is.na</span>(usa_data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">is.null</span>(usa_data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+<p>I found that there are few columns which have numerical values but datatype assigned as “character” Hence, I looked further into those columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(usa_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [340 × 16] (S3: tbl_df/tbl/data.frame)
+ $ Race                      : chr [1:340] "ALL RACES" "ALL RACES" "ALL RACES" "ALL RACES" ...
+ $ Year                      : chr [1:340] "2019" "2018" "2017" "2017" ...
+ $ Household_Number_Thousands: chr [1:340] "128451" "128579" "127669" "127586" ...
+ $ Under $15,000             : num [1:340] 9.1 10.1 10 10.1 10.4 10.6 11.4 11.4 11.3 11.4 ...
+ $ $15,000 to $24,999        : num [1:340] 8 8.8 9.1 9.1 9 10 10.5 10.3 10.4 10.6 ...
+ $ $25,000 to $34,999        : num [1:340] 8.3 8.7 9.2 9.2 9.2 9.6 9.6 9.5 9.7 10.1 ...
+ $ 35,000 to $49,999         : num [1:340] 11.7 12 12 11.9 12.3 12.1 12.6 12.5 13.1 12.5 ...
+ $ $50,000 to $74,999        : num [1:340] 16.5 17 16.4 16.3 16.7 16.1 16.4 16.8 17 17.4 ...
+ $ $75,000 to $99,999        : num [1:340] 12.3 12.5 12.4 12.6 12.2 12.4 12.1 12 12.5 12 ...
+ $ $100,000 to $149,999      : num [1:340] 15.5 15 14.7 14.8 15 14.9 14 13.9 13.6 13.9 ...
+ $ $150,000 to $199,999      : num [1:340] 8.3 7.2 7.3 7.5 7.2 7.1 6.6 6.7 6.3 6.3 ...
+ $ $200,000 and over         : num [1:340] 10.3 8.8 8.9 8.5 8 7.2 6.8 6.9 6 5.9 ...
+ $ Median_Income_Estimate    : num [1:340] 68703 64324 63761 64007 62898 ...
+ $ Median_Income_MOE         : num [1:340] 904 704 552 575 764 ...
+ $ Mean_Income_Estimate      : chr [1:340] "98088" "91652" "91406" "89922" ...
+ $ Mean_Income_MOE           : chr [1:340] "1042" "914" "979" "892" ...</code></pre>
+</div>
+</div>
+<p>The datatype “character” columns “Household_Number_Thousands”, “Mean_Income_Estimate”, and “Mean_Income_MOE” have numerical values. I applied the table() to these columns to see which value is non-numerical and whether they can be modified or removed. The columns had few instances of “N” value indicating that the data may not be available. I decided to drop the observations with “N” value from the dataframe and changed the datatype to “numeric” for these columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking whether the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have non-numerical values</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Household_Number_Thousands"</span>, <span class="st">"Mean_Income_Estimate"</span>,<span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (c <span class="cf">in</span> col){</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(c)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">table</span>(usa_data[,c]))</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Household_Number_Thousands"
+Household_Number_Thousands
+100065 100113  10034 100528 100568 101018  10192 102528 103874  10486  10499 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 10561 106434  10671 108209 109297  11083 111278 112000  11269  11281 113343 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 11339 114384  11577 116011  11655 116783  11693 117181 117538 119927 121084 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 12109  12178 122459 122952 123931 124587  12474  12519  12579 125819 126224 
+     1      1      1      1      1      1      1      1      1      1      1 
+127586 127669  12838 128451 128579  12973  13174  13298  13315  13339  13425 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 13465  13629  13778  13809  13969  14002  14151  14354  14399  14435  14551 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 14595  14709  14730  14939  14976  15056  15212  15265  15583  15589  15811 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 15872  15909  16009  16088  16108  16165  16239  16437  16539  16559  16667 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 16723  16733  16855  16915  16997  17019  17054  17167  17198  17318  17322 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 17336  17505  17667  17758  17801  17813  18055  18095   1913   1958   1988 
+     1      1      1      1      1      1      1      1      1      1      1 
+  2040   2094   2233   2262   2655   2722   2777   2897   2948   2998   3081 
+     1      1      1      1      1      1      1      1      1      1      1 
+  3125   3291   3304   3308   3684   3742   3906   3917   3963   3980   4040 
+     1      1      1      1      1      1      1      1      1      1      1 
+  4071   4079   4085   4123   4235   4273   4326   4346   4454   4494   4500 
+     1      1      1      1      1      1      1      1      1      1      1 
+  4573   4664   4687   4715   4805   4883   4940   5212   5213   5374   5418 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 54188  55394   5550   5560  56248   5642   5705   5728  57575   5759  58005 
+     1      1      1      1      1      1      1      1      1      1      1 
+  5818   5870   5872   5910  59236   5933  59463  60164   6040   6053  60618 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 60813   6111  61533   6160   6180  61965   6220  62214  62365  62984   6328 
+     1      1      1      1      1      1      1      1      1      1      1 
+  6333  63401  63721   6379   6392  64392  64778  64836  65353   6578   6640 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 66676  66934  67203   6735   6750  68028   6809  68106  68251   6853  68996 
+     1      1      1      1      2      1      1      1      1      1      1 
+ 69214  69648   6981  69859   7040  70586  70766   7114  71163   7124   7153 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 71540  71872  72067   7263  72845  72867  73120  73182   7334   7362  74067 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 74142   7416  74376  74495   7489  75035  75107  75328  75625  75697  76030 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 76576  76932  77004  77240  77284  77330   7735   7776  77936  78519  78577 
+     1      1      1      1      1      1      1      1      1      1      1 
+  7939  79734   7977  79819  80163  80527   8066  80776  80818  80968  81148 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 81166  81628  81675  81795  82003   8225  82368  82387  82675  82765  82884 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 83158  83314  83527  83573  83641  83737  83792  83918  84228  84387  84432 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 84445  84511  84681  84706  84727  84868  85059  85407   8586   8590  86106 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 86789  87212  88458   8847  88893   8916  89479   8961  90030   9060  90682 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 91124  91645  91962   9236  92830  92880  93347  93588  94312  94705   9480 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 95112  95297  95489  95669   9579  96306  96426  96964  97107  97705  97774 
+     1      1      1      1      1      1      1      1      1      1      1 
+  9797  98679  98807  98990   9922  99313  99400  99627      N 
+     1      1      1      1      1      1      1      1      1 
+[1] "Mean_Income_Estimate"
+Mean_Income_Estimate
+100041 100399 101732 101962 102300 102588 102752 103291 103725 103815 104521 
+     1      1      1      1      1      1      1      1      1      1      1 
+104980 105086 105110 105461 105899 106088 106659 107635 108375 108472 111112 
+     1      1      1      1      1      1      1      1      1      1      1 
+111256 111257 112229 113449 113756 113870 115051 118603 118800 119004 119325 
+     1      1      1      1      1      1      1      1      1      1      1 
+121066 121987 131643 133111  34878  37392  38948  39016  39836  40063  40195 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 40211  40468  40609  41108  41362  41382  41534  41585  42223  42828  43373 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 43933  45180  45585  45596  45683  45971  46327  46832  47208  47415  47572 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 47814  47901  48359  48373  48421  48801  49392  49586  49657  49730  50073 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 50279  50802  51625  51748  51979  52140  52520  52829  52837  52921  53000 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 53216  53253  53466  53509  53616  53667  53725  53832  54048  54118  54158 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 54556  54640  55001  55129  55281  55300  55352  55378  55389  55463  55563 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 55576  55713  55800  55880  55919  56071  56177  56572  56804  56812  57018 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 57173  57361  57478  57638  57826  57885  58325  58606  58609  58652  58926 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 59004  59140  59203  59595  59639  59698  59728  60069  60177  60393  60439 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 60521  60731  60883  60988  61109  61133  61192  61200  61387  61393  61518 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 61677  61851  61859  61904  61921  61962  62044  62050  62170  62181  62192 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 62244  62386  62394  62662  62700  62826  63337  63485  63667  63940  63967 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 64245  64257  64262  64286  64300  64385  64410  64467  64546  64607  64761 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 64911  65002  65071  65124  65265  65471  65557  65765  65851  66043  66309 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 66463  66553  66950  67092  67208  67724  67924  68376  68644  68688  68754 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 69568  69613  69968  70092  70568  70877  71158  71182  71252  71548  72230 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 72379  72552  72710  72904  72958  72969  73816  73900  74029  74109  74385 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 74557  75058  75096  75408  75623  75669  75941  76705  77070  77462  77617 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 78089  79032  79175  79192  79375  79510  79750  79852  80636  81196  81447 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 81517  81870  82038  82163  82305  82442  82660  82696  82741  82946  83015 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 83127  83368  83568  83915  84053  84254  84257  84263  84617  84740  84952 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 85059  85215  85277  85346  85352  85533  85551  85740  85816  86173  86562 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 86650  86838  86932  87216  87315  87484  87592  87781  87842  87944  88206 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 88213  88298  88517  88539  88578  88731  89021  89142  89292  89593  89922 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 89953  90028  90178  90389  90456  90897  91195  91406  91652  91988  92045 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 92292  92355  93480  93830  94648  95448  95624  95650  96720  97466  97501 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 97564  97725  98088  98371  99007  99394  99761  99821  99871      N 
+     1      1      1      1      1      1      1      1      1      1 
+[1] "Mean_Income_MOE"
+Mean_Income_MOE
+1004 1010 1014 1017 1023 1030 1032 1033 1041 1042 1046 1048 1052 1057 1067 1071 
+   1    1    1    1    1    1    1    2    1    1    1    1    1    1    1    1 
+1083 1088 1101 1102 1113 1124 1126 1128 1134 1141 1166 1167 1179 1182 1191 1192 
+   1    1    1    1    1    1    1    1    1    1    1    2    1    1    1    1 
+1201 1210 1211 1212 1213 1229 1230 1232 1240 1252 1276 1281 1296 1299 1307 1327 
+   1    1    1    1    1    1    1    1    2    1    1    1    1    1    1    1 
+1333 1335 1336 1352 1354 1358 1359 1360 1370 1371 1382 1395 1398 1400 1407 1409 
+   2    1    1    1    1    1    1    1    1    2    1    1    1    1    1    1 
+1415 1416 1429 1443 1449 1482 1486 1498 1505 1528 1533 1539 1550 1563 1575 1577 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+1580 1593 1596 1600 1618 1621 1630 1633 1640 1648 1673 1698 1718 1815 1831 1882 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+1889 1898 1919 1924 2105 2107 2143 2218 2392 2737 2840  287 2912 2940 2943  297 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+3014  305 3050  306 3078  309 3097  310 3105 3108  311  314  316  319 3190 3202 
+   1    1    2    2    1    1    1    2    1    1    1    1    2    1    1    1 
+3207  325 3278  330 3303  335  336 3369  337  339 3414  342 3427  343 3476 3478 
+   1    1    1    1    1    1    1    1    1    2    1    1    1    1    1    1 
+3592 3625  370 3700  375  378 3787 3795  383 3831 3847 3885  390 3904 3953 3973 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 401  403  409 4096 4112 4119 4130  415  416 4170 4214 4289  429  430 4325 4343 
+   2    1    1    1    2    1    2    1    1    1    1    1    1    1    1    1 
+4373  439 4440  445 4497 4517  458  459  462  463  467  471  472  474  475  477 
+   1    2    1    1    1    1    1    1    1    1    1    1    2    1    2    1 
+ 478 4783  480  487  488  494  495  499  503  507  509  516  518  519  521  522 
+   1    1    2    1    1    1    1    1    2    1    2    1    1    1    1    1 
+ 523 5273  533  534  537 5430  544  545  551  552  563  566  568  572  574  578 
+   1    1    1    1    2    1    1    2    2    1    1    2    1    1    1    2 
+5814  583  584  588  589  593  594  600  602  607  609 6125  619  621  622  624 
+   1    1    1    1    1    1    1    1    1    1    1    1    2    1    1    1 
+ 634  640  644  648  653  654  659  663  671  674  676  679  681  690  696  707 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 708  715  718  719  721  724  729  738  745  762 7638  771  773  777  783  791 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 793  794  801 8076  813  821  822  825  827  828  834  838  851  854  867  879 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 884  889  892  896  902  914  930  931  936  938  943  945  956  966  972  975 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 979  982  984  986  987  995    N 
+   2    1    1    2    1    1    3 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove rows from the dataset that have "N" value</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">across</span>(<span class="fu">everything</span>(),<span class="sc">~</span> . <span class="sc">!=</span><span class="st">"N"</span>))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>usa_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 337 × 16
+   Race    Year  House…¹ Under…² $15,0…³ $25,0…⁴ 35,00…⁵ $50,0…⁶ $75,0…⁷ $100,…⁸
+   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 ALL RA… 2019  128451      9.1     8       8.3    11.7    16.5    12.3    15.5
+ 2 ALL RA… 2018  128579     10.1     8.8     8.7    12      17      12.5    15  
+ 3 ALL RA… 2017  127669     10       9.1     9.2    12      16.4    12.4    14.7
+ 4 ALL RA… 2017  127586     10.1     9.1     9.2    11.9    16.3    12.6    14.8
+ 5 ALL RA… 2016  126224     10.4     9       9.2    12.3    16.7    12.2    15  
+ 6 ALL RA… 2015  125819     10.6    10       9.6    12.1    16.1    12.4    14.9
+ 7 ALL RA… 2014  124587     11.4    10.5     9.6    12.6    16.4    12.1    14  
+ 8 ALL RA… 2013  123931     11.4    10.3     9.5    12.5    16.8    12      13.9
+ 9 ALL RA… 2013  122952     11.3    10.4     9.7    13.1    17      12.5    13.6
+10 ALL RA… 2012  122459     11.4    10.6    10.1    12.5    17.4    12      13.9
+# … with 327 more rows, 6 more variables: `$150,000 to $199,999` &lt;dbl&gt;,
+#   `$200,000 and over` &lt;dbl&gt;, Median_Income_Estimate &lt;dbl&gt;,
+#   Median_Income_MOE &lt;dbl&gt;, Mean_Income_Estimate &lt;chr&gt;, Mean_Income_MOE &lt;chr&gt;,
+#   and abbreviated variable names ¹​Household_Number_Thousands,
+#   ²​`Under $15,000`, ³​`$15,000 to $24,999`, ⁴​`$25,000 to $34,999`,
+#   ⁵​`35,000 to $49,999`, ⁶​`$50,000 to $74,999`, ⁷​`$75,000 to $99,999`,
+#   ⁸​`$100,000 to $149,999`</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Converting the datatype of "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" columns from character to numeric</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Household_Number_Thousands =</span> <span class="fu">as.numeric</span>(Household_Number_Thousands))<span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Mean_Income_Estimate =</span> <span class="fu">as.numeric</span>(Mean_Income_Estimate))<span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Mean_Income_MOE =</span> <span class="fu">as.numeric</span>(Mean_Income_MOE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Sanity Check: Make sure that the “N” values are removed from the columns “Household_Number_Thousands”, “Mean_Income_Estimate”, and “Mean_Income_MOE”.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity Check: Check that the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have no non-numerical values</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Household_Number_Thousands"</span>, <span class="st">"Mean_Income_Estimate"</span>,<span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (c <span class="cf">in</span> col){</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(c)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">table</span>(usa_data[,c]))</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Household_Number_Thousands"
+Household_Number_Thousands
+  1913   1958   1988   2040   2094   2233   2262   2655   2722   2777   2897 
+     1      1      1      1      1      1      1      1      1      1      1 
+  2948   2998   3081   3125   3291   3304   3308   3684   3742   3906   3917 
+     1      1      1      1      1      1      1      1      1      1      1 
+  3963   3980   4040   4071   4079   4085   4123   4235   4273   4326   4346 
+     1      1      1      1      1      1      1      1      1      1      1 
+  4454   4494   4500   4573   4664   4687   4715   4805   4883   4940   5212 
+     1      1      1      1      1      1      1      1      1      1      1 
+  5213   5374   5418   5550   5560   5642   5705   5728   5759   5818   5870 
+     1      1      1      1      1      1      1      1      1      1      1 
+  5872   5910   5933   6040   6053   6111   6160   6180   6220   6328   6333 
+     1      1      1      1      1      1      1      1      1      1      1 
+  6379   6392   6578   6640   6735   6750   6809   6853   6981   7040   7114 
+     1      1      1      1      1      2      1      1      1      1      1 
+  7124   7153   7263   7334   7362   7416   7489   7735   7776   7939   7977 
+     1      1      1      1      1      1      1      1      1      1      1 
+  8066   8225   8586   8590   8847   8916   8961   9060   9236   9480   9579 
+     1      1      1      1      1      1      1      1      1      1      1 
+  9797   9922  10034  10192  10486  10499  10561  10671  11083  11269  11281 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 11339  11577  11655  11693  12109  12178  12474  12519  12579  12838  12973 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 13174  13298  13315  13339  13425  13465  13629  13778  13809  13969  14002 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 14151  14354  14399  14435  14551  14595  14709  14730  14939  14976  15056 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 15212  15265  15583  15589  15811  15872  15909  16009  16088  16108  16165 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 16239  16437  16539  16559  16667  16723  16733  16855  16915  16997  17019 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 17054  17167  17198  17318  17322  17336  17505  17667  17758  17801  17813 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 18055  18095  54188  55394  56248  57575  58005  59236  59463  60164  60618 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 60813  61533  61965  62214  62365  62984  63401  63721  64392  64778  64836 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 65353  66676  66934  67203  68028  68106  68251  68996  69214  69648  69859 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 70586  70766  71163  71540  71872  72067  72845  72867  73120  73182  74067 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 74142  74376  74495  75035  75107  75328  75625  75697  76030  76576  76932 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 77004  77284  77330  78519  78577  79734  79819  80163  80527  80776  80818 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 80968  81148  81166  81628  81675  81795  82003  82368  82387  82675  82765 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 82884  83158  83314  83527  83573  83641  83737  83792  83918  84228  84387 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 84432  84445  84511  84681  84706  84727  84868  85059  85407  86106  86789 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 87212  88458  88893  89479  90030  90682  91124  91645  91962  92830  92880 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 93347  93588  94312  94705  95112  95297  95489  95669  96306  96426  96964 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 97107  97705  97774  98679  98807  98990  99313  99400  99627 100065 100113 
+     1      1      1      1      1      1      1      1      1      1      1 
+100528 100568 101018 102528 103874 106434 108209 109297 111278 112000 113343 
+     1      1      1      1      1      1      1      1      1      1      1 
+114384 116011 116783 117181 117538 119927 121084 122459 122952 123931 124587 
+     1      1      1      1      1      1      1      1      1      1      1 
+125819 126224 127586 127669 128451 128579 
+     1      1      1      1      1      1 
+[1] "Mean_Income_Estimate"
+Mean_Income_Estimate
+ 34878  37392  38948  39016  39836  40063  40195  40211  40468  40609  41108 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 41362  41382  41534  41585  42223  42828  43373  43933  45180  45585  45596 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 45683  45971  46327  46832  47208  47415  47572  47814  47901  48359  48373 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 48421  48801  49392  49586  49657  49730  50073  50279  50802  51625  51748 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 51979  52140  52520  52829  52837  52921  53000  53216  53253  53466  53509 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 53616  53667  53725  53832  54048  54118  54158  54556  54640  55001  55129 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 55281  55300  55352  55378  55389  55463  55563  55576  55713  55800  55880 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 55919  56071  56177  56572  56804  56812  57018  57173  57361  57478  57638 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 57826  57885  58325  58606  58609  58652  58926  59004  59140  59203  59595 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 59639  59698  59728  60069  60177  60393  60439  60521  60731  60883  60988 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 61109  61133  61192  61200  61387  61393  61518  61677  61851  61859  61904 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 61921  61962  62044  62050  62170  62181  62192  62244  62386  62394  62662 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 62700  62826  63337  63485  63667  63940  63967  64245  64257  64262  64286 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 64300  64385  64410  64467  64546  64607  64761  64911  65002  65071  65124 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 65265  65471  65557  65765  65851  66043  66309  66463  66553  66950  67092 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 67208  67724  67924  68376  68644  68688  68754  69568  69613  69968  70092 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 70568  70877  71158  71182  71252  71548  72230  72379  72552  72710  72904 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 72958  72969  73816  73900  74029  74109  74385  74557  75058  75096  75408 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 75623  75669  75941  76705  77070  77462  77617  78089  79032  79175  79192 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 79375  79510  79750  79852  80636  81196  81447  81517  81870  82038  82305 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 82442  82660  82696  82741  82946  83015  83127  83368  83568  83915  84053 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 84254  84257  84263  84617  84740  84952  85059  85215  85277  85352  85533 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 85551  85740  85816  86173  86562  86650  86838  86932  87216  87315  87484 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 87592  87781  87842  87944  88206  88213  88298  88517  88539  88578  88731 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 89021  89142  89292  89593  89922  89953  90028  90178  90389  90456  90897 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 91195  91406  91652  91988  92045  92292  92355  93480  93830  94648  95448 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 95624  95650  96720  97466  97501  97564  97725  98088  98371  99007  99394 
+     1      1      1      1      1      1      1      1      1      1      1 
+ 99761  99821  99871 100041 100399 101732 101962 102300 102588 102752 103291 
+     1      1      1      1      1      1      1      1      1      1      1 
+103725 103815 104521 104980 105086 105110 105461 105899 106088 106659 107635 
+     1      1      1      1      1      1      1      1      1      1      1 
+108375 108472 111112 111256 111257 112229 113449 113756 113870 115051 118603 
+     1      1      1      1      1      1      1      1      1      1      1 
+118800 119004 119325 121066 121987 131643 133111 
+     1      1      1      1      1      1      1 
+[1] "Mean_Income_MOE"
+Mean_Income_MOE
+ 287  297  305  306  309  310  311  314  316  319  325  330  335  336  337  339 
+   1    1    1    2    1    2    1    1    2    1    1    1    1    1    1    2 
+ 342  343  370  375  378  383  390  401  403  409  415  416  429  430  439  445 
+   1    1    1    1    1    1    1    2    1    1    1    1    1    1    2    1 
+ 458  459  462  463  467  471  472  474  475  477  478  480  487  488  494  495 
+   1    1    1    1    1    1    2    1    2    1    1    2    1    1    1    1 
+ 499  503  507  509  516  518  519  521  522  523  533  534  537  544  545  551 
+   1    2    1    2    1    1    1    1    1    1    1    1    2    1    2    2 
+ 552  563  566  568  572  574  578  583  584  588  589  593  594  600  602  607 
+   1    1    2    1    1    1    2    1    1    1    1    1    1    1    1    1 
+ 609  619  621  622  624  634  640  644  648  653  654  659  663  671  674  676 
+   1    2    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 679  681  690  696  707  708  715  718  719  721  724  729  738  745  762  771 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 773  777  783  791  793  794  801  813  821  822  825  827  828  834  838  851 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 854  867  879  884  889  892  896  902  914  930  931  936  938  943  945  956 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+ 966  972  975  979  982  984  986  987  995 1004 1010 1014 1017 1023 1030 1032 
+   1    1    1    2    1    1    2    1    1    1    1    1    1    1    1    1 
+1033 1041 1042 1046 1048 1052 1057 1067 1071 1083 1088 1101 1102 1113 1124 1126 
+   2    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+1128 1134 1141 1166 1167 1179 1182 1191 1192 1201 1210 1211 1212 1213 1229 1230 
+   1    1    1    1    2    1    1    1    1    1    1    1    1    1    1    1 
+1232 1240 1252 1276 1281 1296 1299 1307 1327 1333 1335 1336 1352 1354 1358 1359 
+   1    2    1    1    1    1    1    1    1    2    1    1    1    1    1    1 
+1360 1370 1371 1382 1395 1398 1400 1407 1409 1415 1416 1429 1443 1449 1482 1486 
+   1    1    2    1    1    1    1    1    1    1    1    1    1    1    1    1 
+1498 1505 1528 1533 1539 1550 1563 1575 1577 1580 1593 1596 1600 1618 1621 1630 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+1633 1640 1648 1673 1698 1718 1815 1831 1882 1889 1898 1919 1924 2105 2107 2143 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+2218 2392 2737 2840 2912 2940 2943 3014 3050 3078 3097 3105 3108 3190 3202 3207 
+   1    1    1    1    1    1    1    1    2    1    1    1    1    1    1    1 
+3278 3303 3369 3414 3427 3476 3478 3592 3625 3700 3787 3795 3831 3847 3885 3904 
+   1    1    1    1    1    1    1    1    1    1    1    1    1    1    1    1 
+3953 3973 4096 4112 4119 4130 4170 4214 4289 4325 4343 4373 4440 4497 4517 4783 
+   1    1    1    2    1    2    1    1    1    1    1    1    1    1    1    1 
+5273 5430 5814 6125 7638 8076 
+   1    1    1    1    1    1 </code></pre>
+</div>
+</div>
+<p>Sanity Check: Make sure that the range of years is from 1967 - 2019, there are 12 Race groups, and there are no footnote numbers.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find number of distinct Year values</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(usa_data<span class="sc">$</span>Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 53</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity check: Check that the unique Year values range from 1967 - 2019 after data cleaning </span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(usa_data<span class="sc">$</span>Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "2019" "2018" "2017" "2016" "2015" "2014" "2013" "2012" "2011" "2010"
+[11] "2009" "2008" "2007" "2006" "2005" "2004" "2003" "2002" "2001" "2000"
+[21] "1999" "1998" "1997" "1996" "1995" "1994" "1993" "1992" "1991" "1990"
+[31] "1989" "1988" "1987" "1986" "1985" "1984" "1983" "1982" "1981" "1980"
+[41] "1979" "1978" "1977" "1976" "1975" "1974" "1973" "1972" "1971" "1970"
+[51] "1969" "1968" "1967"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find number of distinct Race values</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(usa_data<span class="sc">$</span>Race)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity check: Check that the unique Race values do not have any footnote numbers after data cleaning </span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(usa_data<span class="sc">$</span>Race)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "ALL RACES"                     "WHITE ALONE "                 
+ [3] "WHITE "                        "WHITE ALONE, NOT HISPANIC "   
+ [5] "WHITE, NOT HISPANIC "          "BLACK ALONE OR IN COMBINATION"
+ [7] "BLACK ALONE "                  "BLACK "                       
+ [9] "ASIAN ALONE OR IN COMBINATION" "ASIAN ALONE "                 
+[11] "ASIAN AND PACIFIC ISLANDER "   "HISPANIC (ANY RACE) "         </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summary of usa_data</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(summarytools)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summarytools<span class="sc">::</span><span class="fu">dfSummary</span>(usa_data,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">varnumbers =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">plain.ascii  =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">style        =</span> <span class="st">"grid"</span>, </span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">graph.magnif =</span> <span class="fl">0.60</span>, </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">valid.col    =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">method =</span> <span class="st">'render'</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">table.classes =</span> <span class="st">'table-condensed'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div class="container st-container">
+<h3 class="anchored">Data Frame Summary</h3>
+<h4 class="anchored">usa_data</h4>
+<strong>Dimensions</strong>: 337 x 16
+  <br><strong>Duplicates</strong>: 0
+<br>
+<table class="table table-striped table-bordered st-table st-table-striped st-table-bordered st-multiline table-condensed">
+  <thead>
+    <tr>
+      <th align="center" class="st-protect-top-border"><strong>Variable</strong></th>
+      <th align="center" class="st-protect-top-border"><strong>Stats / Values</strong></th>
+      <th align="center" class="st-protect-top-border"><strong>Freqs (% of Valid)</strong></th>
+      <th align="center" class="st-protect-top-border"><strong>Graph</strong></th>
+      <th align="center" class="st-protect-top-border"><strong>Missing</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">Race
+[character]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">1. ALL RACES</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">2. HISPANIC (ANY RACE) <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">3. BLACK <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">4. WHITE <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">5. WHITE, NOT HISPANIC <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">6. ASIAN ALONE <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">7. ASIAN ALONE OR IN COMBINA</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">8. BLACK ALONE <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">9. BLACK ALONE OR IN COMBINA</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">10. WHITE ALONE <div class="st-ws-char">·</div></td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">[ 2 others ]</td></tr></tbody></table></td>
+      <td align="left" style="padding:0;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">55</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">16.3%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">50</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">14.8%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">35</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">10.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">35</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">10.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">28</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">8.3%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">20</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">5.9%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">20</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">5.9%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">20</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">5.9%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">20</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">5.9%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">20</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">5.9%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">34</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">10.1%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABsAAACiBAMAAABCP6vbAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYnhCP+ZgAAAGNJREFUSMdjYKAMKEGAApSrbAwGg4yL5khBCBDAzoUqFkAxymhwc9HcjM1HCC5Ir9Fg56K5eUT4SBBFr9Gg56K5mWC2EkQxymgQctEcOQx8RJIHR300GLgjzUdDsWxHcyS5AABVCpStxw8wTwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMi0xMi0yMVQwNTo1NDozOSswMDowMDfPbogAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMTItMjFUMDU6NTQ6MzkrMDA6MDBGktY0AAAAAElFTkSuQmCC"></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Year
+[character]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">1. 2013</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">2. 2017</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">3. 2002</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">4. 2003</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">5. 2004</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">6. 2005</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">7. 2006</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">8. 2007</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">9. 2008</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">10. 2009</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">[ 43 others ]</td></tr></tbody></table></td>
+      <td align="left" style="padding:0;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">16</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">4.7%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">16</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">4.7%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">8</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">2.4%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr><tr style="background-color:transparent"><td style="padding:0 5px 0 7px;margin:0;border:0" align="right">241</td><td style="padding:0 2px 0 0;border:0;" align="left">(</td><td style="padding:0;border:0" align="right">71.5%</td><td style="padding:0 4px 0 2px;border:0" align="left">)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAE0AAACiBAMAAAD2NV3UAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYnhCP+ZgAAAHdJREFUWMPt0sENgCAMRmFGsBtgHYH9d+Oi8WJoTYi25P3nLwTllRJ/qruMtp3uaLhIzvtuYuyto5e13eyujOPu++FSOu/7isw9L/p/wT07esH92YvX0VVORy+4DF3Ry9qOXnD0gsvSi9epsXp9RxsP963zvlvkdeszk8qEI0OiAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTEyLTIxVDA1OjU0OjM5KzAwOjAwN89uiAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0xMi0yMVQwNTo1NDozOSswMDowMEaS1jQAAAAASUVORK5CYII="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Household_Number_Thousands
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 45365.7 (40375)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">1913 ≤ 17198 ≤ 128579</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 75186 (0.9)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">336 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAHZJREFUSMft1t0JgDAMBOCuoBt43cDsv5uprYiFYoKIGO7IS3++vLSUphQjAJbJlAayCAHBf4DecLiA1kpAQBAdzP3TcAv6WYLHoByCD+iU1uXnMgao7fcSC8jHboKXQTl5I0CNDoygrY+BdvOBc8NnAOakGNkAu7gASmY/VNwAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Under $15,000
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 13.1 (5.2)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">6.3 ≤ 11 ≤ 27.2</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 7.2 (0.4)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">142 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAH1JREFUSMft1WEKgCAMBWCvYDfIbtDuf7c2SgjZnOuXyXvQD8Ev2UMqpTWSOYWT3bzAQXQCAPwH+Fe8AeSeAgAAAABwf1/3EOBnXrApv4s+UEp7gLwqBHgzGaBp2QZyqNKBDYzSdKCMVAvTgeGHQV1OCGSWEJDlV1CGk9bIBfdFDG5bOvw+AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAwqJIiQgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMNnPmv4AAAAASUVORK5CYII="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$15,000 to $24,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 10.8 (2.7)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">5 ≤ 10.1 ≤ 17.7</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 3.8 (0.3)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">104 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAJVJREFUSMft1NkNwCAIAFBXsBsUNyj771YU45GUBJraDwPxp8rziNQQ9og4BgCcUYonkBAdOHDgYDGQnyYByIs4cMDgoKqyAcRLD/L0MoC2eAeULYPUhkwg78IGsGRvB6YnRANwLKwZlJu1AB79CwBXHnf1c8ugfdeu9aCWvx7U8n8L+C8wgDHhS0AbsQFq/QzKCHvEDaPJD8d6iityAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAwqJIiQgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMNnPmv4AAAAASUVORK5CYII="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$25,000 to $34,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 10.1 (2.1)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">5 ≤ 9.9 ≤ 15.5</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 2.7 (0.2)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">87 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAItJREFUSMft1g0KgDAIBlCvsG7QdoN5/7s1cYENIS36YfjBiMBHROYGMEfSMbllTWp0UBAxQIAA04GFhoELtEsNEOAqoI4jQI1nA62q8KoBHgPDoeAcDBPnDuhDSAHyrCJA4TdUgByEr4Pe03YgKr4Gmf9LO1Aq/g/27c4Meh/4AD3FBehWfAdbYI5sPTEdDQLaWrMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">35,000 to $49,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 13.5 (2.2)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">7.7 ≤ 13.8 ≤ 20.6</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 2.3 (0.2)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">92 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAIJJREFUSMft1tsNgCAMBVBW0BHKBnT/3UQj0AdB6x/YG75MT9poEwxhjWyd7ACgn44AYvoZyK/IBiImBw5mAHm3bSAiOnAwBPpOeQC6iYNlgdgOBqCEAtGEgauuHgdzgPKBO4BuRwO8mgHa5CtQ80hQp7qBqpagNjGB82+8jfQyYY0c0bIOSshmZOwAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$50,000 to $74,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 18 (2.4)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">12.9 ≤ 17.5 ≤ 25.8</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 2.9 (0.1)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">92 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAIFJREFUSMft1NsNgCAMBVBWwA0sG9D9d5NYg+UhFBL9wN4QvnogQIMxa8SyAMBuH1MBDlHBK6DxFHXQ2ESBAgUKPgbhCxsDVD0D4MwAcOgRvYI1Qew8KWDVs6Dsvw4oTR9kRgT4Yf4FNrqrAUD7SEFYnuYbpJ2XgzguUFQLgDBmjRzC8wrVLnIsVwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMKiSIkIAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDDZz5r+AAAAAElFTkSuQmCC"></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$75,000 to $99,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 12.2 (2.1)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">5.5 ≤ 12.6 ≤ 16.3</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 3.3 (0.2)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">86 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAIJJREFUSMft1lEOgCAIBmCukDeobhD3v1sxmMaWCVsPxvhf3JJvoQ9MgBhZOtk4a/syADvigYgJEiRIMBugYeYCtHwKWgdG0PYTvAO+WQfgEh+4fuIDUvk/UOpRraCWBQTyCrIDGU8JZgQ0hV1A7Y9A0UPiCVADAlQvXUDLDdgCMXICaCQphP/ExSMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$100,000 to $149,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 12.6 (4)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">2.7 ≤ 13 ≤ 19.9</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 6.4 (0.3)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">130 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAHRJREFUSMft1FEKgDAIBmCv0G6Q3mDd/26ZoDEqUIoK8X+T+W0+yAByZLpOQ85spQMsnKfBNgRGAHFLL/BDgLZQTkD2TIECGQBqvED7eoEC7wDZzwigQ98O5LIIkOoOaDq+G4wnBVKC8dd1gJOTrwG6AzmyAodOVpDmtvwyAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAwqJIiQgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMNnPmv4AAAAASUVORK5CYII="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$150,000 to $199,999
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 5.1 (2.9)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">0.4 ≤ 4.2 ≤ 12.5</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 4.1 (0.6)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">103 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAIhJREFUSMft1mEKgCAMBlCvYDdo3sDd/24tXYgKtYWB2D78I+yBIhs6t0b8lQ0Adn+TDiCiAQMGDEwDzimmA4jx3wBy5CCkTTQwO4DUDArABQTyZ0ABQjI6kNdIUI4gBKWgB/WPSAKqJhwP2tn2CNq58CHgESIE/E5ywPsJAV1FB2i9BSCOWyMHe18c+QRS3TMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">$200,000 and over
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 4.7 (3.9)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">0.1 ≤ 3.4 ≤ 18.9</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 4.9 (0.8)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">114 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAHhJREFUSMft1s0NgDAIBWBWsBtIN5D9d1MSajQhFfQkeS/h1Hzl0J9AVCN8ZF0iMdBFJA20C2eA1gYAAACQBm363Xhg2gkA4L9A30IKjHoDmjtPzIB48wTAF2AnHgdWZcDtEkZAv3Z6Arp7CowFHomCc9EAh0M1sgNASyDjfxQ4OAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMKiSIkIAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDDZz5r+AAAAAElFTkSuQmCC"></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Median_Income_Estimate
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 55443.2 (14495.4)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">29026 ≤ 55752 ≤ 98174</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 22344 (0.3)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">336 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAJVJREFUSMft1VEOgCAIBmCvYDcIbxD3v1tq6qhJQT3UjH898MC3HI5yboz4QyYA8N1wAHH5CIhnn3UA0YAKlAnLQSn/AuL26EBI3QbeAlO+MA2oXRVAZyVOQei8ZCxAlkAGyPANXII4Xh0I6bkPIEcBtpLshQyQoxkw8BC077IUtNVQgfQDKWC/lyyIZQFsFwdAHDdGVrX8NfRAX/yzAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAwqJIiQgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMNnPmv4AAAAASUVORK5CYII="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Median_Income_MOE
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 1137.5 (985.4)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">268 ≤ 820 ≤ 6080</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 839 (0.9)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">305 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAHVJREFUSMft1lEKgDAIBmCv4BFyN5j3v9uEiihm0+ohxv+zl8E+nC8i0RxhZrHwOAcoqvVPwP6fA/YaAAAAoAaG3xkEigAAAAC8BDaalhRQ1SfAr+MAuzhLow+c4fwJWBfABCj7yYNO3/egU2QI5JINSDg0Rxp2rvselbKKQAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMKiSIkIAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDDZz5r+AAAAAElFTkSuQmCC"></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Mean_Income_Estimate
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 72795.6 (20216.7)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">34878 ≤ 68376 ≤ 133111</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 30311 (0.3)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">337 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAIVJREFUSMft1gEKgCAMBVCvYDdou0G7/91SVBJdNSkyxj4ICnuIKEPndMQfWQBg9adhABEZmAvipcEQCMWbIhDPPwQwTA0Y+D+IT3sIYBrTQe5JcoCp+FvAdI5rQP0uBljQ/CTuQdP9DbwGoLoLEcBqF0WgNFMxYCqeAsgRg7KsziCL05Edj+gy0S7J5McAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDCokiJCAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTEyLTIxVDA1OjU0OjQwKzAwOjAw2c+a/gAAAABJRU5ErkJggg=="></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+    <tr>
+      <td align="left">Mean_Income_MOE
+[numeric]</td>
+      <td align="left" style="padding:8;vertical-align:middle"><table style="border-collapse:collapse;border:none;margin:0"><tbody><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">Mean (sd) : 1410 (1275.6)</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">min ≤ med ≤ max:</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">287 ≤ 986 ≤ 8076</td></tr><tr style="background-color:transparent"><td style="padding:0;margin:0;border:0" align="left">IQR (CV) : 965 (0.9)</td></tr></tbody></table></td>
+      <td align="left" style="vertical-align:middle">310 distinct values</td>
+      <td align="left" style="vertical-align:middle;padding:0;background-color:transparent;"><img style="border:none;background-color:transparent;padding:0;max-width:max-content;" src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAGAAAABGBAMAAADBQ4wgAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEX////9/v2mpqbw8PD///+xh0SBAAAAAnRSTlMAAHaTzTgAAAABYktHRACIBR1IAAAAB3RJTUUH5gwVBTYoFJzj9wAAAGBJREFUSMdjYBgeQAkEBIkBUA3KxsbGRqMaRjWMahjVQGMNoLJJkRQNQGw8qmFUw6iGUQ0jVAO+Bh1WDfiK5oHUgKPwx60BR5ihawAHECkalGEEnTQoYQKoBiWiAcPwAACJO/W0tcBtBwAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMi0xMi0yMVQwNTo1NDo0MCswMDowMKiSIkIAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMTItMjFUMDU6NTQ6NDArMDA6MDDZz5r+AAAAAElFTkSuQmCC"></td>
+      <td align="center">0
+(0.0%)</td>
+    </tr>
+  </tbody>
+</table>
+<p>Generated by <a href="https://github.com/dcomtois/summarytools">summarytools</a> 1.0.1 (<a href="https://www.r-project.org/">R</a> version 4.2.1)<br>2022-12-21</p>
+</div>
+</div>
+</div>
+<p><strong>Summary of tidy data and mutate variables (as needed):</strong></p>
+<p>After reading the data and renaming the columns, we have 383 rows and 16 columns in the dataframe. Out of the 383 rows, the last 31 rows are footnotes and are removed resulting in 352 rows and 16 columns. The first column “Year” has information on the Year and Race and Hispanic origin of householder. The race value in the first column is currently used as a separator for the different race groups in the data. Hence, I made a new column called “Race” and filled the column with the race value if available, else filled with the previous race value. We get a total of 12 distinct race groups. Following that, I removed the rows from the dataframe that had non-numerical values in the first column as these rows with the Race value were just used as a divider between race groups. This results in a dataframe of 340 rows and 17 columns. Now, we have separate columns for “Year” and “Race”. Next, I removed the footnote numbers next to the values in the “Year” and “Race” columns. I also removed the column “Total_Percent_Distribution” as the value is 100 for all observations and is not significant. If we add the percentage value for all 9 income levels in an observation it should add up to 100. Finally, I reordered the columns so that “Race” is the first column in the dataframe followed by “Year” and the remaining columns. I also made sure to check that the datatypes of the columns were correct. I noticed that the “character” columns “Household_Number_Thousands”, “Mean_Income_Estimate”, and “Mean_Income_MOE” had few instances of “N” value (indicating that the data may not be available). These columns are supposed to be “numeric”. I decided to drop the observations (3 in this case) with “N” value from the dataframe and changed the datatype to “numeric” for these columns.</p>
+<p>After cleaning the data, I end up with a dataframe of 337 observations and 16 columns/attributes. I did a sanity check to make sure that the columns “Household_Number_Thousands”, “Mean_Income_Estimate”, and “Mean_Income_MOE” have no non-numerical values, we have data for the period 1967 - 2019 and we have 12 race categories in total. Currently, I have not removed the observations with race value as “ALL RACES” as I am not sure whether they include the other race categories. I summarized the data using dfSummary() function and made sure that there are no duplicates or missing values in the data and the datatypes match.</p>
+</section>
+<section id="visualization-with-multiple-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-with-multiple-dimensions">Visualization with Multiple Dimensions</h2>
+<p>In Challenge 5, I plotted a multivariate visualization using line plot representing the Mean Income for the Years 1967 - 2019 grouped by Race categories. I chose line plot as it is an effective method of displaying relationship between two variables when one of the two variables represents time (year in this case). I am adding ggplot functionality geom_point() and geom_smooth() as it makes it easier to analyze the trends.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line plot representing the Mean Income for the years 1967 - 2019 grouped by Race.</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">y=</span>Mean_Income_Estimate, <span class="at">x =</span> Year, <span class="at">group =</span> Race, <span class="at">color =</span> Race)) <span class="sc">+</span> </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line() +</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Mean Income for the years 1967 - 2019 grouped by Race"</span>, </span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Mean Income"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="VinithaMaheswaran_Challenge7_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="960"></p>
+</div>
+</div>
+<p>Adding the geom_smooth() helps us to visualize the trends effectively. From the above visualization, we can observe that the mean income for “Asian” Race households is the highest. It is also evident that we have data for “Asian” Race households only from the year 1988. For the years 1967 - 1971, we have data only for the Races “ALL RACES”, “BLACK” and “WHITE”. “ALL RACES” is the only Race category for which we have data observations for all the years from 1967 - 2019. Hence, it would be difficult to make comparisons among different Race categories for the period 1967 - 2019.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Mutate the 'Race' variable to reduce number of Race categories.</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">case_when</span>(<span class="fu">str_detect</span>(Race, <span class="st">'ALL'</span>) <span class="sc">~</span> <span class="st">'ALL RACES'</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'WHITE'</span>) <span class="sc">~</span> <span class="st">'WHITE'</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'BLACK'</span>) <span class="sc">~</span> <span class="st">'BLACK'</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'HISPANIC'</span>) <span class="sc">~</span> <span class="st">'HISPANIC'</span>,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'ASIAN'</span>) <span class="sc">~</span> <span class="st">'ASIAN'</span>))</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(usa_data<span class="sc">$</span>Race)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ALL RACES     ASIAN     BLACK  HISPANIC     WHITE 
+       55        54        75        50       103 </code></pre>
+</div>
+</div>
+<p>The above visualization may be a little difficult to interpret and analyze as there are many Race categories. One solution was to group the 12 Race categories into 5 Race categories: ALL RACES, WHITE, BLACK, HISPANIC, ASIAN. This makes the visualization simplified as there are lesser Race categories. I plot the same line plot with the modified data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line plot representing the Mean Income for the years 1967 - 2019 grouped by Race.</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">y=</span>Mean_Income_Estimate, <span class="at">x =</span> Year, <span class="at">group =</span> Race, <span class="at">color =</span> Race)) <span class="sc">+</span> </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line() +</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Mean Income for the years 1967 - 2019 grouped by Race"</span>, </span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Mean Income"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="VinithaMaheswaran_Challenge7_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="960"></p>
+</div>
+</div>
+<p>From the above visualization, it is clear that “ASIAN” race households have the highest mean income followed by “WHITE” race households.</p>
+<p>I am plotting a multivariate bar graph representing the distribution of household numbers for years 1967 - 2019 using faceting. I am using bar plots as I want to visualize the distribution of categorical variables (Year and Household Numbers). Faceting enables us to view the distribution of household numbers for each Race category in individual subplots. This makes it easy for us to compare the distributions across Race categories.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar graph representing the distribution of household numbers for years 1967 - 2019.</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Household_Number_Thousands)) <span class="sc">+</span> </span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">fill=</span><span class="st">"#00BFC4"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Race) <span class="sc">+</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of household numbers for years 1967 - 2019"</span>, </span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Household Number in Thousands"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="VinithaMaheswaran_Challenge7_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="1920"></p>
+</div>
+</div>
+<p>From the above visualization, we can observe that the Household number in thousands is highest for the “WHITE” race. This is possible as the population of “WHITE” race in United States of America is higher. We can also observe that years 2013 and 2017 have the highest number of Household numbers for all 5 Race categories. Need to research more on the reason behind this.</p>
+<p>When I render and view the visualizations in the blog format I notice that the final visualization using faceting has tiny font and not visually appealing for readers (the axis labels do not seem to be clear). Maybe in future I should perform faceting for a smaller subset of data (for example years 2000 - 2019 rather than 1967 - 2019).</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb41" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 7 Solutions"</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Vinitha Maheswaran"</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Visualizing Multiple Dimensions"</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "12/03/2022"</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_7</span></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - hotel_bookings</span></span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - australian_marriage</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - air_bnb</span></span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - eggs</span></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - abc_poll</span></span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a><span class="co">  - faostat</span></span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="co">  - usa_households</span></span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a>Today's challenge is to:</span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a>1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a>2)  tidy data (as needed, including sanity checks)</span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a>3)  mutate variables as needed (including sanity checks)</span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a>4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded <span class="co">[</span><span class="ot">chart ink (Tufte)</span><span class="co">](https://www.edwardtufte.com/tufte/)</span>, but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.</span>
+<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Explain why you choose the specific graph type</span>
+<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a>5) If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features</span>
+<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">R Graph Gallery</span><span class="co">](https://r-graph-gallery.com/)</span> is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his <span class="co">[</span><span class="ot">fantastic books</span><span class="co">](https://www.edwardtufte.com/tufte/books_vdqi)</span> and <span class="co">[</span><span class="ot">courses on data visualizaton.</span><span class="co">](https://www.edwardtufte.com/tufte/courses)</span></span>
+<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a>(be sure to only include the category tags for the data you use!)</span>
+<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in data</span></span>
+<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a>Read in one (or more) of the following datasets, using the correct R package and command.</span>
+<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>eggs ⭐</span>
+<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>abc_poll ⭐⭐</span>
+<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>australian_marriage ⭐⭐</span>
+<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>hotel_bookings ⭐⭐⭐</span>
+<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>air_bnb  ⭐⭐⭐</span>
+<span id="cb41-59"><a href="#cb41-59" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>us_hh ⭐⭐⭐⭐</span>
+<span id="cb41-60"><a href="#cb41-60" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>faostat ⭐⭐⭐⭐⭐</span>
+<span id="cb41-61"><a href="#cb41-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-62"><a href="#cb41-62" aria-hidden="true" tabindex="-1"></a>For this challenge I will be working with the "USA Households<span class="sc">\*</span>.xlsx" data set.</span>
+<span id="cb41-63"><a href="#cb41-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-66"><a href="#cb41-66" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-67"><a href="#cb41-67" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb41-68"><a href="#cb41-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-69"><a href="#cb41-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Reading the USA Households\*.xlsx data set and storing in a data frame</span></span>
+<span id="cb41-70"><a href="#cb41-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-71"><a href="#cb41-71" aria-hidden="true" tabindex="-1"></a>column_names <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Year"</span>, <span class="st">"Household_Number_Thousands"</span>, <span class="st">"Total_Percent_Distribution"</span>, <span class="st">"Under $15,000"</span>, <span class="st">"$15,000 to $24,999"</span>, <span class="st">"$25,000 to $34,999"</span>, <span class="st">"35,000 to $49,999"</span>, <span class="st">"$50,000 to $74,999"</span>, <span class="st">"$75,000 to $99,999"</span>, <span class="st">"$100,000 to $149,999"</span>, <span class="st">"$150,000 to $199,999"</span>, <span class="st">"$200,000 and over"</span>, <span class="st">"Median_Income_Estimate"</span>, <span class="st">"Median_Income_MOE"</span>, <span class="st">"Mean_Income_Estimate"</span>, <span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb41-72"><a href="#cb41-72" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"_data/USA Households by Total Money Income, Race, and Hispanic Origin of Householder 1967 to 2019.xlsx"</span>, <span class="at">col_names =</span> column_names, <span class="at">skip =</span> <span class="dv">5</span>)</span>
+<span id="cb41-73"><a href="#cb41-73" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(usa_data)</span>
+<span id="cb41-74"><a href="#cb41-74" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-75"><a href="#cb41-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-76"><a href="#cb41-76" aria-hidden="true" tabindex="-1"></a>Since the “USA Households<span class="sc">\*</span>.xlsx” data set is in Excel format, I am using the 'readxl' package for reading the data. After reading, the data is stored in a dataframe “usa_data". The first three rows in the dataframe contains description about the data and the 4th and 5th row contains the column headings. I resolve this issue by skipping the first 5 rows while reading the data set and storing in a dataframe "usa_data" with the renamed column names.</span>
+<span id="cb41-77"><a href="#cb41-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-78"><a href="#cb41-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-79"><a href="#cb41-79" aria-hidden="true" tabindex="-1"></a><span class="fu">### Briefly describe the data</span></span>
+<span id="cb41-80"><a href="#cb41-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-81"><a href="#cb41-81" aria-hidden="true" tabindex="-1"></a>The USA household data contains information on the mean and median income grouped by Race and Hispanic Origin of householder for the period 1967 - 2019. The data is split into 12 different categories based on Races and we have the total number of households surveyed in a given year along with the total percentage distribution (100 for all observations), percentage distribution for various income levels, and the mean and median (estimated and margin of error) income. For some races, data is not available for all the years in the period 1967 - 2019.</span>
+<span id="cb41-82"><a href="#cb41-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-83"><a href="#cb41-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-84"><a href="#cb41-84" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidy Data and Mutate Variables (as needed)</span></span>
+<span id="cb41-85"><a href="#cb41-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-86"><a href="#cb41-86" aria-hidden="true" tabindex="-1"></a>Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here. Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?</span>
+<span id="cb41-87"><a href="#cb41-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-88"><a href="#cb41-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-89"><a href="#cb41-89" aria-hidden="true" tabindex="-1"></a>The data is not tidy and requires data cleaning. (Note: I renamed the column names while reading the data.) First, I removed the last 31 rows from the dataframe "usa_data" as they are just footnotes and not observations. </span>
+<span id="cb41-90"><a href="#cb41-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-93"><a href="#cb41-93" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-94"><a href="#cb41-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the last 31 rows as they are just footnotes and not observations</span></span>
+<span id="cb41-95"><a href="#cb41-95" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> <span class="fu">head</span>(usa_data,<span class="sc">-</span><span class="dv">31</span>)</span>
+<span id="cb41-96"><a href="#cb41-96" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(usa_data)</span>
+<span id="cb41-97"><a href="#cb41-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-98"><a href="#cb41-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-99"><a href="#cb41-99" aria-hidden="true" tabindex="-1"></a>Currently, the dataset does not have a separate column for "Race". The "Race" was mentioned in the "Year" column (the remaining columns were empty for such observations) and were inserted as separators for different race groups in the data. So, I created a new column for "Race" (muatated variable) and filled it with non-numerical values from "Year" column. I also filled the empty values in "Race" with the previous value in that column. Then, I removed the rows from the dataset which had Race value in the "Year" column.</span>
+<span id="cb41-100"><a href="#cb41-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-103"><a href="#cb41-103" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-104"><a href="#cb41-104" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating new column for Race and filling the empty values for Race with the previous value in that column</span></span>
+<span id="cb41-105"><a href="#cb41-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-106"><a href="#cb41-106" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-107"><a href="#cb41-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">case_when</span>(<span class="fu">str_detect</span>(Year,(<span class="st">"([A-Z])"</span>)) <span class="sc">~</span> Year))<span class="sc">%&gt;%</span></span>
+<span id="cb41-108"><a href="#cb41-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Race, <span class="at">.direction =</span> <span class="st">"down"</span>)</span>
+<span id="cb41-109"><a href="#cb41-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-110"><a href="#cb41-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the rows from usa_data which has non-numerical values in Year column (these rows have Race value in the Year column and were inserted as separators for different Race groups)</span></span>
+<span id="cb41-111"><a href="#cb41-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-112"><a href="#cb41-112" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-113"><a href="#cb41-113" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(Year,(<span class="st">"([A-Z])"</span>)))</span>
+<span id="cb41-114"><a href="#cb41-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-115"><a href="#cb41-115" aria-hidden="true" tabindex="-1"></a>usa_data</span>
+<span id="cb41-116"><a href="#cb41-116" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-117"><a href="#cb41-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-118"><a href="#cb41-118" aria-hidden="true" tabindex="-1"></a>Next, I removed the footnote number next to the year value and race value from the columns "Year" and "Race" respectively as they had no purpose in visualization.</span>
+<span id="cb41-119"><a href="#cb41-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-122"><a href="#cb41-122" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-123"><a href="#cb41-123" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the footnote number next to the year value in the "Year" column</span></span>
+<span id="cb41-124"><a href="#cb41-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-125"><a href="#cb41-125" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-126"><a href="#cb41-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">str_remove</span>(Year, <span class="st">" .*"</span>))</span>
+<span id="cb41-127"><a href="#cb41-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-128"><a href="#cb41-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Removing the footnote number next to the race value in the "Race" column</span></span>
+<span id="cb41-129"><a href="#cb41-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-130"><a href="#cb41-130" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-131"><a href="#cb41-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">str_remove</span>(Race, <span class="st">"[0-9]+"</span>))</span>
+<span id="cb41-132"><a href="#cb41-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-133"><a href="#cb41-133" aria-hidden="true" tabindex="-1"></a>usa_data</span>
+<span id="cb41-134"><a href="#cb41-134" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-135"><a href="#cb41-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-136"><a href="#cb41-136" aria-hidden="true" tabindex="-1"></a>Following that, I removed the "Total_Percent_Distribution" column form the dataset as the value was same (100) for all the observations and had no purpose in visualization.</span>
+<span id="cb41-137"><a href="#cb41-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-140"><a href="#cb41-140" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-141"><a href="#cb41-141" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the "Total_Percent_Distribution" column as that value is 100 for all observations</span></span>
+<span id="cb41-142"><a href="#cb41-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-143"><a href="#cb41-143" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-144"><a href="#cb41-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(<span class="dv">3</span>))</span>
+<span id="cb41-145"><a href="#cb41-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-146"><a href="#cb41-146" aria-hidden="true" tabindex="-1"></a>usa_data</span>
+<span id="cb41-147"><a href="#cb41-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-148"><a href="#cb41-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-149"><a href="#cb41-149" aria-hidden="true" tabindex="-1"></a>Finally, I reordered the columns in the dataframe in order to have "Race" as the first column followed by "Year" and the remaining columns.</span>
+<span id="cb41-150"><a href="#cb41-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-153"><a href="#cb41-153" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-154"><a href="#cb41-154" aria-hidden="true" tabindex="-1"></a><span class="co"># Reorder the columns in the usa_data dataframe so that "Race" is the first column followed by "Year"</span></span>
+<span id="cb41-155"><a href="#cb41-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-156"><a href="#cb41-156" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-157"><a href="#cb41-157" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(<span class="at">select=</span><span class="fu">c</span>(<span class="dv">16</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>))</span>
+<span id="cb41-158"><a href="#cb41-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-159"><a href="#cb41-159" aria-hidden="true" tabindex="-1"></a>usa_data</span>
+<span id="cb41-160"><a href="#cb41-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-161"><a href="#cb41-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-162"><a href="#cb41-162" aria-hidden="true" tabindex="-1"></a>I checked for missing/null data in the "usa_data" dataframe and found that there are no NA or NULL values.</span>
+<span id="cb41-163"><a href="#cb41-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-166"><a href="#cb41-166" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-167"><a href="#cb41-167" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing/null data in the hotel_data</span></span>
+<span id="cb41-168"><a href="#cb41-168" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">is.na</span>(usa_data))</span>
+<span id="cb41-169"><a href="#cb41-169" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">is.null</span>(usa_data))</span>
+<span id="cb41-170"><a href="#cb41-170" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-171"><a href="#cb41-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-172"><a href="#cb41-172" aria-hidden="true" tabindex="-1"></a>I found that there are few columns which have numerical values but datatype assigned as "character" Hence, I looked further into those columns.</span>
+<span id="cb41-173"><a href="#cb41-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-176"><a href="#cb41-176" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-177"><a href="#cb41-177" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(usa_data)</span>
+<span id="cb41-178"><a href="#cb41-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-179"><a href="#cb41-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-180"><a href="#cb41-180" aria-hidden="true" tabindex="-1"></a>The datatype "character" columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have numerical values. I applied the table() to these columns to see which value is non-numerical and whether they can be modified or removed. The columns had few instances of "N" value indicating that the data may not be available. I decided to drop the observations with "N" value from the dataframe and changed the datatype to "numeric" for these columns.</span>
+<span id="cb41-181"><a href="#cb41-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-184"><a href="#cb41-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-185"><a href="#cb41-185" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking whether the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have non-numerical values</span></span>
+<span id="cb41-186"><a href="#cb41-186" aria-hidden="true" tabindex="-1"></a>col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Household_Number_Thousands"</span>, <span class="st">"Mean_Income_Estimate"</span>,<span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb41-187"><a href="#cb41-187" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (c <span class="cf">in</span> col){</span>
+<span id="cb41-188"><a href="#cb41-188" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(c)</span>
+<span id="cb41-189"><a href="#cb41-189" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">table</span>(usa_data[,c]))</span>
+<span id="cb41-190"><a href="#cb41-190" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-191"><a href="#cb41-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-192"><a href="#cb41-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-195"><a href="#cb41-195" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-196"><a href="#cb41-196" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove rows from the dataset that have "N" value</span></span>
+<span id="cb41-197"><a href="#cb41-197" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-198"><a href="#cb41-198" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">across</span>(<span class="fu">everything</span>(),<span class="sc">~</span> . <span class="sc">!=</span><span class="st">"N"</span>))</span>
+<span id="cb41-199"><a href="#cb41-199" aria-hidden="true" tabindex="-1"></a>usa_data</span>
+<span id="cb41-200"><a href="#cb41-200" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-201"><a href="#cb41-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-204"><a href="#cb41-204" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-205"><a href="#cb41-205" aria-hidden="true" tabindex="-1"></a><span class="co"># Converting the datatype of "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" columns from character to numeric</span></span>
+<span id="cb41-206"><a href="#cb41-206" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-207"><a href="#cb41-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Household_Number_Thousands =</span> <span class="fu">as.numeric</span>(Household_Number_Thousands))<span class="sc">%&gt;%</span></span>
+<span id="cb41-208"><a href="#cb41-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Mean_Income_Estimate =</span> <span class="fu">as.numeric</span>(Mean_Income_Estimate))<span class="sc">%&gt;%</span></span>
+<span id="cb41-209"><a href="#cb41-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Mean_Income_MOE =</span> <span class="fu">as.numeric</span>(Mean_Income_MOE))</span>
+<span id="cb41-210"><a href="#cb41-210" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-211"><a href="#cb41-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-212"><a href="#cb41-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-213"><a href="#cb41-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-214"><a href="#cb41-214" aria-hidden="true" tabindex="-1"></a>Sanity Check: Make sure that the "N" values are removed from the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE".</span>
+<span id="cb41-215"><a href="#cb41-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-218"><a href="#cb41-218" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-219"><a href="#cb41-219" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity Check: Check that the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have no non-numerical values</span></span>
+<span id="cb41-220"><a href="#cb41-220" aria-hidden="true" tabindex="-1"></a>col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Household_Number_Thousands"</span>, <span class="st">"Mean_Income_Estimate"</span>,<span class="st">"Mean_Income_MOE"</span>)</span>
+<span id="cb41-221"><a href="#cb41-221" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (c <span class="cf">in</span> col){</span>
+<span id="cb41-222"><a href="#cb41-222" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(c)</span>
+<span id="cb41-223"><a href="#cb41-223" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">table</span>(usa_data[,c]))</span>
+<span id="cb41-224"><a href="#cb41-224" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-225"><a href="#cb41-225" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-226"><a href="#cb41-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-227"><a href="#cb41-227" aria-hidden="true" tabindex="-1"></a>Sanity Check: Make sure that the range of years is from 1967 - 2019, there are 12 Race groups, and there are no footnote numbers.</span>
+<span id="cb41-228"><a href="#cb41-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-231"><a href="#cb41-231" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-232"><a href="#cb41-232" aria-hidden="true" tabindex="-1"></a><span class="co"># Find number of distinct Year values</span></span>
+<span id="cb41-233"><a href="#cb41-233" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(usa_data<span class="sc">$</span>Year)</span>
+<span id="cb41-234"><a href="#cb41-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-235"><a href="#cb41-235" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity check: Check that the unique Year values range from 1967 - 2019 after data cleaning </span></span>
+<span id="cb41-236"><a href="#cb41-236" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(usa_data<span class="sc">$</span>Year)</span>
+<span id="cb41-237"><a href="#cb41-237" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-238"><a href="#cb41-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-239"><a href="#cb41-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-242"><a href="#cb41-242" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-243"><a href="#cb41-243" aria-hidden="true" tabindex="-1"></a><span class="co"># Find number of distinct Race values</span></span>
+<span id="cb41-244"><a href="#cb41-244" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(usa_data<span class="sc">$</span>Race)</span>
+<span id="cb41-245"><a href="#cb41-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-246"><a href="#cb41-246" aria-hidden="true" tabindex="-1"></a><span class="co"># Sanity check: Check that the unique Race values do not have any footnote numbers after data cleaning </span></span>
+<span id="cb41-247"><a href="#cb41-247" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(usa_data<span class="sc">$</span>Race)</span>
+<span id="cb41-248"><a href="#cb41-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-249"><a href="#cb41-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-252"><a href="#cb41-252" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-253"><a href="#cb41-253" aria-hidden="true" tabindex="-1"></a><span class="co">#Summary of usa_data</span></span>
+<span id="cb41-254"><a href="#cb41-254" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(summarytools)</span>
+<span id="cb41-255"><a href="#cb41-255" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(summarytools<span class="sc">::</span><span class="fu">dfSummary</span>(usa_data,</span>
+<span id="cb41-256"><a href="#cb41-256" aria-hidden="true" tabindex="-1"></a>                        <span class="at">varnumbers =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb41-257"><a href="#cb41-257" aria-hidden="true" tabindex="-1"></a>                        <span class="at">plain.ascii  =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb41-258"><a href="#cb41-258" aria-hidden="true" tabindex="-1"></a>                        <span class="at">style        =</span> <span class="st">"grid"</span>, </span>
+<span id="cb41-259"><a href="#cb41-259" aria-hidden="true" tabindex="-1"></a>                        <span class="at">graph.magnif =</span> <span class="fl">0.60</span>, </span>
+<span id="cb41-260"><a href="#cb41-260" aria-hidden="true" tabindex="-1"></a>                        <span class="at">valid.col    =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb41-261"><a href="#cb41-261" aria-hidden="true" tabindex="-1"></a>      <span class="at">method =</span> <span class="st">'render'</span>,</span>
+<span id="cb41-262"><a href="#cb41-262" aria-hidden="true" tabindex="-1"></a>      <span class="at">table.classes =</span> <span class="st">'table-condensed'</span>)</span>
+<span id="cb41-263"><a href="#cb41-263" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-264"><a href="#cb41-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-265"><a href="#cb41-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-266"><a href="#cb41-266" aria-hidden="true" tabindex="-1"></a>**Summary of tidy data and mutate variables (as needed):**</span>
+<span id="cb41-267"><a href="#cb41-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-268"><a href="#cb41-268" aria-hidden="true" tabindex="-1"></a>After reading the data and renaming the columns, we have 383 rows and 16 columns in the dataframe. Out of the 383 rows, the last 31 rows are footnotes and are removed resulting in 352 rows and 16 columns. The first column “Year” has information on the Year and Race and Hispanic origin of householder. The race value in the first column is currently used as a separator for the different race groups in the data. Hence, I made a new column called “Race” and filled the column with the race value if available, else filled with the previous race value. We get a total of 12 distinct race groups. Following that, I removed the rows from the dataframe that had non-numerical values in the first column as these rows with the Race value were just used as a divider between race groups. This results in a dataframe of 340 rows and 17 columns. Now, we have separate columns for “Year” and “Race”. Next, I removed the footnote numbers next to the values in the “Year” and “Race” columns. I also removed the column “Total_Percent_Distribution” as the value is 100 for all observations and is not significant. If we add the percentage value for all 9 income levels in an observation it should add up to 100. Finally, I reordered the columns so that “Race” is the first column in the dataframe followed by “Year” and the remaining columns. I also made sure to check that the datatypes of the columns were correct. I noticed that the "character" columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" had few instances of "N" value (indicating that the data may not be available). These columns are supposed to be "numeric". I decided to drop the observations (3 in this case) with "N" value from the dataframe and changed the datatype to "numeric" for these columns.</span>
+<span id="cb41-269"><a href="#cb41-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-270"><a href="#cb41-270" aria-hidden="true" tabindex="-1"></a>After cleaning the data, I end up with a dataframe of 337 observations and 16 columns/attributes. I did a sanity check to make sure that the columns "Household_Number_Thousands", "Mean_Income_Estimate", and "Mean_Income_MOE" have no non-numerical values, we have data for the period 1967 - 2019 and we have 12 race categories in total. Currently, I have not removed the observations with race value as "ALL RACES" as I am not sure whether they include the other race categories. I summarized the data using dfSummary() function and made sure that there are no duplicates or missing values in the data and the datatypes match.</span>
+<span id="cb41-271"><a href="#cb41-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-272"><a href="#cb41-272" aria-hidden="true" tabindex="-1"></a><span class="fu">## Visualization with Multiple Dimensions</span></span>
+<span id="cb41-273"><a href="#cb41-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-274"><a href="#cb41-274" aria-hidden="true" tabindex="-1"></a>In Challenge 5, I plotted a multivariate visualization using line plot representing the Mean Income for the Years 1967 - 2019 grouped by Race categories. I chose line plot as it is an effective method of displaying relationship between two variables when one of the two variables represents time (year in this case). I am adding ggplot functionality geom_point() and geom_smooth() as it makes it easier to analyze the trends.</span>
+<span id="cb41-275"><a href="#cb41-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-276"><a href="#cb41-276" aria-hidden="true" tabindex="-1"></a><span class="in">```{r fig.height = 5, fig.width = 10}</span></span>
+<span id="cb41-277"><a href="#cb41-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-278"><a href="#cb41-278" aria-hidden="true" tabindex="-1"></a><span class="co"># Line plot representing the Mean Income for the years 1967 - 2019 grouped by Race.</span></span>
+<span id="cb41-279"><a href="#cb41-279" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">y=</span>Mean_Income_Estimate, <span class="at">x =</span> Year, <span class="at">group =</span> Race, <span class="at">color =</span> Race)) <span class="sc">+</span> </span>
+<span id="cb41-280"><a href="#cb41-280" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line() +</span></span>
+<span id="cb41-281"><a href="#cb41-281" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb41-282"><a href="#cb41-282" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb41-283"><a href="#cb41-283" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Mean Income for the years 1967 - 2019 grouped by Race"</span>, </span>
+<span id="cb41-284"><a href="#cb41-284" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Mean Income"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb41-285"><a href="#cb41-285" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span>
+<span id="cb41-286"><a href="#cb41-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-287"><a href="#cb41-287" aria-hidden="true" tabindex="-1"></a>Adding the geom_smooth() helps us to visualize the trends effectively. From the above visualization, we can observe that the mean income for "Asian" Race households is the highest. It is also evident that we have data for "Asian" Race households only from the year 1988. For the years 1967 - 1971, we have data only for the Races "ALL RACES", "BLACK" and "WHITE". "ALL RACES" is the only Race category for which we have data observations for all the years from 1967 - 2019. Hence, it would be difficult to make comparisons among different Race categories for the period 1967 - 2019.</span>
+<span id="cb41-288"><a href="#cb41-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-291"><a href="#cb41-291" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-292"><a href="#cb41-292" aria-hidden="true" tabindex="-1"></a><span class="co"># Mutate the 'Race' variable to reduce number of Race categories.</span></span>
+<span id="cb41-293"><a href="#cb41-293" aria-hidden="true" tabindex="-1"></a>usa_data <span class="ot">&lt;-</span> usa_data<span class="sc">%&gt;%</span></span>
+<span id="cb41-294"><a href="#cb41-294" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Race =</span> <span class="fu">case_when</span>(<span class="fu">str_detect</span>(Race, <span class="st">'ALL'</span>) <span class="sc">~</span> <span class="st">'ALL RACES'</span>,</span>
+<span id="cb41-295"><a href="#cb41-295" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'WHITE'</span>) <span class="sc">~</span> <span class="st">'WHITE'</span>,</span>
+<span id="cb41-296"><a href="#cb41-296" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'BLACK'</span>) <span class="sc">~</span> <span class="st">'BLACK'</span>,</span>
+<span id="cb41-297"><a href="#cb41-297" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'HISPANIC'</span>) <span class="sc">~</span> <span class="st">'HISPANIC'</span>,</span>
+<span id="cb41-298"><a href="#cb41-298" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(Race, <span class="st">'ASIAN'</span>) <span class="sc">~</span> <span class="st">'ASIAN'</span>))</span>
+<span id="cb41-299"><a href="#cb41-299" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(usa_data<span class="sc">$</span>Race)</span>
+<span id="cb41-300"><a href="#cb41-300" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-301"><a href="#cb41-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-302"><a href="#cb41-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-303"><a href="#cb41-303" aria-hidden="true" tabindex="-1"></a>The above visualization may be a little difficult to interpret and analyze as there are many Race categories. One solution was to group the 12 Race categories into 5 Race categories: ALL RACES, WHITE, BLACK, HISPANIC, ASIAN. This makes the visualization simplified as there are lesser Race categories. I plot the same line plot with the modified data.</span>
+<span id="cb41-304"><a href="#cb41-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-305"><a href="#cb41-305" aria-hidden="true" tabindex="-1"></a><span class="in">```{r fig.height = 5, fig.width = 10}</span></span>
+<span id="cb41-306"><a href="#cb41-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-307"><a href="#cb41-307" aria-hidden="true" tabindex="-1"></a><span class="co"># Line plot representing the Mean Income for the years 1967 - 2019 grouped by Race.</span></span>
+<span id="cb41-308"><a href="#cb41-308" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">y=</span>Mean_Income_Estimate, <span class="at">x =</span> Year, <span class="at">group =</span> Race, <span class="at">color =</span> Race)) <span class="sc">+</span> </span>
+<span id="cb41-309"><a href="#cb41-309" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line() +</span></span>
+<span id="cb41-310"><a href="#cb41-310" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb41-311"><a href="#cb41-311" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb41-312"><a href="#cb41-312" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Mean Income for the years 1967 - 2019 grouped by Race"</span>, </span>
+<span id="cb41-313"><a href="#cb41-313" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Mean Income"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb41-314"><a href="#cb41-314" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span>
+<span id="cb41-315"><a href="#cb41-315" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-316"><a href="#cb41-316" aria-hidden="true" tabindex="-1"></a>From the above visualization, it is clear that "ASIAN" race households have the highest mean income followed by "WHITE" race households.</span>
+<span id="cb41-317"><a href="#cb41-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-318"><a href="#cb41-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-319"><a href="#cb41-319" aria-hidden="true" tabindex="-1"></a>I am plotting a multivariate bar graph representing the distribution of household numbers for years 1967 - 2019 using faceting. I am using bar plots as I want to visualize the distribution of categorical variables (Year and Household Numbers). Faceting enables us to view the distribution of household numbers for each Race category in individual subplots. This makes it easy for us to compare the distributions across Race categories.</span>
+<span id="cb41-320"><a href="#cb41-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-321"><a href="#cb41-321" aria-hidden="true" tabindex="-1"></a><span class="in">```{r fig.height = 15, fig.width = 20}</span></span>
+<span id="cb41-322"><a href="#cb41-322" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar graph representing the distribution of household numbers for years 1967 - 2019.</span></span>
+<span id="cb41-323"><a href="#cb41-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-324"><a href="#cb41-324" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb41-325"><a href="#cb41-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-326"><a href="#cb41-326" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(usa_data, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Household_Number_Thousands)) <span class="sc">+</span> </span>
+<span id="cb41-327"><a href="#cb41-327" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">fill=</span><span class="st">"#00BFC4"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb41-328"><a href="#cb41-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Race) <span class="sc">+</span></span>
+<span id="cb41-329"><a href="#cb41-329" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of household numbers for years 1967 - 2019"</span>, </span>
+<span id="cb41-330"><a href="#cb41-330" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Household Number in Thousands"</span>, <span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb41-331"><a href="#cb41-331" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">hjust=</span><span class="dv">1</span>))</span>
+<span id="cb41-332"><a href="#cb41-332" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-333"><a href="#cb41-333" aria-hidden="true" tabindex="-1"></a>From the above visualization, we can observe that the Household number in thousands is highest for the "WHITE" race. This is possible as the population of "WHITE" race in United States of America is higher. We can also observe that years 2013 and 2017 have the highest number of Household numbers for all 5 Race categories. Need to research more on the reason behind this.</span>
+<span id="cb41-334"><a href="#cb41-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-335"><a href="#cb41-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-336"><a href="#cb41-336" aria-hidden="true" tabindex="-1"></a>When I render and view the visualizations in the blog format I notice that the final visualization using faceting has tiny font and not visually appealing for readers (the axis labels do not seem to be clear). Maybe in future I should perform faceting for a smaller subset of data (for example years 2000 - 2019 rather than 1967 - 2019).</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

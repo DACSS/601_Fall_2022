@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dane Shelton">
+<meta name="dcterms.date" content="2022-10-18">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 2 - Exploratory Data Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+<link href="../site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+<script src="../site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 2 - Exploratory Data Analysis">
+<meta name="twitter:description" content="Florida Homelessness by County 2018-2020">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Homework 2 - Exploratory Data Analysis</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#homelessness-in-florida" id="toc-homelessness-in-florida" class="nav-link active" data-scroll-target="#homelessness-in-florida">Homelessness in Florida</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Homework 2 - Exploratory Data Analysis</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Florida Homelessness by County 2018-2020</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">homework_2</div>
+    <div class="quarto-category">shelton</div>
+    <div class="quarto-category">homelessness</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dane Shelton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 18, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="homelessness-in-florida" class="level2">
+<h2 class="anchored" data-anchor-id="homelessness-in-florida">Homelessness in Florida</h2>
+<p>Homelessness is a complex living situation with several qualifying conditions; at its most simple state, the U.S Dept. of Housing and Urban Development defines it as lacking a fixed, regular nighttime residence (not a shelter) or having a nighttime residence not designed for human accommodation<sup>1</sup>.</p>
+<p>On a single night in 2020, over 500,000<sup>2</sup> people experienced homelessness in the United States. Florida, with the third largest state population , had the fourth largest homeless population of 2020 with 27,487<sup>2</sup>.</p>
+<p>Florida counties represent a large age range and varying demographic profiles; the state is a hub to a variety of industries including tourism, defense, agriculture, and information technology. Investigating homelessness in Florida counties with robust data can lead to several conclusions about who is being impacted where, and how state policy is failing groups of a diverse population.</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Research Question</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Hypothesis</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Introduction to Data</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">Improvements</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-5" role="tab" aria-controls="tabset-1-5" aria-selected="false">Codebook</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-6-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-6" role="tab" aria-controls="tabset-1-6" aria-selected="false">References</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<p>Carole Zugazaga’s 2004 study of 54 single homeless men, 54 single homeless women, and 54 homeless women with children in the Central Florida area investigated stressful life events common among homeless people. The interviews revealed that women were more likely to have been sexually or physically assaulted, while men were more likely to have been incarcerated or abuse drugs/alcohol. Homeless women with children were more likely to be in foster care as a youth.</p>
+<p>Nearly a decade later,county-level data can be used to investigate the relationship between Zugazaga’s reported stressful life events (incarceration, drug arrests, poverty, forcible sex…)<sup>3</sup> and homelessness counts.</p>
+<div class="callout-note callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Research Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Do particular life stressors increase a population’s vulnerability to homelessness?</p>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<p>Homelessness is not a new issue in the United States, yet homeless policy targets elimination via criminalization rather than prevention. Despite state and federal governments being aware of the circumstances that increase vulnerability to homelessness for decades, I anticipate all of the variables to remain significant in a model relating stressors to Florida homelessness counts 2018-2020.</p>
+<div class="callout-note callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Research Hypothesis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>H<sub>0</sub>:</strong> All stressors are insignificant in predicting homelessness counts <strong>(</strong> B<sub>i</sub> = 0 for i=0,1,2,…n <strong>)</strong></p>
+<p><strong>H<sub>A</sub>:</strong> At least one stressor <strong>B<sub>i</sub></strong> is significant in predicting homelessness counts</p>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<p>The data <code>florida_1820.csv</code><sup>4</sup> describes population, homelessness counts, poverty counts and several other demographic indicators<sup>3</sup> at the county level for 2018-2020. All 67 Florida counties have observations for the 3 years giving us 201 observations of 15 variables. Each observation provides a count of each variables from a single county for a year within 2018-2020.</p>
+<p>The data were collected from the <a href="https://www.flhealthcharts.gov/charts/default.aspx">Florida Department of Health</a>. Variable names<sup>3</sup> were used as search indicators to produce counts for Florida counties. Unfortunately, we cannot accurately analyze the effect of COVID-19 as data is incomplete for the majority of counties in 2021.</p>
+<div class="callout-note callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Intro to Data
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="cell-output-display">
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["County"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Year"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Homeless (Count)"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Population"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Unemployment Rate"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Median Inc"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Incarceration (Rateper1000)"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["Poverty (Count)"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["Drug Arrests (Count)"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Relocated (Rate)"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["Sub Abuse Enrollment (Count)"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["Adult Pysch Beds (Count)"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["Severe Housing Problems (Rate)"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["Forcible Sex (Count)"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["Foster Care (Count)"],"name":[15],"type":["dbl"],"align":["right"]}],"data":[{"1":"Alachua","2":"2018","3":"641","4":"263753","5":"3.3","6":"49078","7":"3.3","8":"54072","9":"1173","10":"21.67534","11":"519","12":"91","13":"19.7","14":"322","15":"277"},{"1":"Alachua","2":"2019","3":"714","4":"266649","5":"3.1","6":"49689","7":"2.8","8":"53601","9":"1100","10":"21.24971","11":"445","12":"91","13":"NA","14":"315","15":"263"},{"1":"Alachua","2":"2020","3":"657","4":"270405","5":"5.4","6":"50089","7":"2.4","8":"52647","9":"631","10":"20.79662","11":"405","12":"91","13":"NA","14":"275","15":"323"},{"1":"Baker","2":"2018","3":"0","4":"27488","5":"3.4","6":"61769","7":"18.6","8":"3664","9":"204","10":"12.48794","11":"103","12":"0","13":"10.4","14":"14","15":"33"},{"1":"Baker","2":"2019","3":"0","4":"28089","5":"3.3","6":"63275","7":"17.1","8":"3017","9":"225","10":"11.75921","11":"65","12":"0","13":"NA","14":"27","15":"36"},{"1":"Baker","2":"2020","3":"0","4":"28588","5":"4.9","6":"62299","7":"17.5","8":"2731","9":"158","10":"10.60835","11":"39","12":"0","13":"NA","14":"16","15":"58"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    County               Year      Homeless (Count)   Population     
+ Length:201         Min.   :2018   Min.   :   0.0   Min.   :   8367  
+ Class :character   1st Qu.:2018   1st Qu.:  11.0   1st Qu.:  28089  
+ Mode  :character   Median :2019   Median : 151.0   Median : 130642  
+                    Mean   :2019   Mean   : 427.8   Mean   : 317746  
+                    3rd Qu.:2020   3rd Qu.: 563.0   3rd Qu.: 367471  
+                    Max.   :2020   Max.   :3516.0   Max.   :2864600  
+                                                                     
+ Unemployment Rate   Median Inc    Incarceration (Rateper1000) Poverty (Count) 
+ Min.   : 2.100    Min.   :34583   Min.   : 0.60               Min.   :   906  
+ 1st Qu.: 3.400    1st Qu.:41401   1st Qu.: 2.50               1st Qu.:  4901  
+ Median : 4.000    Median :50640   Median : 3.40               Median : 16210  
+ Mean   : 4.697    Mean   :51116   Mean   : 3.84               Mean   : 42922  
+ 3rd Qu.: 5.600    3rd Qu.:58093   3rd Qu.: 4.50               3rd Qu.: 46034  
+ Max.   :13.500    Max.   :83803   Max.   :18.60               Max.   :482656  
+                                                                               
+ Drug Arrests (Count) Relocated (Rate) Sub Abuse Enrollment (Count)
+ Min.   :   13        Min.   : 4.689   Min.   :   5.0              
+ 1st Qu.:  225        1st Qu.:11.244   1st Qu.:  76.0              
+ Median :  729        Median :12.700   Median : 250.0              
+ Mean   : 1558        Mean   :13.288   Mean   : 877.6              
+ 3rd Qu.: 1903        3rd Qu.:14.544   3rd Qu.:1030.0              
+ Max.   :13038        Max.   :22.553   Max.   :6272.0              
+                                                                   
+ Adult Pysch Beds (Count) Severe Housing Problems (Rate) Forcible Sex (Count)
+ Min.   :  0.00           Min.   : 9.6                   Min.   :   0.0      
+ 1st Qu.:  0.00           1st Qu.:13.3                   1st Qu.:  14.0      
+ Median :  0.00           Median :15.4                   Median :  45.0      
+ Mean   : 66.26           Mean   :15.8                   Mean   : 170.5      
+ 3rd Qu.: 84.00           3rd Qu.:17.3                   3rd Qu.: 225.0      
+ Max.   :778.00           Max.   :29.8                   Max.   :1408.0      
+                          NA's   :134                                        
+ Foster Care (Count)
+ Min.   :   3.0     
+ 1st Qu.:  33.0     
+ Median : 153.0     
+ Mean   : 326.1     
+ 3rd Qu.: 353.0     
+ Max.   :2289.0     
+                    </code></pre>
+</div>
+<div class="cell-output-display">
+
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["County"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Mean Population"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Mean Homeless"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Avg Homeless Rate"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Avg Median Income"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Mean Poverty"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Avg Poverty Rate"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"Miami-Dade","2":"2833087","3":"3487","4":"1.230695e-03","5":"51435","6":"454930","7":"0.16057763"},{"1":"Broward","2":"1925443","3":"2478","4":"1.286804e-03","5":"59267","6":"249869","7":"0.12977206"},{"1":"Palm Beach","2":"1456920","3":"1405","4":"9.645917e-04","5":"62752","6":"176150","7":"0.12090549"},{"1":"Hillsborough","2":"1448564","3":"1698","4":"1.172426e-03","5":"58529","6":"204095","7":"0.14089497"},{"1":"Orange","2":"1395458","3":"1495","4":"1.071094e-03","5":"58002","6":"197579","7":"0.14158717"},{"1":"Pinellas","2":"978993","3":"2412","4":"2.463755e-03","5":"53988","6":"116644","7":"0.11914688"},{"1":"Duval","2":"971693","3":"1543","4":"1.587607e-03","5":"55350","6":"135595","7":"0.13954476"},{"1":"Lee","2":"737532","3":"601","4":"8.144283e-04","5":"57377","6":"94189","7":"0.12770796"},{"1":"Polk","2":"692551","3":"560","4":"8.086051e-04","5":"50206","6":"106580","7":"0.15389440"},{"1":"Brevard","2":"593859","3":"788","4":"1.326915e-03","5":"56831","6":"68889","7":"0.11600291"},{"1":"Volusia","2":"539700","3":"735","4":"1.361867e-03","5":"49554","6":"74826","7":"0.13864422"},{"1":"Pasco","2":"528527","3":"1048","4":"1.982868e-03","5":"52225","6":"66130","7":"0.12512125"},{"1":"Seminole","2":"472273","3":"304","4":"6.436955e-04","5":"66942","6":"48468","7":"0.10262638"},{"1":"Sarasota","2":"425909","3":"612","4":"1.436145e-03","5":"61841","6":"37595","7":"0.08827088"},{"1":"Manatee","2":"389176","3":"517","4":"1.329305e-03","5":"58336","6":"44445","7":"0.11420378"},{"1":"Collier","2":"377216","3":"585","4":"1.549951e-03","5":"68515","6":"42258","7":"0.11202502"},{"1":"Osceola","2":"372412","3":"225","4":"6.032745e-04","5":"52627","6":"51635","7":"0.13865020"},{"1":"Marion","2":"360875","3":"523","4":"1.449255e-03","5":"45106","6":"55235","7":"0.15305854"},{"1":"Lake","2":"355240","3":"273","4":"7.694321e-04","5":"54063","6":"40429","7":"0.11380652"},{"1":"Escambia","2":"321524","3":"535","4":"1.664987e-03","5":"51075","6":"41366","7":"0.12865499"},{"1":"St. Lucie","2":"310145","3":"733","4":"2.364483e-03","5":"52311","6":"42809","7":"0.13802991"},{"1":"Leon","2":"295820","3":"872","4":"2.946615e-03","5":"52994","6":"55824","7":"0.18871069"},{"1":"Alachua","2":"266936","3":"671","4":"2.512466e-03","5":"49619","6":"53440","7":"0.20019805"},{"1":"St. Johns","2":"252469","3":"355","4":"1.407434e-03","5":"81126","6":"19667","7":"0.07789867"},{"1":"Clay","2":"216866","3":"70","4":"3.227795e-04","5":"65683","6":"21173","7":"0.09763003"},{"1":"Okaloosa","2":"201280","3":"355","4":"1.765371e-03","5":"63278","6":"21855","7":"0.10857861"},{"1":"Hernando","2":"189090","3":"161","4":"8.532077e-04","5":"48374","6":"26213","7":"0.13862510"},{"1":"Charlotte","2":"181034","3":"163","4":"9.003817e-04","5":"51149","6":"19392","7":"0.10711964"},{"1":"Santa Rosa","2":"179687","3":"20","4":"1.113049e-04","5":"68285","6":"16539","7":"0.09204356"},{"1":"Bay","2":"179298","3":"407","4":"2.268105e-03","5":"54209","6":"25236","7":"0.14074706"},{"1":"Martin","2":"158243","3":"307","4":"1.940058e-03","5":"61638","6":"15907","7":"0.10052072"},{"1":"Indian River","2":"155208","3":"473","4":"3.047517e-03","5":"55007","6":"17193","7":"0.11077154"},{"1":"Citrus","2":"147560","3":"201","4":"1.359899e-03","5":"43783","6":"22500","7":"0.15248035"},{"1":"Sumter","2":"129910","3":"27","4":"2.104015e-04","5":"57357","6":"9941","7":"0.07651945"},{"1":"Flagler","2":"111057","3":"88","4":"7.953897e-04","5":"55307","6":"12786","7":"0.11513041"},{"1":"Highlands","2":"103697","3":"113","4":"1.092924e-03","5":"40655","6":"18264","7":"0.17612475"},{"1":"Nassau","2":"85216","3":"88","4":"1.032666e-03","5":"69746","6":"8400","7":"0.09857265"},{"1":"Monroe","2":"75356","3":"637","4":"8.453246e-03","5":"69689","6":"8272","7":"0.10977719"},{"1":"Putnam","2":"73263","3":"98","4":"1.333097e-03","5":"37796","6":"16940","7":"0.23122176"},{"1":"Columbia","2":"70291","3":"327","4":"4.647325e-03","5":"45268","6":"10225","7":"0.14546601"},{"1":"Walton","2":"70269","3":"76","4":"1.076819e-03","5":"59756","6":"8710","7":"0.12394808"},{"1":"Jackson","2":"49395","3":"3","4":"6.748321e-05","5":"39876","6":"7775","7":"0.15740460"},{"1":"Gadsden","2":"47481","3":"7","4":"1.544467e-04","5":"41153","6":"9732","7":"0.20495774"},{"1":"Suwannee","2":"45544","3":"158","4":"3.461828e-03","5":"45602","6":"6575","7":"0.14436483"},{"1":"Okeechobee","2":"41675","3":"49","4":"1.167757e-03","5":"42741","6":"7765","7":"0.18632125"},{"1":"Levy","2":"41513","3":"27","4":"6.423742e-04","5":"37970","6":"8080","7":"0.19463939"},{"1":"Hendry","2":"40122","3":"45","4":"1.121589e-03","5":"39509","6":"10567","7":"0.26337390"},{"1":"DeSoto","2":"36015","3":"104","4":"2.887659e-03","5":"35618","6":"9474","7":"0.26306388"},{"1":"Wakulla","2":"32721","3":"1","4":"4.074897e-05","5":"63889","6":"2999","7":"0.09166480"},{"1":"Bradford","2":"28452","3":"12","4":"4.334786e-04","5":"45233","6":"4896","7":"0.17209101"},{"1":"Baker","2":"28055","3":"0","4":"0.000000e+00","5":"62448","6":"3137","7":"0.11182796"},{"1":"Hardee","2":"27439","3":"74","4":"2.696859e-03","5":"38814","6":"6356","7":"0.23165043"},{"1":"Washington","2":"25281","3":"4","4":"1.450384e-04","5":"37157","6":"5168","7":"0.20441180"},{"1":"Taylor","2":"22521","3":"7","4":"2.960156e-04","5":"38512","6":"3687","7":"0.16371144"},{"1":"Holmes","2":"20269","3":"1","4":"4.933724e-05","5":"38975","6":"4092","7":"0.20187153"},{"1":"Madison","2":"19402","3":"0","4":"0.000000e+00","5":"35929","6":"4665","7":"0.24041782"},{"1":"Gilchrist","2":"17762","3":"0","4":"0.000000e+00","5":"44459","6":"2642","7":"0.14874172"},{"1":"Dixie","2":"16662","3":"0","4":"0.000000e+00","5":"39913","6":"3031","7":"0.18188729"},{"1":"Gulf","2":"15819","3":"3","4":"1.685701e-04","5":"47548","6":"1695","7":"0.10716844"},{"1":"Union","2":"15815","3":"0","4":"0.000000e+00","5":"47060","6":"1888","7":"0.11938285"},{"1":"Calhoun","2":"15064","3":"1","4":"4.425660e-05","5":"38405","6":"1773","7":"0.11770043"},{"1":"Jefferson","2":"14799","3":"2","4":"1.351412e-04","5":"48165","6":"1918","7":"0.12960043"},{"1":"Hamilton","2":"14704","3":"30","4":"2.040307e-03","5":"37151","6":"3134","7":"0.21314411"},{"1":"Glades","2":"13174","3":"35","4":"2.631512e-03","5":"40188","6":"2110","7":"0.16019331"},{"1":"Franklin","2":"12202","3":"0","4":"0.000000e+00","5":"46104","6":"2037","7":"0.16691253"},{"1":"Liberty","2":"8907","3":"15","4":"1.684006e-03","5":"38166","6":"1165","7":"0.13075369"},{"1":"Lafayette","2":"8567","3":"18","4":"2.101086e-03","5":"47147","6":"1208","7":"0.14096728"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Expanding <strong>Intro to Data</strong> exposes summary statistics including mean, range, quantiles, and standard deviation for all 15 variables. The table below the summaries provides arranged figures for basic parameters of interest grouped by county.</p>
+<p>LATER: Plots, Isolate more variables of interest with grouping, group by year?</p>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<p>While the data is great illustration of homelessness in Florida by county, there are improvements that could be made to both data collection and the research question itself to further the study.</p>
+<p><strong>Data:</strong></p>
+<ul>
+<li><p>Unfortunately, <a href="https://www.flhealthcharts.gov/charts/default.aspx">FL Health Charts</a> did not provide demographic breakdown for the homeless population (Age, Sex, Race), which would drastically widen the scope of the analysis, leading to far more interesting conclusions.</p></li>
+<li><p>There is only have data for a three year period; this is too small of a range to make a strong statement about the impact of homeless policy on Florida counties or how the relevance of certain stressors has changed over time. For a more in depth study I would begin with a 10 year range.</p></li>
+</ul>
+<p><strong>Research Question:</strong></p>
+<ul>
+<li><p>Demographic breakdown of stressors’ impact (Age, Sex, Race)</p></li>
+<li><p>Extend the question to the entire country, providing a breakdown by state</p></li>
+<li><p>Compare to foreign countries to contrast governments’ approaches to homelessness and leading causes of homelessness around the world.</p></li>
+</ul>
+</div>
+<div id="tabset-1-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-5-tab">
+<p>LATER: Variable Definitions and Collection Methods here</p>
+</div>
+<div id="tabset-1-6" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-6-tab">
+<p>Later: Carol Zugazaga</p>
+</div>
+</div>
+</div>
+<section id="footnotes" class="level5">
+<h5 class="anchored" data-anchor-id="footnotes">Footnotes</h5>
+<p><sub>1.)&nbsp;<a href="https://www.law.cornell.edu/uscode/text/42/11302">Homeless&nbsp;Definition</a></sub></p>
+<p><sub>2.)&nbsp;<a href="https://www.usich.gov/tools-for-action/2020-point-in-time-count/">US&nbsp;Interagency&nbsp;Council&nbsp;on&nbsp;Homelessness</a></sub></p>
+<p><sub>3.)&nbsp;Explanation&nbsp;of&nbsp;variables&nbsp;and&nbsp;collection&nbsp;method&nbsp;in&nbsp;Codebook&nbsp;tab</sub></p>
+<p><sub>4.)&nbsp;This&nbsp;data&nbsp;was&nbsp;created&nbsp;from&nbsp;several&nbsp;.csv&nbsp;files.;&nbsp;it&nbsp;was&nbsp;cleaned&nbsp;and&nbsp;put&nbsp;in&nbsp;a&nbsp;tidy&nbsp;format&nbsp;in&nbsp;another&nbsp;script;&nbsp;manipulations&nbsp;were&nbsp;messy/&nbsp;inefficient&nbsp;(brute&nbsp;force)&nbsp;so&nbsp;I&nbsp;did&nbsp;not&nbsp;include&nbsp;the&nbsp;cleaning&nbsp;file.</sub></p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Homework 2 - Exploratory Data Analysis"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Florida Homelessness by County 2018-2020"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Dane Shelton"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="an">desription:</span><span class="co"> "Research Question, Hypothesis, and Exploratory Data Analysis"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "10/18/2022"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">    callout-appearance: "simple"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">    callout-icon: FALSE</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">    df-print: paged</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - homework_2</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">  - shelton</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">  - homelessness</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">FALSE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Homelessness in Florida</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>Homelessness is a complex living situation with several qualifying conditions; at its most simple state, the U.S Dept. of Housing and Urban Development defines it as lacking a fixed, regular nighttime residence (not a shelter) or having a nighttime residence not designed for human accommodation^1^.</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>On a single night in 2020, over 500,000^2^ people experienced homelessness in the United States. Florida, with the third largest state population , had the fourth largest homeless population of 2020 with 27,487^2^.</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>Florida counties represent a large age range and varying demographic profiles; the state is a hub to a variety of industries including tourism, defense, agriculture, and information technology. Investigating homelessness in Florida counties with robust data can lead to several conclusions about who is being impacted where, and how state policy is failing groups of a diverse population.</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>::: panel-tabset</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="fu">## Research Question</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>Carole Zugazaga's 2004 study of 54 single homeless men, 54 single homeless women, and 54 homeless women with children in the Central Florida area investigated stressful life events common among homeless people. The interviews revealed that women were more likely to have been sexually or physically assaulted, while men were more likely to have been incarcerated or abuse drugs/alcohol. Homeless women with children were more likely to be in foster care as a youth.</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>Nearly a decade later,county-level data can be used to investigate the relationship between Zugazaga's reported stressful life events (incarceration, drug arrests, poverty, forcible sex...)^3^ and homelessness counts.</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>::: callout-note</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Research Question</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>Do particular life stressors increase a population's vulnerability to homelessness?</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hypothesis</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>Homelessness is not a new issue in the United States, yet homeless policy targets elimination via criminalization rather than prevention. Despite state and federal governments being aware of the circumstances that increase vulnerability to homelessness for decades, I anticipate all of the variables to remain significant in a model relating stressors to Florida homelessness counts 2018-2020.</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>::: callout-note</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="fu">## Research Hypothesis</span></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>**H~0~:** All stressors are insignificant in predicting homelessness counts **(** B~i~ = 0 for i=0,1,2,...n **)**</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>**H~A~:** At least one stressor **B~i~** is significant in predicting homelessness counts</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction to Data</span></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: loading florida_1820</span></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: FALSE</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="co"># This data was cleaned and formatted to a tidy .csv in another .qmd file, the manipulations were messy and probably inefficient (brute force); can upload if needed</span></span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>florida_og <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">'_data/florida_1820.csv'</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>The data <span class="in">`florida_1820.csv`</span>^4^ describes population, homelessness counts, poverty counts and several other demographic indicators^3^ at the county level for 2018-2020. All 67 Florida counties have observations for the 3 years giving us 201 observations of 15 variables. Each observation provides a count of each variables from a single county for a year within 2018-2020.</span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>The data were collected from the <span class="co">[</span><span class="ot">Florida Department of Health</span><span class="co">](https://www.flhealthcharts.gov/charts/default.aspx)</span>. Variable names^3^ were used as search indicators to produce counts for Florida counties. Unfortunately, we cannot accurately analyze the effect of COVID-19 as data is incomplete for the majority of counties in 2021.</span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><span class="fu">## Intro to Data</span></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: EDA</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="co">#| output: TRUE</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(florida_og)</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(florida_og)</span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>florida_county <span class="ot">&lt;-</span> florida_og <span class="sc">%&gt;%</span></span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">group_by</span>(County)</span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>                        </span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>florida_county <span class="sc">%&gt;%</span> </span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">'Mean Population'</span> <span class="ot">=</span> <span class="fu">mean</span>(Population), </span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Mean Homeless'</span> <span class="ot">=</span> <span class="fu">mean</span>(<span class="st">`</span><span class="at">Homeless (Count)</span><span class="st">`</span>),</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Avg Homeless Rate'</span> <span class="ot">=</span> <span class="fu">mean</span>(<span class="st">`</span><span class="at">Homeless (Count)</span><span class="st">`</span>)<span class="sc">/</span><span class="fu">mean</span>(Population),</span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Avg Median Income'</span><span class="ot">=</span> <span class="fu">mean</span>(<span class="st">`</span><span class="at">Median Inc</span><span class="st">`</span>), </span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Mean Poverty'</span> <span class="ot">=</span> <span class="fu">mean</span>(<span class="st">`</span><span class="at">Poverty (Count)</span><span class="st">`</span>), </span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>            <span class="st">'Avg Poverty Rate'</span> <span class="ot">=</span> <span class="fu">mean</span>(<span class="st">`</span><span class="at">Poverty (Count)</span><span class="st">`</span>)<span class="sc">/</span><span class="fu">mean</span>(Population)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>                <span class="fu">arrange</span>( <span class="fu">desc</span>(<span class="st">`</span><span class="at">Mean Population</span><span class="st">`</span>), <span class="fu">desc</span>(<span class="st">`</span><span class="at">Mean Homeless</span><span class="st">`</span>), <span class="fu">desc</span>(<span class="st">`</span><span class="at">Avg Median Income</span><span class="st">`</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">5</span><span class="sc">:</span><span class="dv">6</span>), round, <span class="dv">0</span>))</span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>Expanding **Intro to Data** exposes summary statistics including mean, range, quantiles, and standard deviation for all 15 variables. The table below the summaries provides arranged figures for basic parameters of interest grouped by county.</span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>LATER: Plots, Isolate more variables of interest with grouping, group by year?</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Improvements</span></span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>While the data is great illustration of homelessness in Florida by county, there are improvements that could be made to both data collection and the research question itself to further the study.</span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>**Data:**</span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Unfortunately, <span class="co">[</span><span class="ot">FL Health Charts</span><span class="co">](https://www.flhealthcharts.gov/charts/default.aspx)</span> did not provide demographic breakdown for the homeless population (Age, Sex, Race), which would drastically widen the scope of the analysis, leading to far more interesting conclusions.</span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>There is only have data for a three year period; this is too small of a range to make a strong statement about the impact of homeless policy on Florida counties or how the relevance of certain stressors has changed over time. For a more in depth study I would begin with a 10 year range.</span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>**Research Question:**</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Demographic breakdown of stressors' impact (Age, Sex, Race)</span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Extend the question to the entire country, providing a breakdown by state</span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Compare to foreign countries to contrast governments' approaches to homelessness and leading causes of homelessness around the world.</span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a><span class="fu">## Codebook</span></span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a>LATER: Variable Definitions and Collection Methods here</span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## References</span></span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a>Later: Carol Zugazaga</span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Footnotes</span></span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a>~1.)&nbsp;<span class="co">[</span><span class="ot">Homeless&nbsp;Definition</span><span class="co">](https://www.law.cornell.edu/uscode/text/42/11302)</span>~</span>
+<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a>~2.)&nbsp;<span class="co">[</span><span class="ot">US&nbsp;Interagency&nbsp;Council&nbsp;on&nbsp;Homelessness</span><span class="co">](https://www.usich.gov/tools-for-action/2020-point-in-time-count/)</span>~</span>
+<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a>~3.)&nbsp;Explanation&nbsp;of&nbsp;variables&nbsp;and&nbsp;collection&nbsp;method&nbsp;in&nbsp;Codebook&nbsp;tab~</span>
+<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a>~4.)&nbsp;This&nbsp;data&nbsp;was\ created\ from\ several\ .csv\ files.;\ it\ was\ cleaned&nbsp;and&nbsp;put&nbsp;in&nbsp;a&nbsp;tidy&nbsp;format&nbsp;in&nbsp;another&nbsp;script;&nbsp;manipulations&nbsp;were&nbsp;messy/&nbsp;inefficient&nbsp;(brute&nbsp;force)&nbsp;so&nbsp;I&nbsp;did&nbsp;not&nbsp;include&nbsp;the&nbsp;cleaning&nbsp;file.~</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

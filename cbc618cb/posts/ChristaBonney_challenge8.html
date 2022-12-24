@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christa Bonney">
+<meta name="dcterms.date" content="2022-12-03">
+<meta name="description" content="Joining Data: Debt and Fed_rate Datasets">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 8: Joining Data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 8: Joining Data">
+<meta name="twitter:description" content="Joining Data: Debt and Fed_rate Datasets">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 8: Joining Data</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#join-data" id="toc-join-data" class="nav-link" data-scroll-target="#join-data">Join Data</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 8: Joining Data</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_8</div>
+    <div class="quarto-category">railroads</div>
+    <div class="quarto-category">snl</div>
+    <div class="quarto-category">faostat</div>
+    <div class="quarto-category">debt</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Joining Data: Debt and Fed_rate Datasets
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christa Bonney </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 3, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to:</p>
+<ol type="1">
+<li>read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)</li>
+<li>tidy data (as needed, including sanity checks)</li>
+<li>mutate variables as needed (including sanity checks)</li>
+<li>join two or more data sets and analyze some aspect of the joined data</li>
+</ol>
+<p>(be sure to only include the category tags for the data you use!)</p>
+<p>###Read In First Data Set and Summarize</p>
+<p>####Read In Fed Rate Dataset</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read in 2 data sets</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/FedFundsRate.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in file(file, "rt"): cannot open the connection</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#confirm dataset read in properly</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(fed_rate): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<p>####Summary Fed Rate Dataset</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get dimensions</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(fed_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(fed_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get year range for data collection</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(fed_rate, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate, Year): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<p>The Federal Funds Rate dataset is comprised of 10 variables with 904 rows. The variables consist of:</p>
+<p>“Year”: This is a qualitative nominal variable, with observations ranging from the year 1955 to 2017</p>
+<p>“Month”: This is a qualitative nominal variable, with months corresponding to numerical calendar order (January = 1, February = 2, March = 3…)</p>
+<p>“Day”: This is a qualitative nominal variable, with observations corresponding to the day of the month for that particular year that the data of interest was collected/observed</p>
+<p>“Federal.Funds.Target.Rate”: This is a continuous quantitative variable, and is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks.</p>
+<p>“Federal.Funds.Upper.Target”: This is a continuous quantitative variable, and is the calculated upper target percentage of the federal funds rate target range.</p>
+<p>“Federal.Funds.Lower.Target”: This is a continuous quantitative variable, and is the calculated lower target percentage of the federal funds rate target range.</p>
+<p>“Effective.Federal.Funds.Rate”:</p>
+<p>“Real.GDP..Percent.Change”: this is a continuous variable, it is the percentage that the real gross domestic product (GDP) (an inflation-adjusted version of GDP calculated by the Bureau of Economic Analysis) changed relative to the real gross domestic product from the previous year(3)</p>
+<p>“Unemployment.Rate”: this is a continuous variable, it is the national unemployment rate</p>
+<p>“Inflation.Rate”: this is a continuous variable, it is the rate of economic inflation</p>
+<p>The federal funds target rate is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks. These depository institutes have reserve balances (reserve requirement) with the Federal Reserve bank, and these accounts hold a certain percentage of their deposits to be utilized for lending to other banks as excess capital (excess over their required reverse). Commercial banks borrow and lend their excess reserves to each other overnight, generally based upon this target rate, though interest rates may vary as negotiated. A bank (borrower) whose account falls below their required reserve amount may borrow from another bank (lender) that exceeds their required reserves. The target rate is regularly set eight times each year, and changes in its percentage are determined by prevailing economic conditions. This measure is meant to promote economic growth.(1,2)</p>
+<p>The economy is influenced by the federal funds target rate, too-low rates can influence towards excessive economic growth and inflation, and too-high rates can slow inflation and return growth to more sustainable levels. So while the federal funds rate is determined by the FOMC, the effective federal funds rate is the weighted average of all rates charged by the banks for lending to other banks across the country. These two rates do not strictly mirror each other, and the Federal Reserve is able to buy or sell US Treasury securities (among other means) to adjust any significant discrepancies between the federal funds target rate and the effective federal funds rate.(1,2)</p>
+<p>####Tidy and Wrangle Fed Rate Dataset</p>
+<p>As the data set that will be joined with this only contains data from 2003 onwards, this dataset will be pruned of any data preceding the year of 2003. This should streamline the dataset for joining and analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#subset to remove month and day columns, subset fed funds upper and lower target variables as they are only NA values for 2003-2017</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">subset</span>(fed_rate, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(Month, Day))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(fed_rate, select = -c(Month, Day)): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">subset</span>(fed_rate, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(Federal.Funds.Upper.Target, Federal.Funds.Lower.Target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(fed_rate, select = -c(Federal.Funds.Upper.Target, Federal.Funds.Lower.Target)): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(fed_rate): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#want to compare in year range for 2003 to 2017</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#filter all data for values within that range of time</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>fed_rate_2003 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2003"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2003", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2004 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2004"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2004", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2005 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2005"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2005", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2006 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2006"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2006", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2007 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2007"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2007", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2008 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2008"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2008", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2009 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2009"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2009", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2010 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2010"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2010", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2011 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2011"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2011", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2012 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2012"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2012", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2013 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2013"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2013", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2014 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2014"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2014", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2015 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2015"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2015", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2016 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2016"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2016", Year)): object 'fed_rate' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>fed_rate_2017 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2017"</span>, Year))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(fed_rate, grepl("2017", Year)): object 'fed_rate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate_2003)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(fed_rate_2003): object 'fed_rate_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get annual averages for each year, each column</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>fed_avgs_2003 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2003, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2003, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2003' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2004 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2004, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2004, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2004' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2005 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2005, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2005, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2005' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2006 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2006, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2006, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2006' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2007 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2007, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2007, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2007' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2008 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2008, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2008, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2008' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2009 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2009, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2009, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2009' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2010 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2010, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2010, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2010' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2011 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2011, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2011, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2011' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2012 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2012, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2012, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2012' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2013 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2013, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2013, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2013' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2014 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2014, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2014, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2014' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2015 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2015, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2015, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2015' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2016 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2016, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2016, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2016' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>fed_avgs_2017 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2017, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(fed_rate_2017, Federal.Funds.Target.Rate:Inflation.Rate): object 'fed_rate_2017' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_avgs_2003)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(fed_avgs_2003): object 'fed_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co">#vertically merge fed_avgs_2003:17 data sets with rbind()</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>fed_rate_avgs <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fed_avgs_2003, fed_avgs_2004, fed_avgs_2005, fed_avgs_2006, fed_avgs_2007, fed_avgs_2008, fed_avgs_2009, fed_avgs_2010, fed_avgs_2011, fed_avgs_2012, fed_avgs_2013, fed_avgs_2014, fed_avgs_2015, fed_avgs_2016, fed_avgs_2017)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rbind(fed_avgs_2003, fed_avgs_2004, fed_avgs_2005, fed_avgs_2006, : object 'fed_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate_avgs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(fed_rate_avgs): object 'fed_rate_avgs' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="co">#make tibble of years 2003-2017</span></span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">as_tibble_col</span>(<span class="fu">c</span>(<span class="st">'2003'</span>, <span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2011'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>, <span class="st">'2014'</span>, <span class="st">'2015'</span>, <span class="st">'2016'</span>, <span class="st">'2017'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'value' column as 'Year'</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">rename</span>(Year, <span class="st">"Year"</span> <span class="ot">=</span> <span class="st">'value'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check rename with print</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15 × 1
+   Year 
+   &lt;chr&gt;
+ 1 2003 
+ 2 2004 
+ 3 2005 
+ 4 2006 
+ 5 2007 
+ 6 2008 
+ 7 2009 
+ 8 2010 
+ 9 2011 
+10 2012 
+11 2013 
+12 2014 
+13 2015 
+14 2016 
+15 2017 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#join new year tibble column to avg_debt to match years</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>annual_avg_fedrate <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Year, fed_rate_avgs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in data.frame(..., check.names = FALSE): object 'fed_rate_avgs' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avg_fedrate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(annual_avg_fedrate): object 'annual_avg_fedrate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>fed_avgs_2003</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'fed_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>fed_avgs_2010</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'fed_avgs_2010' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>fed_avgs_2017</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'fed_avgs_2017' not found</code></pre>
+</div>
+</div>
+<p>This data set has been determined to be fully prepared for binding with the Debt data set.</p>
+<p>###Read In Second Dataset and Summarize</p>
+<p>####Read In Debt Dataset</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>debt <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/debt_in_trillions.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in read_excel("~/GIT/601_Fall_2022/posts/_data/debt_in_trillions.xlsx"): could not find function "read_excel"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co">#print debt dataset to confirm successful import</span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(debt): object 'debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get debt dataset dimension</span></span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names</span></span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="co">#table of 'year and quater' column to get range of years data was collected</span></span>
+<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(debt, <span class="st">'Year and Quarter'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(debt, "Year and Quarter"): object 'debt' not found</code></pre>
+</div>
+</div>
+<p>The debt_in_trillions dataset is composed of 8 variables (columns) and 74 rows. The variables consist of:</p>
+<p>“Year and Quarter”: this is a nominal qualitative variable of Years spanning from 2003 to 2021, with each year further split into quarters</p>
+<p>“Mortgage”: This is a continuous quantitative variable, measured in of trillions of dollars, likely for home mortgage debt</p>
+<p>“HE Revolving”: This is a continuous quantitative variable, measured in of trillions of dollars, likely for revolving loan debt</p>
+<p>“Auto Loan”: This is a continuous quantitative variable, measured in of trillions of dollars, likely for automotive debt</p>
+<p>“Credit Card”: This is a continuous quantitative variable, measured in of trillions of dollars, likely for credit card debt</p>
+<p>“Student Loan”: This is a continuous quantitative variable, measured in of trillions of dollars, likely for student loan debt</p>
+<p>“Other”: This is a continuous quantitative variable, measured in of trillions of dollars, likely as a catch-all category to account for miscellaneous sources of debts that are still somewhat common, if less so than the other types of loan debts</p>
+<p>“Total”: This is a continuous quantitative variable, measured in of trillions of dollars, quantifying the total accrued debt across that particular year-quarter</p>
+<p>For this dataset it may be surmised that this it is a catalog of commonly accrued debts, measured each annual quarter for a series of years, by citizens in a nation that has a dollar-based currency system. This does narrow down the potential countries, though it may be the United States or another nation that does provide reduced or no-cost higher education, due to the presence and amount of student loan debt accrued quarterly.</p>
+<p>###Tidying Data of Debt Dataset</p>
+<p>The fed_rate dataset does not have information past the year 2017, so data will be removed from this data set (past the year of 2017) to streamline it for joining with the fed_rate data set and further analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>debt2 <span class="ot">&lt;-</span> <span class="fu">rename</span>(debt, <span class="st">"Year_and_Quarter"</span> <span class="ot">=</span> <span class="st">'Year and Quarter'</span>, <span class="st">"HE_Revolving"</span> <span class="ot">=</span> <span class="st">'HE Revolving'</span>, <span class="st">"Auto_Loan"</span> <span class="ot">=</span> <span class="st">'Auto Loan'</span>, <span class="st">"Credit_Card"</span> <span class="ot">=</span> <span class="st">'Credit Card'</span>, <span class="st">"Student_Loan"</span> <span class="ot">=</span> <span class="st">'Student Loan'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rename(debt, Year_and_Quarter = "Year and Quarter", HE_Revolving = "HE Revolving", : object 'debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a><span class="co">#average data per quarter into annual averages, can filter by "03:"... to isolate quarterly values by year</span></span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Do this for one column, then can copy and edit code for other columns (only do desired columns want to work with to complete the challenge)</span></span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a><span class="co">#for 'part-whole' graph - could get total of all debts, and compare one column of debt against total debt ('part' of the 'whole' debt) - possibly with color-fill for 1 variable out of all in 1 graph - maybe histogram</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter with grepl to get quartly values for each year</span></span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>values_2003 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"03:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("03:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>values_2004 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"04:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("04:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>values_2005 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"05:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("05:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>values_2006 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"06:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("06:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a>values_2007 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"07:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("07:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>values_2008 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"08:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("08:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>values_2009 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"09:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("09:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>values_2010 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"10:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("10:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>values_2011 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"11:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("11:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>values_2012 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"12:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("12:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb133"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>values_2013 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"13:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("13:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb135"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>values_2014 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"14:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("14:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>values_2015 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"15:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("15:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a>values_2016 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"16:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("16:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb141"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" aria-hidden="true" tabindex="-1"></a>values_2017 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"17:Q"</span>, Year_and_Quarter))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in dplyr::filter(debt2, grepl("17:Q", Year_and_Quarter)): object 'debt2' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb143"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get means of quarterly values for all years</span></span>
+<span id="cb143-2"><a href="#cb143-2" aria-hidden="true" tabindex="-1"></a>annual_avgs_2003 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2003, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2003, Mortgage:Total): object 'values_2003' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2004 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2004, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2004, Mortgage:Total): object 'values_2004' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2005 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2005, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2005, Mortgage:Total): object 'values_2005' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2006 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2006, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2006, Mortgage:Total): object 'values_2006' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2007 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2007, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2007, Mortgage:Total): object 'values_2007' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2008 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2008, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2008, Mortgage:Total): object 'values_2008' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb155"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2009 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2009, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2009, Mortgage:Total): object 'values_2009' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2010 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2010, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2010, Mortgage:Total): object 'values_2010' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb159"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2011 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2011, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2011, Mortgage:Total): object 'values_2011' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2012 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2012, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2012, Mortgage:Total): object 'values_2012' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2013 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2013, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2013, Mortgage:Total): object 'values_2013' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb165"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb165-1"><a href="#cb165-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2014 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2014, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2014, Mortgage:Total): object 'values_2014' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2015 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2015, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2015, Mortgage:Total): object 'values_2015' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb169"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2016 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2016, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2016, Mortgage:Total): object 'values_2016' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb171"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" aria-hidden="true" tabindex="-1"></a>annual_avgs_2017 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2017, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(values_2017, Mortgage:Total): object 'values_2017' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb173-2"><a href="#cb173-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avgs_2003)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(annual_avgs_2003): object 'annual_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb175"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" aria-hidden="true" tabindex="-1"></a><span class="co">#vertically merge annual_avgs_2003:21 data sets with rbind()</span></span>
+<span id="cb175-2"><a href="#cb175-2" aria-hidden="true" tabindex="-1"></a>avg_debt <span class="ot">&lt;-</span> <span class="fu">rbind</span>(annual_avgs_2003, annual_avgs_2004, annual_avgs_2005, annual_avgs_2006, annual_avgs_2007, annual_avgs_2009, annual_avgs_2010, annual_avgs_2011, annual_avgs_2012, annual_avgs_2013, annual_avgs_2014, annual_avgs_2015, annual_avgs_2016, annual_avgs_2017)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rbind(annual_avgs_2003, annual_avgs_2004, annual_avgs_2005, annual_avgs_2006, : object 'annual_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work with print</span></span>
+<span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(avg_debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(avg_debt): object 'avg_debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="co">#make tibble of years 2003-2017</span></span>
+<span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">as_tibble_col</span>(<span class="fu">c</span>(<span class="st">'2003'</span>, <span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>, <span class="st">'2014'</span>, <span class="st">'2015'</span>, <span class="st">'2016'</span>, <span class="st">'2017'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb180"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb180-1"><a href="#cb180-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'value' column as 'Year'</span></span>
+<span id="cb180-2"><a href="#cb180-2" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">rename</span>(Year, <span class="st">"Year"</span> <span class="ot">=</span> <span class="st">'value'</span>)</span>
+<span id="cb180-3"><a href="#cb180-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-4"><a href="#cb180-4" aria-hidden="true" tabindex="-1"></a><span class="co">#check rename with print</span></span>
+<span id="cb180-5"><a href="#cb180-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14 × 1
+   Year 
+   &lt;chr&gt;
+ 1 2003 
+ 2 2004 
+ 3 2005 
+ 4 2006 
+ 5 2007 
+ 6 2008 
+ 7 2009 
+ 8 2010 
+ 9 2012 
+10 2013 
+11 2014 
+12 2015 
+13 2016 
+14 2017 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb182"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" aria-hidden="true" tabindex="-1"></a><span class="co">#join new year tibble column to avg_debt to match years</span></span>
+<span id="cb182-2"><a href="#cb182-2" aria-hidden="true" tabindex="-1"></a>annual_avg_debt <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Year, avg_debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in data.frame(..., check.names = FALSE): object 'avg_debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb184"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb184-2"><a href="#cb184-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avg_debt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(annual_avg_debt): object 'annual_avg_debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb186"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb186-1"><a href="#cb186-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb186-2"><a href="#cb186-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb186-3"><a href="#cb186-3" aria-hidden="true" tabindex="-1"></a>annual_avgs_2003</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'annual_avgs_2003' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb188"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb188-1"><a href="#cb188-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb188-2"><a href="#cb188-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb188-3"><a href="#cb188-3" aria-hidden="true" tabindex="-1"></a>annual_avgs_2010</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'annual_avgs_2010' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb190"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb190-1"><a href="#cb190-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb190-2"><a href="#cb190-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb190-3"><a href="#cb190-3" aria-hidden="true" tabindex="-1"></a>annual_avgs_2017</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'annual_avgs_2017' not found</code></pre>
+</div>
+</div>
+<p>It has been determined that this data set is now prepared to be joined with the Federal Funds Rate data set.</p>
+<p>###Joining Datasets</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb192"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb192-1"><a href="#cb192-1" aria-hidden="true" tabindex="-1"></a><span class="co">#left join annual average fed rate and debt data sets</span></span>
+<span id="cb192-2"><a href="#cb192-2" aria-hidden="true" tabindex="-1"></a>debt_and_fedrate <span class="ot">&lt;-</span> <span class="fu">left_join</span>(annual_avg_debt, annual_avg_fedrate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in left_join(annual_avg_debt, annual_avg_fedrate): object 'annual_avg_debt' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb194"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb194-1"><a href="#cb194-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb194-2"><a href="#cb194-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt_and_fedrate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(debt_and_fedrate): object 'debt_and_fedrate' not found</code></pre>
+</div>
+</div>
+<p>The joining of the two datasets appears to have been successful.</p>
+<p>###Analyzing Joined Dataset</p>
+<p>For some basic analysis I will generate a few graphs to compare some of the variables of the newly generated debt_and_fedrate dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb196"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb196-1"><a href="#cb196-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'total' variable to 'total debt' for clarity in analysis</span></span>
+<span id="cb196-2"><a href="#cb196-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb196-3"><a href="#cb196-3" aria-hidden="true" tabindex="-1"></a>debt_and_fedrate <span class="ot">&lt;-</span> <span class="fu">rename</span>(debt_and_fedrate, <span class="st">"Total_Debt"</span> <span class="ot">=</span> <span class="st">'Total'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rename(debt_and_fedrate, Total_Debt = "Total"): object 'debt_and_fedrate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb198"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb198-1"><a href="#cb198-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check renaming</span></span>
+<span id="cb198-2"><a href="#cb198-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt_and_fedrate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(debt_and_fedrate): object 'debt_and_fedrate' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb200"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb200-1"><a href="#cb200-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(debt_and_fedrate, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Total_Debt)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Inflation.Rate), <span class="at">color =</span> <span class="st">'red'</span>) <span class="sc">+</span> <span class="fu">geom_jitter</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(debt_and_fedrate, aes(x = Year, y = Total_Debt)): object 'debt_and_fedrate' not found</code></pre>
+</div>
+</div>
+<p>From this model we can observe that total debt may have some trending pattern to Inflation rate.</p>
+<p>###Citations</p>
+<ol type="1">
+<li><p>Federal Funds Rate: What It Is, How It’s Determined, and Why It’s Important. Investopedia. Published 2022. Accessed November 30, 2022. https://www.investopedia.com/terms/f/federalfundsrate.asp</p></li>
+<li><p>Corporate Finance Institute. Federal Funds Rate. Corporate Finance Institute. Published January 11, 2020. Accessed November 30, 2022. https://corporatefinanceinstitute.com/resources/economics/federal-funds-rate/</p></li>
+<li><p>USAFacts. Annual percent change in real GDP - USAFacts. USAFacts. Published 2021. Accessed November 30, 2022. https://usafacts.org/data/topics/economy/economic-indicators/gdp/annual-change-real-gdp/ ‌ ‌ ‌‌</p></li>
+</ol>
+</section>
+<section id="join-data" class="level2">
+<h2 class="anchored" data-anchor-id="join-data">Join Data</h2>
+<p>Be sure to include a sanity check, and double-check that case count is correct!</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb202" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb202-1"><a href="#cb202-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb202-2"><a href="#cb202-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 8: Joining Data"</span></span>
+<span id="cb202-3"><a href="#cb202-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Christa Bonney"</span></span>
+<span id="cb202-4"><a href="#cb202-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Joining Data: Debt and Fed_rate Datasets"</span></span>
+<span id="cb202-5"><a href="#cb202-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "12/03/2022"</span></span>
+<span id="cb202-6"><a href="#cb202-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb202-7"><a href="#cb202-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb202-8"><a href="#cb202-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb202-9"><a href="#cb202-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb202-10"><a href="#cb202-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb202-11"><a href="#cb202-11" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb202-12"><a href="#cb202-12" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_8</span></span>
+<span id="cb202-13"><a href="#cb202-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - railroads</span></span>
+<span id="cb202-14"><a href="#cb202-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - snl</span></span>
+<span id="cb202-15"><a href="#cb202-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - faostat</span></span>
+<span id="cb202-16"><a href="#cb202-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - debt</span></span>
+<span id="cb202-17"><a href="#cb202-17" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb202-18"><a href="#cb202-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-21"><a href="#cb202-21" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-22"><a href="#cb202-22" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb202-23"><a href="#cb202-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb202-24"><a href="#cb202-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb202-25"><a href="#cb202-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-26"><a href="#cb202-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb202-27"><a href="#cb202-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb202-28"><a href="#cb202-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-29"><a href="#cb202-29" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb202-30"><a href="#cb202-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-31"><a href="#cb202-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-32"><a href="#cb202-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb202-33"><a href="#cb202-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-34"><a href="#cb202-34" aria-hidden="true" tabindex="-1"></a>Today's challenge is to:</span>
+<span id="cb202-35"><a href="#cb202-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-36"><a href="#cb202-36" aria-hidden="true" tabindex="-1"></a>1)  read in multiple data sets, and describe the data set using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb202-37"><a href="#cb202-37" aria-hidden="true" tabindex="-1"></a>2)  tidy data (as needed, including sanity checks)</span>
+<span id="cb202-38"><a href="#cb202-38" aria-hidden="true" tabindex="-1"></a>3)  mutate variables as needed (including sanity checks)</span>
+<span id="cb202-39"><a href="#cb202-39" aria-hidden="true" tabindex="-1"></a>4)  join two or more data sets and analyze some aspect of the joined data</span>
+<span id="cb202-40"><a href="#cb202-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-41"><a href="#cb202-41" aria-hidden="true" tabindex="-1"></a>(be sure to only include the category tags for the data you use!)</span>
+<span id="cb202-42"><a href="#cb202-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-43"><a href="#cb202-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-44"><a href="#cb202-44" aria-hidden="true" tabindex="-1"></a>###Read In First Data Set and Summarize</span>
+<span id="cb202-45"><a href="#cb202-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-46"><a href="#cb202-46" aria-hidden="true" tabindex="-1"></a>####Read In Fed Rate Dataset</span>
+<span id="cb202-47"><a href="#cb202-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-50"><a href="#cb202-50" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-51"><a href="#cb202-51" aria-hidden="true" tabindex="-1"></a><span class="co">#read in 2 data sets</span></span>
+<span id="cb202-52"><a href="#cb202-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-53"><a href="#cb202-53" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/FedFundsRate.csv"</span>)</span>
+<span id="cb202-54"><a href="#cb202-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-55"><a href="#cb202-55" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-56"><a href="#cb202-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-59"><a href="#cb202-59" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-60"><a href="#cb202-60" aria-hidden="true" tabindex="-1"></a><span class="co">#confirm dataset read in properly</span></span>
+<span id="cb202-61"><a href="#cb202-61" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate)</span>
+<span id="cb202-62"><a href="#cb202-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-63"><a href="#cb202-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-64"><a href="#cb202-64" aria-hidden="true" tabindex="-1"></a>####Summary Fed Rate Dataset</span>
+<span id="cb202-65"><a href="#cb202-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-68"><a href="#cb202-68" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-69"><a href="#cb202-69" aria-hidden="true" tabindex="-1"></a><span class="co">#get dimensions</span></span>
+<span id="cb202-70"><a href="#cb202-70" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(fed_rate)</span>
+<span id="cb202-71"><a href="#cb202-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-72"><a href="#cb202-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-75"><a href="#cb202-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-76"><a href="#cb202-76" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names</span></span>
+<span id="cb202-77"><a href="#cb202-77" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(fed_rate)</span>
+<span id="cb202-78"><a href="#cb202-78" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-79"><a href="#cb202-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-82"><a href="#cb202-82" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-83"><a href="#cb202-83" aria-hidden="true" tabindex="-1"></a><span class="co">#get year range for data collection</span></span>
+<span id="cb202-84"><a href="#cb202-84" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(fed_rate, Year))</span>
+<span id="cb202-85"><a href="#cb202-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-86"><a href="#cb202-86" aria-hidden="true" tabindex="-1"></a>The Federal Funds Rate dataset is comprised of 10 variables with 904 rows. The variables consist of:</span>
+<span id="cb202-87"><a href="#cb202-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-88"><a href="#cb202-88" aria-hidden="true" tabindex="-1"></a>"Year": This is a qualitative nominal variable, with observations ranging from the year 1955 to 2017</span>
+<span id="cb202-89"><a href="#cb202-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-90"><a href="#cb202-90" aria-hidden="true" tabindex="-1"></a>"Month": This is a qualitative nominal variable, with months corresponding to numerical calendar order (January = 1, February = 2, March = 3...)</span>
+<span id="cb202-91"><a href="#cb202-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-92"><a href="#cb202-92" aria-hidden="true" tabindex="-1"></a>"Day": This is a qualitative nominal variable, with observations corresponding to the day of the month for that particular year that the data of interest was collected/observed</span>
+<span id="cb202-93"><a href="#cb202-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-94"><a href="#cb202-94" aria-hidden="true" tabindex="-1"></a>"Federal.Funds.Target.Rate": This is a continuous quantitative variable, and is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks.</span>
+<span id="cb202-95"><a href="#cb202-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-96"><a href="#cb202-96" aria-hidden="true" tabindex="-1"></a>"Federal.Funds.Upper.Target": This is a continuous quantitative variable, and is the calculated upper target percentage of the federal funds rate target range.</span>
+<span id="cb202-97"><a href="#cb202-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-98"><a href="#cb202-98" aria-hidden="true" tabindex="-1"></a>"Federal.Funds.Lower.Target": This is a continuous quantitative variable, and is the calculated lower target percentage of the federal funds rate target range.</span>
+<span id="cb202-99"><a href="#cb202-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-100"><a href="#cb202-100" aria-hidden="true" tabindex="-1"></a>"Effective.Federal.Funds.Rate":</span>
+<span id="cb202-101"><a href="#cb202-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-102"><a href="#cb202-102" aria-hidden="true" tabindex="-1"></a>"Real.GDP..Percent.Change": this is a continuous variable, it is the percentage that the real gross domestic product (GDP) (an inflation-adjusted version of GDP calculated by the Bureau of Economic Analysis) changed relative to the real gross domestic product from the previous year(3)</span>
+<span id="cb202-103"><a href="#cb202-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-104"><a href="#cb202-104" aria-hidden="true" tabindex="-1"></a>"Unemployment.Rate": this is a continuous variable, it is the national unemployment rate</span>
+<span id="cb202-105"><a href="#cb202-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-106"><a href="#cb202-106" aria-hidden="true" tabindex="-1"></a>"Inflation.Rate": this is a continuous variable, it is the rate of economic inflation</span>
+<span id="cb202-107"><a href="#cb202-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-108"><a href="#cb202-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-109"><a href="#cb202-109" aria-hidden="true" tabindex="-1"></a>The federal funds target rate is the target interest rate set by the Federal Open Markets Committee (FOMC) to guide overnight lending among US banks. These depository institutes have reserve balances (reserve requirement) with the Federal Reserve bank, and these accounts hold a certain percentage of their deposits to be utilized for lending to other banks as excess capital (excess over their required reverse). Commercial banks borrow and lend their excess reserves to each other overnight, generally based upon this target rate, though interest rates may vary as negotiated. A bank (borrower) whose account falls below their required reserve amount may borrow from another bank (lender) that exceeds their required reserves. The target rate is regularly set eight times each year, and changes in its percentage are determined by prevailing economic conditions. This measure is meant to promote economic growth.(1,2)</span>
+<span id="cb202-110"><a href="#cb202-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-111"><a href="#cb202-111" aria-hidden="true" tabindex="-1"></a>The economy is influenced by the federal funds target rate, too-low rates can influence towards excessive economic growth and inflation, and too-high rates can slow inflation and return growth to more sustainable levels. So while the federal funds rate is determined by the FOMC, the effective federal funds rate is the weighted average of all rates charged by the banks for lending to other banks across the country. These two rates do not strictly mirror each other, and the Federal Reserve is able to buy or sell US Treasury securities (among other means) to adjust any significant discrepancies between the federal funds target rate and the effective federal funds rate.(1,2)</span>
+<span id="cb202-112"><a href="#cb202-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-113"><a href="#cb202-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-114"><a href="#cb202-114" aria-hidden="true" tabindex="-1"></a>####Tidy and Wrangle Fed Rate Dataset</span>
+<span id="cb202-115"><a href="#cb202-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-116"><a href="#cb202-116" aria-hidden="true" tabindex="-1"></a>As the data set that will be joined with this only contains data from 2003 onwards, this dataset will be pruned of any data preceding the year of 2003. This should streamline the dataset for joining and analysis.</span>
+<span id="cb202-117"><a href="#cb202-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-120"><a href="#cb202-120" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-121"><a href="#cb202-121" aria-hidden="true" tabindex="-1"></a><span class="co">#subset to remove month and day columns, subset fed funds upper and lower target variables as they are only NA values for 2003-2017</span></span>
+<span id="cb202-122"><a href="#cb202-122" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">subset</span>(fed_rate, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(Month, Day))</span>
+<span id="cb202-123"><a href="#cb202-123" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-124"><a href="#cb202-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-127"><a href="#cb202-127" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-128"><a href="#cb202-128" aria-hidden="true" tabindex="-1"></a>fed_rate <span class="ot">&lt;-</span> <span class="fu">subset</span>(fed_rate, <span class="at">select =</span> <span class="sc">-</span><span class="fu">c</span>(Federal.Funds.Upper.Target, Federal.Funds.Lower.Target))</span>
+<span id="cb202-129"><a href="#cb202-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-130"><a href="#cb202-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-133"><a href="#cb202-133" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-134"><a href="#cb202-134" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-135"><a href="#cb202-135" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate)</span>
+<span id="cb202-136"><a href="#cb202-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-137"><a href="#cb202-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-140"><a href="#cb202-140" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-141"><a href="#cb202-141" aria-hidden="true" tabindex="-1"></a><span class="co">#want to compare in year range for 2003 to 2017</span></span>
+<span id="cb202-142"><a href="#cb202-142" aria-hidden="true" tabindex="-1"></a><span class="co">#filter all data for values within that range of time</span></span>
+<span id="cb202-143"><a href="#cb202-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-144"><a href="#cb202-144" aria-hidden="true" tabindex="-1"></a>fed_rate_2003 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2003"</span>, Year))</span>
+<span id="cb202-145"><a href="#cb202-145" aria-hidden="true" tabindex="-1"></a>fed_rate_2004 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2004"</span>, Year))</span>
+<span id="cb202-146"><a href="#cb202-146" aria-hidden="true" tabindex="-1"></a>fed_rate_2005 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2005"</span>, Year))</span>
+<span id="cb202-147"><a href="#cb202-147" aria-hidden="true" tabindex="-1"></a>fed_rate_2006 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2006"</span>, Year))</span>
+<span id="cb202-148"><a href="#cb202-148" aria-hidden="true" tabindex="-1"></a>fed_rate_2007 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2007"</span>, Year))</span>
+<span id="cb202-149"><a href="#cb202-149" aria-hidden="true" tabindex="-1"></a>fed_rate_2008 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2008"</span>, Year))</span>
+<span id="cb202-150"><a href="#cb202-150" aria-hidden="true" tabindex="-1"></a>fed_rate_2009 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2009"</span>, Year))</span>
+<span id="cb202-151"><a href="#cb202-151" aria-hidden="true" tabindex="-1"></a>fed_rate_2010 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2010"</span>, Year))</span>
+<span id="cb202-152"><a href="#cb202-152" aria-hidden="true" tabindex="-1"></a>fed_rate_2011 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2011"</span>, Year))</span>
+<span id="cb202-153"><a href="#cb202-153" aria-hidden="true" tabindex="-1"></a>fed_rate_2012 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2012"</span>, Year))</span>
+<span id="cb202-154"><a href="#cb202-154" aria-hidden="true" tabindex="-1"></a>fed_rate_2013 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2013"</span>, Year))</span>
+<span id="cb202-155"><a href="#cb202-155" aria-hidden="true" tabindex="-1"></a>fed_rate_2014 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2014"</span>, Year))</span>
+<span id="cb202-156"><a href="#cb202-156" aria-hidden="true" tabindex="-1"></a>fed_rate_2015 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2015"</span>, Year))</span>
+<span id="cb202-157"><a href="#cb202-157" aria-hidden="true" tabindex="-1"></a>fed_rate_2016 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2016"</span>, Year))</span>
+<span id="cb202-158"><a href="#cb202-158" aria-hidden="true" tabindex="-1"></a>fed_rate_2017 <span class="ot">&lt;-</span> <span class="fu">filter</span>(fed_rate, <span class="fu">grepl</span>(<span class="st">"2017"</span>, Year))</span>
+<span id="cb202-159"><a href="#cb202-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-160"><a href="#cb202-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-163"><a href="#cb202-163" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-164"><a href="#cb202-164" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-165"><a href="#cb202-165" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate_2003)</span>
+<span id="cb202-166"><a href="#cb202-166" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-167"><a href="#cb202-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-170"><a href="#cb202-170" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-171"><a href="#cb202-171" aria-hidden="true" tabindex="-1"></a><span class="co">#get annual averages for each year, each column</span></span>
+<span id="cb202-172"><a href="#cb202-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-173"><a href="#cb202-173" aria-hidden="true" tabindex="-1"></a>fed_avgs_2003 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2003, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-174"><a href="#cb202-174" aria-hidden="true" tabindex="-1"></a>fed_avgs_2004 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2004, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-175"><a href="#cb202-175" aria-hidden="true" tabindex="-1"></a>fed_avgs_2005 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2005, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-176"><a href="#cb202-176" aria-hidden="true" tabindex="-1"></a>fed_avgs_2006 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2006, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-177"><a href="#cb202-177" aria-hidden="true" tabindex="-1"></a>fed_avgs_2007 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2007, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-178"><a href="#cb202-178" aria-hidden="true" tabindex="-1"></a>fed_avgs_2008 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2008, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-179"><a href="#cb202-179" aria-hidden="true" tabindex="-1"></a>fed_avgs_2009 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2009, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-180"><a href="#cb202-180" aria-hidden="true" tabindex="-1"></a>fed_avgs_2010 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2010, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-181"><a href="#cb202-181" aria-hidden="true" tabindex="-1"></a>fed_avgs_2011 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2011, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-182"><a href="#cb202-182" aria-hidden="true" tabindex="-1"></a>fed_avgs_2012 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2012, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-183"><a href="#cb202-183" aria-hidden="true" tabindex="-1"></a>fed_avgs_2013 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2013, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-184"><a href="#cb202-184" aria-hidden="true" tabindex="-1"></a>fed_avgs_2014 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2014, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-185"><a href="#cb202-185" aria-hidden="true" tabindex="-1"></a>fed_avgs_2015 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2015, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-186"><a href="#cb202-186" aria-hidden="true" tabindex="-1"></a>fed_avgs_2016 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2016, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-187"><a href="#cb202-187" aria-hidden="true" tabindex="-1"></a>fed_avgs_2017 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(fed_rate_2017, Federal.Funds.Target.Rate<span class="sc">:</span>Inflation.Rate), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-188"><a href="#cb202-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-189"><a href="#cb202-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-192"><a href="#cb202-192" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-193"><a href="#cb202-193" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-194"><a href="#cb202-194" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_avgs_2003)</span>
+<span id="cb202-195"><a href="#cb202-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-196"><a href="#cb202-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-199"><a href="#cb202-199" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-200"><a href="#cb202-200" aria-hidden="true" tabindex="-1"></a><span class="co">#vertically merge fed_avgs_2003:17 data sets with rbind()</span></span>
+<span id="cb202-201"><a href="#cb202-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-202"><a href="#cb202-202" aria-hidden="true" tabindex="-1"></a>fed_rate_avgs <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fed_avgs_2003, fed_avgs_2004, fed_avgs_2005, fed_avgs_2006, fed_avgs_2007, fed_avgs_2008, fed_avgs_2009, fed_avgs_2010, fed_avgs_2011, fed_avgs_2012, fed_avgs_2013, fed_avgs_2014, fed_avgs_2015, fed_avgs_2016, fed_avgs_2017)</span>
+<span id="cb202-203"><a href="#cb202-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-204"><a href="#cb202-204" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-205"><a href="#cb202-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-208"><a href="#cb202-208" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-209"><a href="#cb202-209" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-210"><a href="#cb202-210" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fed_rate_avgs)</span>
+<span id="cb202-211"><a href="#cb202-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-212"><a href="#cb202-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-215"><a href="#cb202-215" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-216"><a href="#cb202-216" aria-hidden="true" tabindex="-1"></a><span class="co">#make tibble of years 2003-2017</span></span>
+<span id="cb202-217"><a href="#cb202-217" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">as_tibble_col</span>(<span class="fu">c</span>(<span class="st">'2003'</span>, <span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2011'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>, <span class="st">'2014'</span>, <span class="st">'2015'</span>, <span class="st">'2016'</span>, <span class="st">'2017'</span>))</span>
+<span id="cb202-218"><a href="#cb202-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-219"><a href="#cb202-219" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-220"><a href="#cb202-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-223"><a href="#cb202-223" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-224"><a href="#cb202-224" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'value' column as 'Year'</span></span>
+<span id="cb202-225"><a href="#cb202-225" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">rename</span>(Year, <span class="st">"Year"</span> <span class="ot">=</span> <span class="st">'value'</span>)</span>
+<span id="cb202-226"><a href="#cb202-226" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-227"><a href="#cb202-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-230"><a href="#cb202-230" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-231"><a href="#cb202-231" aria-hidden="true" tabindex="-1"></a><span class="co">#check rename with print</span></span>
+<span id="cb202-232"><a href="#cb202-232" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Year)</span>
+<span id="cb202-233"><a href="#cb202-233" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-234"><a href="#cb202-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-235"><a href="#cb202-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-238"><a href="#cb202-238" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-239"><a href="#cb202-239" aria-hidden="true" tabindex="-1"></a><span class="co">#join new year tibble column to avg_debt to match years</span></span>
+<span id="cb202-240"><a href="#cb202-240" aria-hidden="true" tabindex="-1"></a>annual_avg_fedrate <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Year, fed_rate_avgs)</span>
+<span id="cb202-241"><a href="#cb202-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-242"><a href="#cb202-242" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-243"><a href="#cb202-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-246"><a href="#cb202-246" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-247"><a href="#cb202-247" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-248"><a href="#cb202-248" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avg_fedrate)</span>
+<span id="cb202-249"><a href="#cb202-249" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-250"><a href="#cb202-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-253"><a href="#cb202-253" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-254"><a href="#cb202-254" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-255"><a href="#cb202-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-256"><a href="#cb202-256" aria-hidden="true" tabindex="-1"></a>fed_avgs_2003</span>
+<span id="cb202-257"><a href="#cb202-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-258"><a href="#cb202-258" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-259"><a href="#cb202-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-260"><a href="#cb202-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-263"><a href="#cb202-263" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-264"><a href="#cb202-264" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-265"><a href="#cb202-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-266"><a href="#cb202-266" aria-hidden="true" tabindex="-1"></a>fed_avgs_2010</span>
+<span id="cb202-267"><a href="#cb202-267" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-268"><a href="#cb202-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-271"><a href="#cb202-271" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-272"><a href="#cb202-272" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-273"><a href="#cb202-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-274"><a href="#cb202-274" aria-hidden="true" tabindex="-1"></a>fed_avgs_2017</span>
+<span id="cb202-275"><a href="#cb202-275" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-276"><a href="#cb202-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-277"><a href="#cb202-277" aria-hidden="true" tabindex="-1"></a>This data set has been determined to be fully prepared for binding with the Debt data set.</span>
+<span id="cb202-278"><a href="#cb202-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-279"><a href="#cb202-279" aria-hidden="true" tabindex="-1"></a>###Read In Second Dataset and Summarize</span>
+<span id="cb202-280"><a href="#cb202-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-281"><a href="#cb202-281" aria-hidden="true" tabindex="-1"></a>####Read In Debt Dataset</span>
+<span id="cb202-282"><a href="#cb202-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-285"><a href="#cb202-285" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-286"><a href="#cb202-286" aria-hidden="true" tabindex="-1"></a>debt <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/debt_in_trillions.xlsx"</span>)</span>
+<span id="cb202-287"><a href="#cb202-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-288"><a href="#cb202-288" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-289"><a href="#cb202-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-292"><a href="#cb202-292" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-293"><a href="#cb202-293" aria-hidden="true" tabindex="-1"></a><span class="co">#print debt dataset to confirm successful import</span></span>
+<span id="cb202-294"><a href="#cb202-294" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt)</span>
+<span id="cb202-295"><a href="#cb202-295" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-296"><a href="#cb202-296" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-297"><a href="#cb202-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-300"><a href="#cb202-300" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-301"><a href="#cb202-301" aria-hidden="true" tabindex="-1"></a><span class="co">#get debt dataset dimension</span></span>
+<span id="cb202-302"><a href="#cb202-302" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(debt)</span>
+<span id="cb202-303"><a href="#cb202-303" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-304"><a href="#cb202-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-307"><a href="#cb202-307" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-308"><a href="#cb202-308" aria-hidden="true" tabindex="-1"></a><span class="co">#get column names</span></span>
+<span id="cb202-309"><a href="#cb202-309" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(debt)</span>
+<span id="cb202-310"><a href="#cb202-310" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-311"><a href="#cb202-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-312"><a href="#cb202-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-315"><a href="#cb202-315" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-316"><a href="#cb202-316" aria-hidden="true" tabindex="-1"></a><span class="co">#table of 'year and quater' column to get range of years data was collected</span></span>
+<span id="cb202-317"><a href="#cb202-317" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(debt, <span class="st">'Year and Quarter'</span>))</span>
+<span id="cb202-318"><a href="#cb202-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-319"><a href="#cb202-319" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-320"><a href="#cb202-320" aria-hidden="true" tabindex="-1"></a>The debt_in_trillions dataset is composed of 8 variables (columns) and 74 rows. The variables consist of:</span>
+<span id="cb202-321"><a href="#cb202-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-322"><a href="#cb202-322" aria-hidden="true" tabindex="-1"></a>"Year and Quarter": this is a nominal qualitative variable of Years spanning from 2003 to 2021, with each year further split into quarters</span>
+<span id="cb202-323"><a href="#cb202-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-324"><a href="#cb202-324" aria-hidden="true" tabindex="-1"></a>"Mortgage": This is a continuous quantitative variable, measured in of trillions of dollars, likely for home mortgage debt</span>
+<span id="cb202-325"><a href="#cb202-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-326"><a href="#cb202-326" aria-hidden="true" tabindex="-1"></a>"HE Revolving": This is a continuous quantitative variable, measured in of trillions of dollars, likely for revolving loan debt</span>
+<span id="cb202-327"><a href="#cb202-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-328"><a href="#cb202-328" aria-hidden="true" tabindex="-1"></a>"Auto Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for automotive debt</span>
+<span id="cb202-329"><a href="#cb202-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-330"><a href="#cb202-330" aria-hidden="true" tabindex="-1"></a>"Credit Card": This is a continuous quantitative variable, measured in of trillions of dollars, likely for credit card debt</span>
+<span id="cb202-331"><a href="#cb202-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-332"><a href="#cb202-332" aria-hidden="true" tabindex="-1"></a>"Student Loan": This is a continuous quantitative variable, measured in of trillions of dollars, likely for student loan debt</span>
+<span id="cb202-333"><a href="#cb202-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-334"><a href="#cb202-334" aria-hidden="true" tabindex="-1"></a>"Other": This is a continuous quantitative variable, measured in of trillions of dollars, likely as a catch-all category to account for miscellaneous sources of debts that are still somewhat common, if less so than the other types of loan debts</span>
+<span id="cb202-335"><a href="#cb202-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-336"><a href="#cb202-336" aria-hidden="true" tabindex="-1"></a>"Total": This is a continuous quantitative variable, measured in of trillions of dollars, quantifying the total accrued debt across that particular year-quarter</span>
+<span id="cb202-337"><a href="#cb202-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-338"><a href="#cb202-338" aria-hidden="true" tabindex="-1"></a>For this dataset it may be surmised that this it is a catalog of commonly accrued debts, measured each annual quarter for a series of years, by citizens in a nation that has a dollar-based currency system. This does narrow down the potential countries, though it may be the United States or another nation that does provide reduced or no-cost higher education, due to the presence and amount of student loan debt accrued quarterly.</span>
+<span id="cb202-339"><a href="#cb202-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-340"><a href="#cb202-340" aria-hidden="true" tabindex="-1"></a>###Tidying Data of Debt Dataset</span>
+<span id="cb202-341"><a href="#cb202-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-342"><a href="#cb202-342" aria-hidden="true" tabindex="-1"></a>The fed_rate dataset does not have information past the year 2017, so data will be removed from this data set (past the year of 2017) to streamline it for joining with the fed_rate data set and further analysis.</span>
+<span id="cb202-343"><a href="#cb202-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-344"><a href="#cb202-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-347"><a href="#cb202-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-348"><a href="#cb202-348" aria-hidden="true" tabindex="-1"></a>debt2 <span class="ot">&lt;-</span> <span class="fu">rename</span>(debt, <span class="st">"Year_and_Quarter"</span> <span class="ot">=</span> <span class="st">'Year and Quarter'</span>, <span class="st">"HE_Revolving"</span> <span class="ot">=</span> <span class="st">'HE Revolving'</span>, <span class="st">"Auto_Loan"</span> <span class="ot">=</span> <span class="st">'Auto Loan'</span>, <span class="st">"Credit_Card"</span> <span class="ot">=</span> <span class="st">'Credit Card'</span>, <span class="st">"Student_Loan"</span> <span class="ot">=</span> <span class="st">'Student Loan'</span>)</span>
+<span id="cb202-349"><a href="#cb202-349" aria-hidden="true" tabindex="-1"></a>              </span>
+<span id="cb202-350"><a href="#cb202-350" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-351"><a href="#cb202-351" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-354"><a href="#cb202-354" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-355"><a href="#cb202-355" aria-hidden="true" tabindex="-1"></a><span class="co">#average data per quarter into annual averages, can filter by "03:"... to isolate quarterly values by year</span></span>
+<span id="cb202-356"><a href="#cb202-356" aria-hidden="true" tabindex="-1"></a><span class="co">#Do this for one column, then can copy and edit code for other columns (only do desired columns want to work with to complete the challenge)</span></span>
+<span id="cb202-357"><a href="#cb202-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-358"><a href="#cb202-358" aria-hidden="true" tabindex="-1"></a><span class="co">#for 'part-whole' graph - could get total of all debts, and compare one column of debt against total debt ('part' of the 'whole' debt) - possibly with color-fill for 1 variable out of all in 1 graph - maybe histogram</span></span>
+<span id="cb202-359"><a href="#cb202-359" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-360"><a href="#cb202-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-363"><a href="#cb202-363" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-364"><a href="#cb202-364" aria-hidden="true" tabindex="-1"></a><span class="co">#filter with grepl to get quartly values for each year</span></span>
+<span id="cb202-365"><a href="#cb202-365" aria-hidden="true" tabindex="-1"></a>values_2003 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"03:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-366"><a href="#cb202-366" aria-hidden="true" tabindex="-1"></a>values_2004 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"04:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-367"><a href="#cb202-367" aria-hidden="true" tabindex="-1"></a>values_2005 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"05:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-368"><a href="#cb202-368" aria-hidden="true" tabindex="-1"></a>values_2006 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"06:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-369"><a href="#cb202-369" aria-hidden="true" tabindex="-1"></a>values_2007 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"07:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-370"><a href="#cb202-370" aria-hidden="true" tabindex="-1"></a>values_2008 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"08:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-371"><a href="#cb202-371" aria-hidden="true" tabindex="-1"></a>values_2009 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"09:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-372"><a href="#cb202-372" aria-hidden="true" tabindex="-1"></a>values_2010 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"10:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-373"><a href="#cb202-373" aria-hidden="true" tabindex="-1"></a>values_2011 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"11:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-374"><a href="#cb202-374" aria-hidden="true" tabindex="-1"></a>values_2012 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"12:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-375"><a href="#cb202-375" aria-hidden="true" tabindex="-1"></a>values_2013 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"13:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-376"><a href="#cb202-376" aria-hidden="true" tabindex="-1"></a>values_2014 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"14:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-377"><a href="#cb202-377" aria-hidden="true" tabindex="-1"></a>values_2015 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"15:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-378"><a href="#cb202-378" aria-hidden="true" tabindex="-1"></a>values_2016 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"16:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-379"><a href="#cb202-379" aria-hidden="true" tabindex="-1"></a>values_2017 <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(debt2, <span class="fu">grepl</span>(<span class="st">"17:Q"</span>, Year_and_Quarter))</span>
+<span id="cb202-380"><a href="#cb202-380" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-381"><a href="#cb202-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-384"><a href="#cb202-384" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-385"><a href="#cb202-385" aria-hidden="true" tabindex="-1"></a><span class="co">#get means of quarterly values for all years</span></span>
+<span id="cb202-386"><a href="#cb202-386" aria-hidden="true" tabindex="-1"></a>annual_avgs_2003 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2003, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-387"><a href="#cb202-387" aria-hidden="true" tabindex="-1"></a>annual_avgs_2004 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2004, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-388"><a href="#cb202-388" aria-hidden="true" tabindex="-1"></a>annual_avgs_2005 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2005, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-389"><a href="#cb202-389" aria-hidden="true" tabindex="-1"></a>annual_avgs_2006 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2006, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-390"><a href="#cb202-390" aria-hidden="true" tabindex="-1"></a>annual_avgs_2007 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2007, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-391"><a href="#cb202-391" aria-hidden="true" tabindex="-1"></a>annual_avgs_2008 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2008, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-392"><a href="#cb202-392" aria-hidden="true" tabindex="-1"></a>annual_avgs_2009 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2009, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-393"><a href="#cb202-393" aria-hidden="true" tabindex="-1"></a>annual_avgs_2010 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2010, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-394"><a href="#cb202-394" aria-hidden="true" tabindex="-1"></a>annual_avgs_2011 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2011, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-395"><a href="#cb202-395" aria-hidden="true" tabindex="-1"></a>annual_avgs_2012 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2012, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-396"><a href="#cb202-396" aria-hidden="true" tabindex="-1"></a>annual_avgs_2013 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2013, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-397"><a href="#cb202-397" aria-hidden="true" tabindex="-1"></a>annual_avgs_2014 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2014, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-398"><a href="#cb202-398" aria-hidden="true" tabindex="-1"></a>annual_avgs_2015 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2015, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-399"><a href="#cb202-399" aria-hidden="true" tabindex="-1"></a>annual_avgs_2016 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2016, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-400"><a href="#cb202-400" aria-hidden="true" tabindex="-1"></a>annual_avgs_2017 <span class="ot">&lt;-</span> <span class="fu">summarize_all</span>(<span class="fu">select</span>(values_2017, Mortgage<span class="sc">:</span>Total), mean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb202-401"><a href="#cb202-401" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-402"><a href="#cb202-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-405"><a href="#cb202-405" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-406"><a href="#cb202-406" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-407"><a href="#cb202-407" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avgs_2003)</span>
+<span id="cb202-408"><a href="#cb202-408" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-409"><a href="#cb202-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-412"><a href="#cb202-412" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-413"><a href="#cb202-413" aria-hidden="true" tabindex="-1"></a><span class="co">#vertically merge annual_avgs_2003:21 data sets with rbind()</span></span>
+<span id="cb202-414"><a href="#cb202-414" aria-hidden="true" tabindex="-1"></a>avg_debt <span class="ot">&lt;-</span> <span class="fu">rbind</span>(annual_avgs_2003, annual_avgs_2004, annual_avgs_2005, annual_avgs_2006, annual_avgs_2007, annual_avgs_2009, annual_avgs_2010, annual_avgs_2011, annual_avgs_2012, annual_avgs_2013, annual_avgs_2014, annual_avgs_2015, annual_avgs_2016, annual_avgs_2017)</span>
+<span id="cb202-415"><a href="#cb202-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-416"><a href="#cb202-416" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-417"><a href="#cb202-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-420"><a href="#cb202-420" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-421"><a href="#cb202-421" aria-hidden="true" tabindex="-1"></a><span class="co">#check work with print</span></span>
+<span id="cb202-422"><a href="#cb202-422" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(avg_debt)</span>
+<span id="cb202-423"><a href="#cb202-423" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-424"><a href="#cb202-424" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-425"><a href="#cb202-425" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-428"><a href="#cb202-428" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-429"><a href="#cb202-429" aria-hidden="true" tabindex="-1"></a><span class="co">#make tibble of years 2003-2017</span></span>
+<span id="cb202-430"><a href="#cb202-430" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">as_tibble_col</span>(<span class="fu">c</span>(<span class="st">'2003'</span>, <span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>, <span class="st">'2014'</span>, <span class="st">'2015'</span>, <span class="st">'2016'</span>, <span class="st">'2017'</span>))</span>
+<span id="cb202-431"><a href="#cb202-431" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-432"><a href="#cb202-432" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-433"><a href="#cb202-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-436"><a href="#cb202-436" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-437"><a href="#cb202-437" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'value' column as 'Year'</span></span>
+<span id="cb202-438"><a href="#cb202-438" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">rename</span>(Year, <span class="st">"Year"</span> <span class="ot">=</span> <span class="st">'value'</span>)</span>
+<span id="cb202-439"><a href="#cb202-439" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-440"><a href="#cb202-440" aria-hidden="true" tabindex="-1"></a><span class="co">#check rename with print</span></span>
+<span id="cb202-441"><a href="#cb202-441" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Year)</span>
+<span id="cb202-442"><a href="#cb202-442" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-443"><a href="#cb202-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-444"><a href="#cb202-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-447"><a href="#cb202-447" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-448"><a href="#cb202-448" aria-hidden="true" tabindex="-1"></a><span class="co">#join new year tibble column to avg_debt to match years</span></span>
+<span id="cb202-449"><a href="#cb202-449" aria-hidden="true" tabindex="-1"></a>annual_avg_debt <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Year, avg_debt)</span>
+<span id="cb202-450"><a href="#cb202-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-451"><a href="#cb202-451" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-452"><a href="#cb202-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-455"><a href="#cb202-455" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-456"><a href="#cb202-456" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-457"><a href="#cb202-457" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(annual_avg_debt)</span>
+<span id="cb202-458"><a href="#cb202-458" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-459"><a href="#cb202-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-462"><a href="#cb202-462" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-463"><a href="#cb202-463" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-464"><a href="#cb202-464" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-465"><a href="#cb202-465" aria-hidden="true" tabindex="-1"></a>annual_avgs_2003</span>
+<span id="cb202-466"><a href="#cb202-466" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-467"><a href="#cb202-467" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-468"><a href="#cb202-468" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-469"><a href="#cb202-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-472"><a href="#cb202-472" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-473"><a href="#cb202-473" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-474"><a href="#cb202-474" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-475"><a href="#cb202-475" aria-hidden="true" tabindex="-1"></a>annual_avgs_2010</span>
+<span id="cb202-476"><a href="#cb202-476" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-477"><a href="#cb202-477" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-480"><a href="#cb202-480" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-481"><a href="#cb202-481" aria-hidden="true" tabindex="-1"></a><span class="co">#check avgs match date by test with of annual avgs</span></span>
+<span id="cb202-482"><a href="#cb202-482" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-483"><a href="#cb202-483" aria-hidden="true" tabindex="-1"></a>annual_avgs_2017</span>
+<span id="cb202-484"><a href="#cb202-484" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-485"><a href="#cb202-485" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-486"><a href="#cb202-486" aria-hidden="true" tabindex="-1"></a>It has been determined that this data set is now prepared to be joined with the Federal Funds Rate data set.</span>
+<span id="cb202-487"><a href="#cb202-487" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-488"><a href="#cb202-488" aria-hidden="true" tabindex="-1"></a>###Joining Datasets</span>
+<span id="cb202-489"><a href="#cb202-489" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-492"><a href="#cb202-492" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-493"><a href="#cb202-493" aria-hidden="true" tabindex="-1"></a><span class="co">#left join annual average fed rate and debt data sets</span></span>
+<span id="cb202-494"><a href="#cb202-494" aria-hidden="true" tabindex="-1"></a>debt_and_fedrate <span class="ot">&lt;-</span> <span class="fu">left_join</span>(annual_avg_debt, annual_avg_fedrate)</span>
+<span id="cb202-495"><a href="#cb202-495" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-496"><a href="#cb202-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-499"><a href="#cb202-499" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-500"><a href="#cb202-500" aria-hidden="true" tabindex="-1"></a><span class="co">#check work</span></span>
+<span id="cb202-501"><a href="#cb202-501" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt_and_fedrate)</span>
+<span id="cb202-502"><a href="#cb202-502" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-503"><a href="#cb202-503" aria-hidden="true" tabindex="-1"></a>The joining of the two datasets appears to have been successful.</span>
+<span id="cb202-504"><a href="#cb202-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-505"><a href="#cb202-505" aria-hidden="true" tabindex="-1"></a>###Analyzing Joined Dataset</span>
+<span id="cb202-506"><a href="#cb202-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-507"><a href="#cb202-507" aria-hidden="true" tabindex="-1"></a>For some basic analysis I will generate a few graphs to compare some of the variables of the newly generated debt_and_fedrate dataset.</span>
+<span id="cb202-508"><a href="#cb202-508" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-511"><a href="#cb202-511" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-512"><a href="#cb202-512" aria-hidden="true" tabindex="-1"></a><span class="co">#rename 'total' variable to 'total debt' for clarity in analysis</span></span>
+<span id="cb202-513"><a href="#cb202-513" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-514"><a href="#cb202-514" aria-hidden="true" tabindex="-1"></a>debt_and_fedrate <span class="ot">&lt;-</span> <span class="fu">rename</span>(debt_and_fedrate, <span class="st">"Total_Debt"</span> <span class="ot">=</span> <span class="st">'Total'</span>)</span>
+<span id="cb202-515"><a href="#cb202-515" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-516"><a href="#cb202-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-519"><a href="#cb202-519" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-520"><a href="#cb202-520" aria-hidden="true" tabindex="-1"></a><span class="co">#check renaming</span></span>
+<span id="cb202-521"><a href="#cb202-521" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(debt_and_fedrate)</span>
+<span id="cb202-522"><a href="#cb202-522" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-523"><a href="#cb202-523" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-526"><a href="#cb202-526" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb202-527"><a href="#cb202-527" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(debt_and_fedrate, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Total_Debt)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Inflation.Rate), <span class="at">color =</span> <span class="st">'red'</span>) <span class="sc">+</span> <span class="fu">geom_jitter</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>()</span>
+<span id="cb202-528"><a href="#cb202-528" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb202-529"><a href="#cb202-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-530"><a href="#cb202-530" aria-hidden="true" tabindex="-1"></a>From this model we can observe that total debt may have some trending pattern to Inflation rate.</span>
+<span id="cb202-531"><a href="#cb202-531" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-532"><a href="#cb202-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-533"><a href="#cb202-533" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-534"><a href="#cb202-534" aria-hidden="true" tabindex="-1"></a>###Citations</span>
+<span id="cb202-535"><a href="#cb202-535" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-536"><a href="#cb202-536" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-537"><a href="#cb202-537" aria-hidden="true" tabindex="-1"></a>1.</span>
+<span id="cb202-538"><a href="#cb202-538" aria-hidden="true" tabindex="-1"></a>Federal Funds Rate: What It Is, How It’s Determined, and Why It’s Important. Investopedia. Published 2022. Accessed November 30, 2022. https://www.investopedia.com/terms/f/federalfundsrate.asp</span>
+<span id="cb202-539"><a href="#cb202-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-540"><a href="#cb202-540" aria-hidden="true" tabindex="-1"></a>2.</span>
+<span id="cb202-541"><a href="#cb202-541" aria-hidden="true" tabindex="-1"></a>Corporate Finance Institute. Federal Funds Rate. Corporate Finance Institute. Published January 11, 2020. Accessed November 30, 2022. https://corporatefinanceinstitute.com/resources/economics/federal-funds-rate/</span>
+<span id="cb202-542"><a href="#cb202-542" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-543"><a href="#cb202-543" aria-hidden="true" tabindex="-1"></a>3.</span>
+<span id="cb202-544"><a href="#cb202-544" aria-hidden="true" tabindex="-1"></a>USAFacts. Annual percent change in real GDP - USAFacts. USAFacts. Published 2021. Accessed November 30, 2022. https://usafacts.org/data/topics/economy/economic-indicators/gdp/annual-change-real-gdp/</span>
+<span id="cb202-545"><a href="#cb202-545" aria-hidden="true" tabindex="-1"></a>‌</span>
+<span id="cb202-546"><a href="#cb202-546" aria-hidden="true" tabindex="-1"></a>‌</span>
+<span id="cb202-547"><a href="#cb202-547" aria-hidden="true" tabindex="-1"></a>‌‌</span>
+<span id="cb202-548"><a href="#cb202-548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-549"><a href="#cb202-549" aria-hidden="true" tabindex="-1"></a><span class="fu">## Join Data</span></span>
+<span id="cb202-550"><a href="#cb202-550" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-551"><a href="#cb202-551" aria-hidden="true" tabindex="-1"></a>Be sure to include a sanity check, and double-check that case count is correct!</span>
+<span id="cb202-552"><a href="#cb202-552" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb202-553"><a href="#cb202-553" aria-hidden="true" tabindex="-1"></a></span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Connor Skowyra">
+<meta name="dcterms.date" content="2022-11-26">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Transportation Emissions from 2015-2022</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Transportation Emissions from 2015-2022">
+<meta name="twitter:description" content="During this research project, the goal is to find a relationship in the transportation industry regarding emissions.">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Transportation Emissions from 2015-2022</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#beginning-statement" id="toc-beginning-statement" class="nav-link active" data-scroll-target="#beginning-statement">Beginning Statement</a></li>
+  <li><a href="#research-question" id="toc-research-question" class="nav-link" data-scroll-target="#research-question">Research Question</a></li>
+  <li><a href="#data-selection" id="toc-data-selection" class="nav-link" data-scroll-target="#data-selection">Data Selection</a></li>
+  <li><a href="#data-manipulation" id="toc-data-manipulation" class="nav-link" data-scroll-target="#data-manipulation">Data Manipulation</a></li>
+  <li><a href="#installing-packages-and-reading-data" id="toc-installing-packages-and-reading-data" class="nav-link" data-scroll-target="#installing-packages-and-reading-data">Installing Packages and Reading Data</a></li>
+  <li><a href="#rows-190-columns-10" id="toc-rows-190-columns-10" class="nav-link" data-scroll-target="#rows-190-columns-10">Rows = 190, Columns = 10</a></li>
+  <li><a href="#joining-data" id="toc-joining-data" class="nav-link" data-scroll-target="#joining-data">Joining Data</a></li>
+  <li><a href="#removing-unnecessary-columns" id="toc-removing-unnecessary-columns" class="nav-link" data-scroll-target="#removing-unnecessary-columns">Removing Unnecessary Columns</a></li>
+  <li><a href="#mutating-the-year" id="toc-mutating-the-year" class="nav-link" data-scroll-target="#mutating-the-year">Mutating the Year</a></li>
+  <li><a href="#renaming-columns" id="toc-renaming-columns" class="nav-link" data-scroll-target="#renaming-columns">Renaming Columns</a></li>
+  <li><a href="#filter-variables" id="toc-filter-variables" class="nav-link" data-scroll-target="#filter-variables">Filter Variables</a></li>
+  <li><a href="#data-frame-for-total-2015-2021-transportation-emissions" id="toc-data-frame-for-total-2015-2021-transportation-emissions" class="nav-link" data-scroll-target="#data-frame-for-total-2015-2021-transportation-emissions">Data Frame for Total 2015-2021 Transportation Emissions</a></li>
+  <li><a href="#transportation-emissions" id="toc-transportation-emissions" class="nav-link" data-scroll-target="#transportation-emissions">2021 Transportation Emissions</a></li>
+  <li><a href="#gas-type" id="toc-gas-type" class="nav-link" data-scroll-target="#gas-type">Gas Type</a></li>
+  <li><a href="#data-visualization" id="toc-data-visualization" class="nav-link" data-scroll-target="#data-visualization">Data Visualization</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection">Reflection</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#bibliography" id="toc-bibliography" class="nav-link" data-scroll-target="#bibliography">Bibliography</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Transportation Emissions from 2015-2022</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Connor Skowyra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 26, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="beginning-statement" class="level2">
+<h2 class="anchored" data-anchor-id="beginning-statement">Beginning Statement</h2>
+<p>During this research project, the goal is to find a relationship in the transportation industry regarding emissions. Using a summary and visualization, I would like to provide a detailed conclusion on emissions by understanding the types of gas being emitted over the set time horizon. I want to see if more harmful pollutants are being gradually removed from our atmosphere or not, and which sector of the transportation industry is most responsible. The data was obtained by a report from Climate TRACE, a nonprofit organization uses imagery and created data sets from the website “Data Is Plural”.</p>
+</section>
+<section id="research-question" class="level2">
+<h2 class="anchored" data-anchor-id="research-question">Research Question</h2>
+<p>I am interested in the connection of the trajectory of emissions in the transportation industry to see if new legislation created in the government and clean energy investments have been effective at reducing emissions in the United States. In the United States, the issue of climate change has been hotly contested for years as people argue over the best path moving forward to improve conditions for our society. Citizens have protested new pipelines, demanded politicians to create policies to move away from fossil fuels, and increasing are becoming frustrated with stagnation on action. One of the most highest emitters is the transportation industry. When individuals think of mass polluters, we tend to think of companies like electric, gas, and waste industries. However, we need to think deeper to come to a realization, how do the majority of people get to work, get groceries, mail and or packages being delivered? The transportation industry is the answer, but this leads to another question, “How much emissions per ton are emitted annually and how this dilemma is changing since the push for clean energy beginning in 2015?”</p>
+</section>
+<section id="data-selection" class="level2">
+<h2 class="anchored" data-anchor-id="data-selection">Data Selection</h2>
+<p>The analysis of transportation emissions is focused in a few different business areas like environmental, transportation and utility industries. Analysts for these types of companies look at the data to determine next steps in their projects whether it is wanting to do their part in reducing emissions, complying with government regulations or showing a positive public message. the analysis of transportation emissions and understanding the trajectory can help us create a cleaner future for the next generation. This information was obtained by Climate Trace by using satellite imagery, Database of Road Transportation Emissions (DARTE), and Average Annual Daily Traffic(AADT) data from the U.S. Highway Performance Monitoring System. Using this type of technology, databases, and machine learning, the model will provide answers on amount of emissions annually, sector of transportation, type of gas within the United States. The goal of the data set is to understand if emissions are decreasing but it is important to understand the severity of gases’ emitted.</p>
+<p>In the previous section, I mentioned the most important variables in the data are annual emissions, sector of transportation, and type of gas. I want to see if annual emissions are decreasing or not since 2015 and see if government and corporate actions have been working. Then, the next stage is understanding which gas and or sector of transportation produces most annual emissions within the United States.</p>
+<p>Looking at the data set, I realize there are a couple of different problems as most columns are undefined, confusing, or not necessary to this research. Another issue is we need to understand our variables in particular is the type of gases being emitted. The most common sources of gas are Carbon Dioxide (CO2), Methane (CH4), and Nitrous Oxide (N2O). The final type is Carbon Dioxide Equivalent (CO2e) which were other forms of gas converted into a greenhouse gas. I am expecting a significant amount of Carbon Dioxide transportation emissions as the gas is created from burning fossil fuels like oil which our nation relies on almost entirely with a smaller proportion of the remaining gases to fill out our data.</p>
+</section>
+<section id="data-manipulation" class="level2">
+<h2 class="anchored" data-anchor-id="data-manipulation">Data Manipulation</h2>
+<p>To clean the data we will need to install two packages called tidyverse and dplyr.</p>
+</section>
+<section id="installing-packages-and-reading-data" class="level2">
+<h2 class="anchored" data-anchor-id="installing-packages-and-reading-data">Installing Packages and Reading Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+✔ ggplot2 3.4.0      ✔ purrr   0.3.5 
+✔ tibble  3.1.8      ✔ dplyr   1.0.10
+✔ tidyr   1.2.1      ✔ stringr 1.5.0 
+✔ readr   2.1.3      ✔ forcats 0.5.2 </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.2.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'stringr' was built under R version 4.2.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lubridate' was built under R version 4.2.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: timechange</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'timechange' was built under R version 4.2.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'lubridate'
+
+The following objects are masked from 'package:base':
+
+    date, intersect, setdiff, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen=</span><span class="dv">999</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using Tidyverse and Dplyr will give us access to edit rows and columns in R by renaming columns as an example. Another important aspect is finding how much rows and columns are in the data set, which we can find using code dim().</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(covid.data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'covid.data' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="rows-190-columns-10" class="level2">
+<h2 class="anchored" data-anchor-id="rows-190-columns-10">Rows = 190, Columns = 10</h2>
+<p>The result shows 190 10 when submitted, this expression states there are 190 rows and 10 columns of data. In R, one row equals one observation of data. This statement is almost identical to be used to review the columns as one column equals one variable in the data set. Therefore, since there are 10 columns, 10 variables are identified. Now, I want to read my data set.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>country_road_transportation_emissions <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"USA/transportation/country_road-transportation_emissions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error: 'USA/transportation/country_road-transportation_emissions.csv' does not exist in current working directory ('C:/Users/srika/OneDrive/Desktop/601_Fall_2022/posts').</code></pre>
+</div>
+</div>
+</section>
+<section id="joining-data" class="level2">
+<h2 class="anchored" data-anchor-id="joining-data">Joining Data</h2>
+<p>Opening the downloaded data reveals that I am missing some important information like other sectors of transportation. I would like to create a bivariate graph to include two variables so we need to complete further steps to effectively organize the data and prepare it for visualization. The first step is combining these data sets together using function full_join()</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>TransportationRoadFullJoin <span class="ot">&lt;-</span> <span class="fu">full_join</span>(TransportationRoad,country_other_transport_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in full_join(TransportationRoad, country_other_transport_emissions): object 'TransportationRoad' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(country_railways_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(x): object 'country_railways_emissions' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>TransportationRoadFullJoin1 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(TransportationRoadFullJoin,country_railways_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in full_join(TransportationRoadFullJoin, country_railways_emissions): object 'TransportationRoadFullJoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(country_shipping_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(x): object 'country_shipping_emissions' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>TransportationRoadFullJoin2 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(TransportationRoadFullJoin,country_shipping_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in full_join(TransportationRoadFullJoin, country_shipping_emissions): object 'TransportationRoadFullJoin' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(country_international_aviation_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in as.data.frame(x): object 'country_international_aviation_emissions' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>TransportationRoadFullJoin3 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(TransportationRoadFullJoin2,country_international_aviation_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in full_join(TransportationRoadFullJoin2, country_international_aviation_emissions): object 'TransportationRoadFullJoin2' not found</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>TransportationEmissions_2015_2021 <span class="ot">&lt;-</span> <span class="fu">full_join</span>(TransportationRoadFullJoin3,country_domestic_aviation_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in full_join(TransportationRoadFullJoin3, country_domestic_aviation_emissions): object 'TransportationRoadFullJoin3' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="removing-unnecessary-columns" class="level2">
+<h2 class="anchored" data-anchor-id="removing-unnecessary-columns">Removing Unnecessary Columns</h2>
+<p>I chose to combine these data sets one at a time in order to view them and make sure all of the information is successfully entered. On the Master File, you will see all of the inventory sectors in transportation together with the values. As this data was calculated with technology, some information not necessary is present, needing to be removed by using function select()</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>TransportationEmissions_2015_2021 <span class="ot">&lt;-</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(end_time, temporal_granularity<span class="sc">:</span>modified_date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(., -c(end_time, temporal_granularity:modified_date)): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="mutating-the-year" class="level2">
+<h2 class="anchored" data-anchor-id="mutating-the-year">Mutating the Year</h2>
+<p>Our main data set now contains all relevant columns to answer our research question. One error on the data set that has not been resolved is that I do not want a date, I only want the year so we will need to mutate the data, using function mutate()</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>TransportationEmissions_2015_2021 <span class="ot">&lt;-</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">start_time =</span> <span class="fu">year</span>(start_time))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mutate(., start_time = year(start_time)): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="renaming-columns" class="level2">
+<h2 class="anchored" data-anchor-id="renaming-columns">Renaming Columns</h2>
+<p>In our data set, the column start_time will only show the year instead of the entire date, making the process of creating a visualization easier. The column names can be updated to make our data set look more clean so we will need to rename the columns. Using the rename() function, we can rename multiple columns in one command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>TransportationEmissions_2015_2021 <span class="ot">=</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="at">Country =</span> iso3_country, <span class="at">Year =</span> start_time, <span class="at">Section_of_Transportation =</span> original_inventory_sector, <span class="at">Type_of_Gas =</span> gas, <span class="at">Annual_Total_Emissions =</span> emissions_quantity, <span class="at">Unit_Of_Measurement =</span> emissions_quantity_units)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rename(., Country = iso3_country, Year = start_time, Section_of_Transportation = original_inventory_sector, : object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="filter-variables" class="level2">
+<h2 class="anchored" data-anchor-id="filter-variables">Filter Variables</h2>
+<p>In our data sets, some of our joined data had statistics for 2022 while some did not. We can not include 2022 as it would give us unrealistic results and would be not accurate due to having insufficient information. We need to filter out all data with the year 2022. I will achieve this by using function filter()</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>TransportationEmissions_2015_2021 <span class="ot">&lt;-</span> <span class="fu">filter</span>(TransportationEmissions_2015_2021, Year <span class="sc">&lt;</span> <span class="st">'2022'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(TransportationEmissions_2015_2021, Year &lt; "2022"): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="data-frame-for-total-2015-2021-transportation-emissions" class="level2">
+<h2 class="anchored" data-anchor-id="data-frame-for-total-2015-2021-transportation-emissions">Data Frame for Total 2015-2021 Transportation Emissions</h2>
+<p>After improving our data set and being able to easily understand our variables and observations, I am confident that a summary of the data can be created. To summarize the data, we will need to isolate and arrange some variables to a new data frame.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>net_emissions <span class="ot">&lt;-</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> </span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, Annual_Total_Emissions) <span class="sc">%&gt;%</span> </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_of_Annual_Total_Emissions =</span> <span class="fu">sum</span>(Annual_Total_Emissions))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(., Year, Annual_Total_Emissions): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(net_emissions)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in summary(net_emissions): object 'net_emissions' not found</code></pre>
+</div>
+</div>
+<p>Our new data frame shows the total amount of emissions on a yearly basis since 2015. I observed an increase of emissions in 2015 to 2019 due to our economy growing at a rapid pace with the introduction of globalization and more transportation needed to move things. 2020 is the lowest year of emissions with multiple events happened causing a decrease of emissions, a major reason is COVID-19, limiting travel from countries with less people commuting to work and leisure. Another reason for the decrease is the threat of climate change and individuals wanting to be ecologically friendly by demanding clean energy investment to the government. 2018 is the highest year of emissions likely linked with our growing economy and need of cheap transportation.</p>
+</section>
+<section id="transportation-emissions" class="level2">
+<h2 class="anchored" data-anchor-id="transportation-emissions">2021 Transportation Emissions</h2>
+<p>I need to separate 2021 emissions from all of the other years to determine highest amount of emissions in each sector of transportation to make an effective visualization of one of the deliverables. The next task is creating a new data frame to understand sector of transportation with the highest amount of emissions so I will need to find a sum for each sector.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>Emissions2021 <span class="ot">&lt;-</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Year <span class="sc">==</span> <span class="st">'2021'</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>( Section_of_Transportation) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">Sum_of_Annual_Total_Emissions =</span> <span class="fu">sum</span>(Annual_Total_Emissions))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(., Year == "2021"): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+</section>
+<section id="gas-type" class="level2">
+<h2 class="anchored" data-anchor-id="gas-type">Gas Type</h2>
+<p>In our previous graph, we will find that road transportation as the majority of emissions. All other sectors combined would be smaller, this tells us that road transportation is the area, where our focus of reducing emissions should be a priority. Our final data frame required will inform us of the type and amount of gases emitted from 2015 to 2021.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>GasTypeEmissionTotal <span class="ot">&lt;-</span> TransportationEmissions_2015_2021 <span class="sc">%&gt;%</span> </span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, Type_of_Gas, Annual_Total_Emissions) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Type_of_Gas) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">summarise</span>(<span class="at">Sum_of_Annual_Total_Emissions =</span> <span class="fu">sum</span>(Annual_Total_Emissions))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(., Year, Type_of_Gas, Annual_Total_Emissions): object 'TransportationEmissions_2015_2021' not found</code></pre>
+</div>
+</div>
+<p>Our data sets states that the majority of gases produced within the Transportation industry are Carbon Dioxide (Co2) or Carbon Dioxide Equivalent gases (Co2E) with a fraction being Methane and Nitrous Oxide.</p>
+<p>Now, that all of our data sets have been successfully created, we can begin to create our visualizations.</p>
+</section>
+<section id="data-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="data-visualization">Data Visualization</h2>
+<p>To make the correct visualizations, we need to understand the variables that need to be graphed. A discrete variable are values that can be obtained by counting. An example of a discrete is our years column with a value like 2015, which can be counted. A continuous variable measures random values that mean something such as the sector of industry. We are going to use two variables for all of the plots so we will be using bi-variate graphs.</p>
+<p>Using this information, I managed to separate my variables into either discrete or continuous in order to find the best visualization. I tried a few different plots to graph the data like a jitter and bar graph but I decided the count graph with a combination of a line graph was best. In the net emissions, both variables are discrete as the year and annual emissions were counted. The count graph shows the values in a precise, clear way and the line graph shows the change of data over time.</p>
+<p>After I decided on my two graphs, I used my two discrete variables “Year and Annual Total Emissions” from the net_emissions dataset and created the visualization.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(net_emissions, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Sum_of_Annual_Total_Emissions)) <span class="sc">+</span> <span class="fu">geom_line</span> (<span class="fu">aes</span>(<span class="at">group=</span><span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">geom_count</span>(<span class="at">colour =</span> <span class="st">"darkblue"</span>, <span class="at">fill =</span> <span class="dv">4</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Net Emissions By Year"</span>,<span class="at">y =</span> <span class="st">"Total Emissions"</span>,<span class="at">x =</span> <span class="st">"Year"</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">26</span>, <span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"black"</span>),<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), <span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(net_emissions, aes(x = Year, y = Sum_of_Annual_Total_Emissions)): object 'net_emissions' not found</code></pre>
+</div>
+</div>
+<p>Now the plot show changes of emissions by the transportation industry in 2015 to 2021. Looking at the visualization, there is a significant drop off in emissions in 2020 but increased for the majority of years.</p>
+<p>Our next step is creating a plot for the year of 2021 by using our Emissions2021 data frame to determine most emissions per sector. I will be using a column graph as we are using one discrete and continuous variable for analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Emissions2021, <span class="fu">aes</span>(<span class="at">x =</span> Section_of_Transportation, <span class="at">y =</span> Sum_of_Annual_Total_Emissions)) <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="at">colour =</span> <span class="st">"darkblue"</span>, <span class="at">fill =</span> <span class="dv">4</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Transportation Sector Emissions in 2021"</span>,<span class="at">y =</span> <span class="st">"Total Emissions"</span>,<span class="at">x =</span> <span class="st">"Transportation Sector"</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">22</span>, <span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"black"</span>),<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), <span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(Emissions2021, aes(x = Section_of_Transportation, y = Sum_of_Annual_Total_Emissions)): object 'Emissions2021' not found</code></pre>
+</div>
+</div>
+<p>The visualization for the transportation sector states that road transportation industry is most significant emitter with little contributions from the remaining sectors.</p>
+<p>The final visualization needed to answer our research question is the amount of emissions by gas from 2015-2021 to understand most prominent gases by transportation industry. I will be using a column graph once again.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(GasTypeEmissionTotal, <span class="fu">aes</span>(<span class="at">x =</span> Type_of_Gas, <span class="at">y =</span> Sum_of_Annual_Total_Emissions)) <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="at">colour =</span> <span class="st">"darkblue"</span>, <span class="at">fill =</span> <span class="dv">4</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Gas Emission Total"</span>,<span class="at">y =</span> <span class="st">"Total Emissions"</span>,<span class="at">x =</span> <span class="st">"Type of Gas"</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">26</span>, <span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"black"</span>),<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), <span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(GasTypeEmissionTotal, aes(x = Type_of_Gas, y = Sum_of_Annual_Total_Emissions)): object 'GasTypeEmissionTotal' not found</code></pre>
+</div>
+</div>
+<p>The results show almost all emissions are caused by Carbon Dioxide Gases or Carbon Dioxide Equivalent gases.</p>
+<p>While completing these visualizations, I realized some interesting results. In my first plot, it was slowly increasing until the peak in 2018 with a small decrease in 2019. The major information discovered is a sharp decline in emissions in 2020. Few reasons can be involved as COVID-19 began to affect the global economy by making people shelter in place with essential travel happening in the US such as getting groceries, going to work if you are an essential worker as an example for the decrease. Popularity in clean transportation and activism in climate change has caused people to change their lifestyle choices like not owning a car, switching to a EV, or public transportation reduces on-road emissions as well. As the United States emerged from the pandemic in 2021, a few factors caused an increase but not to the peak of 2018. People began to get vaccinated and feel more comfortable in public meaning people back into the office, participating in leisure activities, resulting in higher emission levels. However, due to the switch over to cleaner transportation and people continuing virtually slow down the increase.</p>
+<p>The Sector of Transportation data set confirms that the majority of emissions caused by sector is road transportation. This is not a surprise to me as most people in the United States will own a car, drive to one destination from another, it is the most accessible mode of transportation in rural and urban areas. Jobs need cars to function as employees need vehicles to get to work, complete work, and leave in most cases. I expected domestic aviation to have more emissions as people begin to fly commercially for business, family or leisure as states open for travelers, but was surprised with a value comparable to international aviation which is regulated for COVID prone countries.</p>
+<p>My final analysis states that the majority of gas emitted in the Transportation industry is Carbon Dioxide or Equivalent gases. I was surprised on how much little methane and nitrous oxide emissions were produced due to the aviation industry along with the production of the equipment. I did expect a substantial amount of Carbon Dioxide emissions as vehicles are the lifeline to our economy, and the country is going through electric vehicle transformation at a slow rate. In return, we need to utilize gas powered vehicles which cause higher carbon dioxide emissions. I expect this number to decrease as cleaner forms of transformation and power begin to become more prevalent.</p>
+</section>
+<section id="reflection" class="level2">
+<h2 class="anchored" data-anchor-id="reflection">Reflection</h2>
+<p>This was my first research project in Data Science that I have ever done as I decided on a career change when I enter the Data Analytics and Computational Social Science program. I began the project initially with little understanding in R, I prepared with a mini course in SQL but was unsure how that knowledge would transfer and be relevant to the project. Over time, I became more confident after doing the homework, trial and error, and asking for help from tutors. At first, I was planning to do a project based on Electric Vehicle Sales within Washington. However, I was unable to find a sufficient data set to join my data together regarding vehicle pricing, average lifespan of vehicle to determine if an EV was a good purchase for an average American so I decided to change my approach and look at overall emissions in the transportation industry. As someone who works in the utility industry and closely with our Fleet department. I wanted to see any correlation between greenhouse emissions and road transportation along with a comparison of other sectors. It would help me visualize, what I want to work to achieve in my personal work role. Our company goal is to become fully electrify our Fleet by 2050 and bring our carbon footprint to zero. I wanted to see as a country if our emissions were decreasing, which sector is most responsible and what type of gas is most responsible.</p>
+<p>My most challenging problem was removing the data in scientific form into regular form. I was confused for a portion of time on why my numbers were so inaccurate, an example of this is the total methane emissions had a much higher number than carbon dioxide. Originally, the problem was related to how the data was initially downloaded and uploaded into R. Other data sets, I checked did not have this issue. I also knew that my data was false because vehicles run on gas which emits carbon dioxide while methane and nitrous oxide is more common in different industries like agriculture. I was unsure if the code was typed wrong, or if my charts were incomplete. I second guessed myself and made it seem a lot harder. Eventually, I needed help and I realized that it was the formatting in R that created the issue. My data set and code was correct with no errors. I typed in the option function, and correctly formatted my data for visualization.</p>
+<p>I did not experience much trouble with the visualizations which surprised me. I completed a visualization of the United States map for a different project and I could not find an answer to the function giving me errors for a few hours. Making the visualization in my different class, I learned how to modify the visualization to make it clean, understand what is important that individuals need to know, and code technical skills that definitely helped me complete this project.</p>
+<p>In the project, I wished I had access to information regarding emissions by state. I would liked to compare how New England emissions compare to a similar region in population like Los Angeles or Maryland and Virginia to see if New England is leading emissions reduction in the United States. I could understand what are we doing right to reduce emissions or what should be do different if we are in the higher percentile.</p>
+<p>Another idea, I wish that had a higher amount of information available is additional greenhouse gas emissions from other industries like agriculture and utilities to compare to the transportation industry. A wide business view on opinions and plans to reduce climate change would be interesting to learn about and analyze. Continuing the project to a new phase, I would add compare emissions in the transportation industry to the agriculture and the utility industries which have produced mass amounts of gases. The data would look to prove correlation if business in America is becoming more green or if an illusion is being shown and no meaningful change has happened.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Our research question states “How much emissions per ton are emitted annually and how this dilemma is changing since the push for clean energy beginning in 2015?”.</p>
+<p>The analysis states that approximately 5,086,377,127 tons of emissions are emitted annually from 2015 to 2021. Over the last two years, this mean has been higher, meaning we have been decreasing our emissions average which shows positive change. The lower amount of emissions are the COVID-19 pandemic in 2020, the Electric implementation programs in Transportation, less commuting to the office are important factors in the reduction. People are seeing climate change as a significant threat and realize action must be taken to protect the future. This mindset encourages government to create rebates for clean transportation, investment for infrastructure and eco-friendly legislation.</p>
+<p>The road transportation sector has been responsible for the majority of emissions from 2015 to 2021, with the majority of emissions being related to Carbon Dioxide. This information debunks our theory stating a significant amount of emissions are caused by daily tasks essential to life, getting groceries, commuting to work, seeing friends and family. Vehicles with engines are the vast majority of the United States car market due to lower initial price, quicker time to refuel, lack of infrastructure for vehicles powered with electric, hydrogen in most of the country. Work vehicles like trucks and construction equipment do not have the capability to use batteries as main sources of power as the technology is not available. The increase of non internal combustion vehicles becoming more accessible will reduce the amount of carbon dioxide being emitted in the road transportation industry and hopefully will extend to other transportation sectors like aviation.</p>
+<p>As a result, we have determined that emissions have increased since 2020 due to the COVID-19 pandemic but less than pre-pandemic levels, projected to decrease in the coming years. The road transportation sector and carbon dioxide related gases are most responsible of emissions from our research. Using this information, we can begin to build a positive future to change the transportation industry to make a better tomorrow.</p>
+</section>
+<section id="bibliography" class="level2">
+<h2 class="anchored" data-anchor-id="bibliography">Bibliography</h2>
+<p>Climate TRACE, https://climatetrace.org/downloads. &lt; Raw Data &gt;</p>
+<p>Singer-Vine, Jeremy. “Big Emitters.” Data Is Plural, 16 Nov.&nbsp;2022, https://www.data-is-plural.com/archive/2022-11-16-edition/. &lt; Where Data was Obtained &gt;</p>
+<p>“On Road.” Climate TRACE, 9 Nov.&nbsp;2022, https://climatetrace.org/public/upload/files/62f50cfb415f6.pdf?v=1667641844. &lt; How Transportation Data was Gathered &gt;</p>
+<p>Federal funding programs (no date) U.S. Department of Transportation. Available at: https://www.transportation.gov/rural/ev/toolkit/ev-infrastructure-funding-and-financing/federal-funding-programs (Accessed: December 17, 2022). &gt; Federal EV Programs &gt;</p>
+<p>“Overview of Greenhouse Gases.” EPA, Environmental Protection Agency, 16 May 2022, https://www.epa.gov/ghgemissions/overview-greenhouse-gases. &lt; Analysis of Gases &gt;</p>
+<p>Rabo, Olga. “What Is CO2E and How Is It Calculated?” Full Impact View of Your Investments - Cooler Future, 18 Nov.&nbsp;2020, https://www.coolerfuture.com/blog/co2e. &lt; CO2e Defined &gt;</p>
+<p>Rice, D., &amp; Rolfe, M. (n.d.). Data Science Fundamentals: R Tutorials. Retrieved from <a href="https://classroom.google.com/u/1/w/MTIwNzU2NTkzNjI2/t/all" class="uri">https://classroom.google.com/u/1/w/MTIwNzU2NTkzNjI2/t/all</a> &lt; Class Tutorials &gt;</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

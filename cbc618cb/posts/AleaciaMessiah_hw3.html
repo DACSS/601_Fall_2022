@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aleacia Messiah">
+<meta name="dcterms.date" content="2022-12-11">
+<meta name="description" content="Descriptive Statistics, Visualizations, and Limitations">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 3">
+<meta name="twitter:description" content="Descriptive Statistics, Visualizations, and Limitations">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Homework 3</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#read-in-data" id="toc-read-in-data" class="nav-link active" data-scroll-target="#read-in-data">Read in Data</a></li>
+  <li><a href="#clean-data" id="toc-clean-data" class="nav-link" data-scroll-target="#clean-data">Clean Data</a></li>
+  <li><a href="#narrative" id="toc-narrative" class="nav-link" data-scroll-target="#narrative">Narrative</a></li>
+  <li><a href="#potential-research-questions" id="toc-potential-research-questions" class="nav-link" data-scroll-target="#potential-research-questions">Potential Research Questions</a></li>
+  <li><a href="#descriptive-statistics" id="toc-descriptive-statistics" class="nav-link" data-scroll-target="#descriptive-statistics">Descriptive Statistics</a></li>
+  <li><a href="#visualizations" id="toc-visualizations" class="nav-link" data-scroll-target="#visualizations">Visualizations</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Homework 3</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">hw3</div>
+    <div class="quarto-category">Aleacia Messiah</div>
+    <div class="quarto-category">SIPRI_Milex</div>
+    <div class="quarto-category">tidyverse</div>
+    <div class="quarto-category">readxl</div>
+    <div class="quarto-category">ggplot2</div>
+    <div class="quarto-category">treemap</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Descriptive Statistics, Visualizations, and Limitations
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Aleacia Messiah </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 11, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(treemap)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Since Homework 3 is a continuation of Homework 2, the sections <em>Read in Data</em> through <em>Potential Research Questions</em> will be the same as Homework 2.</p>
+</div>
+</div>
+<section id="read-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data">Read in Data</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in the Current USD sheet of the Milex dataset, skipping the first 6 rows and renaming the columns</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>milex <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"_data/SIPRI-Milex-data-1949-2021.xlsx"</span>, <span class="at">sheet =</span> <span class="st">"Current USD"</span>, <span class="at">skip =</span> <span class="dv">6</span>, <span class="at">col_names =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Notes"</span>, <span class="dv">1949</span><span class="sc">:</span><span class="dv">2021</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># view milex data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>milex</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 191 × 75
+   Country  Notes `1949` `1950` `1951` `1952` `1953` `1954` `1955` `1956` `1957`
+   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; 
+ 1 Africa   &lt;NA&gt;  &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;  
+ 2 North A… &lt;NA&gt;  &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;  
+ 3 Algeria  §4    xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx   
+ 4 Libya    ‡§¶16 xxx    xxx    ...    ...    ...    ...    ...    ...    ...   
+ 5 Morocco  §17   xxx    xxx    xxx    xxx    xxx    xxx    xxx    23.71… 35.40…
+ 6 Tunisia  &lt;NA&gt;  xxx    xxx    xxx    xxx    xxx    xxx    xxx    3.714… 6.411…
+ 7 sub-Sah… &lt;NA&gt;  &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;  
+ 8 Angola   §‖1   xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx   
+ 9 Benin    §     xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx   
+10 Botswana &lt;NA&gt;  xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx    xxx   
+# … with 181 more rows, and 64 more variables: `1958` &lt;chr&gt;, `1959` &lt;chr&gt;,
+#   `1960` &lt;chr&gt;, `1961` &lt;chr&gt;, `1962` &lt;chr&gt;, `1963` &lt;chr&gt;, `1964` &lt;chr&gt;,
+#   `1965` &lt;chr&gt;, `1966` &lt;chr&gt;, `1967` &lt;chr&gt;, `1968` &lt;chr&gt;, `1969` &lt;chr&gt;,
+#   `1970` &lt;chr&gt;, `1971` &lt;chr&gt;, `1972` &lt;chr&gt;, `1973` &lt;chr&gt;, `1974` &lt;chr&gt;,
+#   `1975` &lt;chr&gt;, `1976` &lt;chr&gt;, `1977` &lt;chr&gt;, `1978` &lt;chr&gt;, `1979` &lt;chr&gt;,
+#   `1980` &lt;chr&gt;, `1981` &lt;chr&gt;, `1982` &lt;chr&gt;, `1983` &lt;chr&gt;, `1984` &lt;chr&gt;,
+#   `1985` &lt;chr&gt;, `1986` &lt;chr&gt;, `1987` &lt;chr&gt;, `1988` &lt;chr&gt;, `1989` &lt;chr&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="clean-data" class="level2">
+<h2 class="anchored" data-anchor-id="clean-data">Clean Data</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>milex_clean <span class="ot">&lt;-</span> milex <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove Notes column</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Notes"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a column with region names</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Region =</span> <span class="fu">case_when</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_ends</span>(Country, <span class="st">"Africa"</span>) <span class="sc">~</span> <span class="st">"Africa"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(Country, <span class="st">"America"</span>) <span class="sc">~</span> <span class="st">"Americas"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(Country, <span class="st">"Asia &amp; Oceania"</span>) <span class="sc">~</span> <span class="st">"Asia &amp; Oceania"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_ends</span>(Country, <span class="st">"Europe"</span>) <span class="sc">~</span> <span class="st">"Europe"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_ends</span>(Country, <span class="st">"East"</span>) <span class="sc">~</span> <span class="st">"Middle East"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace NAs in Region column</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Region, <span class="at">.direction =</span> <span class="st">"down"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a column with sub region names</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sub_Region =</span> <span class="fu">case_when</span>(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"North Africa"</span>) <span class="sc">~</span> <span class="st">"North Africa"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"sub-Saharan Africa"</span>) <span class="sc">~</span> <span class="st">"sub-Saharan Africa"</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central America and the Caribbean"</span>) <span class="sc">~</span> <span class="st">"Central America and the Caribbean"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"North America"</span>) <span class="sc">~</span> <span class="st">"North America"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South America"</span>) <span class="sc">~</span> <span class="st">"South America"</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Oceania"</span>) <span class="sc">~</span> <span class="st">"Oceania"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South Asia"</span>) <span class="sc">~</span> <span class="st">"South Asia"</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"East Asia"</span>) <span class="sc">~</span> <span class="st">"East Asia"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South East Asia"</span>) <span class="sc">~</span> <span class="st">"South East Asia"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central Asia"</span>) <span class="sc">~</span> <span class="st">"Central Asia"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central Europe"</span>) <span class="sc">~</span> <span class="st">"Central Europe"</span>,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Eastern Europe"</span>) <span class="sc">~</span> <span class="st">"Eastern Europe"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Western Europe"</span>) <span class="sc">~</span> <span class="st">"Western Europe"</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_ends</span>(Country, <span class="st">"East"</span>) <span class="sc">~</span> <span class="st">"Middle East"</span>,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace NAs in Sub Region column</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Sub_Region, <span class="at">.direction =</span> <span class="st">"down"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove rows with region and sub-region names</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">7</span>, <span class="dv">55</span><span class="sc">:</span><span class="dv">56</span>, <span class="dv">70</span>, <span class="dv">73</span>, <span class="dv">85</span><span class="sc">:</span><span class="dv">86</span>, <span class="dv">91</span>, <span class="dv">98</span>, <span class="dv">105</span>, <span class="dv">117</span>, <span class="dv">123</span><span class="sc">:</span><span class="dv">124</span>, <span class="dv">145</span>, <span class="dv">154</span>, <span class="dv">175</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace "xxx" and "..." with NAs</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na_if</span>(<span class="st">"xxx"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na_if</span>(<span class="st">"..."</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine Region and Sub Region into one column</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(Region<span class="sc">:</span>Sub_Region, <span class="at">col =</span> <span class="st">"Region &amp; Sub Region"</span>, <span class="at">sep =</span> <span class="st">"/"</span> ) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine year columns into one column</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="st">'1949'</span><span class="sc">:</span><span class="st">'2021'</span>, <span class="at">names_to =</span> <span class="st">"Year"</span>, <span class="at">values_to =</span> <span class="st">"Military Expenditure in Millions of US$"</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="co"># view cleaned dataset</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>milex_clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12,629 × 4
+   Country `Region &amp; Sub Region` Year  `Military Expenditure in Millions of US$`
+   &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt; &lt;chr&gt;                                    
+ 1 Algeria Africa/North Africa   1949  &lt;NA&gt;                                     
+ 2 Algeria Africa/North Africa   1950  &lt;NA&gt;                                     
+ 3 Algeria Africa/North Africa   1951  &lt;NA&gt;                                     
+ 4 Algeria Africa/North Africa   1952  &lt;NA&gt;                                     
+ 5 Algeria Africa/North Africa   1953  &lt;NA&gt;                                     
+ 6 Algeria Africa/North Africa   1954  &lt;NA&gt;                                     
+ 7 Algeria Africa/North Africa   1955  &lt;NA&gt;                                     
+ 8 Algeria Africa/North Africa   1956  &lt;NA&gt;                                     
+ 9 Algeria Africa/North Africa   1957  &lt;NA&gt;                                     
+10 Algeria Africa/North Africa   1958  &lt;NA&gt;                                     
+# … with 12,619 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># number of distinct countries</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(milex_clean<span class="sc">$</span>Country)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 173</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># list distinct countries</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(milex_clean[,<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 173 × 1
+   Country     
+   &lt;chr&gt;       
+ 1 Algeria     
+ 2 Libya       
+ 3 Morocco     
+ 4 Tunisia     
+ 5 Angola      
+ 6 Benin       
+ 7 Botswana    
+ 8 Burkina Faso
+ 9 Burundi     
+10 Cameroon    
+# … with 163 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># list distinct region and sub-region combinations</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(milex_clean[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 1
+   `Region &amp; Sub Region`                     
+   &lt;chr&gt;                                     
+ 1 Africa/North Africa                       
+ 2 Africa/sub-Saharan Africa                 
+ 3 Americas/Central America and the Caribbean
+ 4 Americas/North America                    
+ 5 Americas/South America                    
+ 6 Asia &amp; Oceania/Oceania                    
+ 7 Asia &amp; Oceania/South Asia                 
+ 8 Asia &amp; Oceania/East Asia                  
+ 9 Asia &amp; Oceania/Central Asia               
+10 Europe/Central Europe                     
+11 Europe/Eastern Europe                     
+12 Europe/Western Europe                     
+13 Middle East/Middle East                   </code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># number of years</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(milex_clean<span class="sc">$</span>Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 73</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># range of years</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(milex_clean<span class="sc">$</span>Year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "1949" "2021"</code></pre>
+</div>
+</div>
+</section>
+<section id="narrative" class="level2">
+<h2 class="anchored" data-anchor-id="narrative">Narrative</h2>
+<p>The Current USD data from the SIPRI Milex dataset details the military expenditures in millions of US dollars for 173 countries for the period 1949-2021. There are 191 observations (173 actual observations) and 75 variables (<code>Country</code>, <code>Notes</code>, and Years <code>1949</code> through <code>2021</code>). Observations (countries) were grouped by region and sub-region. There are 5 regions (Africa, Americas, Asia &amp; Oceania, Europe, and Middle East) and 14 sub-regions (North Africa, Sub-Saharan Africa, Central America and the Caribbean, North America, South America, Oceania, South Asia, East Asia, South East Asia, Central Asia, Central Europe, Eastern Europe, Western Europe, and Middle East). Some of the data is missing for several countries in various years due to the data not being available or the country did not exist or was not independent at the time the data was collected, so those values are replaced with NAs.</p>
+<p>After cleaning the data, the new dataset has 12,629 observations and 4 variables (<code>Country</code>, <code>Region &amp; Sub Region</code>, <code>Year</code>, <code>Military Expenditure in Millions of US$</code>). The regions and sub-regions were extracted from the <code>Country</code> column and combined together into one column to illustrate the various combinations of region and sub-region. The years were also condensed into one column.</p>
+</section>
+<section id="potential-research-questions" class="level2">
+<h2 class="anchored" data-anchor-id="potential-research-questions">Potential Research Questions</h2>
+<p>Since this data was taken over a large period of time, I can research whether using time series methods would be appropriate to visualize and analyze the trends in the data.</p>
+<p><strong>1. What trends are present in the data (e.g.&nbsp;are there certain patterns of military spending over the years)?</strong></p>
+<p><strong>2. What are the top spending countries for each year?</strong></p>
+<p><strong>3. What is the predicted amount of military expenditures in dollars for year 2022 for each country?</strong></p>
+</section>
+<section id="descriptive-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-statistics">Descriptive Statistics</h2>
+<p>I decided to calculate the average military expenditures (<code>Military Expenditure in Millions of US$</code>) each year (<code>Year</code>) with missing values removed (missing values were removed in all further analyses in order to properly compute these statistics). It appears that the mean military expenditure amount in US dollars steadily increases over time, which makes sense as more warfare and increased tensions between foreign nations began to arise over time. The average military expenditure in US dollars across the entire dataset is 0.6591971. This is about the same as the average in the late 1970s and early 1980s. The standard deviation of military expenditures in millions of US dollars is 0.473998, meaning this data varies about 0.473998 million US dollars from the mean, so given that the mean is 0.6591971 million US dollars, the military expenditure amounts vary quite greatly.</p>
+<p>Since there are 13 <code>Region &amp; Sub Region</code> categories, I want to look at the number of times each region and sub region combination is represented in the data. Africa/sub-Saharan Africa is represented the most at 3,431 times with Europe/Central Europe and Europe/Western Europe following at 1,460 times each. This seems correct as there are many sub-Saharan African countries compared to European countries and others. However, I did not specify to remove missing values, so this count may not be entirely accurate as not every country had a military expenditure amount for each year.</p>
+<p>Lastly, I computed the average military expenditures in US dollars by country. The range is from 0.05479452 million US dollars to 1 million US dollars, so the USSR has the smallest average while 17 countries (including the United States of America) have the largest average. This is a bit strange since there were a lot of tensions, especially during the Cold War, between the USSR and the USA, but the reason why the USSR has the smallest average military expenditures in US dollars may be because the USSR broke up in the 1990s and most of the larger military expenditures occurred after the disbandment of the USSR.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the average military expenditures by year </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>avg_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">avg_expenditure =</span> <span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># view avg_exp</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>avg_exp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 73 × 2
+   Year  avg_expenditure
+   &lt;chr&gt;           &lt;dbl&gt;
+ 1 1949           0.0983
+ 2 1950           0.127 
+ 3 1951           0.162 
+ 4 1952           0.173 
+ 5 1953           0.202 
+ 6 1954           0.185 
+ 7 1955           0.208 
+ 8 1956           0.254 
+ 9 1957           0.306 
+10 1958           0.347 
+# … with 63 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the average military expenditure in millions of US$ across all years</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(milex_clean<span class="sc">$</span><span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6591971</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the standard deviation of military expenditures in millions of US$</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(<span class="sc">!</span><span class="fu">is.na</span>(milex_clean<span class="sc">$</span><span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.473998</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># count region &amp; sub region combinations</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>region_subregion <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Region &amp; Sub Region</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># view region_subregion</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>region_subregion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 2
+   `Region &amp; Sub Region`                          n
+   &lt;chr&gt;                                      &lt;int&gt;
+ 1 Africa/North Africa                          292
+ 2 Africa/sub-Saharan Africa                   3431
+ 3 Americas/Central America and the Caribbean   949
+ 4 Americas/North America                       146
+ 5 Americas/South America                       803
+ 6 Asia &amp; Oceania/Central Asia                  365
+ 7 Asia &amp; Oceania/East Asia                    1241
+ 8 Asia &amp; Oceania/Oceania                       292
+ 9 Asia &amp; Oceania/South Asia                    438
+10 Europe/Central Europe                       1460
+11 Europe/Eastern Europe                        584
+12 Europe/Western Europe                       1460
+13 Middle East/Middle East                     1168</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compute average military expenditures by country</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>country_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">avg_expenditure =</span> <span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)))</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># view country_exp</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>country_exp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 173 × 2
+   Country     avg_expenditure
+   &lt;chr&gt;                 &lt;dbl&gt;
+ 1 Afghanistan           0.329
+ 2 Albania               0.644
+ 3 Algeria               0.808
+ 4 Angola                0.603
+ 5 Argentina             1    
+ 6 Armenia               0.397
+ 7 Australia             1    
+ 8 Austria               0.890
+ 9 Azerbaijan            0.411
+10 Bahrain               0.699
+# … with 163 more rows</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find the range of the average military expenditures in millions of US$ out of all countries</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(country_exp<span class="sc">$</span>avg_expenditure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.05479452 1.00000000</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find the country with the smallest average military expenditure in US$</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_min</span>(country_exp, avg_expenditure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  Country avg_expenditure
+  &lt;chr&gt;             &lt;dbl&gt;
+1 USSR             0.0548</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find the countries with the largest average military expenditure in US$</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_max</span>(country_exp, avg_expenditure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 17 × 2
+   Country                  avg_expenditure
+   &lt;chr&gt;                              &lt;dbl&gt;
+ 1 Argentina                              1
+ 2 Australia                              1
+ 3 Belgium                                1
+ 4 Costa Rica                             1
+ 5 Denmark                                1
+ 6 France                                 1
+ 7 Greece                                 1
+ 8 Italy                                  1
+ 9 Luxembourg                             1
+10 Mexico                                 1
+11 Netherlands                            1
+12 Norway                                 1
+13 Peru                                   1
+14 Portugal                               1
+15 Spain                                  1
+16 Turkey                                 1
+17 United States of America               1</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find the top 5 spending countries for each year</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>top_country_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># view top_country_exp</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>top_country_exp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 365 × 4
+# Groups:   Year [73]
+   Country  `Region &amp; Sub Region`                      Year  Military Expendit…¹
+   &lt;chr&gt;    &lt;chr&gt;                                      &lt;chr&gt; &lt;chr&gt;              
+ 1 Denmark  Europe/Western Europe                      1949  69.297401347449465 
+ 2 Norway   Europe/Western Europe                      1949  67.17745742401685  
+ 3 Portugal Europe/Western Europe                      1949  54.441128511214352 
+ 4 Italy    Europe/Western Europe                      1949  467.23430058061933 
+ 5 Mexico   Americas/Central America and the Caribbean 1949  34.797687861271676 
+ 6 Chile    Americas/South America                     1950  87.502552157771277 
+ 7 Portugal Europe/Western Europe                      1950  52.732141362862961 
+ 8 Denmark  Europe/Western Europe                      1950  51.975202471645282 
+ 9 Italy    Europe/Western Europe                      1950  501.26509684299299 
+10 Norway   Europe/Western Europe                      1950  49.979980008007999 
+# … with 355 more rows, and abbreviated variable name
+#   ¹​`Military Expenditure in Millions of US$`</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the top 5 spending countries from 1949 to 1953</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>first_5_yrs <span class="ot">&lt;-</span> <span class="fu">filter</span>(top_country_exp, Year <span class="sc">&lt;=</span> <span class="dv">1953</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># view first 5 years data frame</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>first_5_yrs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 25 × 4
+# Groups:   Year [5]
+   Country  `Region &amp; Sub Region`                      Year  Military Expendit…¹
+   &lt;chr&gt;    &lt;chr&gt;                                      &lt;chr&gt; &lt;chr&gt;              
+ 1 Denmark  Europe/Western Europe                      1949  69.297401347449465 
+ 2 Norway   Europe/Western Europe                      1949  67.17745742401685  
+ 3 Portugal Europe/Western Europe                      1949  54.441128511214352 
+ 4 Italy    Europe/Western Europe                      1949  467.23430058061933 
+ 5 Mexico   Americas/Central America and the Caribbean 1949  34.797687861271676 
+ 6 Chile    Americas/South America                     1950  87.502552157771277 
+ 7 Portugal Europe/Western Europe                      1950  52.732141362862961 
+ 8 Denmark  Europe/Western Europe                      1950  51.975202471645282 
+ 9 Italy    Europe/Western Europe                      1950  501.26509684299299 
+10 Norway   Europe/Western Europe                      1950  49.979980008007999 
+# … with 15 more rows, and abbreviated variable name
+#   ¹​`Military Expenditure in Millions of US$`</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the top 5 spending countries from 2017 to 2021</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>last_5_yrs <span class="ot">&lt;-</span> <span class="fu">filter</span>(top_country_exp, Year <span class="sc">&gt;=</span> <span class="dv">2017</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"># view last 5 years data frame</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>last_5_yrs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 25 × 4
+# Groups:   Year [5]
+   Country      `Region &amp; Sub Region`     Year  Military Expenditure in Millio…¹
+   &lt;chr&gt;        &lt;chr&gt;                     &lt;chr&gt; &lt;chr&gt;                           
+ 1 Poland       Europe/Central Europe     2017  9870.6806282722519              
+ 2 Korea, North Asia &amp; Oceania/East Asia  2017  961.48148148148152              
+ 3 Netherlands  Europe/Western Europe     2017  9580.6854982163022              
+ 4 Croatia      Europe/Central Europe     2017  920.83705291818819              
+ 5 Cape Verde   Africa/sub-Saharan Africa 2017  9.3543841662816174              
+ 6 Croatia      Europe/Central Europe     2018  966.35871679888726              
+ 7 Bulgaria     Europe/Central Europe     2018  961.29727459449623              
+ 8 Mongolia     Asia &amp; Oceania/East Asia  2018  96.067489859811118              
+ 9 Algeria      Africa/North Africa       2018  9583.7242883703002              
+10 Eswatini     Africa/sub-Saharan Africa 2018  95.863380323095569              
+# … with 15 more rows, and abbreviated variable name
+#   ¹​`Military Expenditure in Millions of US$`</code></pre>
+</div>
+</div>
+</section>
+<section id="visualizations" class="level2">
+<h2 class="anchored" data-anchor-id="visualizations">Visualizations</h2>
+<p>To visualize trends of military expenditures over time, I created a time series plot of <code>avg_expenditure</code> vs.&nbsp;<code>year</code> from the avg_exp data frame. To reiterate, missing values are not included in order to proceed with the analysis. As we can see from the plot, there is a clear increasing trend of military expenditures over time, with the data stabilizing around the late 2010s. As previously mentioned, there was quite a bit of warfare and rising tensions in the twentieth century but the reasoning behind the increasing trend leveling off later on may be due to some countries making an effort to decrease or cut military spending in order to not raise their national debt or the global COVID-19 pandemic taking place beginning in late 2019 and early 2020.</p>
+<p>The second visualization is a tree map depicting the region and sub region counts by the sizes of the rectangles. Africa/sub-Saharan Africa is the largest rectangle which coincides with my observation in the previous section. Although Europe/Central Europe and Europe/Western Europe have the same count, their rectangles look different as Europe/Central Europe is longer and Europe/Western Europe looks wider. It would be easier to tell if the counts were listed under the labels but I did not find out how to do this.</p>
+<p>These third and fourth visualizations illustrate the top five spending countries for the first five years and last five years respectively. The military expenditures in US millions of dollars have a wider range in the first five years of data versus the last five years of data, with the first five years ranging from 34 million US dollars to 986 million US dollars and the last five years ranging from 85 to 9,978 million US dollars. What I find interesting are the countries that repeatedly rank in the top five: for example, Denmark was in the top five for 1949 to 1952 while Algeria was in the top five for 2018, 2020, and 2021. I’m not up-to-date on world relations and current events, but for a country to be in the top five for military expenditures, most likely the military makes up a large portion of the country’s budget and is therefore an important asset for them to maintain.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a time series plot of avg_expenditure vs. year with avg_exp data</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(avg_exp, <span class="fu">aes</span>(Year, avg_expenditure)) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">x =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Expenditure in Millions (US$)"</span>,</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Time Series of Average Expenditure in Millions (US$) vs. Year"</span>,</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Missing values are not included"</span>,</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_hw3_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a treemap of region and sub region counts</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">treemap</span>(region_subregion,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">index=</span><span class="st">"Region &amp; Sub Region"</span>,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">vSize=</span><span class="st">"n"</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">type=</span><span class="st">"index"</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">title=</span><span class="st">"Treemap of Region &amp; Sub Region Counts"</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">fontsize.title =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_hw3_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 1949 to 1953</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(first_5_yrs, <span class="fu">aes</span>(Year, <span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> Country)) <span class="sc">+</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scatterplot of Top 5 Highest Spending Countries from 1949 to 1953"</span>,</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_hw3_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 2017 to 2021</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(last_5_yrs, <span class="fu">aes</span>(Year, <span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> Country)) <span class="sc">+</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scatterplot of Top 5 Highest Spending Countries from 2017 to 2021"</span>,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_hw3_files/figure-html/unnamed-chunk-5-4.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>The biggest limitation to my visualizations is in relation to my third research question: What is the predicted amount of military expenditures in dollars for year 2022 for each country? I unfortunately ran out of time and space for this assignment to go in depth into this question but I would assume based on my math background, this would require some forecasting techniques. I would like to dive into more prediction-related analysis to answer this question, but this is outside the scope of this class, so I will have to come back to it later on after a refresher on forecasting methods.</p>
+<p>As for the top spending countries of each year, it was very difficult to visualize the top five spending countries from 1949 to 2021 in one plot (or even faceted plots) which is why I had to limit to illustrating only the first five years (1949 to 1953) and the last five years (2017 to 2021). It would be better for comparison to display all the years in one chart but that was not possible. However, from what I was able to do, I could draw a good conclusion as to what the data was portraying. For the final project, I think it would be beneficial to look more into faceting and other techniques regarding fitting all data points in one plot. In addition, I’ll also conduct further research on how to improve my titles and labels on my graphs as they can be better than they are now.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb42" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Homework 3"</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Aleacia Messiah"</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Descriptive Statistics, Visualizations, and Limitations"</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "12/11/2022"</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - hw3</span></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - Aleacia Messiah</span></span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - SIPRI_Milex</span></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - tidyverse</span></span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - readxl</span></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a><span class="co">  - ggplot2</span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a><span class="co">  - treemap</span></span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb42-26"><a href="#cb42-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb42-27"><a href="#cb42-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-28"><a href="#cb42-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb42-29"><a href="#cb42-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb42-30"><a href="#cb42-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb42-31"><a href="#cb42-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(treemap)</span>
+<span id="cb42-32"><a href="#cb42-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-33"><a href="#cb42-33" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb42-34"><a href="#cb42-34" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb42-35"><a href="#cb42-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-36"><a href="#cb42-36" aria-hidden="true" tabindex="-1"></a>::: callout-note</span>
+<span id="cb42-37"><a href="#cb42-37" aria-hidden="true" tabindex="-1"></a><span class="fu">## Note</span></span>
+<span id="cb42-38"><a href="#cb42-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-39"><a href="#cb42-39" aria-hidden="true" tabindex="-1"></a>Since Homework 3 is a continuation of Homework 2, the sections *Read in Data* through *Potential Research Questions* will be the same as Homework 2.</span>
+<span id="cb42-40"><a href="#cb42-40" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb42-41"><a href="#cb42-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-42"><a href="#cb42-42" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in Data</span></span>
+<span id="cb42-43"><a href="#cb42-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-46"><a href="#cb42-46" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb42-47"><a href="#cb42-47" aria-hidden="true" tabindex="-1"></a><span class="co"># read in the Current USD sheet of the Milex dataset, skipping the first 6 rows and renaming the columns</span></span>
+<span id="cb42-48"><a href="#cb42-48" aria-hidden="true" tabindex="-1"></a>milex <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"_data/SIPRI-Milex-data-1949-2021.xlsx"</span>, <span class="at">sheet =</span> <span class="st">"Current USD"</span>, <span class="at">skip =</span> <span class="dv">6</span>, <span class="at">col_names =</span> <span class="fu">c</span>(<span class="st">"Country"</span>, <span class="st">"Notes"</span>, <span class="dv">1949</span><span class="sc">:</span><span class="dv">2021</span>))</span>
+<span id="cb42-49"><a href="#cb42-49" aria-hidden="true" tabindex="-1"></a><span class="co"># view milex data</span></span>
+<span id="cb42-50"><a href="#cb42-50" aria-hidden="true" tabindex="-1"></a>milex</span>
+<span id="cb42-51"><a href="#cb42-51" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb42-52"><a href="#cb42-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-53"><a href="#cb42-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean Data</span></span>
+<span id="cb42-54"><a href="#cb42-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-57"><a href="#cb42-57" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb42-58"><a href="#cb42-58" aria-hidden="true" tabindex="-1"></a>milex_clean <span class="ot">&lt;-</span> milex <span class="sc">%&gt;%</span> </span>
+<span id="cb42-59"><a href="#cb42-59" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove Notes column</span></span>
+<span id="cb42-60"><a href="#cb42-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Notes"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-61"><a href="#cb42-61" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a column with region names</span></span>
+<span id="cb42-62"><a href="#cb42-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Region =</span> <span class="fu">case_when</span>(</span>
+<span id="cb42-63"><a href="#cb42-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_ends</span>(Country, <span class="st">"Africa"</span>) <span class="sc">~</span> <span class="st">"Africa"</span>,</span>
+<span id="cb42-64"><a href="#cb42-64" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(Country, <span class="st">"America"</span>) <span class="sc">~</span> <span class="st">"Americas"</span>,</span>
+<span id="cb42-65"><a href="#cb42-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(Country, <span class="st">"Asia &amp; Oceania"</span>) <span class="sc">~</span> <span class="st">"Asia &amp; Oceania"</span>,</span>
+<span id="cb42-66"><a href="#cb42-66" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_ends</span>(Country, <span class="st">"Europe"</span>) <span class="sc">~</span> <span class="st">"Europe"</span>,</span>
+<span id="cb42-67"><a href="#cb42-67" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_ends</span>(Country, <span class="st">"East"</span>) <span class="sc">~</span> <span class="st">"Middle East"</span>,</span>
+<span id="cb42-68"><a href="#cb42-68" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb42-69"><a href="#cb42-69" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-70"><a href="#cb42-70" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace NAs in Region column</span></span>
+<span id="cb42-71"><a href="#cb42-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Region, <span class="at">.direction =</span> <span class="st">"down"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-72"><a href="#cb42-72" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a column with sub region names</span></span>
+<span id="cb42-73"><a href="#cb42-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sub_Region =</span> <span class="fu">case_when</span>(</span>
+<span id="cb42-74"><a href="#cb42-74" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"North Africa"</span>) <span class="sc">~</span> <span class="st">"North Africa"</span>,</span>
+<span id="cb42-75"><a href="#cb42-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"sub-Saharan Africa"</span>) <span class="sc">~</span> <span class="st">"sub-Saharan Africa"</span>,</span>
+<span id="cb42-76"><a href="#cb42-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central America and the Caribbean"</span>) <span class="sc">~</span> <span class="st">"Central America and the Caribbean"</span>,</span>
+<span id="cb42-77"><a href="#cb42-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"North America"</span>) <span class="sc">~</span> <span class="st">"North America"</span>,</span>
+<span id="cb42-78"><a href="#cb42-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South America"</span>) <span class="sc">~</span> <span class="st">"South America"</span>,</span>
+<span id="cb42-79"><a href="#cb42-79" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Oceania"</span>) <span class="sc">~</span> <span class="st">"Oceania"</span>,</span>
+<span id="cb42-80"><a href="#cb42-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South Asia"</span>) <span class="sc">~</span> <span class="st">"South Asia"</span>,</span>
+<span id="cb42-81"><a href="#cb42-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"East Asia"</span>) <span class="sc">~</span> <span class="st">"East Asia"</span>,</span>
+<span id="cb42-82"><a href="#cb42-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"South East Asia"</span>) <span class="sc">~</span> <span class="st">"South East Asia"</span>,</span>
+<span id="cb42-83"><a href="#cb42-83" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central Asia"</span>) <span class="sc">~</span> <span class="st">"Central Asia"</span>,</span>
+<span id="cb42-84"><a href="#cb42-84" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Central Europe"</span>) <span class="sc">~</span> <span class="st">"Central Europe"</span>,</span>
+<span id="cb42-85"><a href="#cb42-85" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Eastern Europe"</span>) <span class="sc">~</span> <span class="st">"Eastern Europe"</span>,</span>
+<span id="cb42-86"><a href="#cb42-86" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Country, <span class="st">"Western Europe"</span>) <span class="sc">~</span> <span class="st">"Western Europe"</span>,</span>
+<span id="cb42-87"><a href="#cb42-87" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_ends</span>(Country, <span class="st">"East"</span>) <span class="sc">~</span> <span class="st">"Middle East"</span>,</span>
+<span id="cb42-88"><a href="#cb42-88" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb42-89"><a href="#cb42-89" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-90"><a href="#cb42-90" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace NAs in Sub Region column</span></span>
+<span id="cb42-91"><a href="#cb42-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Sub_Region, <span class="at">.direction =</span> <span class="st">"down"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-92"><a href="#cb42-92" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove rows with region and sub-region names</span></span>
+<span id="cb42-93"><a href="#cb42-93" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">7</span>, <span class="dv">55</span><span class="sc">:</span><span class="dv">56</span>, <span class="dv">70</span>, <span class="dv">73</span>, <span class="dv">85</span><span class="sc">:</span><span class="dv">86</span>, <span class="dv">91</span>, <span class="dv">98</span>, <span class="dv">105</span>, <span class="dv">117</span>, <span class="dv">123</span><span class="sc">:</span><span class="dv">124</span>, <span class="dv">145</span>, <span class="dv">154</span>, <span class="dv">175</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-94"><a href="#cb42-94" aria-hidden="true" tabindex="-1"></a>  <span class="co"># replace "xxx" and "..." with NAs</span></span>
+<span id="cb42-95"><a href="#cb42-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na_if</span>(<span class="st">"xxx"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-96"><a href="#cb42-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na_if</span>(<span class="st">"..."</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-97"><a href="#cb42-97" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine Region and Sub Region into one column</span></span>
+<span id="cb42-98"><a href="#cb42-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(Region<span class="sc">:</span>Sub_Region, <span class="at">col =</span> <span class="st">"Region &amp; Sub Region"</span>, <span class="at">sep =</span> <span class="st">"/"</span> ) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-99"><a href="#cb42-99" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine year columns into one column</span></span>
+<span id="cb42-100"><a href="#cb42-100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="st">'1949'</span><span class="sc">:</span><span class="st">'2021'</span>, <span class="at">names_to =</span> <span class="st">"Year"</span>, <span class="at">values_to =</span> <span class="st">"Military Expenditure in Millions of US$"</span>)</span>
+<span id="cb42-101"><a href="#cb42-101" aria-hidden="true" tabindex="-1"></a><span class="co"># view cleaned dataset</span></span>
+<span id="cb42-102"><a href="#cb42-102" aria-hidden="true" tabindex="-1"></a>milex_clean</span>
+<span id="cb42-103"><a href="#cb42-103" aria-hidden="true" tabindex="-1"></a><span class="co"># number of distinct countries</span></span>
+<span id="cb42-104"><a href="#cb42-104" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(milex_clean<span class="sc">$</span>Country)</span>
+<span id="cb42-105"><a href="#cb42-105" aria-hidden="true" tabindex="-1"></a><span class="co"># list distinct countries</span></span>
+<span id="cb42-106"><a href="#cb42-106" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(milex_clean[,<span class="dv">1</span>])</span>
+<span id="cb42-107"><a href="#cb42-107" aria-hidden="true" tabindex="-1"></a><span class="co"># list distinct region and sub-region combinations</span></span>
+<span id="cb42-108"><a href="#cb42-108" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(milex_clean[,<span class="dv">2</span>])</span>
+<span id="cb42-109"><a href="#cb42-109" aria-hidden="true" tabindex="-1"></a><span class="co"># number of years</span></span>
+<span id="cb42-110"><a href="#cb42-110" aria-hidden="true" tabindex="-1"></a><span class="fu">n_distinct</span>(milex_clean<span class="sc">$</span>Year)</span>
+<span id="cb42-111"><a href="#cb42-111" aria-hidden="true" tabindex="-1"></a><span class="co"># range of years</span></span>
+<span id="cb42-112"><a href="#cb42-112" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(milex_clean<span class="sc">$</span>Year)</span>
+<span id="cb42-113"><a href="#cb42-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb42-114"><a href="#cb42-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-115"><a href="#cb42-115" aria-hidden="true" tabindex="-1"></a><span class="fu">## Narrative</span></span>
+<span id="cb42-116"><a href="#cb42-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-117"><a href="#cb42-117" aria-hidden="true" tabindex="-1"></a>The Current USD data from the SIPRI Milex dataset details the military expenditures in millions of US dollars for 173 countries for the period 1949-2021. There are 191 observations (173 actual observations) and 75 variables (<span class="in">`Country`</span>, <span class="in">`Notes`</span>, and Years <span class="in">`1949`</span> through <span class="in">`2021`</span>). Observations (countries) were grouped by region and sub-region. There are 5 regions (Africa, Americas, Asia &amp; Oceania, Europe, and Middle East) and 14 sub-regions (North Africa, Sub-Saharan Africa, Central America and the Caribbean, North America, South America, Oceania, South Asia, East Asia, South East Asia, Central Asia, Central Europe, Eastern Europe, Western Europe, and Middle East). Some of the data is missing for several countries in various years due to the data not being available or the country did not exist or was not independent at the time the data was collected, so those values are replaced with NAs.</span>
+<span id="cb42-118"><a href="#cb42-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-119"><a href="#cb42-119" aria-hidden="true" tabindex="-1"></a>After cleaning the data, the new dataset has 12,629 observations and 4 variables (<span class="in">`Country`</span>, <span class="in">`Region &amp; Sub Region`</span>, <span class="in">`Year`</span>, <span class="in">`Military Expenditure in Millions of US$`</span>). The regions and sub-regions were extracted from the <span class="in">`Country`</span> column and combined together into one column to illustrate the various combinations of region and sub-region. The years were also condensed into one column.</span>
+<span id="cb42-120"><a href="#cb42-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-121"><a href="#cb42-121" aria-hidden="true" tabindex="-1"></a><span class="fu">## Potential Research Questions</span></span>
+<span id="cb42-122"><a href="#cb42-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-123"><a href="#cb42-123" aria-hidden="true" tabindex="-1"></a>Since this data was taken over a large period of time, I can research whether using time series methods would be appropriate to visualize and analyze the trends in the data.</span>
+<span id="cb42-124"><a href="#cb42-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-125"><a href="#cb42-125" aria-hidden="true" tabindex="-1"></a>**1. What trends are present in the data (e.g. are there certain patterns of military spending over the years)?**</span>
+<span id="cb42-126"><a href="#cb42-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-127"><a href="#cb42-127" aria-hidden="true" tabindex="-1"></a>**2. What are the top spending countries for each year?**</span>
+<span id="cb42-128"><a href="#cb42-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-129"><a href="#cb42-129" aria-hidden="true" tabindex="-1"></a>**3. What is the predicted amount of military expenditures in dollars for year 2022 for each country?**</span>
+<span id="cb42-130"><a href="#cb42-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-131"><a href="#cb42-131" aria-hidden="true" tabindex="-1"></a><span class="fu">## Descriptive Statistics</span></span>
+<span id="cb42-132"><a href="#cb42-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-133"><a href="#cb42-133" aria-hidden="true" tabindex="-1"></a>I decided to calculate the average military expenditures (<span class="in">`Military Expenditure in Millions of US$`</span>) each year (<span class="in">`Year`</span>) with missing values removed (missing values were removed in all further analyses in order to properly compute these statistics). It appears that the mean military expenditure amount in US dollars steadily increases over time, which makes sense as more warfare and increased tensions between foreign nations began to arise over time. The average military expenditure in US dollars across the entire dataset is 0.6591971. This is about the same as the average in the late 1970s and early 1980s. The standard deviation of military expenditures in millions of US dollars is 0.473998, meaning this data varies about 0.473998 million US dollars from the mean, so given that the mean is 0.6591971 million US dollars, the military expenditure amounts vary quite greatly. </span>
+<span id="cb42-134"><a href="#cb42-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-135"><a href="#cb42-135" aria-hidden="true" tabindex="-1"></a>Since there are 13 <span class="in">`Region &amp; Sub Region`</span> categories, I want to look at the number of times each region and sub region combination is represented in the data. Africa/sub-Saharan Africa is represented the most at 3,431 times with Europe/Central Europe and Europe/Western Europe following at 1,460 times each. This seems correct as there are many sub-Saharan African countries compared to European countries and others. However, I did not specify to remove missing values, so this count may not be entirely accurate as not every country had a military expenditure amount for each year.</span>
+<span id="cb42-136"><a href="#cb42-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-137"><a href="#cb42-137" aria-hidden="true" tabindex="-1"></a>Lastly, I computed the average military expenditures in US dollars by country. The range is from 0.05479452 million US dollars to 1 million US dollars, so the USSR has the smallest average while 17 countries (including the United States of America) have the largest average. This is a bit strange since there were a lot of tensions, especially during the Cold War, between the USSR and the USA, but the reason why the USSR has the smallest average military expenditures in US dollars may be because the USSR broke up in the 1990s and most of the larger military expenditures occurred after the disbandment of the USSR. </span>
+<span id="cb42-138"><a href="#cb42-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-141"><a href="#cb42-141" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb42-142"><a href="#cb42-142" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the average military expenditures by year </span></span>
+<span id="cb42-143"><a href="#cb42-143" aria-hidden="true" tabindex="-1"></a>avg_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb42-144"><a href="#cb42-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-145"><a href="#cb42-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">avg_expenditure =</span> <span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)))</span>
+<span id="cb42-146"><a href="#cb42-146" aria-hidden="true" tabindex="-1"></a><span class="co"># view avg_exp</span></span>
+<span id="cb42-147"><a href="#cb42-147" aria-hidden="true" tabindex="-1"></a>avg_exp</span>
+<span id="cb42-148"><a href="#cb42-148" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the average military expenditure in millions of US$ across all years</span></span>
+<span id="cb42-149"><a href="#cb42-149" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(milex_clean<span class="sc">$</span><span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>))</span>
+<span id="cb42-150"><a href="#cb42-150" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the standard deviation of military expenditures in millions of US$</span></span>
+<span id="cb42-151"><a href="#cb42-151" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(<span class="sc">!</span><span class="fu">is.na</span>(milex_clean<span class="sc">$</span><span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>))</span>
+<span id="cb42-152"><a href="#cb42-152" aria-hidden="true" tabindex="-1"></a><span class="co"># count region &amp; sub region combinations</span></span>
+<span id="cb42-153"><a href="#cb42-153" aria-hidden="true" tabindex="-1"></a>region_subregion <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb42-154"><a href="#cb42-154" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Region &amp; Sub Region</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-155"><a href="#cb42-155" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>())</span>
+<span id="cb42-156"><a href="#cb42-156" aria-hidden="true" tabindex="-1"></a><span class="co"># view region_subregion</span></span>
+<span id="cb42-157"><a href="#cb42-157" aria-hidden="true" tabindex="-1"></a>region_subregion</span>
+<span id="cb42-158"><a href="#cb42-158" aria-hidden="true" tabindex="-1"></a><span class="co"># compute average military expenditures by country</span></span>
+<span id="cb42-159"><a href="#cb42-159" aria-hidden="true" tabindex="-1"></a>country_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb42-160"><a href="#cb42-160" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-161"><a href="#cb42-161" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">avg_expenditure =</span> <span class="fu">mean</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)))</span>
+<span id="cb42-162"><a href="#cb42-162" aria-hidden="true" tabindex="-1"></a><span class="co"># view country_exp</span></span>
+<span id="cb42-163"><a href="#cb42-163" aria-hidden="true" tabindex="-1"></a>country_exp</span>
+<span id="cb42-164"><a href="#cb42-164" aria-hidden="true" tabindex="-1"></a><span class="co"># find the range of the average military expenditures in millions of US$ out of all countries</span></span>
+<span id="cb42-165"><a href="#cb42-165" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(country_exp<span class="sc">$</span>avg_expenditure)</span>
+<span id="cb42-166"><a href="#cb42-166" aria-hidden="true" tabindex="-1"></a><span class="co"># find the country with the smallest average military expenditure in US$</span></span>
+<span id="cb42-167"><a href="#cb42-167" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_min</span>(country_exp, avg_expenditure)</span>
+<span id="cb42-168"><a href="#cb42-168" aria-hidden="true" tabindex="-1"></a><span class="co"># find the countries with the largest average military expenditure in US$</span></span>
+<span id="cb42-169"><a href="#cb42-169" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_max</span>(country_exp, avg_expenditure)</span>
+<span id="cb42-170"><a href="#cb42-170" aria-hidden="true" tabindex="-1"></a><span class="co"># find the top 5 spending countries for each year</span></span>
+<span id="cb42-171"><a href="#cb42-171" aria-hidden="true" tabindex="-1"></a>top_country_exp <span class="ot">&lt;-</span> milex_clean <span class="sc">%&gt;%</span> </span>
+<span id="cb42-172"><a href="#cb42-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-173"><a href="#cb42-173" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-174"><a href="#cb42-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb42-175"><a href="#cb42-175" aria-hidden="true" tabindex="-1"></a><span class="co"># view top_country_exp</span></span>
+<span id="cb42-176"><a href="#cb42-176" aria-hidden="true" tabindex="-1"></a>top_country_exp</span>
+<span id="cb42-177"><a href="#cb42-177" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the top 5 spending countries from 1949 to 1953</span></span>
+<span id="cb42-178"><a href="#cb42-178" aria-hidden="true" tabindex="-1"></a>first_5_yrs <span class="ot">&lt;-</span> <span class="fu">filter</span>(top_country_exp, Year <span class="sc">&lt;=</span> <span class="dv">1953</span>)</span>
+<span id="cb42-179"><a href="#cb42-179" aria-hidden="true" tabindex="-1"></a><span class="co"># view first 5 years data frame</span></span>
+<span id="cb42-180"><a href="#cb42-180" aria-hidden="true" tabindex="-1"></a>first_5_yrs</span>
+<span id="cb42-181"><a href="#cb42-181" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the top 5 spending countries from 2017 to 2021</span></span>
+<span id="cb42-182"><a href="#cb42-182" aria-hidden="true" tabindex="-1"></a>last_5_yrs <span class="ot">&lt;-</span> <span class="fu">filter</span>(top_country_exp, Year <span class="sc">&gt;=</span> <span class="dv">2017</span>)</span>
+<span id="cb42-183"><a href="#cb42-183" aria-hidden="true" tabindex="-1"></a><span class="co"># view last 5 years data frame</span></span>
+<span id="cb42-184"><a href="#cb42-184" aria-hidden="true" tabindex="-1"></a>last_5_yrs</span>
+<span id="cb42-185"><a href="#cb42-185" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb42-186"><a href="#cb42-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-187"><a href="#cb42-187" aria-hidden="true" tabindex="-1"></a><span class="fu">## Visualizations</span></span>
+<span id="cb42-188"><a href="#cb42-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-189"><a href="#cb42-189" aria-hidden="true" tabindex="-1"></a>To visualize trends of military expenditures over time, I created a time series plot of <span class="in">`avg_expenditure`</span> vs. <span class="in">`year`</span> from the avg_exp data frame. To reiterate, missing values are not included in order to proceed with the analysis. As we can see from the plot, there is a clear increasing trend of military expenditures over time, with the data stabilizing around the late 2010s. As previously mentioned, there was quite a bit of warfare and rising tensions in the twentieth century but the reasoning behind the increasing trend leveling off later on may be due to some countries making an effort to decrease or cut military spending in order to not raise their national debt or the global COVID-19 pandemic taking place beginning in late 2019 and early 2020.</span>
+<span id="cb42-190"><a href="#cb42-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-191"><a href="#cb42-191" aria-hidden="true" tabindex="-1"></a>The second visualization is a tree map depicting the region and sub region counts by the sizes of the rectangles. Africa/sub-Saharan Africa is the largest rectangle which coincides with my observation in the previous section. Although Europe/Central Europe and Europe/Western Europe have the same count, their rectangles look different as Europe/Central Europe is longer and Europe/Western Europe looks wider. It would be easier to tell if the counts were listed under the labels but I did not find out how to do this. </span>
+<span id="cb42-192"><a href="#cb42-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-193"><a href="#cb42-193" aria-hidden="true" tabindex="-1"></a>These third and fourth visualizations illustrate the top five spending countries for the first five years and last five years respectively. The military expenditures in US millions of dollars have a wider range in the first five years of data versus the last five years of data, with the first five years ranging from 34 million US dollars to 986 million US dollars and the last five years ranging from 85 to 9,978 million US dollars. What I find interesting are the countries that repeatedly rank in the top five: for example, Denmark was in the top five for 1949 to 1952 while Algeria was in the top five for 2018, 2020, and 2021. I'm not up-to-date on world relations and current events, but for a country to be in the top five for military expenditures, most likely the military makes up a large portion of the country's budget and is therefore an important asset for them to maintain. </span>
+<span id="cb42-194"><a href="#cb42-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-197"><a href="#cb42-197" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb42-198"><a href="#cb42-198" aria-hidden="true" tabindex="-1"></a><span class="co"># create a time series plot of avg_expenditure vs. year with avg_exp data</span></span>
+<span id="cb42-199"><a href="#cb42-199" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(avg_exp, <span class="fu">aes</span>(Year, avg_expenditure)) <span class="sc">+</span></span>
+<span id="cb42-200"><a href="#cb42-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb42-201"><a href="#cb42-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">x =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb42-202"><a href="#cb42-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb42-203"><a href="#cb42-203" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Expenditure in Millions (US$)"</span>,</span>
+<span id="cb42-204"><a href="#cb42-204" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Time Series of Average Expenditure in Millions (US$) vs. Year"</span>,</span>
+<span id="cb42-205"><a href="#cb42-205" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Missing values are not included"</span>,</span>
+<span id="cb42-206"><a href="#cb42-206" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span>
+<span id="cb42-207"><a href="#cb42-207" aria-hidden="true" tabindex="-1"></a><span class="co"># create a treemap of region and sub region counts</span></span>
+<span id="cb42-208"><a href="#cb42-208" aria-hidden="true" tabindex="-1"></a><span class="fu">treemap</span>(region_subregion,</span>
+<span id="cb42-209"><a href="#cb42-209" aria-hidden="true" tabindex="-1"></a>            <span class="at">index=</span><span class="st">"Region &amp; Sub Region"</span>,</span>
+<span id="cb42-210"><a href="#cb42-210" aria-hidden="true" tabindex="-1"></a>            <span class="at">vSize=</span><span class="st">"n"</span>,</span>
+<span id="cb42-211"><a href="#cb42-211" aria-hidden="true" tabindex="-1"></a>            <span class="at">type=</span><span class="st">"index"</span>,</span>
+<span id="cb42-212"><a href="#cb42-212" aria-hidden="true" tabindex="-1"></a>            <span class="at">title=</span><span class="st">"Treemap of Region &amp; Sub Region Counts"</span>,</span>
+<span id="cb42-213"><a href="#cb42-213" aria-hidden="true" tabindex="-1"></a>            <span class="at">fontsize.title =</span> <span class="dv">12</span>)</span>
+<span id="cb42-214"><a href="#cb42-214" aria-hidden="true" tabindex="-1"></a><span class="co"># create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 1949 to 1953</span></span>
+<span id="cb42-215"><a href="#cb42-215" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(first_5_yrs, <span class="fu">aes</span>(Year, <span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb42-216"><a href="#cb42-216" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> Country)) <span class="sc">+</span></span>
+<span id="cb42-217"><a href="#cb42-217" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb42-218"><a href="#cb42-218" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scatterplot of Top 5 Highest Spending Countries from 1949 to 1953"</span>,</span>
+<span id="cb42-219"><a href="#cb42-219" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span>
+<span id="cb42-220"><a href="#cb42-220" aria-hidden="true" tabindex="-1"></a><span class="co"># create a scatterplot of military expenditure in millions of US$ vs. year with top 5 highest spending countries from 2017 to 2021</span></span>
+<span id="cb42-221"><a href="#cb42-221" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(last_5_yrs, <span class="fu">aes</span>(Year, <span class="st">`</span><span class="at">Military Expenditure in Millions of US$</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb42-222"><a href="#cb42-222" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> Country)) <span class="sc">+</span></span>
+<span id="cb42-223"><a href="#cb42-223" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb42-224"><a href="#cb42-224" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scatterplot of Top 5 Highest Spending Countries from 2017 to 2021"</span>,</span>
+<span id="cb42-225"><a href="#cb42-225" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: SIPRI-Milex-data-1949-2021.xlsx"</span>)</span>
+<span id="cb42-226"><a href="#cb42-226" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb42-227"><a href="#cb42-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-228"><a href="#cb42-228" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations</span></span>
+<span id="cb42-229"><a href="#cb42-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-230"><a href="#cb42-230" aria-hidden="true" tabindex="-1"></a>The biggest limitation to my visualizations is in relation to my third research question: What is the predicted amount of military expenditures in dollars for year 2022 for each country? I unfortunately ran out of time and space for this assignment to go in depth into this question but I would assume based on my math background, this would require some forecasting techniques. I would like to dive into more prediction-related analysis to answer this question, but this is outside the scope of this class, so I will have to come back to it later on after a refresher on forecasting methods. </span>
+<span id="cb42-231"><a href="#cb42-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-232"><a href="#cb42-232" aria-hidden="true" tabindex="-1"></a>As for the top spending countries of each year, it was very difficult to visualize the top five spending countries from 1949 to 2021 in one plot (or even faceted plots) which is why I had to limit to illustrating only the first five years (1949 to 1953) and the last five years (2017 to 2021). It would be better for comparison to display all the years in one chart but that was not possible. However, from what I was able to do, I could draw a good conclusion as to what the data was portraying. For the final project, I think it would be beneficial to look more into faceting and other techniques regarding fitting all data points in one plot. In addition, I'll also conduct further research on how to improve my titles and labels on my graphs as they can be better than they are now.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

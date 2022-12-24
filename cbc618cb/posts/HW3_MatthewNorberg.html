@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Matthew Norberg">
+<meta name="dcterms.date" content="2022-11-07">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Olympic Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Olympic Analysis">
+<meta name="twitter:description" content="In the previous homework assignment, I cleaned the Olympic data set and saved the cleaned data set in a new csv file.">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Olympic Analysis</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#read-clean-data" id="toc-read-clean-data" class="nav-link active" data-scroll-target="#read-clean-data">Read Clean Data</a></li>
+  <li><a href="#investigating-athletes" id="toc-investigating-athletes" class="nav-link" data-scroll-target="#investigating-athletes">Investigating Athletes</a></li>
+  <li><a href="#investigating-medals-by-country" id="toc-investigating-medals-by-country" class="nav-link" data-scroll-target="#investigating-medals-by-country">Investigating Medals By Country</a></li>
+  <li><a href="#investigating-medals-by-athletes" id="toc-investigating-medals-by-athletes" class="nav-link" data-scroll-target="#investigating-medals-by-athletes">Investigating Medals By Athletes</a></li>
+  <li><a href="#investigating-medals-by-event" id="toc-investigating-medals-by-event" class="nav-link" data-scroll-target="#investigating-medals-by-event">Investigating Medals By Event</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Olympic Analysis</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">hw3</div>
+    <div class="quarto-category">Olympic_Data</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Matthew Norberg </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 7, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="read-clean-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-clean-data">Read Clean Data</h2>
+<p>In the previous homework assignment, I cleaned the Olympic data set and saved the cleaned data set in a new csv file. To avoid duplicating code, I am going to read in the cleaned data set instead of the original one.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'./Data/athletes_clean.csv'</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 270,767 × 15
+      ID Name    Team  NOC   Region Sex     Age Height Weight  Year Season City 
+   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;
+ 1  1724 "Arist… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 2  1724 "Arist… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 3  1725 "Konst… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 4  1725 "Konst… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 5  4113 "Anast… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 6  4116 "Ioann… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 7  4189 "Nikol… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 8  4431 "Georg… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+ 9  4493 "Antel… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+10  5660 "Georg… Gree… GRE   Greece M        24    173   71.4  1896 Summer Athi…
+# … with 270,757 more rows, and 3 more variables: Sport &lt;chr&gt;, Event &lt;chr&gt;,
+#   Medal &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="investigating-athletes" class="level2">
+<h2 class="anchored" data-anchor-id="investigating-athletes">Investigating Athletes</h2>
+<p>Let’s start by gathering some basic stats on the athletes. I am going to separate the athletes into a male and female group because I think this will more accurately portray the information.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Gather basic athletes stats</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>(), </span>
+<span id="cb4-5"><a href="#cb4-5"></a>            <span class="at">AverageAge =</span> <span class="fu">mean</span>(Age), </span>
+<span id="cb4-6"><a href="#cb4-6"></a>            <span class="at">SDAge =</span> <span class="fu">sd</span>(Age),</span>
+<span id="cb4-7"><a href="#cb4-7"></a>            <span class="at">AverageHeight =</span> <span class="fu">mean</span>(Height),</span>
+<span id="cb4-8"><a href="#cb4-8"></a>            <span class="at">SDHeight =</span> <span class="fu">sd</span>(Height),</span>
+<span id="cb4-9"><a href="#cb4-9"></a>            <span class="at">AverageWeight =</span> <span class="fu">mean</span>(Weight),</span>
+<span id="cb4-10"><a href="#cb4-10"></a>            <span class="at">SDWeight =</span> <span class="fu">sd</span>(Weight))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 8
+  Sex    Count AverageAge SDAge AverageHeight SDHeight AverageWeight SDWeight
+  &lt;chr&gt;  &lt;int&gt;      &lt;dbl&gt; &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;
+1 F      74393       23.8  5.79          169.     8.63          61.2     10.2
+2 M     196374       26.3  6.34          178.     8.16          74.6     11.4</code></pre>
+</div>
+</div>
+<p>The statistics above are for everyone in the data set. The first question I have as someone who is interested in the data is if these stats are different for people who have won medals. The next block of code generates the same stats for the athletes who have won a medal.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># Gather basic stats for athletes who won a medal</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>(), </span>
+<span id="cb6-6"><a href="#cb6-6"></a>            <span class="at">AverageAge =</span> <span class="fu">mean</span>(Age), </span>
+<span id="cb6-7"><a href="#cb6-7"></a>            <span class="at">SDAge =</span> <span class="fu">sd</span>(Age),</span>
+<span id="cb6-8"><a href="#cb6-8"></a>            <span class="at">AverageHeight =</span> <span class="fu">mean</span>(Height),</span>
+<span id="cb6-9"><a href="#cb6-9"></a>            <span class="at">SDHeight =</span> <span class="fu">sd</span>(Height),</span>
+<span id="cb6-10"><a href="#cb6-10"></a>            <span class="at">AverageWeight =</span> <span class="fu">mean</span>(Weight),</span>
+<span id="cb6-11"><a href="#cb6-11"></a>            <span class="at">SDWeight =</span> <span class="fu">sd</span>(Weight))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 8
+  Sex   Count AverageAge SDAge AverageHeight SDHeight AverageWeight SDWeight
+  &lt;chr&gt; &lt;int&gt;      &lt;dbl&gt; &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;
+1 F     11246       24.5  5.27          171.     8.76          63.9     10.5
+2 M     28528       26.5  5.99          180.     8.83          77.2     12.2</code></pre>
+</div>
+</div>
+<p>The tables that I created above are a good way to look at the distribution of athlete statistics. However, they are not as good as a diagram. Let’s look at density plots of the age, height, and weight variables to get a better view of the distribution.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>ageDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>              <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb8-3"><a href="#cb8-3"></a>              <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Age, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb8-4"><a href="#cb8-4"></a>                           <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb8-5"><a href="#cb8-5"></a>                           <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb8-6"><a href="#cb8-6"></a>              <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Age Density For All Athletes"</span>)</span>
+<span id="cb8-7"><a href="#cb8-7"></a></span>
+<span id="cb8-8"><a href="#cb8-8"></a>heightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a>                 <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb8-10"><a href="#cb8-10"></a>                 <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Height, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb8-11"><a href="#cb8-11"></a>                              <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb8-12"><a href="#cb8-12"></a>                              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>                 <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Height Density For All Athletes"</span>)</span>
+<span id="cb8-14"><a href="#cb8-14"></a></span>
+<span id="cb8-15"><a href="#cb8-15"></a>weightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>                 <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb8-17"><a href="#cb8-17"></a>                 <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Weight, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb8-18"><a href="#cb8-18"></a>                              <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb8-19"><a href="#cb8-19"></a>                              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a>                 <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Weight Density For All Athletes"</span>)</span>
+<span id="cb8-21"><a href="#cb8-21"></a></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="fu">grid.arrange</span>(ageDensity, heightDensity, weightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/statDistributions-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The density plots shown above seem to make sense based on the data set we are looking at. We would expect the Age and Weight distribution to be skewed because we are looking at data for Olympic athletes. I am surprised that the distribution of the Height variable appears to be symmetric. Based on the data set, I would have thought the distribution would have been skewed as well.</p>
+<p>I am wondering if the distributions for these variables look different if we only look at the athletes that have won medals. We can generate these visuals by filtering the data set so that it only contains athletes who have won medals and then using the same code from above to create the density plots.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>medalAgeDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>                   <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>                   <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb9-4"><a href="#cb9-4"></a>                      <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Age, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb9-5"><a href="#cb9-5"></a>                      <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>                      <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb9-7"><a href="#cb9-7"></a>                      <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a>medalHeightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a>                      <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a>                      <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb9-12"><a href="#cb9-12"></a>                         <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Height, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb9-13"><a href="#cb9-13"></a>                         <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb9-14"><a href="#cb9-14"></a>                         <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb9-15"><a href="#cb9-15"></a>                         <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16"></a></span>
+<span id="cb9-17"><a href="#cb9-17"></a>medalWeightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a>                      <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>                      <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb9-20"><a href="#cb9-20"></a>                         <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Weight, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb9-21"><a href="#cb9-21"></a>                         <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb9-22"><a href="#cb9-22"></a>                         <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a>                         <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb9-24"><a href="#cb9-24"></a></span>
+<span id="cb9-25"><a href="#cb9-25"></a><span class="fu">grid.arrange</span>(ageDensity, medalAgeDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/statMedalDistributions-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">grid.arrange</span>(heightDensity, medalHeightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/statMedalDistributions-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">grid.arrange</span>(weightDensity, medalWeightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/statMedalDistributions-3.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>I think it is interesting that the density plots do not change much when we only look at the athletes who have won medals. Based on the plots generated in the previous code block, it appears that it would be difficult to predict whether or not an athlete would win a medal based solely on their age, height, and weight. Perhaps if I grouped the athletes by event and then compared the density plots for age, height, and weight for the athletes that won a medal versus the athletes who did not win a medal in the particular event, I would see different results. This is something I would like to investigate for the final analysis.</p>
+</section>
+<section id="investigating-medals-by-country" class="level2">
+<h2 class="anchored" data-anchor-id="investigating-medals-by-country">Investigating Medals By Country</h2>
+<p>To start investigating how medals relates to country, let’s find out how many medals of each type each country has and how many total medals each country has. This has been done with the following chunk of R Code.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>countryMedal <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>                <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>                <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>                <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>                <span class="fu">relocate</span>(Bronze, <span class="at">.after =</span> None) <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>                <span class="fu">relocate</span>(Silver, <span class="at">.after =</span> Bronze) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-7"><a href="#cb12-7"></a>                <span class="fu">arrange</span>(<span class="fu">desc</span>(Gold)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>                <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb12-9"><a href="#cb12-9"></a>countryMedal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 208 × 6
+# Groups:   Region [208]
+   Region   None Bronze Silver  Gold TotalMedals
+   &lt;chr&gt;   &lt;int&gt;  &lt;int&gt;  &lt;int&gt; &lt;int&gt;       &lt;int&gt;
+ 1 USA     13216   1358   1641  2638        5637
+ 2 Russia   7745   1178   1170  1599        3947
+ 3 Germany 12127   1260   1195  1301        3756
+ 4 UK      10188    651    739   678        2068
+ 5 Italy    9078    531    531   575        1637
+ 6 France  10981    666    610   501        1777
+ 7 Sweden   6803    535    522   479        1536
+ 8 Canada   8382    451    438   463        1352
+ 9 Hungary  5472    371    332   432        1135
+10 Norway   3927    294    361   378        1033
+# … with 198 more rows</code></pre>
+</div>
+</div>
+<p>We can visualize this information a little better by generating a bar plot to show visually how many medals each country has won. I thought it was more interesting to look at the number of gold medals each country has won. The bar chart is generated below. Note that I only included the top 25 countries with the most gold medals to make the chart have a reasonable size.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># Chart of number of golds per country</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>countryMedal <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">25</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_reorder</span>(Region, Gold), <span class="at">y =</span> Gold)) <span class="sc">+</span> </span>
+<span id="cb14-5"><a href="#cb14-5"></a>    <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">alpha=</span>.<span class="dv">6</span>, <span class="at">width=</span>.<span class="dv">4</span>) <span class="sc">+</span> </span>
+<span id="cb14-6"><a href="#cb14-6"></a>    <span class="fu">coord_flip</span>() <span class="sc">+</span> </span>
+<span id="cb14-7"><a href="#cb14-7"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb14-8"><a href="#cb14-8"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Country"</span>, <span class="at">title =</span> <span class="st">"Number of Gold Medals Per Country"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Based on the chart above, it seems that the amount of gold medals won by each country is extremely skewed. Let’s see if this is true with the total number of medals won by each country by making a histogram.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># Medal Distribution</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>countryMedal <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TotalMedals)) <span class="sc">+</span> </span>
+<span id="cb15-5"><a href="#cb15-5"></a>  <span class="fu">geom_histogram</span>(<span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">color=</span><span class="st">"#e9ecef"</span>, <span class="at">alpha=</span><span class="fl">0.9</span>, <span class="at">bins =</span> <span class="dv">100</span>) <span class="sc">+</span> </span>
+<span id="cb15-6"><a href="#cb15-6"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Total Medals"</span>,</span>
+<span id="cb15-7"><a href="#cb15-7"></a>       <span class="at">y =</span> <span class="st">"Number of Countries"</span>,</span>
+<span id="cb15-8"><a href="#cb15-8"></a>       <span class="at">title =</span> <span class="st">"Number of Countries vs Total Medals"</span>) <span class="sc">+</span></span>
+<span id="cb15-9"><a href="#cb15-9"></a>  <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">6000</span>)) <span class="sc">+</span> </span>
+<span id="cb15-10"><a href="#cb15-10"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">20</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/totalMedalsHist-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>It seems like the distribution of the total number of medals earned by each country is also very skewed based on the diagram below. The large majority of countries in the dataset have less than 1000 medals, however there are a few that have so many like the United States.</p>
+</section>
+<section id="investigating-medals-by-athletes" class="level2">
+<h2 class="anchored" data-anchor-id="investigating-medals-by-athletes">Investigating Medals By Athletes</h2>
+<p>Instead of looking at the countries with the most medals, let’s look at the athletes who have won the most medals. The following chunk of R code find the athletes that have won the most medals and shows the number of each type of medal earned by the athlete.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># Medal count by athlete</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>bestAthletes <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>                <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a>                <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5"></a>                <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a>                <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a>                <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> Bronze <span class="sc">+</span> Silver <span class="sc">+</span> Gold) <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a>                <span class="fu">arrange</span>(<span class="fu">desc</span>(TotalMedals))</span>
+<span id="cb16-9"><a href="#cb16-9"></a></span>
+<span id="cb16-10"><a href="#cb16-10"></a>bestAthletes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 28,197 × 5
+# Groups:   Name [28,197]
+   Name                                               Gold Bronze Silver Total…¹
+   &lt;chr&gt;                                             &lt;int&gt;  &lt;int&gt;  &lt;int&gt;   &lt;int&gt;
+ 1 "Michael Fred Phelps, II"                            23      2      3      28
+ 2 "Larysa Semenivna Latynina (Diriy-)"                  9      4      5      18
+ 3 "Nikolay Yefimovich Andrianov"                        7      3      5      15
+ 4 "Borys Anfiyanovych Shakhlin"                         7      2      4      13
+ 5 "Edoardo Mangiarotti"                                 6      2      5      13
+ 6 "Ole Einar Bjrndalen"                                 8      1      4      13
+ 7 "Takashi Ono"                                         5      4      4      13
+ 8 "Aleksey Yuryevich Nemov"                             4      6      2      12
+ 9 "Dara Grace Torres (-Hoffman, -Minas)"                4      4      4      12
+10 "Jennifer Elisabeth \"Jenny\" Thompson (-Cumpeli…     8      1      3      12
+# … with 28,187 more rows, and abbreviated variable name ¹​TotalMedals</code></pre>
+</div>
+</div>
+<p>No surprise that Michael Phelps is at the top of the list of the previous tibble. One way to visualize the athletes and the amount of medals they have won is with a timeline graph. For the top 10 athletes in the tibble above, I will create a graph where the x axis denotes the year and the y axis denotes the total number of medals they have won at that point in time.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>top5 <span class="ot">&lt;-</span> bestAthletes <span class="sc">%&gt;%</span> </span>
+<span id="cb18-2"><a href="#cb18-2"></a>        <span class="fu">select</span>(Name) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-3"><a href="#cb18-3"></a>        <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb18-4"><a href="#cb18-4"></a></span>
+<span id="cb18-5"><a href="#cb18-5"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top5<span class="sc">$</span>Name) <span class="sc">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7"></a>  <span class="fu">group_by</span>(Name, Year, Season) <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8"></a>  <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb18-9"><a href="#cb18-9"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb18-10"><a href="#cb18-10"></a>  <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb18-11"><a href="#cb18-11"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb18-12"><a href="#cb18-12"></a>  <span class="fu">mutate</span>(<span class="at">CumulativeMedals =</span> <span class="fu">cumsum</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb18-13"><a href="#cb18-13"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> CumulativeMedals, <span class="at">color =</span> Name)) <span class="sc">+</span></span>
+<span id="cb18-14"><a href="#cb18-14"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb18-15"><a href="#cb18-15"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb18-16"><a href="#cb18-16"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Total Number of Medals Earned At Time Period X"</span>, <span class="at">title =</span> <span class="st">"Athlete Medal Accumulation Over Time"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/top5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="investigating-medals-by-event" class="level2">
+<h2 class="anchored" data-anchor-id="investigating-medals-by-event">Investigating Medals By Event</h2>
+<p>One more interesting way to look at the medals in the data set is by event. Some events award more medals than others and I wanted to know which events awarded the most. The bar chart below shows the top 10 events which give the most medals.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a>  <span class="fu">group_by</span>(Event) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>  <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a>  <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-7"><a href="#cb19-7"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_reorder</span>(Event, TotalMedals), <span class="at">y =</span> TotalMedals)) <span class="sc">+</span></span>
+<span id="cb19-9"><a href="#cb19-9"></a>    <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">alpha=</span>.<span class="dv">6</span>, <span class="at">width=</span>.<span class="dv">4</span>) <span class="sc">+</span> </span>
+<span id="cb19-10"><a href="#cb19-10"></a>    <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb19-11"><a href="#cb19-11"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb19-12"><a href="#cb19-12"></a>    <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Total Number of Medals"</span>,</span>
+<span id="cb19-13"><a href="#cb19-13"></a>         <span class="at">x =</span> <span class="st">"Event"</span>,</span>
+<span id="cb19-14"><a href="#cb19-14"></a>         <span class="at">title =</span> <span class="st">"Number of Medals by Event"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_MatthewNorberg_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The graph generated above shows that some events award more medals than others. Perhaps if I only look at the events that award the most medals, I will see trends in the athletes that determine who will get the medals versus who will not. In otherwords, I think the analsis of the athletes will be more revealing when I analyze them for their specific event, instead of analyzing them all at once.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb20" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">---</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="an">title:</span><span class="co"> "Olympic Analysis"</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="an">author:</span><span class="co"> "Matthew Norberg"</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="an">date:</span><span class="co"> "11/7/2022"</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a><span class="an">format:</span><span class="co"> </span></span>
+<span id="cb20-6"><a href="#cb20-6"></a><span class="co">  html: </span></span>
+<span id="cb20-7"><a href="#cb20-7"></a><span class="co">    toc: true</span></span>
+<span id="cb20-8"><a href="#cb20-8"></a><span class="co">    code-copy: true</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a><span class="co">    code-tools: true</span></span>
+<span id="cb20-10"><a href="#cb20-10"></a><span class="co">    smooth-scroll: true</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a><span class="co">    code-line-numbers: true</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a><span class="co">    highlight-style: github</span></span>
+<span id="cb20-13"><a href="#cb20-13"></a><span class="co">    theme: zephyr</span></span>
+<span id="cb20-14"><a href="#cb20-14"></a><span class="co">    df-print: default</span></span>
+<span id="cb20-15"><a href="#cb20-15"></a><span class="an">categories:</span></span>
+<span id="cb20-16"><a href="#cb20-16"></a><span class="co">  - hw3</span></span>
+<span id="cb20-17"><a href="#cb20-17"></a><span class="co">  - Olympic_Data</span></span>
+<span id="cb20-18"><a href="#cb20-18"></a><span class="co">---</span></span>
+<span id="cb20-19"><a href="#cb20-19"></a></span>
+<span id="cb20-20"><a href="#cb20-20"></a><span class="in">```{r setUP}</span></span>
+<span id="cb20-21"><a href="#cb20-21"></a><span class="co">#| label: setup</span></span>
+<span id="cb20-22"><a href="#cb20-22"></a><span class="co">#| warning: false</span></span>
+<span id="cb20-23"><a href="#cb20-23"></a><span class="co">#| message: false</span></span>
+<span id="cb20-24"><a href="#cb20-24"></a></span>
+<span id="cb20-25"><a href="#cb20-25"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb20-26"><a href="#cb20-26"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb20-27"><a href="#cb20-27"></a></span>
+<span id="cb20-28"><a href="#cb20-28"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb20-29"><a href="#cb20-29"></a><span class="in">```</span></span>
+<span id="cb20-30"><a href="#cb20-30"></a></span>
+<span id="cb20-31"><a href="#cb20-31"></a><span class="fu">## Read Clean Data</span></span>
+<span id="cb20-32"><a href="#cb20-32"></a></span>
+<span id="cb20-33"><a href="#cb20-33"></a>In the previous homework assignment, I cleaned the Olympic data set and saved the cleaned data set in a new csv file.  To avoid duplicating code, I am going to read in the cleaned data set instead of the original one. </span>
+<span id="cb20-34"><a href="#cb20-34"></a></span>
+<span id="cb20-35"><a href="#cb20-35"></a><span class="in">```{r Read}</span></span>
+<span id="cb20-36"><a href="#cb20-36"></a>df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'./Data/athletes_clean.csv'</span>)</span>
+<span id="cb20-37"><a href="#cb20-37"></a>df</span>
+<span id="cb20-38"><a href="#cb20-38"></a><span class="in">```</span></span>
+<span id="cb20-39"><a href="#cb20-39"></a></span>
+<span id="cb20-40"><a href="#cb20-40"></a><span class="fu">## Investigating Athletes</span></span>
+<span id="cb20-41"><a href="#cb20-41"></a></span>
+<span id="cb20-42"><a href="#cb20-42"></a>Let's start by gathering some basic stats on the athletes.  I am going to separate the athletes into a male and female group because I think this will more accurately portray the information.</span>
+<span id="cb20-43"><a href="#cb20-43"></a></span>
+<span id="cb20-44"><a href="#cb20-44"></a><span class="in">```{r basicStats}</span></span>
+<span id="cb20-45"><a href="#cb20-45"></a><span class="co"># Gather basic athletes stats</span></span>
+<span id="cb20-46"><a href="#cb20-46"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb20-47"><a href="#cb20-47"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
+<span id="cb20-48"><a href="#cb20-48"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>(), </span>
+<span id="cb20-49"><a href="#cb20-49"></a>            <span class="at">AverageAge =</span> <span class="fu">mean</span>(Age), </span>
+<span id="cb20-50"><a href="#cb20-50"></a>            <span class="at">SDAge =</span> <span class="fu">sd</span>(Age),</span>
+<span id="cb20-51"><a href="#cb20-51"></a>            <span class="at">AverageHeight =</span> <span class="fu">mean</span>(Height),</span>
+<span id="cb20-52"><a href="#cb20-52"></a>            <span class="at">SDHeight =</span> <span class="fu">sd</span>(Height),</span>
+<span id="cb20-53"><a href="#cb20-53"></a>            <span class="at">AverageWeight =</span> <span class="fu">mean</span>(Weight),</span>
+<span id="cb20-54"><a href="#cb20-54"></a>            <span class="at">SDWeight =</span> <span class="fu">sd</span>(Weight))</span>
+<span id="cb20-55"><a href="#cb20-55"></a><span class="in">```</span></span>
+<span id="cb20-56"><a href="#cb20-56"></a></span>
+<span id="cb20-57"><a href="#cb20-57"></a>The statistics above are for everyone in the data set.  The first question I have as someone who is interested in the data is if these stats are different for people who have won medals.  The next block of code generates the same stats for the athletes who have won a medal.</span>
+<span id="cb20-58"><a href="#cb20-58"></a></span>
+<span id="cb20-59"><a href="#cb20-59"></a><span class="in">```{r basicMedalStats}</span></span>
+<span id="cb20-60"><a href="#cb20-60"></a><span class="co"># Gather basic stats for athletes who won a medal</span></span>
+<span id="cb20-61"><a href="#cb20-61"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb20-62"><a href="#cb20-62"></a>  <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-63"><a href="#cb20-63"></a>  <span class="fu">group_by</span>(Sex) <span class="sc">%&gt;%</span></span>
+<span id="cb20-64"><a href="#cb20-64"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>(), </span>
+<span id="cb20-65"><a href="#cb20-65"></a>            <span class="at">AverageAge =</span> <span class="fu">mean</span>(Age), </span>
+<span id="cb20-66"><a href="#cb20-66"></a>            <span class="at">SDAge =</span> <span class="fu">sd</span>(Age),</span>
+<span id="cb20-67"><a href="#cb20-67"></a>            <span class="at">AverageHeight =</span> <span class="fu">mean</span>(Height),</span>
+<span id="cb20-68"><a href="#cb20-68"></a>            <span class="at">SDHeight =</span> <span class="fu">sd</span>(Height),</span>
+<span id="cb20-69"><a href="#cb20-69"></a>            <span class="at">AverageWeight =</span> <span class="fu">mean</span>(Weight),</span>
+<span id="cb20-70"><a href="#cb20-70"></a>            <span class="at">SDWeight =</span> <span class="fu">sd</span>(Weight))</span>
+<span id="cb20-71"><a href="#cb20-71"></a><span class="in">```</span></span>
+<span id="cb20-72"><a href="#cb20-72"></a></span>
+<span id="cb20-73"><a href="#cb20-73"></a>The tables that I created above are a good way to look at the distribution of athlete statistics.  However, they are not as good as a diagram. Let's look at density plots of the age, height, and weight variables to get a better view of the distribution.  </span>
+<span id="cb20-74"><a href="#cb20-74"></a></span>
+<span id="cb20-75"><a href="#cb20-75"></a><span class="in">```{r statDistributions}</span></span>
+<span id="cb20-76"><a href="#cb20-76"></a>ageDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-77"><a href="#cb20-77"></a>              <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-78"><a href="#cb20-78"></a>              <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Age, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-79"><a href="#cb20-79"></a>                           <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-80"><a href="#cb20-80"></a>                           <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb20-81"><a href="#cb20-81"></a>              <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Age Density For All Athletes"</span>)</span>
+<span id="cb20-82"><a href="#cb20-82"></a></span>
+<span id="cb20-83"><a href="#cb20-83"></a>heightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-84"><a href="#cb20-84"></a>                 <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-85"><a href="#cb20-85"></a>                 <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Height, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-86"><a href="#cb20-86"></a>                              <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-87"><a href="#cb20-87"></a>                              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb20-88"><a href="#cb20-88"></a>                 <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Height Density For All Athletes"</span>)</span>
+<span id="cb20-89"><a href="#cb20-89"></a></span>
+<span id="cb20-90"><a href="#cb20-90"></a>weightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-91"><a href="#cb20-91"></a>                 <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-92"><a href="#cb20-92"></a>                 <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Weight, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-93"><a href="#cb20-93"></a>                              <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-94"><a href="#cb20-94"></a>                              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb20-95"><a href="#cb20-95"></a>                 <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Weight Density For All Athletes"</span>)</span>
+<span id="cb20-96"><a href="#cb20-96"></a></span>
+<span id="cb20-97"><a href="#cb20-97"></a><span class="fu">grid.arrange</span>(ageDensity, heightDensity, weightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb20-98"><a href="#cb20-98"></a><span class="in">```</span></span>
+<span id="cb20-99"><a href="#cb20-99"></a></span>
+<span id="cb20-100"><a href="#cb20-100"></a>The density plots shown above seem to make sense based on the data set we are looking at.  We would expect the Age and Weight distribution to be skewed because we are looking at data for Olympic athletes.  I am surprised that the distribution of the Height variable appears to be symmetric.  Based on the data set, I would have thought the distribution would have been skewed as well. </span>
+<span id="cb20-101"><a href="#cb20-101"></a></span>
+<span id="cb20-102"><a href="#cb20-102"></a>I am wondering if the distributions for these variables look different if we only look at the athletes that have won medals.  We can generate these visuals by filtering the data set so that it only contains athletes who have won medals and then using the same code from above to create the density plots. </span>
+<span id="cb20-103"><a href="#cb20-103"></a></span>
+<span id="cb20-104"><a href="#cb20-104"></a><span class="in">```{r statMedalDistributions}</span></span>
+<span id="cb20-105"><a href="#cb20-105"></a>medalAgeDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-106"><a href="#cb20-106"></a>                   <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-107"><a href="#cb20-107"></a>                   <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-108"><a href="#cb20-108"></a>                      <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Age, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-109"><a href="#cb20-109"></a>                      <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-110"><a href="#cb20-110"></a>                      <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb20-111"><a href="#cb20-111"></a>                      <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb20-112"><a href="#cb20-112"></a></span>
+<span id="cb20-113"><a href="#cb20-113"></a>medalHeightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-114"><a href="#cb20-114"></a>                      <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-115"><a href="#cb20-115"></a>                      <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-116"><a href="#cb20-116"></a>                         <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Height, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-117"><a href="#cb20-117"></a>                         <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-118"><a href="#cb20-118"></a>                         <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span> </span>
+<span id="cb20-119"><a href="#cb20-119"></a>                         <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb20-120"><a href="#cb20-120"></a></span>
+<span id="cb20-121"><a href="#cb20-121"></a>medalWeightDensity <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-122"><a href="#cb20-122"></a>                      <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-123"><a href="#cb20-123"></a>                      <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb20-124"><a href="#cb20-124"></a>                         <span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Weight, <span class="at">group =</span> Sex, <span class="at">fill =</span> Sex), </span>
+<span id="cb20-125"><a href="#cb20-125"></a>                         <span class="at">adjust =</span> <span class="dv">2</span>,</span>
+<span id="cb20-126"><a href="#cb20-126"></a>                         <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb20-127"><a href="#cb20-127"></a>                         <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Athletes With Medals"</span>)</span>
+<span id="cb20-128"><a href="#cb20-128"></a></span>
+<span id="cb20-129"><a href="#cb20-129"></a><span class="fu">grid.arrange</span>(ageDensity, medalAgeDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb20-130"><a href="#cb20-130"></a><span class="fu">grid.arrange</span>(heightDensity, medalHeightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb20-131"><a href="#cb20-131"></a><span class="fu">grid.arrange</span>(weightDensity, medalWeightDensity, <span class="at">ncol =</span> <span class="dv">2</span>)</span>
+<span id="cb20-132"><a href="#cb20-132"></a><span class="in">```</span></span>
+<span id="cb20-133"><a href="#cb20-133"></a></span>
+<span id="cb20-134"><a href="#cb20-134"></a>I think it is interesting that the density plots do not change much when we only look at the athletes who have won medals.  Based on the plots generated in the previous code block, it appears that it would be difficult to predict whether or not an athlete would win a medal based solely on their age, height, and weight. Perhaps if I grouped the athletes by event and then compared the density plots for age, height, and weight for the athletes that won a medal versus the athletes who did not win a medal in the particular event, I would see different results.  This is something I would like to investigate for the final analysis.</span>
+<span id="cb20-135"><a href="#cb20-135"></a></span>
+<span id="cb20-136"><a href="#cb20-136"></a><span class="fu">## Investigating Medals By Country</span></span>
+<span id="cb20-137"><a href="#cb20-137"></a></span>
+<span id="cb20-138"><a href="#cb20-138"></a>To start investigating how medals relates to country, let's find out how many medals of each type each country has and how many total medals each country has.  This has been done with the following chunk of R Code. </span>
+<span id="cb20-139"><a href="#cb20-139"></a></span>
+<span id="cb20-140"><a href="#cb20-140"></a><span class="in">```{r countryMedals}</span></span>
+<span id="cb20-141"><a href="#cb20-141"></a>countryMedal <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-142"><a href="#cb20-142"></a>                <span class="fu">group_by</span>(Region) <span class="sc">%&gt;%</span></span>
+<span id="cb20-143"><a href="#cb20-143"></a>                <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb20-144"><a href="#cb20-144"></a>                <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb20-145"><a href="#cb20-145"></a>                <span class="fu">relocate</span>(Bronze, <span class="at">.after =</span> None) <span class="sc">%&gt;%</span></span>
+<span id="cb20-146"><a href="#cb20-146"></a>                <span class="fu">relocate</span>(Silver, <span class="at">.after =</span> Bronze) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-147"><a href="#cb20-147"></a>                <span class="fu">arrange</span>(<span class="fu">desc</span>(Gold)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-148"><a href="#cb20-148"></a>                <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb20-149"><a href="#cb20-149"></a>countryMedal</span>
+<span id="cb20-150"><a href="#cb20-150"></a><span class="in">```</span></span>
+<span id="cb20-151"><a href="#cb20-151"></a></span>
+<span id="cb20-152"><a href="#cb20-152"></a>We can visualize this information a little better by generating a bar plot to show visually how many medals each country has won.  I thought it was more interesting to look at the number of gold medals each country has won.  The bar chart is generated below.  Note that I only included the top 25 countries with the most gold medals to make the chart have a reasonable size. </span>
+<span id="cb20-153"><a href="#cb20-153"></a></span>
+<span id="cb20-156"><a href="#cb20-156"></a><span class="in">```{r}</span></span>
+<span id="cb20-157"><a href="#cb20-157"></a><span class="co"># Chart of number of golds per country</span></span>
+<span id="cb20-158"><a href="#cb20-158"></a>countryMedal <span class="sc">%&gt;%</span></span>
+<span id="cb20-159"><a href="#cb20-159"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">25</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-160"><a href="#cb20-160"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_reorder</span>(Region, Gold), <span class="at">y =</span> Gold)) <span class="sc">+</span> </span>
+<span id="cb20-161"><a href="#cb20-161"></a>    <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">alpha=</span>.<span class="dv">6</span>, <span class="at">width=</span>.<span class="dv">4</span>) <span class="sc">+</span> </span>
+<span id="cb20-162"><a href="#cb20-162"></a>    <span class="fu">coord_flip</span>() <span class="sc">+</span> </span>
+<span id="cb20-163"><a href="#cb20-163"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb20-164"><a href="#cb20-164"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Country"</span>, <span class="at">title =</span> <span class="st">"Number of Gold Medals Per Country"</span>)</span>
+<span id="cb20-165"><a href="#cb20-165"></a><span class="in">```</span></span>
+<span id="cb20-166"><a href="#cb20-166"></a></span>
+<span id="cb20-167"><a href="#cb20-167"></a>Based on the chart above, it seems that the amount of gold medals won by each country is extremely skewed.  Let's see if this is true with the total number of medals won by each country by making a histogram.</span>
+<span id="cb20-168"><a href="#cb20-168"></a></span>
+<span id="cb20-169"><a href="#cb20-169"></a><span class="in">```{r totalMedalsHist, warning=FALSE}</span></span>
+<span id="cb20-170"><a href="#cb20-170"></a><span class="co"># Medal Distribution</span></span>
+<span id="cb20-171"><a href="#cb20-171"></a>countryMedal <span class="sc">%&gt;%</span></span>
+<span id="cb20-172"><a href="#cb20-172"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-173"><a href="#cb20-173"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TotalMedals)) <span class="sc">+</span> </span>
+<span id="cb20-174"><a href="#cb20-174"></a>  <span class="fu">geom_histogram</span>(<span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">color=</span><span class="st">"#e9ecef"</span>, <span class="at">alpha=</span><span class="fl">0.9</span>, <span class="at">bins =</span> <span class="dv">100</span>) <span class="sc">+</span> </span>
+<span id="cb20-175"><a href="#cb20-175"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Total Medals"</span>,</span>
+<span id="cb20-176"><a href="#cb20-176"></a>       <span class="at">y =</span> <span class="st">"Number of Countries"</span>,</span>
+<span id="cb20-177"><a href="#cb20-177"></a>       <span class="at">title =</span> <span class="st">"Number of Countries vs Total Medals"</span>) <span class="sc">+</span></span>
+<span id="cb20-178"><a href="#cb20-178"></a>  <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">6000</span>)) <span class="sc">+</span> </span>
+<span id="cb20-179"><a href="#cb20-179"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">20</span>))</span>
+<span id="cb20-180"><a href="#cb20-180"></a><span class="in">```</span></span>
+<span id="cb20-181"><a href="#cb20-181"></a></span>
+<span id="cb20-182"><a href="#cb20-182"></a>It seems like the distribution of the total number of medals earned by each country is also very skewed based on the diagram below.  The large majority of countries in the dataset have less than 1000 medals, however there are a few that have so many like the United States.</span>
+<span id="cb20-183"><a href="#cb20-183"></a></span>
+<span id="cb20-184"><a href="#cb20-184"></a><span class="fu">## Investigating Medals By Athletes</span></span>
+<span id="cb20-185"><a href="#cb20-185"></a></span>
+<span id="cb20-186"><a href="#cb20-186"></a>Instead of looking at the countries with the most medals, let's look at the athletes who have won the most medals.  The following chunk of R code find the athletes that have won the most medals and shows the number of each type of medal earned by the athlete.</span>
+<span id="cb20-187"><a href="#cb20-187"></a></span>
+<span id="cb20-188"><a href="#cb20-188"></a><span class="in">```{r bestAthletesCreation}</span></span>
+<span id="cb20-189"><a href="#cb20-189"></a><span class="co"># Medal count by athlete</span></span>
+<span id="cb20-190"><a href="#cb20-190"></a>bestAthletes <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb20-191"><a href="#cb20-191"></a>                <span class="fu">filter</span>(Medal <span class="sc">!=</span> <span class="st">"None"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-192"><a href="#cb20-192"></a>                <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb20-193"><a href="#cb20-193"></a>                <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb20-194"><a href="#cb20-194"></a>                <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb20-195"><a href="#cb20-195"></a>                <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> Bronze <span class="sc">+</span> Silver <span class="sc">+</span> Gold) <span class="sc">%&gt;%</span></span>
+<span id="cb20-196"><a href="#cb20-196"></a>                <span class="fu">arrange</span>(<span class="fu">desc</span>(TotalMedals))</span>
+<span id="cb20-197"><a href="#cb20-197"></a></span>
+<span id="cb20-198"><a href="#cb20-198"></a>bestAthletes</span>
+<span id="cb20-199"><a href="#cb20-199"></a><span class="in">```</span></span>
+<span id="cb20-200"><a href="#cb20-200"></a></span>
+<span id="cb20-201"><a href="#cb20-201"></a>No surprise that Michael Phelps is at the top of the list of the previous tibble.  One way to visualize the athletes and the amount of medals they have won is with a timeline graph.  For the top 10 athletes in the tibble above, I will create a graph where the x axis denotes the year and the y axis denotes the total number of medals they have won at that point in time.</span>
+<span id="cb20-202"><a href="#cb20-202"></a></span>
+<span id="cb20-203"><a href="#cb20-203"></a><span class="in">```{r top5}</span></span>
+<span id="cb20-204"><a href="#cb20-204"></a>top5 <span class="ot">&lt;-</span> bestAthletes <span class="sc">%&gt;%</span> </span>
+<span id="cb20-205"><a href="#cb20-205"></a>        <span class="fu">select</span>(Name) <span class="sc">%&gt;%</span> </span>
+<span id="cb20-206"><a href="#cb20-206"></a>        <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb20-207"><a href="#cb20-207"></a></span>
+<span id="cb20-208"><a href="#cb20-208"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb20-209"><a href="#cb20-209"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top5<span class="sc">$</span>Name) <span class="sc">%&gt;%</span></span>
+<span id="cb20-210"><a href="#cb20-210"></a>  <span class="fu">group_by</span>(Name, Year, Season) <span class="sc">%&gt;%</span></span>
+<span id="cb20-211"><a href="#cb20-211"></a>  <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb20-212"><a href="#cb20-212"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb20-213"><a href="#cb20-213"></a>  <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-214"><a href="#cb20-214"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb20-215"><a href="#cb20-215"></a>  <span class="fu">mutate</span>(<span class="at">CumulativeMedals =</span> <span class="fu">cumsum</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-216"><a href="#cb20-216"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> CumulativeMedals, <span class="at">color =</span> Name)) <span class="sc">+</span></span>
+<span id="cb20-217"><a href="#cb20-217"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb20-218"><a href="#cb20-218"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb20-219"><a href="#cb20-219"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Total Number of Medals Earned At Time Period X"</span>, <span class="at">title =</span> <span class="st">"Athlete Medal Accumulation Over Time"</span>)</span>
+<span id="cb20-220"><a href="#cb20-220"></a><span class="in">```</span></span>
+<span id="cb20-221"><a href="#cb20-221"></a></span>
+<span id="cb20-222"><a href="#cb20-222"></a><span class="fu">## Investigating Medals By Event</span></span>
+<span id="cb20-223"><a href="#cb20-223"></a></span>
+<span id="cb20-224"><a href="#cb20-224"></a>One more interesting way to look at the medals in the data set is by event.  Some events award more medals than others and I wanted to know which events awarded the most.  The bar chart below shows the top 10 events which give the most medals.</span>
+<span id="cb20-225"><a href="#cb20-225"></a></span>
+<span id="cb20-228"><a href="#cb20-228"></a><span class="in">```{r}</span></span>
+<span id="cb20-229"><a href="#cb20-229"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb20-230"><a href="#cb20-230"></a>  <span class="fu">group_by</span>(Event) <span class="sc">%&gt;%</span></span>
+<span id="cb20-231"><a href="#cb20-231"></a>  <span class="fu">count</span>(Medal) <span class="sc">%&gt;%</span></span>
+<span id="cb20-232"><a href="#cb20-232"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Medal, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb20-233"><a href="#cb20-233"></a>  <span class="fu">mutate</span>(<span class="at">TotalMedals =</span> <span class="fu">sum</span>(Bronze,Silver,Gold, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-234"><a href="#cb20-234"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(TotalMedals)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-235"><a href="#cb20-235"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-236"><a href="#cb20-236"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">fct_reorder</span>(Event, TotalMedals), <span class="at">y =</span> TotalMedals)) <span class="sc">+</span></span>
+<span id="cb20-237"><a href="#cb20-237"></a>    <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">fill=</span><span class="st">"#f68060"</span>, <span class="at">alpha=</span>.<span class="dv">6</span>, <span class="at">width=</span>.<span class="dv">4</span>) <span class="sc">+</span> </span>
+<span id="cb20-238"><a href="#cb20-238"></a>    <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb20-239"><a href="#cb20-239"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb20-240"><a href="#cb20-240"></a>    <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"Total Number of Medals"</span>,</span>
+<span id="cb20-241"><a href="#cb20-241"></a>         <span class="at">x =</span> <span class="st">"Event"</span>,</span>
+<span id="cb20-242"><a href="#cb20-242"></a>         <span class="at">title =</span> <span class="st">"Number of Medals by Event"</span>)</span>
+<span id="cb20-243"><a href="#cb20-243"></a><span class="in">```</span></span>
+<span id="cb20-244"><a href="#cb20-244"></a></span>
+<span id="cb20-245"><a href="#cb20-245"></a>The graph generated above shows that some events award more medals than others.  Perhaps if I only look at the events that award the most medals, I will see trends in the athletes that determine who will get the medals versus who will not.  In otherwords, I think the analsis of the athletes will be more revealing when I analyze them for their specific event, instead of analyzing them all at once.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
