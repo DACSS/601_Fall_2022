@@ -66,7 +66,7 @@ counties<-
 
 ```
 
-Reading & cleaning data for population, unemployment, poverty rate, age & sex
+Reading & cleaning data for population, unemployment, poverty rate, age & sex, median household income
 
 ```{r}
 ma_population <- read_csv('_data/601_final_project_jerin_jacob/MA_population.csv', col_names = c("Number", "County", "Population"))
@@ -75,7 +75,7 @@ ma_population$County <- word(ma_population$County, 1)
 
 ma_population <- ma_population[ -c(1) ]
 
-#ma_population
+ma_population
 
 ```
 
@@ -102,7 +102,7 @@ poverty <- read_excel('_data/601_final_project_jerin_jacob/PovertyReport.xlsx', 
 ```
 
 ```{r}
-age_sex <- read_csv('_data/601_final_project_jerin_jacob/age_sex.csv', show_col_types = FALSE) %>%
+age_sex <- read_csv('_data/601_final_project_jerin_jacob/age_sex.csv', show_col_types = FALSE)%>%
   mutate(County = str_remove_all(CTYNAME, " County")) %>%
   filter(YEAR == 12) %>%
     mutate(male18_24 = round((AGE1824_MALE/POPESTIMATE)*100)) %>%
@@ -117,15 +117,29 @@ age_sex <- age_sex %>%
 
 ```
 
-## 3 main reasons for increase in crime rates
+```{r}
+median_hh <- read_excel('_data/601_final_project_jerin_jacob/householdincome.xlsx', skip = 2) %>%
+ select(Name, `Median Household Income (2020)`)
+colnames(median_hh) <- c('County', 'median_hh_income')
+medianhh <- filter(median_hh, grepl("County", County, ignore.case = TRUE))
+medianhh$County <- word(filtered_medianhh$County, 1) 
+#scaled_medianhh$income_factor <- scaled_medianhh$median_hh_income / 8000
+medianhh
 
-To make the analysis easier, I joined (left join) the data of the three main parameters that are thought to be the main factors causing increased crime rate, which are Poverty, Unemployment and Youth population, especially male.
+
+```
+
+## 4 main reasons for increase in crime rates
+
+To make the analysis easier, I joined (left join) the data of the four parameters that are thought to be the main factors causing increased crime rate, which are Poverty, Unemployment, Median Household Income and Youth male population.
 
 ```{r}
 crimerate_reasons <- left_join(unemployment, poverty, by = 'County') %>%
-  left_join(., age_sex, by = 'County') 
+  left_join(., age_sex, by = 'County') #%>%
+  #left_join(., scaled_medianhh, by = 'County')
   
-crimerate_reasons
+# crimerate_reasons %>%
+#   select(!income_factor)
 
 ```
 
@@ -155,7 +169,8 @@ df_crime_rate
 
 ## Analysis
 
-###Finding which county has the highest crime rate When I analysed the county wise crime rate, Hampden (5783) came out to be the top county in crime rate followed by Suffolk (5511) and Nantucket (4066) in the year 2021. Norfolk had the least crime rate (2186)
+### Finding which county has the highest crime rate 
+When I analysed the county wise crime rate, Hampden (5783) came out to be the top county in crime rate followed by Suffolk (5511) and Nantucket (4066) in the year 2021. Norfolk had the least crime rate (2186)
 
 ```{r}
 which_county <- df_crime_rate %>%
@@ -195,7 +210,9 @@ time_graph %>%
   geom_point(shape = 21, color = "black", fill = "red", size = 4) +
   geom_line(color = "grey") +
   theme_ipsum() +
-  ggtitle("Time When Most Crimes Happen")
+  ggtitle("Time When Most Crimes Happen") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
 
 ```
 
@@ -215,20 +232,36 @@ df_crime_rate %>%
 
 ## Analysing the reasons behind the crime rate.
 
-As expected, Hampden and Suffolk had a higher rate of poverty but surprisingly, Nantucket has the lowest poverty rate even though Nantucket is in the top three counties in crime rate. However, Nantucket had the highest unemployment rate followed by Hampden. Suffolk too had a comparatively higher unemployment rate. When it comes to the percentage of young males of age 18-29, Hampshire is the top county regardless of its lower crime rate. But Suffolk and Hampden has some correlation between the crime rate and the percentage of young male.
+```{r}
+# crimerate_reasons %>%
+#   select(!income_factor)
+
+```
+
+As expected, Hampden (14.3%) and Suffolk (16.5%) had a higher rate of poverty but surprisingly, Nantucket has the lowest poverty rate (5.3%) even though Nantucket is in the top three counties in crime rate. However, Nantucket had the highest unemployment rate (11.1%) followed by Hampden (11.0%). Suffolk too had a comparatively higher unemployment rate (10.3%). When it comes to the percentage of young males of age 18-29, Hampshire is the top county regardless of its lower crime rate. But Suffolk and Hampden has some correlation between the crime rate and the percentage of young male. Hampden and Suffolk are having their median household income at $61600 and $85221 respectively which are lower than that of median household income of the Massachusetts state($89,026). 
 
 ```{r}
+
 crimerate_reasons %>%
   pivot_longer(!County, names_to = "Reason", values_to = "Percent") %>%
   ggplot(aes(x=County, y=Percent, group=Reason, color=Reason)) +
   geom_line() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1 )) +
-  ggtitle("Cause of Increased Crime Rate")
+  ggtitle("Causes of Increased Crime Rate")
 ```
+```{r}
+medianhh %>%
+  ggplot(aes(x = County, y = median_hh_income, fill = median_hh_income)) +
+    geom_bar(stat = "identity", position = position_dodge(0.9)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_text(aes(label = median_hh_income), vjust = 0, size = 3) +
+  ggtitle("Countywise Median Household Income")
+
+```
+
 
 ## Conclusion
 
-As expected, poverty and unemployment are the two main reasons for increased number of crimes in the counties of Massachusetts. Age and gender are moderating the other reasons to increase the crime rate.
+As expected, poverty, unemployment and median household income are showing some significant correlation with the crime rates in the counties of Massachusetts. Age and gender are moderating the other reasons to increase the crime rate.
 
 ## Limitation of study and future scope
 
