@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Darron Bunt">
+<meta name="dcterms.date" content="2022-12-18">
+<meta name="description" content="Exploratory Data Analysis of Twitter Posts Made by Flagship US Colleges">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - HW3 - Darron Bunt</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - HW3 - Darron Bunt">
+<meta name="twitter:description" content="Exploratory Data Analysis of Twitter Posts Made by Flagship US Colleges">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">HW3 - Darron Bunt</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#loading-packages-into-r-environment" id="toc-loading-packages-into-r-environment" class="nav-link active" data-scroll-target="#loading-packages-into-r-environment">Loading Packages into R Environment</a></li>
+  <li><a href="#loading-the-dataset" id="toc-loading-the-dataset" class="nav-link" data-scroll-target="#loading-the-dataset">Loading the Dataset</a></li>
+  <li><a href="#descriptive-statistics---what-is-being-produced-by-each-colleges-account" id="toc-descriptive-statistics---what-is-being-produced-by-each-colleges-account" class="nav-link" data-scroll-target="#descriptive-statistics---what-is-being-produced-by-each-colleges-account">Descriptive Statistics - What is being produced by each college’s account?</a>
+  <ul class="collapse">
+  <li><a href="#number-of-posts-made-by-each-college-in-the-month-of-november" id="toc-number-of-posts-made-by-each-college-in-the-month-of-november" class="nav-link" data-scroll-target="#number-of-posts-made-by-each-college-in-the-month-of-november">Number of posts made by each college in the month of November</a></li>
+  <li><a href="#number-of-og-posts-retweets-quote-tweet-and-comments-by-each-college" id="toc-number-of-og-posts-retweets-quote-tweet-and-comments-by-each-college" class="nav-link" data-scroll-target="#number-of-og-posts-retweets-quote-tweet-and-comments-by-each-college">Number of OG posts, retweets, quote tweet, and comments by each college</a></li>
+  <li><a href="#most-common-day-of-the-week-to-post" id="toc-most-common-day-of-the-week-to-post" class="nav-link" data-scroll-target="#most-common-day-of-the-week-to-post">Most common day of the week to post</a></li>
+  <li><a href="#most-common-time-of-day-to-post" id="toc-most-common-time-of-day-to-post" class="nav-link" data-scroll-target="#most-common-time-of-day-to-post">Most common time of day to post</a></li>
+  <li><a href="#number-of-posts-during-each-time-frame" id="toc-number-of-posts-during-each-time-frame" class="nav-link" data-scroll-target="#number-of-posts-during-each-time-frame">Number of posts during each time frame</a></li>
+  </ul></li>
+  <li><a href="#descriptive-statistics-for-the-response-to-posts-made-by-the-college-accounts" id="toc-descriptive-statistics-for-the-response-to-posts-made-by-the-college-accounts" class="nav-link" data-scroll-target="#descriptive-statistics-for-the-response-to-posts-made-by-the-college-accounts">Descriptive statistics for the response to posts made by the college accounts</a>
+  <ul class="collapse">
+  <li><a href="#average-reach-by-school" id="toc-average-reach-by-school" class="nav-link" data-scroll-target="#average-reach-by-school">Average Reach by School</a></li>
+  <li><a href="#summary-statistics-by-college" id="toc-summary-statistics-by-college" class="nav-link" data-scroll-target="#summary-statistics-by-college">Summary statistics by college</a></li>
+  <li><a href="#relationship-between-reach-and-number-of-followers" id="toc-relationship-between-reach-and-number-of-followers" class="nav-link" data-scroll-target="#relationship-between-reach-and-number-of-followers">Relationship between reach and number of followers</a></li>
+  <li><a href="#compare-followers-and-average-reach-by-college" id="toc-compare-followers-and-average-reach-by-college" class="nav-link" data-scroll-target="#compare-followers-and-average-reach-by-college">Compare followers and average reach by college</a></li>
+  <li><a href="#adding-in-enrollment-data" id="toc-adding-in-enrollment-data" class="nav-link" data-scroll-target="#adding-in-enrollment-data">Adding in enrollment data</a></li>
+  <li><a href="#comparing-followers-to-enrollment" id="toc-comparing-followers-to-enrollment" class="nav-link" data-scroll-target="#comparing-followers-to-enrollment">Comparing followers to enrollment</a></li>
+  </ul></li>
+  <li><a href="#dissecting-posts-made-by-the-twitter-authors" id="toc-dissecting-posts-made-by-the-twitter-authors" class="nav-link" data-scroll-target="#dissecting-posts-made-by-the-twitter-authors">Dissecting posts made by the Twitter authors</a>
+  <ul class="collapse">
+  <li><a href="#characters-per-post" id="toc-characters-per-post" class="nav-link" data-scroll-target="#characters-per-post">Characters per post</a></li>
+  <li><a href="#most-common-words-used-in-tweets" id="toc-most-common-words-used-in-tweets" class="nav-link" data-scroll-target="#most-common-words-used-in-tweets">Most common words used in tweets</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">HW3 - Darron Bunt</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">hw3</div>
+    <div class="quarto-category">darron_bunt</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Exploratory Data Analysis of Twitter Posts Made by Flagship US Colleges
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Darron Bunt </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 18, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="loading-packages-into-r-environment" class="level2">
+<h2 class="anchored" data-anchor-id="loading-packages-into-r-environment">Loading Packages into R Environment</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tm)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(wordcloud)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">dplyr.summarise.inform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The emphasis in this homework is on exploratory data analysis using both graphics and statistics. You should build on your prior homework - incorporating any feedback and adjusting the code and text as needed. These homeworks are intended to be cumulative.</p>
+</section>
+<section id="loading-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-dataset">Loading the Dataset</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/FlagshipTwitterUpdated.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="descriptive-statistics---what-is-being-produced-by-each-colleges-account" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-statistics---what-is-being-produced-by-each-colleges-account">Descriptive Statistics - What is being produced by each college’s account?</h2>
+<p>The first question that I want to answer is how frequently flagship college Twitter accounts are posting, and what type of post those posts are. Accordingly, I’m going to explore data related to the overall number of posts, and then break this down further into four post types: original posts, retweets, quote tweets, and replies.</p>
+<section id="number-of-posts-made-by-each-college-in-the-month-of-november" class="level3">
+<h3 class="anchored" data-anchor-id="number-of-posts-made-by-each-college-in-the-month-of-november">Number of posts made by each college in the month of November</h3>
+<p>First, I’m going to look at how many posts each college made overall during the month of November.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#remove rows where the Page Type isn't twitter</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter2 <span class="ot">&lt;-</span> <span class="fu">subset</span>(FlagshipTwitter, PageType <span class="sc">==</span><span class="st">'twitter'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#rename the columns I intend to use for analysis</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter3 <span class="ot">&lt;-</span> <span class="fu">rename</span>(FlagshipTwitter2, <span class="fu">c</span>(<span class="at">Tweet =</span> <span class="st">'Full Text'</span>, <span class="at">MentionedAuthors =</span> <span class="st">'Mentioned Authors'</span>, <span class="at">TWFollowers =</span> <span class="st">'Twitter Followers'</span>, <span class="at">TWReply =</span> <span class="st">'Twitter Reply Count'</span>, <span class="at">TWRetweets =</span> <span class="st">'Twitter Retweets'</span>, <span class="at">TWLikes =</span> <span class="st">'Twitter Likes'</span>, <span class="at">Reach =</span> <span class="st">'Reach (new)'</span>, <span class="at">EngType =</span> <span class="st">'Engagement Type'</span>, <span class="at">URL =</span> Url))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#put columns I plan to use first </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>FlagshipTwitterUse <span class="ot">&lt;-</span> <span class="fu">select</span>(FlagshipTwitter3, Author, Date, Impressions, Reach, TWLikes, TWRetweets, TWReply, EngType, Sentiment, Hashtags, MentionedAuthors, Tweet, TWFollowers, URL, <span class="fu">everything</span>())</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#separate dates into respective date and time column</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>TwitterUse2 <span class="ot">&lt;-</span> <span class="fu">separate</span>(FlagshipTwitterUse, Date, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"Date"</span>, <span class="st">"Time"</span>), <span class="at">sep =</span> <span class="st">" "</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>Date <span class="ot">&lt;-</span> <span class="fu">parse_date</span>(TwitterUse2<span class="sc">$</span>Date, <span class="at">format =</span> <span class="st">"%m/%d/%Y"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>Time <span class="ot">&lt;-</span> <span class="fu">parse_time</span>(TwitterUse2<span class="sc">$</span>Time, <span class="at">format =</span> <span class="st">"%H:%M"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#count posts made by each college</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>by_college <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(Author) <span class="sc">%&gt;%</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Total_Posts"</span> <span class="ot">=</span> <span class="st">"n"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Total_PostsPerc =</span> (Total_Posts<span class="sc">/</span><span class="fu">sum</span>(Total_Posts)<span class="sc">*</span><span class="dv">100</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Total_PostsPerc))</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>by_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 3
+   Author      Total_Posts Total_PostsPerc
+   &lt;chr&gt;             &lt;int&gt;           &lt;dbl&gt;
+ 1 RutgersU            337            5.96
+ 2 UUtah               311            5.50
+ 3 UMich               281            4.97
+ 4 UofAlabama          242            4.28
+ 5 uhmanoa             238            4.21
+ 6 CUBoulder           220            3.89
+ 7 penn_state          210            3.71
+ 8 UNC                 203            3.59
+ 9 UofOklahoma         203            3.59
+10 UBuffalo            198            3.50
+# … with 40 more rows</code></pre>
+</div>
+</div>
+<p>What we see right off the bat is that post volume varies significantly depending on the flagship college in question - from 337 (Rutgers) to only two (University of South Dakota).</p>
+<p>I’m curious about the summary statistics for post volume overall, as this should provide us with greater insight into how the numbers vary across the 50 colleges.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summary statistics for Posts by College</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(by_college)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Author           Total_Posts    Total_PostsPerc  
+ Length:50          Min.   :  2.0   Min.   :0.03535  
+ Class :character   1st Qu.: 50.5   1st Qu.:0.89254  
+ Mode  :character   Median : 93.5   Median :1.65253  
+                    Mean   :113.2   Mean   :2.00000  
+                    3rd Qu.:155.2   3rd Qu.:2.74390  
+                    Max.   :337.0   Max.   :5.95617  </code></pre>
+</div>
+</div>
+<p>In addition to the difference between the minimum number of posts (two) and the maximum (337), there is also a relatively large difference in the median (93), the mean (113), and the IQR (105).</p>
+<p>This leads me to believe that there different posting strategies are being implemented at these different schools.</p>
+</section>
+<section id="number-of-og-posts-retweets-quote-tweet-and-comments-by-each-college" class="level3">
+<h3 class="anchored" data-anchor-id="number-of-og-posts-retweets-quote-tweet-and-comments-by-each-college">Number of OG posts, retweets, quote tweet, and comments by each college</h3>
+<p>To further contextualize this information, I now want to break down of each account’s post volume by the type of post that they were - either original posts, quote tweets, retweets, or comments/replies. This will help us look into not just who posts the most, but what types of posts they are making (and whether different schools are employing strategies that lean more heavily into particular types of posts).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of OG posts, retweets, comments made by each college</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>TwitterUse2 <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">EngType =</span> <span class="st">"OG"</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>post_type_by_college <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(Author, EngType) <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Count=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> EngType, <span class="at">values_from =</span> Count)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>post_types_by_college <span class="ot">&lt;-</span>  <span class="fu">merge</span>(by_college, post_type_by_college, <span class="at">by=</span><span class="st">"Author"</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>post_types_by_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Author Total_Posts Total_PostsPerc  OG QUOTE REPLY RETWEET
+1       CUBoulder         220      3.88829975  63    11    30     116
+2     IndianaUniv         121      2.13856486  37     2     5      77
+3             LSU         147      2.59809120  58     4     3      82
+4          Mizzou         188      3.32272888  90     2    10      86
+5       OhioState          69      1.21951220  30     1    NA      38
+6         OleMiss          27      0.47720042  18    NA     3       6
+7      penn_state         210      3.71155885  74    13     4     119
+8        RutgersU         337      5.95616826  39     5     1     292
+9     uafairbanks          14      0.24743726   3    NA    NA      11
+10       uarizona         105      1.85577943  23     1    12      69
+11      UArkansas          68      1.20183811  33     4    11      20
+12       UBuffalo         198      3.49946978  25     5    11     157
+13     UCBerkeley          46      0.81300813  27    NA     7      12
+14          UConn         105      1.85577943  83     7     1      14
+15      UDelaware          41      0.72463768   9    NA    NA      32
+16             UF         107      1.89112761  49     4     7      47
+17        uhmanoa         238      4.20643337 154    NA    NA      84
+18         uidaho          59      1.04277130  31     1    22       5
+19          uiowa          75      1.32555673  74    NA     1      NA
+20         UMaine          37      0.65394132  19     2     4      12
+21   UMassAmherst          55      0.97207494  42    10     1       2
+22          UMich         281      4.96641923 181     7     2      91
+23         UMNews          29      0.51254860  25     1    NA       3
+24       umontana          34      0.60091905  16     2     2      14
+25            UNC         203      3.58784023 103    12    33      55
+26    unevadareno          80      1.41392718  62     7     1      10
+27 universityofga         189      3.34040297  75     4     4     106
+28 universityofky          50      0.88370449  18     2    16      14
+29 universityofri          44      0.77765995  18     4    NA      22
+30   UnivOfKansas          13      0.22976317  13    NA    NA      NA
+31      UNLincoln         131      2.31530576  49    NA     5      77
+32            UNM          38      0.67161541  23     3     2      10
+33     UofAlabama         242      4.27712973  74     1    NA     167
+34    UofIllinois         108      1.90880170  61    NA    NA      47
+35    UofMaryland          60      1.06044539  44     1     1      14
+36          UofNH          41      0.72463768  38    NA     1       2
+37 UofNorthDakota         128      2.26228349  40    11     8      69
+38    UofOklahoma         203      3.58784023  65     8     6     124
+39          UofSC          74      1.30788264  25     3     8      38
+40        uoregon         136      2.40367621  38     7    18      73
+41            usd           2      0.03534818   2    NA    NA      NA
+42       UTAustin         158      2.79250619  32     9     9     108
+43    UTKnoxville          91      1.60834217  32    21     8      30
+44          UUtah         311      5.49664192  80    13    30     188
+45            UVA         139      2.45669848  53     3     9      74
+46     uvmvermont          52      0.91905267  18    16     3      15
+47             UW          96      1.69671262  47     4    10      35
+48      UWMadison          91      1.60834217  25     2    NA      64
+49       UWyonews          66      1.16648993  66    NA    NA      NA
+50  WestVirginiaU         101      1.78508307  55     3     8      35</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>post_prop_college <span class="ot">&lt;-</span> post_types_by_college <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">OGProp =</span> OG<span class="sc">/</span>Total_Posts<span class="sc">*</span><span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">QuoteProp =</span> QUOTE<span class="sc">/</span>Total_Posts<span class="sc">*</span><span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">ReplyProp =</span> REPLY<span class="sc">/</span>Total_Posts<span class="sc">*</span><span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">RetweetProp =</span> RETWEET<span class="sc">/</span>Total_Posts<span class="sc">*</span><span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, OGProp, QuoteProp, RetweetProp, ReplyProp)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>post_prop_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Author    OGProp  QuoteProp RetweetProp  ReplyProp
+1       CUBoulder  28.63636  5.0000000   52.727273 13.6363636
+2     IndianaUniv  30.57851  1.6528926   63.636364  4.1322314
+3             LSU  39.45578  2.7210884   55.782313  2.0408163
+4          Mizzou  47.87234  1.0638298   45.744681  5.3191489
+5       OhioState  43.47826  1.4492754   55.072464         NA
+6         OleMiss  66.66667         NA   22.222222 11.1111111
+7      penn_state  35.23810  6.1904762   56.666667  1.9047619
+8        RutgersU  11.57270  1.4836795   86.646884  0.2967359
+9     uafairbanks  21.42857         NA   78.571429         NA
+10       uarizona  21.90476  0.9523810   65.714286 11.4285714
+11      UArkansas  48.52941  5.8823529   29.411765 16.1764706
+12       UBuffalo  12.62626  2.5252525   79.292929  5.5555556
+13     UCBerkeley  58.69565         NA   26.086957 15.2173913
+14          UConn  79.04762  6.6666667   13.333333  0.9523810
+15      UDelaware  21.95122         NA   78.048780         NA
+16             UF  45.79439  3.7383178   43.925234  6.5420561
+17        uhmanoa  64.70588         NA   35.294118         NA
+18         uidaho  52.54237  1.6949153    8.474576 37.2881356
+19          uiowa  98.66667         NA          NA  1.3333333
+20         UMaine  51.35135  5.4054054   32.432432 10.8108108
+21   UMassAmherst  76.36364 18.1818182    3.636364  1.8181818
+22          UMich  64.41281  2.4911032   32.384342  0.7117438
+23         UMNews  86.20690  3.4482759   10.344828         NA
+24       umontana  47.05882  5.8823529   41.176471  5.8823529
+25            UNC  50.73892  5.9113300   27.093596 16.2561576
+26    unevadareno  77.50000  8.7500000   12.500000  1.2500000
+27 universityofga  39.68254  2.1164021   56.084656  2.1164021
+28 universityofky  36.00000  4.0000000   28.000000 32.0000000
+29 universityofri  40.90909  9.0909091   50.000000         NA
+30   UnivOfKansas 100.00000         NA          NA         NA
+31      UNLincoln  37.40458         NA   58.778626  3.8167939
+32            UNM  60.52632  7.8947368   26.315789  5.2631579
+33     UofAlabama  30.57851  0.4132231   69.008264         NA
+34    UofIllinois  56.48148         NA   43.518519         NA
+35    UofMaryland  73.33333  1.6666667   23.333333  1.6666667
+36          UofNH  92.68293         NA    4.878049  2.4390244
+37 UofNorthDakota  31.25000  8.5937500   53.906250  6.2500000
+38    UofOklahoma  32.01970  3.9408867   61.083744  2.9556650
+39          UofSC  33.78378  4.0540541   51.351351 10.8108108
+40        uoregon  27.94118  5.1470588   53.676471 13.2352941
+41            usd 100.00000         NA          NA         NA
+42       UTAustin  20.25316  5.6962025   68.354430  5.6962025
+43    UTKnoxville  35.16484 23.0769231   32.967033  8.7912088
+44          UUtah  25.72347  4.1800643   60.450161  9.6463023
+45            UVA  38.12950  2.1582734   53.237410  6.4748201
+46     uvmvermont  34.61538 30.7692308   28.846154  5.7692308
+47             UW  48.95833  4.1666667   36.458333 10.4166667
+48      UWMadison  27.47253  2.1978022   70.329670         NA
+49       UWyonews 100.00000         NA          NA         NA
+50  WestVirginiaU  54.45545  2.9702970   34.653465  7.9207921</code></pre>
+</div>
+</div>
+<p>I can also pull the summary statistics for each type of post. This will help to further contextualize the data regarding the types of posts made by each college.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of OG posts, retweets, comments made by each college</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>post_type_by_college <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">EngType =</span> <span class="st">"OG"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(Author, EngType) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Count=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> EngType, <span class="at">values_from =</span> Count)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>post_types_by_college <span class="ot">&lt;-</span>  <span class="fu">merge</span>(by_college, post_type_by_college, <span class="at">by=</span><span class="st">"Author"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summary statistics for post type by college</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(post_types_by_college)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Author           Total_Posts    Total_PostsPerc         OG        
+ Length:50          Min.   :  2.0   Min.   :0.03535   Min.   :  2.00  
+ Class :character   1st Qu.: 50.5   1st Qu.:0.89254   1st Qu.: 25.00  
+ Mode  :character   Median : 93.5   Median :1.65253   Median : 38.50  
+                    Mean   :113.2   Mean   :2.00000   Mean   : 47.18  
+                    3rd Qu.:155.2   3rd Qu.:2.74390   3rd Qu.: 62.75  
+                    Max.   :337.0   Max.   :5.95617   Max.   :181.00  
+                                                                      
+     QUOTE            REPLY           RETWEET      
+ Min.   : 1.000   Min.   : 1.000   Min.   :  2.00  
+ 1st Qu.: 2.000   1st Qu.: 2.250   1st Qu.: 14.00  
+ Median : 4.000   Median : 6.500   Median : 42.50  
+ Mean   : 5.684   Mean   : 8.342   Mean   : 60.13  
+ 3rd Qu.: 7.750   3rd Qu.:10.000   3rd Qu.: 83.50  
+ Max.   :21.000   Max.   :33.000   Max.   :292.00  
+ NA's   :12       NA's   :12       NA's   :4       </code></pre>
+</div>
+</div>
+<p>Interestingly, retweets are the most common type of post, averaging 60 per author. The IQR for retweets (69) provides an idea of the level of variability in the post volume of this type by college. The number of original posts by college is more consistent, with a mean of 47 and an IQR of 37. Quote tweets are the least utilized type of posts (5.6), while replies are also relatively infrequent (8.3)</p>
+</section>
+<section id="most-common-day-of-the-week-to-post" class="level3">
+<h3 class="anchored" data-anchor-id="most-common-day-of-the-week-to-post">Most common day of the week to post</h3>
+<p>I want to do two things at this step: ensure that I have the day of the week each post was made as a column of data, and then to use that data to break down the number of posts that were made on each day of the week.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of posts made on each day of the week</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>Weekday <span class="ot">&lt;-</span> <span class="fu">weekdays</span>(TwitterUse2<span class="sc">$</span>Date)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>day_of_week <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Weekday, <span class="at">sort =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"WD_Posts"</span> <span class="ot">=</span> <span class="st">"n"</span>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>day_of_week</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 2
+  Weekday   WD_Posts
+  &lt;chr&gt;        &lt;int&gt;
+1 Tuesday       1167
+2 Wednesday     1043
+3 Friday         875
+4 Monday         838
+5 Thursday       746
+6 Saturday       557
+7 Sunday         432</code></pre>
+</div>
+</div>
+<p>The most common day of the week to post is Tuesday, with Wednesday close behind. Posts on Fridays and Mondays were next most common, with Thursdays were not far behind. Weekends had the fewest posts.</p>
+</section>
+<section id="most-common-time-of-day-to-post" class="level3">
+<h3 class="anchored" data-anchor-id="most-common-time-of-day-to-post">Most common time of day to post</h3>
+<p>The time of day that posts are made is also a variable worth considering. I don’t, however, want to look at post time down to the second; instead, I want to break the day up into four equal time periods: overnight (00:00:00 to 05:59:59), morning (06:00:00 to 11:59:59), afternoon (12:00:00 to 17:59:59), and evening (18:00:00 to 23:59:59).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#assign a time period label to each post based on when it was made</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>time_of_day <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span>  </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">mutate</span>(<span class="at">TimePeriod =</span> <span class="fu">format</span>(Time, <span class="at">format=</span><span class="st">"%H:%M:%S"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TimePeriod =</span> <span class="fu">replace</span>(TimePeriod, TimePeriod <span class="sc">&gt;=</span> <span class="st">"00:00:00"</span> <span class="sc">&amp;</span> TimePeriod <span class="sc">&lt;</span> <span class="st">"05:59:59"</span>, <span class="st">"overnight"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TimePeriod =</span> <span class="fu">replace</span>(TimePeriod, TimePeriod <span class="sc">&gt;=</span> <span class="st">"06:00:00"</span> <span class="sc">&amp;</span> TimePeriod <span class="sc">&lt;</span> <span class="st">"11:59:59"</span>, <span class="st">"morning"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TimePeriod =</span> <span class="fu">replace</span>(TimePeriod, TimePeriod <span class="sc">&gt;=</span> <span class="st">"12:00:00"</span> <span class="sc">&amp;</span> TimePeriod <span class="sc">&lt;</span> <span class="st">"17:59:59"</span>, <span class="st">"afternoon"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">TimePeriod =</span> <span class="fu">replace</span>(TimePeriod, TimePeriod <span class="sc">&gt;=</span> <span class="st">"18:00:00"</span> <span class="sc">&amp;</span> TimePeriod <span class="sc">&lt;</span> <span class="st">"23:59:59"</span>, <span class="st">"evening"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, Date, TimePeriod, Tweet)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>time_of_day</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,658 × 4
+   Author      Date       TimePeriod Tweet                                      
+   &lt;chr&gt;       &lt;date&gt;     &lt;chr&gt;      &lt;chr&gt;                                      
+ 1 UofAlabama  2022-11-30 evening    "Juggling, snakes and cooking - oh my! ICY…
+ 2 uhmanoa     2022-11-30 evening    "RT @ManoaGrad Summer and Fall 2022 candid…
+ 3 CUBoulder   2022-11-30 evening    "RT @CU_PTS We are thrilled to welcome two…
+ 4 UNC         2022-11-30 evening    "RT @ChapelHillFD #CHtraffic Alert: Countr…
+ 5 unevadareno 2022-11-30 evening    "Save the date! @unevadareno will hold the…
+ 6 uhmanoa     2022-11-30 evening    "$3.4 million to grow Native Hawaiian phys…
+ 7 uarizona    2022-11-30 evening    "University of Arizona researchers are tea…
+ 8 UArkansas   2022-11-30 evening    "RT @ArkansasPBS LIVESTREAMING: Join @Hill…
+ 9 UArkansas   2022-11-30 evening    "@prehistormic Your No. 1 song of the year…
+10 UUtah       2022-11-30 evening    "RT @UofUIT If you haven’t already, check …
+# … with 5,648 more rows</code></pre>
+</div>
+</div>
+<p>Can I pivot this so that I have a count of how many times each account posted in each time frame?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>time_of_day_by_college <span class="ot">&lt;-</span> time_of_day <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(Author, TimePeriod) <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Count=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> TimePeriod, <span class="at">values_from =</span> Count)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>time_of_day_by_college[<span class="fu">is.na</span>(time_of_day_by_college)] <span class="ot">&lt;-</span> <span class="dv">0</span> </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>time_of_day_by_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 5
+# Groups:   Author [50]
+   Author      afternoon evening morning overnight
+   &lt;chr&gt;           &lt;int&gt;   &lt;int&gt;   &lt;int&gt;     &lt;int&gt;
+ 1 CUBoulder          86     114       2        18
+ 2 IndianaUniv        53      62       0         6
+ 3 LSU                80      58       1         8
+ 4 Mizzou            100      75       4         9
+ 5 OhioState          35      31       0         3
+ 6 OleMiss            16      11       0         0
+ 7 penn_state        119      77       4        10
+ 8 RutgersU          140     145       9        43
+ 9 uafairbanks         2      12       0         0
+10 uarizona           48      57       0         0
+# … with 40 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="number-of-posts-during-each-time-frame" class="level3">
+<h3 class="anchored" data-anchor-id="number-of-posts-during-each-time-frame">Number of posts during each time frame</h3>
+<p>With this information, we can now do a broad summary of posts made during each time frame by all of the colleges in the dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of posts made during each time period</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>time_of_day_count <span class="ot">&lt;-</span> time_of_day <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(TimePeriod, <span class="at">sort =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"TimeOfDay"</span> <span class="ot">=</span> <span class="st">"n"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TimeOfDayPerc =</span> (TimeOfDay<span class="sc">/</span><span class="fu">sum</span>(TimeOfDay)<span class="sc">*</span><span class="dv">100</span>))</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>time_of_day_count</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  TimePeriod TimeOfDay TimeOfDayPerc
+  &lt;chr&gt;          &lt;int&gt;         &lt;dbl&gt;
+1 evening         2604         46.0 
+2 afternoon       2287         40.4 
+3 overnight        676         11.9 
+4 morning           91          1.61</code></pre>
+</div>
+</div>
+<p>A relatively equal proportion of posts are made during the evening (46%) and afternoon (40%), with a small portion of posts made overnight (12%).</p>
+<p>I am somewhat surprised by the very small proportion of morning posts, which is making me believe that the timestamps in the dataset (i) do not reflect local time when the post was made; (ii) were also likely given in UTC and not in one of the more common time zones in the US. Given this, I will likely not dive too deeply into any exploration of the impact that time of day has on engagement metrics.</p>
+</section>
+</section>
+<section id="descriptive-statistics-for-the-response-to-posts-made-by-the-college-accounts" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-statistics-for-the-response-to-posts-made-by-the-college-accounts">Descriptive statistics for the response to posts made by the college accounts</h2>
+<p>Making posts is certainly an important part of having a social media presence, but how your audience responds to those posts is crucial data that helps to guide social media strategy. Shouting into a vacuum is both inefficient and poor strategy; if no one is consuming and engaging with your content, why invest in creating it to begin with?</p>
+<p>While there are several metrics that relate to post engagement – including likes, retweets, and replies by one’s Twitter audience – the metric I want to focus on for this analysis is reach. Reach is an estimate of the number of people that have actually seen/read a given post, and the reach listed in this dataset has been calculated using Brandwatch’s proprietary algorithm.</p>
+<section id="average-reach-by-school" class="level3">
+<h3 class="anchored" data-anchor-id="average-reach-by-school">Average Reach by School</h3>
+<p>These are the high level statistics for key metrics overall across the entire college dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(TwitterUse2[<span class="fu">c</span>(<span class="st">"Impressions"</span>, <span class="st">"Reach"</span>, <span class="st">"TWLikes"</span>, <span class="st">"TWRetweets"</span>, <span class="st">"TWReply"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Impressions          Reach            TWLikes          TWRetweets      
+ Min.   :   4670   Min.   :   2882   Min.   :   0.00   Min.   :   0.000  
+ 1st Qu.:  89993   1st Qu.:  15477   1st Qu.:   0.00   1st Qu.:   0.000  
+ Median : 141784   Median :  19519   Median :   0.00   Median :   0.000  
+ Mean   : 155459   Mean   :  21024   Mean   :  34.39   Mean   :   5.301  
+ 3rd Qu.: 193824   3rd Qu.:  23174   3rd Qu.:  10.75   3rd Qu.:   2.000  
+ Max.   :4047025   Max.   :1573085   Max.   :7244.00   Max.   :2259.000  
+    TWReply       
+ Min.   :  0.000  
+ 1st Qu.:  0.000  
+ Median :  0.000  
+ Mean   :  1.136  
+ 3rd Qu.:  0.000  
+ Max.   :986.000  </code></pre>
+</div>
+</div>
+<p>Given the large difference between the the mean reach (21,024) and the max/min (1,573,085 and 2,882 respectively) this would suggest that there are outliers within the dataset that potentially skew overall results. This trend is similarly seen in the other four metrics as well.</p>
+<p>While there is a high degree of variability between the minimum and maximum for each major metric, the IQR is more consistent.</p>
+<p>Notably, reach seems to be far more consistent across the flagship college Twitter posts when compared to impressions.</p>
+<p>Impressions: Median = 141,784, IQR = 103,831 Reach: Median = 19,519, IQR = 7,697</p>
+<p>This gives a quartile based coefficient of variation of 0.73 for impressions, but only 0.39 for reach.</p>
+<p>This would seem to suggest that while some accounts have a greater opportunity for their posts to be seen (ie. impressions), that does not necessarily translate into more people actually reading any given post (ie. reach).</p>
+</section>
+<section id="summary-statistics-by-college" class="level3">
+<h3 class="anchored" data-anchor-id="summary-statistics-by-college">Summary statistics by college</h3>
+<p>Next, I want to find the high level summary statistics (max, min, mean, median) for the posts that were made by each college.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Engagement summary statistics by college</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>eng_met_by_college <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(Author) <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Impressions_Max =</span> <span class="fu">max</span>(Impressions, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Impressions_Min =</span> <span class="fu">min</span>(Impressions, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="at">Impressions_Median =</span> <span class="fu">median</span>(Impressions, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="at">Impressions_Mean =</span> <span class="fu">mean</span>(Impressions,<span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a> <span class="at">Reach_Max =</span> <span class="fu">max</span>(Reach, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Reach_Min =</span> <span class="fu">min</span>(Reach, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="at">Reach_Median =</span> <span class="fu">median</span>(Reach, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="at">Reach_Mean =</span> <span class="fu">mean</span>(Reach,<span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="at">TWLikes_Max =</span> <span class="fu">max</span>(TWLikes, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">TWLikes_Min =</span> <span class="fu">min</span>(TWLikes, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="at">TWLikes_Median =</span> <span class="fu">median</span>(TWLikes, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="at">TWLikes_Mean =</span> <span class="fu">mean</span>(TWLikes,<span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="at">TWRT_Max =</span> <span class="fu">max</span>(TWRetweets, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">TWRT_Min =</span> <span class="fu">min</span>(TWRetweets, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a><span class="at">TWRT_Median =</span> <span class="fu">median</span>(TWRetweets, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="at">TWRT_Mean =</span> <span class="fu">mean</span>(TWRetweets,<span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="at">TWReply_Max =</span> <span class="fu">max</span>(TWReply, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">TWReply_Min =</span> <span class="fu">min</span>(TWReply, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="at">TWReply_Median =</span> <span class="fu">median</span>(TWReply, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="at">TWReply_Mean =</span> <span class="fu">mean</span>(TWReply,<span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>eng_met_by_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 21
+   Author      Impress…¹ Impre…² Impre…³ Impre…⁴ Reach…⁵ Reach…⁶ Reach…⁷ Reach…⁸
+   &lt;chr&gt;           &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 CUBoulder      194433   89977  90304   94814.   33342   15450   15477  16634.
+ 2 IndianaUniv    417922   87263  87438  109424.   26413   15236   15250  16215.
+ 3 LSU           4047025  359995 362754  425548.  612271   28147   28238  35589.
+ 4 Mizzou         577996  137774 138206. 151897.   91012   18681   18709  21230.
+ 5 OhioState     1380976  381184 381417  463142.  102221   28824   28831  35813.
+ 6 OleMiss        286030  111851 114761  129935.   33628   17036   19983  21809.
+ 7 penn_state     292698  226550 226899  229665.   31571   23161   23179  24187.
+ 8 RutgersU       290287  141602 141797  144131.   49452   18907   18919  19443.
+ 9 uafairbanks      8989    8927   8960    8965     6002    4591    4602   4704.
+10 uarizona       288508  168142 168483  176141.   36915   20377   20402  21612.
+# … with 40 more rows, 12 more variables: TWLikes_Max &lt;dbl&gt;, TWLikes_Min &lt;dbl&gt;,
+#   TWLikes_Median &lt;dbl&gt;, TWLikes_Mean &lt;dbl&gt;, TWRT_Max &lt;dbl&gt;, TWRT_Min &lt;dbl&gt;,
+#   TWRT_Median &lt;dbl&gt;, TWRT_Mean &lt;dbl&gt;, TWReply_Max &lt;dbl&gt;, TWReply_Min &lt;dbl&gt;,
+#   TWReply_Median &lt;dbl&gt;, TWReply_Mean &lt;dbl&gt;, and abbreviated variable names
+#   ¹​Impressions_Max, ²​Impressions_Min, ³​Impressions_Median, ⁴​Impressions_Mean,
+#   ⁵​Reach_Max, ⁶​Reach_Min, ⁷​Reach_Median, ⁸​Reach_Mean</code></pre>
+</div>
+</div>
+</section>
+<section id="relationship-between-reach-and-number-of-followers" class="level3">
+<h3 class="anchored" data-anchor-id="relationship-between-reach-and-number-of-followers">Relationship between reach and number of followers</h3>
+<p>The key metric that I’m most interested in is reach, as it is more of a reflection of how many people actually saw a post (as opposed to impressions, which shows the theoretical potential number of people who could have seen a post).</p>
+<p>What I’d like to layer onto reach is the number of followers that each account has in order to examine the relationship between reach and number of followers.</p>
+<p>The number of followers any Twitter account has can and does vary day-by-day. For simplicity’s sake, I am going to use the follower count for the day in November when they had the greatest number of followers to do my subsequent analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Number of followers for each college</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>followers_by_college <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(Author) <span class="sc">%&gt;%</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Followers =</span> <span class="fu">max</span>(TWFollowers, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>followers_by_college</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 2
+   Author      Followers
+   &lt;chr&gt;           &lt;dbl&gt;
+ 1 CUBoulder       90492
+ 2 IndianaUniv     87544
+ 3 LSU            363002
+ 4 Mizzou         138271
+ 5 OhioState      381557
+ 6 OleMiss        112905
+ 7 penn_state     227153
+ 8 RutgersU       142012
+ 9 uafairbanks      8989
+10 uarizona       168691
+# … with 40 more rows</code></pre>
+</div>
+</div>
+<p>I can now also pull the summary statistics comparing the number of followers at each flagship institution.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summary statistics for followers by college</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(followers_by_college)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Author            Followers     
+ Length:50          Min.   :  4685  
+ Class :character   1st Qu.: 38340  
+ Mode  :character   Median :110340  
+                    Mean   :120452  
+                    3rd Qu.:175626  
+                    Max.   :381557  </code></pre>
+</div>
+</div>
+<p>These statistics support the assertion that the number of followers that each account has differs greatly - there is a difference of 376,872 followers between the smallest account (University of Wyoming) and the largest (Ohio State). At 137,286, the IQR is also reflective of a great degree of variability in followers by account.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#pull only data for mean on each key metric for each college</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>mean_data <span class="ot">&lt;-</span> <span class="fu">select</span>(eng_met_by_college, </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                      Author, Impressions_Mean, Reach_Mean, TWLikes_Mean,TWRT_Mean, TWReply_Mean)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co">#merge followers_by_college and mean_data</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>merged_college <span class="ot">&lt;-</span>  <span class="fu">merge</span>(followers_by_college, mean_data, <span class="at">by=</span><span class="st">"Author"</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co">#add posts by college as a data point to what I created above</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>merged_college2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(by_college, merged_college, <span class="at">by=</span><span class="st">"Author"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, Total_Posts, Followers, Impressions_Mean, Reach_Mean, TWLikes_Mean, TWRT_Mean, TWReply_Mean)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>merged_college2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Author Total_Posts Followers Impressions_Mean Reach_Mean
+1       CUBoulder         220     90492        94814.136  16634.355
+2     IndianaUniv         121     87544       109423.727  16215.041
+3             LSU         147    363002       425548.429  35588.626
+4          Mizzou         188    138271       151896.798  21230.415
+5       OhioState          69    381557       463142.203  35812.884
+6         OleMiss          27    112905       129935.444  21808.815
+7      penn_state         210    227153       229664.771  24186.681
+8        RutgersU         337    142012       144131.291  19443.335
+9     uafairbanks          14      8989         8965.000   4703.857
+10       uarizona         105    168691       176141.267  21611.886
+11      UArkansas          68     72687        88440.971  17313.471
+12       UBuffalo         198     17009        18247.980   7169.449
+13     UCBerkeley          46    234307       249732.174  28040.761
+14          UConn         105    107774       120437.343  18834.410
+15      UDelaware          41     61415        63680.683  13675.561
+16             UF         107    221502       298172.084  40745.673
+17        uhmanoa         238     33998        36382.466  10435.895
+18         uidaho          59     18157        46936.153  18987.627
+19          uiowa          75    132458       142429.987  23278.413
+20         UMaine          37     12383        13145.486   6463.865
+21   UMassAmherst          55     58311        62245.582  14565.055
+22          UMich         281    271119       289980.399  28418.367
+23         UMNews          29    116540       132893.828  22054.724
+24       umontana          34     15601        30274.647   8382.118
+25            UNC         203    143929       148978.256  20448.064
+26    unevadareno          80     31603        31857.537   9824.462
+27 universityofga         189    137413       151401.614  21126.243
+28 universityofky          50    117599       247562.820  86806.720
+29 universityofri          44     33890        37335.477  10604.409
+30   UnivOfKansas          13     88211       104688.846  19714.615
+31      UNLincoln         131     50801        61169.656  13142.099
+32            UNM          38     82113        86093.816  16837.342
+33     UofAlabama         242    189192       191945.236  22342.430
+34    UofIllinois         108    100611       113251.917  18570.306
+35    UofMaryland          60    105226       125443.450  19486.200
+36          UofNH          41     30984        33012.244  10663.707
+37 UofNorthDakota         128     24919        25550.398   8718.867
+38    UofOklahoma         203    179627       186626.680  22140.616
+39          UofSC          74    210961       251021.068  38443.068
+40        uoregon         136    152594       155687.662  21071.382
+41            usd           2     13706        16229.500   6765.500
+42       UTAustin         158    240438       254754.222  25476.082
+43    UTKnoxville          91    155131       176762.396  32204.901
+44          UUtah         311    126528       132345.994  19486.926
+45            UVA         139    104374       195146.353  25680.345
+46     uvmvermont          52     34186        36391.019  10890.558
+47             UW          96    177938       188240.583  23090.594
+48      UWMadison          91    194519       205753.516  22952.275
+49       UWyonews          66      4685         4703.924   3073.136
+50  WestVirginiaU         101    197557       224080.109  26044.950
+   TWLikes_Mean  TWRT_Mean TWReply_Mean
+1    4.91363636  1.4545455   0.26818182
+2    2.90909091  0.7355372   0.10743802
+3   79.63265306 21.7142857   0.99319728
+4   34.30851064  5.3670213   0.46808511
+5  108.89855072 12.0144928   2.04347826
+6   82.77777778  9.9629630   1.00000000
+7    5.36190476  0.9666667   0.25238095
+8    2.27299703  0.6617211   0.13946588
+9    0.07142857  0.0000000   0.07142857
+10   6.49523810  1.7619048   0.21904762
+11  41.67647059  6.8235294   0.85294118
+12   3.06565657  0.6868687   0.05555556
+13  21.80434783  5.1956522   1.63043478
+14  21.43809524  2.8761905   0.31428571
+15   8.02439024  1.1219512   0.14634146
+16  80.79439252 11.8504673   9.82242991
+17   3.81092437  0.9033613   0.07563025
+18  64.86440678 16.2542373   5.40677966
+19 141.84000000 10.4800000   0.86666667
+20   3.29729730  0.8378378   0.24324324
+21   9.25454545  2.0545455   0.43636364
+22  35.12811388  4.9964413   0.83629893
+23  22.72413793  6.5862069   1.20689655
+24  23.17647059  3.3529412   0.29411765
+25   8.80788177  1.7635468   0.26600985
+26   1.57500000  0.4250000   0.12500000
+27  41.17989418  4.8994709   0.55555556
+28 314.50000000 34.0200000  43.04000000
+29   6.52272727  1.1136364   0.15909091
+30  70.53846154  5.7692308   1.15384615
+31   6.81679389  1.3511450   0.10687023
+32  10.10526316  1.7894737   0.68421053
+33  12.21487603  1.5454545   0.16528926
+34  20.34259259  2.9814815   0.38888889
+35  15.98333333  4.6000000   0.35000000
+36   6.75609756  1.7560976   0.24390244
+37   2.96093750  0.4531250   0.07031250
+38  14.91133005  1.7241379   0.22167488
+39 277.44594595 59.1081081   2.17567568
+40  17.68382353  1.8382353   0.48529412
+41   8.50000000  0.5000000   0.00000000
+42  17.68987342  2.7721519   0.34177215
+43 215.50549451 22.6263736   4.97802198
+44  17.24115756  1.7845659   0.45337621
+45 161.27338129 26.0215827   1.92086331
+46   9.96153846  1.3846154   0.26923077
+47  19.38541667  2.9895833   0.50000000
+48   6.90109890  2.1098901   0.09890110
+49   0.34848485  0.1060606   0.09090909
+50  57.63366337  7.0990099   1.09900990</code></pre>
+</div>
+</div>
+</section>
+<section id="compare-followers-and-average-reach-by-college" class="level3">
+<h3 class="anchored" data-anchor-id="compare-followers-and-average-reach-by-college">Compare followers and average reach by college</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#divide mean key metrics by number of followers</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>merged_college2<span class="sc">$</span>ImpPerFollower <span class="ot">&lt;-</span> merged_college2[,<span class="dv">4</span>]<span class="sc">/</span>merged_college2[,<span class="dv">3</span>]</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>merged_college2<span class="sc">$</span>ReachPerFollower <span class="ot">&lt;-</span> merged_college2[,<span class="dv">5</span>]<span class="sc">/</span>merged_college2[,<span class="dv">3</span>]</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>merged_college2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Author Total_Posts Followers Impressions_Mean Reach_Mean
+1       CUBoulder         220     90492        94814.136  16634.355
+2     IndianaUniv         121     87544       109423.727  16215.041
+3             LSU         147    363002       425548.429  35588.626
+4          Mizzou         188    138271       151896.798  21230.415
+5       OhioState          69    381557       463142.203  35812.884
+6         OleMiss          27    112905       129935.444  21808.815
+7      penn_state         210    227153       229664.771  24186.681
+8        RutgersU         337    142012       144131.291  19443.335
+9     uafairbanks          14      8989         8965.000   4703.857
+10       uarizona         105    168691       176141.267  21611.886
+11      UArkansas          68     72687        88440.971  17313.471
+12       UBuffalo         198     17009        18247.980   7169.449
+13     UCBerkeley          46    234307       249732.174  28040.761
+14          UConn         105    107774       120437.343  18834.410
+15      UDelaware          41     61415        63680.683  13675.561
+16             UF         107    221502       298172.084  40745.673
+17        uhmanoa         238     33998        36382.466  10435.895
+18         uidaho          59     18157        46936.153  18987.627
+19          uiowa          75    132458       142429.987  23278.413
+20         UMaine          37     12383        13145.486   6463.865
+21   UMassAmherst          55     58311        62245.582  14565.055
+22          UMich         281    271119       289980.399  28418.367
+23         UMNews          29    116540       132893.828  22054.724
+24       umontana          34     15601        30274.647   8382.118
+25            UNC         203    143929       148978.256  20448.064
+26    unevadareno          80     31603        31857.537   9824.462
+27 universityofga         189    137413       151401.614  21126.243
+28 universityofky          50    117599       247562.820  86806.720
+29 universityofri          44     33890        37335.477  10604.409
+30   UnivOfKansas          13     88211       104688.846  19714.615
+31      UNLincoln         131     50801        61169.656  13142.099
+32            UNM          38     82113        86093.816  16837.342
+33     UofAlabama         242    189192       191945.236  22342.430
+34    UofIllinois         108    100611       113251.917  18570.306
+35    UofMaryland          60    105226       125443.450  19486.200
+36          UofNH          41     30984        33012.244  10663.707
+37 UofNorthDakota         128     24919        25550.398   8718.867
+38    UofOklahoma         203    179627       186626.680  22140.616
+39          UofSC          74    210961       251021.068  38443.068
+40        uoregon         136    152594       155687.662  21071.382
+41            usd           2     13706        16229.500   6765.500
+42       UTAustin         158    240438       254754.222  25476.082
+43    UTKnoxville          91    155131       176762.396  32204.901
+44          UUtah         311    126528       132345.994  19486.926
+45            UVA         139    104374       195146.353  25680.345
+46     uvmvermont          52     34186        36391.019  10890.558
+47             UW          96    177938       188240.583  23090.594
+48      UWMadison          91    194519       205753.516  22952.275
+49       UWyonews          66      4685         4703.924   3073.136
+50  WestVirginiaU         101    197557       224080.109  26044.950
+   TWLikes_Mean  TWRT_Mean TWReply_Mean ImpPerFollower ReachPerFollower
+1    4.91363636  1.4545455   0.26818182      1.0477626       0.18382127
+2    2.90909091  0.7355372   0.10743802      1.2499283       0.18522162
+3   79.63265306 21.7142857   0.99319728      1.1723033       0.09803975
+4   34.30851064  5.3670213   0.46808511      1.0985441       0.15354207
+5  108.89855072 12.0144928   2.04347826      1.2138218       0.09385985
+6   82.77777778  9.9629630   1.00000000      1.1508387       0.19316075
+7    5.36190476  0.9666667   0.25238095      1.0110576       0.10647749
+8    2.27299703  0.6617211   0.13946588      1.0149233       0.13691333
+9    0.07142857  0.0000000   0.07142857      0.9973301       0.52329037
+10   6.49523810  1.7619048   0.21904762      1.0441652       0.12811523
+11  41.67647059  6.8235294   0.85294118      1.2167371       0.23819212
+12   3.06565657  0.6868687   0.05555556      1.0728426       0.42150917
+13  21.80434783  5.1956522   1.63043478      1.0658332       0.11967530
+14  21.43809524  2.8761905   0.31428571      1.1174991       0.17475838
+15   8.02439024  1.1219512   0.14634146      1.0368914       0.22267461
+16  80.79439252 11.8504673   9.82242991      1.3461372       0.18395172
+17   3.81092437  0.9033613   0.07563025      1.0701355       0.30695614
+18  64.86440678 16.2542373   5.40677966      2.5850169       1.04574694
+19 141.84000000 10.4800000   0.86666667      1.0752841       0.17574185
+20   3.29729730  0.8378378   0.24324324      1.0615753       0.52199506
+21   9.25454545  2.0545455   0.43636364      1.0674758       0.24978228
+22  35.12811388  4.9964413   0.83629893      1.0695687       0.10481879
+23  22.72413793  6.5862069   1.20689655      1.1403280       0.18924596
+24  23.17647059  3.3529412   0.29411765      1.9405581       0.53728079
+25   8.80788177  1.7635468   0.26600985      1.0350816       0.14207049
+26   1.57500000  0.4250000   0.12500000      1.0080542       0.31087120
+27  41.17989418  4.8994709   0.55555556      1.1017998       0.15374268
+28 314.50000000 34.0200000  43.04000000      2.1051439       0.73815866
+29   6.52272727  1.1136364   0.15909091      1.1016665       0.31290673
+30  70.53846154  5.7692308   1.15384615      1.1868004       0.22349384
+31   6.81679389  1.3511450   0.10687023      1.2041034       0.25869765
+32  10.10526316  1.7894737   0.68421053      1.0484797       0.20505087
+33  12.21487603  1.5454545   0.16528926      1.0145526       0.11809395
+34  20.34259259  2.9814815   0.38888889      1.1256415       0.18457530
+35  15.98333333  4.6000000   0.35000000      1.1921336       0.18518427
+36   6.75609756  1.7560976   0.24390244      1.0654610       0.34416819
+37   2.96093750  0.4531250   0.07031250      1.0253380       0.34988833
+38  14.91133005  1.7241379   0.22167488      1.0389679       0.12325884
+39 277.44594595 59.1081081   2.17567568      1.1898932       0.18222832
+40  17.68382353  1.8382353   0.48529412      1.0202738       0.13808788
+41   8.50000000  0.5000000   0.00000000      1.1841164       0.49361593
+42  17.68987342  2.7721519   0.34177215      1.0595423       0.10595697
+43 215.50549451 22.6263736   4.97802198      1.1394395       0.20759810
+44  17.24115756  1.7845659   0.45337621      1.0459819       0.15401276
+45 161.27338129 26.0215827   1.92086331      1.8696836       0.24604159
+46   9.96153846  1.3846154   0.26923077      1.0645007       0.31856777
+47  19.38541667  2.9895833   0.50000000      1.0578998       0.12976764
+48   6.90109890  2.1098901   0.09890110      1.0577554       0.11799503
+49   0.34848485  0.1060606   0.09090909      1.0040393       0.65595227
+50  57.63366337  7.0990099   1.09900990      1.1342555       0.13183512</code></pre>
+</div>
+</div>
+</section>
+<section id="adding-in-enrollment-data" class="level3">
+<h3 class="anchored" data-anchor-id="adding-in-enrollment-data">Adding in enrollment data</h3>
+<p>The Carnegie Foundation for the Advancement of Teaching and the American Council on Education collaborate to provide the Carnegie Classifications. These classifications provide data related to every institution of higher education in the US. Read in data from Carnegie.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import Author &gt; School Name data</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>TWAuthor2School <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/Author_SchoolName.csv"</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">#import enrollment data from CCIHE </span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>EnrollmentData <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/CCIHE2021PublicData.csv"</span>)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="co">#combine author &gt; school and merged_college2</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>twitter_enrollment <span class="ot">&lt;-</span> merged_college2 <span class="sc">%&gt;%</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(TWAuthor2School, <span class="at">by =</span> <span class="st">"Author"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a> <span class="fu">left_join</span>(EnrollmentData, <span class="at">by =</span> <span class="st">"SchoolName"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, SchoolName, F20Enrollment, Followers, Total_Posts, Reach_Mean, SizeSetting) </span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>twitter_enrollment<span class="sc">$</span>SizeSetting <span class="ot">&lt;-</span> <span class="fu">str_replace_all</span>(twitter_enrollment<span class="sc">$</span>SizeSetting, <span class="fu">c</span>(<span class="st">"Four-year, large, primarily residential"</span> <span class="ot">=</span><span class="st">"LargePriRez"</span>, <span class="st">"Four-year, large, highly residential"</span> <span class="ot">=</span> <span class="st">"LargeHighRez"</span>, <span class="st">"Four-year, large, primarily nonresidential"</span> <span class="ot">=</span> <span class="st">"LargeNonRez"</span>, <span class="st">"Four-year, medium, primarily nonresidential"</span> <span class="ot">=</span> <span class="st">"MedNonRez"</span>, <span class="st">"Four-year, medium, primarily nonresidential"</span> <span class="ot">=</span> <span class="st">"MedPriRez"</span>, <span class="st">"Four-year, small, highly residential"</span> <span class="ot">=</span> <span class="st">"SmallHighRez"</span>, <span class="st">"Four-year, medium, primarily residential"</span> <span class="ot">=</span> <span class="st">"MedPriRez"</span>))</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>twitter_enrollment</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Author
+1       CUBoulder
+2     IndianaUniv
+3             LSU
+4          Mizzou
+5       OhioState
+6         OleMiss
+7      penn_state
+8        RutgersU
+9     uafairbanks
+10       uarizona
+11      UArkansas
+12       UBuffalo
+13     UCBerkeley
+14          UConn
+15      UDelaware
+16             UF
+17        uhmanoa
+18         uidaho
+19          uiowa
+20         UMaine
+21   UMassAmherst
+22          UMich
+23         UMNews
+24       umontana
+25            UNC
+26    unevadareno
+27 universityofga
+28 universityofky
+29 universityofri
+30   UnivOfKansas
+31      UNLincoln
+32            UNM
+33     UofAlabama
+34    UofIllinois
+35    UofMaryland
+36          UofNH
+37 UofNorthDakota
+38    UofOklahoma
+39          UofSC
+40        uoregon
+41            usd
+42       UTAustin
+43    UTKnoxville
+44          UUtah
+45            UVA
+46     uvmvermont
+47             UW
+48      UWMadison
+49       UWyonews
+50  WestVirginiaU
+                                                         SchoolName
+1                                    University of Colorado Boulder
+2                                    Indiana University-Bloomington
+3  Louisiana State University and Agricultural &amp; Mechanical College
+4                                   University of Missouri-Columbia
+5                                 Ohio State University-Main Campus
+6                                         University of Mississippi
+7                                 The Pennsylvania State University
+8                                  Rutgers University-New Brunswick
+9                                    University of Alaska Fairbanks
+10                              University of Arizona Global Campus
+11                            University of Arkansas at Little Rock
+12                                            University at Buffalo
+13                                University of California-Berkeley
+14                                        University of Connecticut
+15                                           University of Delaware
+16                                            University of Florida
+17                                    University of Hawaii at Manoa
+18                                              University of Idaho
+19                                               University of Iowa
+20                                              University of Maine
+21                              University of Massachusetts-Amherst
+22                                 University of Michigan-Ann Arbor
+23                              University of Minnesota-Twin Cities
+24                                        The University of Montana
+25                      University of North Carolina at Chapel Hill
+26                                        University of Nevada-Reno
+27                                            University of Georgia
+28                                           University of Kentucky
+29                                       University of Rhode Island
+30                                             University of Kansas
+31                                   University of Nebraska-Lincoln
+32                             University of New Mexico-Main Campus
+33                                        The University of Alabama
+34                          University of Illinois Urbana-Champaign
+35                             University of Maryland Global Campus
+36                          University of New Hampshire-Main Campus
+37                                       University of North Dakota
+38                             University of Oklahoma-Norman Campus
+39                            University of South Carolina-Columbia
+40                                             University of Oregon
+41                                       University of South Dakota
+42                                The University of Texas at Austin
+43                            The University of Tennessee-Knoxville
+44                                               University of Utah
+45                               University of Virginia-Main Campus
+46                                            University of Vermont
+47                          University of Washington-Seattle Campus
+48                                  University of Wisconsin-Madison
+49                                            University of Wyoming
+50                                         West Virginia University
+   F20Enrollment Followers Total_Posts Reach_Mean  SizeSetting
+1          37437     90492         220  16634.355  LargePriRez
+2          43064     87544         121  16215.041  LargePriRez
+3          34285    363002         147  35588.626  LargePriRez
+4          31089    138271         188  21230.415  LargePriRez
+5          61369    381557          69  35812.884  LargePriRez
+6          21014    112905          27  21808.815  LargePriRez
+7          89816    227153         210  24186.681  LargePriRez
+8          50411    142012         337  19443.335  LargePriRez
+9           6813      8989          14   4703.857    MedNonRez
+10         31115    168691         105  21611.886  LargeNonRez
+11          8899     72687          68  17313.471    MedNonRez
+12         32347     17009         198   7169.449  LargePriRez
+13         42327    234307          46  28040.761  LargePriRez
+14         27215    107774         105  18834.410 LargeHighRez
+15         23613     61415          41  13675.561  LargePriRez
+16         53372    221502         107  40745.673  LargePriRez
+17         18025     33998         238  10435.895  LargePriRez
+18         10791     18157          59  18987.627    MedPriRez
+19         30318    132458          75  23278.413  LargePriRez
+20         11741     12383          37   6463.865    MedPriRez
+21         31642     58311          55  14565.055 LargeHighRez
+22         47907    271119         281  28418.367  LargePriRez
+23         52017    116540          29  22054.724  LargeNonRez
+24          9808     15601          34   8382.118    MedPriRez
+25         30092    143929         203  20448.064 LargeHighRez
+26         20722     31603          80   9824.462  LargeNonRez
+27         39147    137413         189  21126.243  LargePriRez
+28         29986    117599          50  86806.720  LargePriRez
+29         17649     33890          44  10604.409  LargePriRez
+30         26744     88211          13  19714.615  LargePriRez
+31         25108     50801         131  13142.099  LargePriRez
+32         22311     82113          38  16837.342  LargeNonRez
+33         37840    189192         242  22342.430  LargePriRez
+34         52679    100611         108  18570.306  LargePriRez
+35         58526    105226          60  19486.200  LargeNonRez
+36         14348     30984          41  10663.707 LargeHighRez
+37         13615     24919         128   8718.867  LargePriRez
+38         27772    179627         203  22140.616  LargePriRez
+39         35470    210961          74  38443.068  LargePriRez
+40         21752    152594         136  21071.382  LargePriRez
+41          9459     13706           2   6765.500    MedPriRez
+42         50476    240438         158  25476.082  LargeNonRez
+43         30559    155131          91  32204.901  LargePriRez
+44         33081    126528         311  19486.926  LargePriRez
+45         25628    104374         139  25680.345  LargePriRez
+46         13292     34186          52  10890.558 LargeHighRez
+47         48149    177938          96  23090.594  LargePriRez
+48         44640    194519          91  22952.275  LargePriRez
+49         11829      4685          66   3073.136  LargePriRez
+50         26269    197557         101  26044.950  LargePriRez</code></pre>
+</div>
+</div>
+</section>
+<section id="comparing-followers-to-enrollment" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-followers-to-enrollment">Comparing followers to enrollment</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>twitter_enrollment<span class="sc">$</span>TWFolEnr <span class="ot">&lt;-</span>  twitter_enrollment<span class="sc">$</span>Followers<span class="sc">/</span>twitter_enrollment<span class="sc">$</span>F20Enrollment</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>twitter_enrollment<span class="sc">$</span>TWReachEnr <span class="ot">&lt;-</span>  twitter_enrollment<span class="sc">$</span>Reach<span class="sc">/</span>twitter_enrollment<span class="sc">$</span>F20Enrollment</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>twitter_enrollment_prop <span class="ot">&lt;-</span> twitter_enrollment <span class="sc">%&gt;%</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SchoolName, TWFolEnr, TWReachEnr)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>twitter_enrollment_prop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                         SchoolName   TWFolEnr
+1                                    University of Colorado Boulder  2.4171809
+2                                    Indiana University-Bloomington  2.0328813
+3  Louisiana State University and Agricultural &amp; Mechanical College 10.5877789
+4                                   University of Missouri-Columbia  4.4475860
+5                                 Ohio State University-Main Campus  6.2174225
+6                                         University of Mississippi  5.3728467
+7                                 The Pennsylvania State University  2.5290928
+8                                  Rutgers University-New Brunswick  2.8170836
+9                                    University of Alaska Fairbanks  1.3193894
+10                              University of Arizona Global Campus  5.4215330
+11                            University of Arkansas at Little Rock  8.1679964
+12                                            University at Buffalo  0.5258293
+13                                University of California-Berkeley  5.5356392
+14                                        University of Connecticut  3.9600955
+15                                           University of Delaware  2.6008978
+16                                            University of Florida  4.1501536
+17                                    University of Hawaii at Manoa  1.8861581
+18                                              University of Idaho  1.6826059
+19                                               University of Iowa  4.3689557
+20                                              University of Maine  1.0546802
+21                              University of Massachusetts-Amherst  1.8428355
+22                                 University of Michigan-Ann Arbor  5.6592773
+23                              University of Minnesota-Twin Cities  2.2404214
+24                                        The University of Montana  1.5906403
+25                      University of North Carolina at Chapel Hill  4.7829656
+26                                        University of Nevada-Reno  1.5250941
+27                                            University of Georgia  3.5101796
+28                                           University of Kentucky  3.9217968
+29                                       University of Rhode Island  1.9202221
+30                                             University of Kansas  3.2983473
+31                                   University of Nebraska-Lincoln  2.0232993
+32                             University of New Mexico-Main Campus  3.6803819
+33                                        The University of Alabama  4.9997886
+34                          University of Illinois Urbana-Champaign  1.9098882
+35                             University of Maryland Global Campus  1.7979360
+36                          University of New Hampshire-Main Campus  2.1594647
+37                                       University of North Dakota  1.8302607
+38                             University of Oklahoma-Norman Campus  6.4679173
+39                            University of South Carolina-Columbia  5.9475895
+40                                             University of Oregon  7.0151710
+41                                       University of South Dakota  1.4489904
+42                                The University of Texas at Austin  4.7634123
+43                            The University of Tennessee-Knoxville  5.0764423
+44                                               University of Utah  3.8247937
+45                               University of Virginia-Main Campus  4.0726549
+46                                            University of Vermont  2.5719230
+47                          University of Washington-Seattle Campus  3.6955700
+48                                  University of Wisconsin-Madison  4.3575045
+49                                            University of Wyoming  0.3960605
+50                                         West Virginia University  7.5205375
+   TWReachEnr
+1   0.4443293
+2   0.3765336
+3   1.0380232
+4   0.6828915
+5   0.5835664
+6   1.0378231
+7   0.2692915
+8   0.3856963
+9   0.6904238
+10  0.6945809
+11  1.9455524
+12  0.2216419
+13  0.6624793
+14  0.6920599
+15  0.5791539
+16  0.7634279
+17  0.5789678
+18  1.7595799
+19  0.7678083
+20  0.5505378
+21  0.4603076
+22  0.5931986
+23  0.4239907
+24  0.8546205
+25  0.6795183
+26  0.4741078
+27  0.5396644
+28  2.8949083
+29  0.6008504
+30  0.7371603
+31  0.5234228
+32  0.7546655
+33  0.5904448
+34  0.3525182
+35  0.3329495
+36  0.7432191
+37  0.6403869
+38  0.7972280
+39  1.0838192
+40  0.9687101
+41  0.7152447
+42  0.5047167
+43  1.0538598
+44  0.5890670
+45  1.0020425
+46  0.8193318
+47  0.4795654
+48  0.5141639
+49  0.2597968
+50  0.9914710</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="dissecting-posts-made-by-the-twitter-authors" class="level2">
+<h2 class="anchored" data-anchor-id="dissecting-posts-made-by-the-twitter-authors">Dissecting posts made by the Twitter authors</h2>
+<section id="characters-per-post" class="level3">
+<h3 class="anchored" data-anchor-id="characters-per-post">Characters per post</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#count the number of characters in each Twitter post</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>TweetCharCount <span class="ot">=</span> <span class="fu">str_length</span>(TwitterUse2<span class="sc">$</span>Tweet)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, TweetCharCount, Tweet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,658 × 3
+   Author      TweetCharCount Tweet                                             
+   &lt;chr&gt;                &lt;int&gt; &lt;chr&gt;                                             
+ 1 UofAlabama             302 "Juggling, snakes and cooking - oh my! ICYMI: the…
+ 2 uhmanoa                218 "RT @ManoaGrad Summer and Fall 2022 candidates - …
+ 3 CUBoulder              255 "RT @CU_PTS We are thrilled to welcome two new el…
+ 4 UNC                    221 "RT @ChapelHillFD #CHtraffic Alert: Country Club …
+ 5 unevadareno            301 "Save the date! @unevadareno will hold the 2022 W…
+ 6 uhmanoa                289 "$3.4 million to grow Native Hawaiian physicians …
+ 7 uarizona               176 "University of Arizona researchers are teaming up…
+ 8 UArkansas              295 "RT @ArkansasPBS LIVESTREAMING: Join @HillaryClin…
+ 9 UArkansas               51 "@prehistormic Your No. 1 song of the year, we ho…
+10 UUtah                  262 "RT @UofUIT If you haven’t already, check out @Ma…
+# … with 5,648 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#number of posts from November that were about athletics</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>DissectPosts <span class="ot">&lt;-</span> TwitterUse2 <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Author, TWFollowers, Tweet, EngType, TweetCharCount, Reach, TWLikes, TWRetweets, TWReply)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>DissectPostsAthletics <span class="ot">&lt;-</span> DissectPosts <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(Tweet, <span class="st">"FB|(?i)football|basketball|MBB|WBB|athletics|NCAA"</span>))</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  DissectPostsAthletics</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 764 × 9
+   Author        TWFollowers Tweet EngType Tweet…¹ Reach TWLikes TWRet…² TWReply
+   &lt;chr&gt;               &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+ 1 WestVirginiaU      197557 "RT … RETWEET     102 21844       0       0       0
+ 2 UUtah              126435 "RT … RETWEET     246 17988       0       0       0
+ 3 UMassAmherst        57996 "Wha… OG          255 13263       5       1       0
+ 4 Mizzou             137999 "RT … RETWEET     302 18695       0       0       0
+ 5 UNLincoln           50787 "RT … RETWEET     140 11842       0       0       0
+ 6 UUtah              126436 "RT … RETWEET     304 17988       0       0       0
+ 7 RutgersU           141602 "RT … RETWEET     140 18907       0       0       0
+ 8 uarizona           168142 "RT … RETWEET     275 20377       0       0       0
+ 9 WestVirginiaU      197557 "We’… OG          106 48002     239      41       9
+10 UTAustin           239275 "RT … RETWEET     315 23706       0       0       0
+# … with 754 more rows, and abbreviated variable names ¹​TweetCharCount,
+#   ²​TWRetweets</code></pre>
+</div>
+</div>
+</section>
+<section id="most-common-words-used-in-tweets" class="level3">
+<h3 class="anchored" data-anchor-id="most-common-words-used-in-tweets">Most common words used in tweets</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a vector containing only the text</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>TweetText <span class="ot">&lt;-</span> DissectPosts<span class="sc">$</span>Tweet</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a corpus  </span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>TweetCorpus <span class="ot">&lt;-</span> <span class="fu">Corpus</span>(<span class="fu">VectorSource</span>(TweetText))</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>TweetCorpus <span class="ot">&lt;-</span> TweetCorpus <span class="sc">%&gt;%</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_map</span>(removeNumbers) <span class="sc">%&gt;%</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_map</span>(removePunctuation) <span class="sc">%&gt;%</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_map</span>(stripWhitespace)</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>TweetCorpus <span class="ot">&lt;-</span> <span class="fu">tm_map</span>(TweetCorpus, <span class="fu">content_transformer</span>(tolower))</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>TweetCorpus <span class="ot">&lt;-</span> <span class="fu">tm_map</span>(TweetCorpus, removeWords, <span class="fu">stopwords</span>(<span class="st">"english"</span>))</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>dtm <span class="ot">&lt;-</span> <span class="fu">TermDocumentMatrix</span>(TweetCorpus) </span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>matrix <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(dtm) </span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>words <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">rowSums</span>(matrix),<span class="at">decreasing=</span><span class="cn">TRUE</span>) </span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">word =</span> <span class="fu">names</span>(words),<span class="at">freq=</span>words)</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a><span class="fu">wordcloud</span>(<span class="at">words =</span> df<span class="sc">$</span>word, <span class="at">freq =</span> df<span class="sc">$</span>freq, <span class="at">min.freq =</span> <span class="dv">100</span>,           <span class="at">max.words=</span><span class="dv">50</span>, <span class="at">random.order=</span><span class="cn">FALSE</span>, <span class="at">rot.per=</span><span class="fl">0.35</span>,            <span class="at">colors=</span><span class="fu">brewer.pal</span>(<span class="dv">4</span>, <span class="st">"Dark2"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="HW3_DarronBunt_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

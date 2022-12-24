@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Emma Narkewicz">
+<meta name="dcterms.date" content="2022-12-06">
+<meta name="description" content="Conducting further analysis Medicaid Spending by Drug data set">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 3">
+<meta name="twitter:description" content="Conducting further analysis Medicaid Spending by Drug data set">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Homework 3</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
+<!-- main -->
+<main class="content column-page-right" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Homework 3</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">hw3</div>
+    <div class="quarto-category">emma_narkewicz</div>
+    <div class="quarto-category">medicaid_spending_by_drug</div>
+    <div class="quarto-category">centers_for_medicare_and_medicaid_services</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Conducting further analysis Medicaid Spending by Drug data set
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Emma Narkewicz </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 6, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Read in Data</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Clean &amp; Tidy the Data Set</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Research Q1 How has Medicaid Spending on Drugs Changed from 2016-2020</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">Research Q2 Does Medicaid drug spending vary by manufacturer?</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-5" role="tab" aria-controls="tabset-1-5" aria-selected="false">Limitations and Next Steps</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-6-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-6" role="tab" aria-controls="tabset-1-6" aria-selected="false">Appendix A Calculating Weighted Average Spending per Dosage Unit</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-7-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-7" role="tab" aria-controls="tabset-1-7" aria-selected="false">Citations</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<p>Columns containing the average spending per claim, changes in average spending per claim over time, and the constant average change in spending per dosage unit over time (from compound annual growth return CAGR) were deleted on the read in, as they can be recreated.</p>
+<p>The 36 remaining columns were renamed according to the convention Measurement_Year to facilitate future cleaning and tidying of the data.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Read In the Data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_Data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"/Users/Emma/Desktop/Koding is Kewl/Medicaid_Spending_by_Drug_2020.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Avg_Spnd_Per_Clm"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Chg"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"CAGR"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Mftrs_Count"</span> <span class="ot">=</span> <span class="st">"Tot_Mftr"</span>, </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2016"</span>, </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2016"</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2016"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2016"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2016"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2016"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2016"</span>, </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2017"</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2017"</span>, </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2017"</span>, </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2017"</span> <span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2017"</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2017"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2017"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2018"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2018"</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2018"</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2018"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2018"</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2018"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2018"</span>, </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2019"</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2019"</span>, </span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2019"</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2019"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2019"</span>,</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2019"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2019"</span>, </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2020"</span>, </span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2020"</span>,</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2020"</span>, </span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2020"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2020"</span>, </span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2020"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2020"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error: '/Users/Emma/Desktop/Koding is Kewl/Medicaid_Spending_by_Drug_2020.csv' does not exist.</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  Medicaid_Drug_Data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'Medicaid_Drug_Data' not found</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<p>Prior to cleaning the Medicaid data set has 29 columns and 15,972 rows. Currently some rows contain data for “Overall” Manufacturer Name, which has information about all 4395 unique combinations of Brand Names and Generic name. For brand name and generic name drugs with only 1 manufacturer, these rows contain duplicate information. In the “Mftrs_count” column, the total number of manufacturers for any given drug is only contained in the “Overall row”, with a Mftrs_count of 1 for every individual manufacturer row.</p>
+<p>Prior to pivoting the data, I want to replace the Manufacturers Count column with a column that actually contains the total number of manufacturers for a drug. I also want to remove all of the “Overall” rows from the data.</p>
+<p>To accomplish this I created a new column called “Number_Mftrs” that contained manufacturer count whenever the manufacturer column contained “Overall”. I then filled the number of manufacturers, so for every drug you can see the total number of manufacturers. I then removed the original Mftrs_Count column using select() and the Overall rows using filter().</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Separate the Overall from Mftr to Its Own Column of Total Number of Manufacturers </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>Medicaid_Data <span class="ot">&lt;-</span> Medicaid_Drug_Data<span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Number_Mftrs =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Mftr_Name, <span class="st">"Overall"</span>) <span class="sc">~</span> Mftrs_Count)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="st">`</span><span class="at">Number_Mftrs</span><span class="st">`</span>, <span class="at">.before=</span> Mftrs_Count)<span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Fill down total_mftrs</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Number_Mftrs)<span class="sc">%&gt;%</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Remove the Mftrs_Count Columns  </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">ends_with</span>(<span class="st">"Count"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mutate(., Number_Mftrs = case_when(str_detect(Mftr_Name, "Overall") ~ : object 'Medicaid_Drug_Data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Remove the overall rows </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Medicaid_Data <span class="ot">&lt;-</span> <span class="fu">filter</span>(Medicaid_Data, <span class="sc">!</span><span class="fu">str_detect</span>(<span class="st">`</span><span class="at">Mftr_Name</span><span class="st">`</span>,<span class="st">"Overall"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in filter(Medicaid_Data, !str_detect(Mftr_Name, "Overall")): object 'Medicaid_Data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Medicaid_Data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'Medicaid_Data' not found</code></pre>
+</div>
+</div>
+<p>There are now 25 columns that contain a Measurement_Year. I want there to be 5 unique columns for each of the measurements and the outlier column: - Total Spending - Total Dosage Units - Total Claims - Average Spending Per Dosage Unit Weighted - Outlier Flag</p>
+<p>To compare the change in values over time graphically, I will also want to create a column containing years.</p>
+<p>To do this, I pivoted longer and combined the 25 columns containing total spending, total dosage units, total claims, average spending per dosage unit weighted, and outlier flags for the years 2016 - 2020 under a column named “Measurement_year” and the values under Value. I then separated out the year from the measurements to created a column of years.</p>
+<p>This new “Year” column is categorical, but dates are ordinal variables. I used as.factor() to convert the years to a factor, and then recoded the years to an ordinal variable using recode_factor().</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pivot longer to consolidate, Year, Values, and Manufacturing </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Medicaid_Data_Tidy<span class="ot">&lt;-</span> Medicaid_Data <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">contains</span>(<span class="st">"_20"</span>),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Measurement_Year"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Value"</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#seperate out year</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">"Measurement_Year"</span>, <span class="fu">c</span>(<span class="st">"Measurement"</span>, <span class="st">"Year"</span>), <span class="at">sep =</span> <span class="st">"_"</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert Year from categorical to factor to ordinal</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Year"</span> <span class="ot">=</span> <span class="fu">as.factor</span>(Year)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Year"</span> <span class="ot">=</span> <span class="fu">recode_factor</span>(Year,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2016"</span> <span class="ot">=</span> <span class="st">"2016"</span>,</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2017"</span> <span class="ot">=</span> <span class="st">"2017"</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2018"</span> <span class="ot">=</span> <span class="st">"2018"</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2019"</span> <span class="ot">=</span> <span class="st">"2019"</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2020"</span> <span class="ot">=</span> <span class="st">"2020"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                                <span class="at">.ordered =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in pivot_longer(., cols = contains("_20"), names_to = "Measurement_Year", : object 'Medicaid_Data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Medicaid_Data_Tidy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'Medicaid_Data_Tidy' not found</code></pre>
+</div>
+</div>
+<p>Pivoting longer allowed for the separation of measurements from year and re-coding of the years as a factor. However, having total spending, claims, and dosage units all in one Measurement column limited future analysis and graphing. By pivoting wider, each measurement is in its own column, while years remains in its own column from the original pivot_longer().</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pivot wider </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_DF <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(Medicaid_Data_Tidy, <span class="at">names_from =</span> <span class="st">"Measurement"</span>, <span class="at">values_from =</span> <span class="st">"Value"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in pivot_wider(Medicaid_Data_Tidy, names_from = "Measurement", values_from = "Value"): object 'Medicaid_Data_Tidy' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_DF</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+</div>
+<p>##Research Questions</p>
+<p>My revised research questions are:</p>
+<ol type="1">
+<li>How has Medicaid spending on drugs changed between 2016-2020?</li>
+<li>Does Medicaid drug spending vary by manufacturer? If so, how?</li>
+</ol>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<p>No single brand name drug or generic name drug accounts for even 1% of all cases. The most common drug manufacturer in the data set is Mylan, which represents 2.8% of all cases. The number of manufacturers for a drug ranges from 1 to 42, with a median of 7 manufacturers and a mode of 1 manufacturer.</p>
+<p>To answer my research questions, I wanted to see descriptive statistics grouped by 1) Year &amp; 2) Manufacturers.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median &amp; sd of Total Spending Grouped by Year</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_TotSpending=</span> <span class="fu">mean</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_TotSpending =</span> <span class="fu">median</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_TotSpending =</span> <span class="fu">sd</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Year): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Year</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'TotSpnding_by_Year' not found</code></pre>
+</div>
+</div>
+<p>Looking at the mean and median total Medicaid spending on a drug by year, I was surprised to see that the mean and median of total Medicaid per drug spending consistently decreased from 2016 to 2020. In 2016 the mean total Medicaid spending on any drug was $9,131,003, and in 2020 this the mean total Medicaid spending for any drug fell to $6,315,899. Based on inflation, I would have expected mean total Medicaid spending per drug to increase over time not decrease. However, looking at mean and median total spending alone does not factor in changes in dosage units and number of claims between years, which might explain some of these differences.</p>
+<p>To look at this, I will now look at the mean and median of average Medicaid spending per dosage unit weighted by number of claims for each year between 2016-2020.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median of Average Spending per dosage unit by year</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>AvgSpndingPerDsgUnitWghted_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, AvgSpndPerDsgUntWghtd) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_AvgSpndPerDsgUntWghtd=</span> <span class="fu">mean</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_AvgSpndPerDsgUntWghtd =</span> <span class="fu">median</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_AvgSpndPerDsgUntWghtd =</span> <span class="fu">sd</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Year): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>AvgSpndingPerDsgUnitWghted_by_Year</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'AvgSpndingPerDsgUnitWghted_by_Year' not found</code></pre>
+</div>
+</div>
+<p>The mean average Medicaid spending per dosage unit weighted by number of claims for a drug steadily increased from $88 a dosage unit in 2016 to $262 in 2020. The median Medicaid average weighted Medicaid spending per dosage unit weight is vastly different from the mean, and are all around $1.5 per dosage unit. The mean average spending per dosage unit weighted by number of claims being so much lower than the median suggests that outliers in price for some drugs greatly impact the mean average spending per dosage unit weighted by claims.</p>
+<p>Looking at just the mean and median total spending and average spending per dosage unit weighted for any drug does not tell me what I want to know. So instead I will look at the sum of the total spending and average spending per dosage unit weighted by number of claims for each Brand name drug, of a generic, with a manufacturer for each year. The sum of all spending and weighted average spending for all drugs (Brand Name, Generic Name, Manufacturers Name) will let me compare the total spending &amp; average weighted spending per dosage unit between years without being as influenced by outliers as a mean or median.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summing Total Spending</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_TotSpending=</span> <span class="fu">sum</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Year): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Year</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'SumTotSpnding_by_Year' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summed Total Spending by Year per Unique Drug</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Year, <span class="fu">aes</span>(<span class="at">x=</span>Year, <span class="at">y =</span> <span class="st">`</span><span class="at">Sum_TotSpending</span><span class="st">`</span>, <span class="at">fill =</span>Year)) <span class="sc">+</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 1: Sum of Annual Total Medicaid Spending For all Drugs for 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Year"</span>, <span class="at">y=</span><span class="st">"Sum of Total Medicaid Spending per Drug($)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(SumTotSpnding_by_Year, aes(x = Year, y = Sum_TotSpending, : object 'SumTotSpnding_by_Year' not found</code></pre>
+</div>
+</div>
+<p>Looking at the sum of all total Medicaid drug spending in the above Figure 1 for each year, one can see how the combined total Medicaid drug spending for all covered drugs steadily increased over time between 2016-2020.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summed  averaged weighted Medicaid spending per dosage unit </span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>SumAvgWghtedSpndingPerDsgUnt_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, AvgSpndPerDsgUntWghtd) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_AvgSpndPerDsgUntWghtd=</span> <span class="fu">sum</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Year): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>SumAvgWghtedSpndingPerDsgUnt_Year</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'SumAvgWghtedSpndingPerDsgUnt_Year' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summed  averaged weighted Medicaid spending per dosage unit </span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumAvgWghtedSpndingPerDsgUnt_Year , <span class="fu">aes</span>(<span class="at">x=</span>Year, <span class="at">y =</span> Sum_AvgSpndPerDsgUntWghtd, <span class="at">fill =</span>Year)) <span class="sc">+</span> </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 2: Sum of Annual Average Weighted Medicaid Spending Per Dosage Unit For all Drugs for 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Year"</span>, <span class="at">y=</span><span class="st">"Sum of Average Weighted Medicaid Spending per Dosage Unit($)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(SumAvgWghtedSpndingPerDsgUnt_Year, aes(x = Year, y = Sum_AvgSpndPerDsgUntWghtd, : object 'SumAvgWghtedSpndingPerDsgUnt_Year' not found</code></pre>
+</div>
+</div>
+<p>Figure 2 above shows the sum of the average weighted Medicaid spending by dosage unit graphed vs year. Compared to Figure 1, the increase in the sum of the weighted Medicaid spending per dosage unit increased by nearly 6x between 2016-2020, with a significant spike in average weighted Medicaid spending by dosage unit starting in 2019. Unlike the sum of the total Medicaid spending per drug, Figure 2 takes into account the number of Medicaid Claims, the total dosage units, and the form, strength, and route of all drugs. Taking these factors into account, relative Medicaid drug spending significantly increased between 2016-2020, answering RQ1.</p>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<p>To answer the second research question, I calculated the mean, median, and standard deviation for the total spending and average weighted spending per dosage unit grouped by Manufacturer, descending by Mean Total Spending.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median &amp; sd of Total Spending by Manufacturer</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Mfctr <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Mftr_Name)<span class="sc">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Mftr_Name, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_TotSpendingMfctr =</span> <span class="fu">mean</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_TotSpendingMfctr =</span> <span class="fu">median</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_TotSpendingMfctr =</span> <span class="fu">sd</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Mean_TotSpendingMfctr))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Mftr_Name): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Mfctr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'TotSpnding_by_Mfctr' not found</code></pre>
+</div>
+</div>
+<p>Based on this, the Manufacturer with the highest per drug mean Medicaid spending in 2016-2020 was Otsuka America, with an average per drug total spending of $470,559,700. This is based on the mean total spending per drug for any unique manufacturer. In descending order, the manufacturers with the next highest per drug mean Medicaid spending in 2016-2020 were:</p>
+<ul>
+<li>Janssen Biotech</li>
+<li>Indivior Inc.&nbsp;</li>
+<li>Medimmune</li>
+<li>Gilead Sciences</li>
+</ul>
+<p>The mean total spending per per drug for each manufacturer ranged from $14.1 - $470,559,672, with a median value of $934,886.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co">#remove scientific notation</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Mean Total Spending Against Manufacturer</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(TotSpnding_by_Mfctr, <span class="fu">aes</span>(Mean_TotSpendingMfctr))  <span class="sc">+</span> </span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 3: Mean Total Medicaid Per Drug Spending for a Manufacturer 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Mean Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(TotSpnding_by_Mfctr, aes(Mean_TotSpendingMfctr)): object 'TotSpnding_by_Mfctr' not found</code></pre>
+</div>
+</div>
+<p>Figure 3 above shows mean Medicaid per Drug spending from 2016-2020 for any manufacturer ($) and the count of manufacturers on the y. The graph shows while a handful of manufacturers have exceptionally Medicaid high spending in the order of hundreds of millions of dollars, the histogram is incredibly left skewed. Most manufacturers have mean Medicaid per drug spending of less than 5 million dollars. These could be outliers or a case of certain manufacturers only making a few, very expensive drugs, bringing up the mean. Therefor I looked at the sum of total spending by drug for each manufacturer.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Summing Per Drug Total Spending by Manufacturer</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Mftr <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Mftr_Name)<span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Mftr_Name, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_TotSpendingbyMftr =</span> <span class="fu">sum</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(Sum_TotSpendingbyMftr))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in group_by(., Mftr_Name): object 'Medicaid_Drug_DF' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Mftr </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'SumTotSpnding_by_Mftr' not found</code></pre>
+</div>
+</div>
+<p>While Otsuka America had the highest mean per drug Medicaid spending between 2016-2020 of any manufacturer, Gilead Sciences was the manufacturer that Medicaid spent the most cumulatively on between 2016-2020 on all drugs covered by Medicaid, at over $22 billion dollars. The other top 5 manufacturers with the most cumulative Medicaid drug spending were:</p>
+<ul>
+<li>Abbvie US LLC</li>
+<li>Novo Nordisk</li>
+<li>Eli Lilly &amp; Col.</li>
+<li>Genentech Inc.</li>
+</ul>
+<p>Gilead Sciences was the only manufacturer with in the top 5 of manufacturers both for mean average Medicaid spending per drug and cumulative Medicaid drug spending between 2016-2020.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co">#remove scientific notation</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Sum Total Spending per Drug by Manufacturer</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Mftr, <span class="fu">aes</span>(Sum_TotSpendingbyMftr))  <span class="sc">+</span> </span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 4: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Sum Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(SumTotSpnding_by_Mftr, aes(Sum_TotSpendingbyMftr)): object 'SumTotSpnding_by_Mftr' not found</code></pre>
+</div>
+</div>
+<p>Figure 4 above shows that the distribution of sums of total Medicaid per drug spending between 2016-2020 for each manufacturers closely resembles the heavily left skewed left distribution in Figure 3, with the majority of manufacturers having cumulative Medicaid drug spending under 2.5 billion dollars, with a few manufacturers with uniquely high cumulative Medicaid spending.</p>
+<p>On the current histogram it is challenging to interpret what the cumulative Medicaid spending for each manufacturer, as it is somewhere between $0 &amp; $2.5 billion dollars. Therefore I created a final histogram with only a portion of the x-axis to better visualize the distribution of the cumulative Medicaid drug spending for manufacturers.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Sum Total Spending per Drug by Manufacturer, Zoomed in X</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Mftr, <span class="fu">aes</span>(Sum_TotSpendingbyMftr))  <span class="sc">+</span> </span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 5: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020 (X Lim = 0-500000"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Sum Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">500000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in ggplot(SumTotSpnding_by_Mftr, aes(Sum_TotSpendingbyMftr)): object 'SumTotSpnding_by_Mftr' not found</code></pre>
+</div>
+</div>
+<p>Figure 5 shows the same information as Figure 4, except with the x-axis set to show only manufacturers with cumulative Medicaid drug spending between 2016-2020 between $0 - $500,000. In Figure 5 its easier to see the distribution of cumulative total Medicaid Per Drug Spending for a Manufacturer than in Figure 4. You can see the mode cumulative Medicaid per drug spending for a manufacturer is below $100,000, which is much more clear than in Figure 4 where the mode look likes somewhere between $0 &amp; $2.5 billion dollars.</p>
+<p>Overall while some manufacturers made hundreds of billions of dollars off of Medicaid drug spending between 2016-2020, the majority of manufacturers made under $500,000 from cumulative Medicaid drug spending over the past 5 years. These visualizations suggest that for RQ2 Medicaid spending does vary by manufacturer, with a select number of manufacturers, such as Gilead Sciences and Otsuka America, making tens of billions of cumulative dollars on drugs purchased through Medicaid.</p>
+</div>
+<div id="tabset-1-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-5-tab">
+<p>A key area for future research to expand upon is to re-run the visualizations with all drug values flagged as being outliers removed, to see if this impacted the distribution of the data as well as the answer to my research questions. Based on time limitations and the fact that this data set is not being used for my final project, examining outliers is not something I am going to attempt to do today.</p>
+<p>Another interesting future step would be to look at the drugs that had the most Medicaid Spending, and see if there are any trends in terms of the types of drugs that are most commonly taken, such as pain killers, antibiotics, insulin etc.</p>
+<p>An overall limitation of this analysis was my lack of familiarity with the data set. Even after reading the methods and data dictionary it was hard to conceptualize the averages, totals, and sums of averages and totals. My struggle with this data set pushed me to use a different data set for the final that I am familiar with using through my work. A key to a good analysis is truly understanding your data set and what you want to do with it, so I look forward to showcasing that in my final.</p>
+</div>
+<div id="tabset-1-6" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-6-tab">
+<p>The average weighted cost per dosage unit incorporates 6 variables:</p>
+<ul>
+<li><p>The total spending on a brand name drug*</p></li>
+<li><p>The total number Medicaid claims on a brand name drug*</p></li>
+<li><p>The total dosage units of a brand name drug*</p></li>
+<li><p>The specific strength of a brand name drug*</p></li>
+<li><p>The dosage form of a brand name drug*</p></li>
+<li><p>The route of administration for a brand name drug*</p></li>
+<li><p>= of a specific generic name, by a specific manufacturer, in a specific year</p></li>
+</ul>
+<p>The strength, dosage, and route of brand name drugs is not included in the original data set, and comes from administrative Medicaid data.</p>
+<p>“Since drugs are available in multiple strengths and dosage forms, the average spending per dosage unit at the brand name and generic name level is weighted to account for variation in claims volume for specific brand name, generic name, strength, dosage form, routes of administration, and manufacturer levels.The overall brand name/generic name claim weighted spending per unit is calculated by first summarizing each drug to specific strength, form, route of administration, and manufacture levels. For each unique level, spending is divided by the number of units and multiplied by its proportion of total claims, so that claims volume becomes the weight. The claim-weighted average spending per dosage unit at the overall brand name/generic name level is then calculated by summarizing across the strength, form, route, and manufacturer levels. A similar approach was used to calculate average spending per unit for specific manufacturers” - CMS, 2022</p>
+<p>For example, a drug could be administered in the 2 following combinations of forms, strengths, and routes:</p>
+<ul>
+<li>Form = Vial, Strength = 80MG/4ML, Route = Intravenous</li>
+<li>Form = Syringe, Strength = 162MG/0.9, Route = Subcutaneous</li>
+</ul>
+<p>For each unique combination of drug form/strength/route, a weighted drug cost per unit was calculated by:</p>
+<p><strong>(Cost of Drug/Units of Drug) * Number of Claims</strong></p>
+<p>The total number of claims, total number of dosage units, the total cost of drugs, and the total weighted cost per unit were calculated by summing the information from each combination of of drug form/strength/route of administration.</p>
+<p>The final drug weighted average cost per unit is calculated by:</p>
+<p><strong>Total Weighted Cost Per Unit / Total Claims </strong></p>
+</div>
+<div id="tabset-1-7" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-7-tab">
+<p>Centers for Medicare and Medicaid Services. <em>Medicaid Spending By Drug</em>. (Data file and code book). Baltimore, MD: Data.CMS.gov, 2022. Web. 18 Oct 2022. https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-medicaid-spending-by-drug/medicaid-spending-by-drug</p>
+<p>Grolemund, Garrett, and Hadley Wickham. R for Data Science. O’Reilly Media, 2017.</p>
+</div>
+</div>
+</div>
+
+
+<!-- -->
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb54" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Homework 3"</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Emma Narkewicz"</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Conducting further analysis  Medicaid Spending by Drug data set"</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "12/06/2022"</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - hw3</span></span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - emma_narkewicz</span></span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - medicaid_spending_by_drug</span></span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - centers_for_medicare_and_medicaid_services</span></span>
+<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a><span class="co">  </span></span>
+<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-31"><a href="#cb54-31" aria-hidden="true" tabindex="-1"></a>::: panel-tabset</span>
+<span id="cb54-32"><a href="#cb54-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-33"><a href="#cb54-33" aria-hidden="true" tabindex="-1"></a>#Introduction to Medicaid Drug Spending by Drug Data Set</span>
+<span id="cb54-34"><a href="#cb54-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-35"><a href="#cb54-35" aria-hidden="true" tabindex="-1"></a>The Medicaid Drug Spending by Drug Data set details national spending on outpatient, over the counter drugs in the US paid for by the Medicaid system between 2016-2020. </span>
+<span id="cb54-36"><a href="#cb54-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-37"><a href="#cb54-37" aria-hidden="true" tabindex="-1"></a>The data set includes state and federal Medicaid drug spending for 4237 unique brand names of drugs, 2473 unique generic names of drugs, and 905 unique drug manufacturers. Data was collected on total Medicaid spending, total number of Medicaid claims, and total Dosage Units for each of the 2473  generic drugs covered by Medicaid between 2016-2020. The data set is designed to monitor changes in the total average weighted Medicaid drug spending per dosage unit over time.</span>
+<span id="cb54-38"><a href="#cb54-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-39"><a href="#cb54-39" aria-hidden="true" tabindex="-1"></a>The average weighted cost per dosage unit for a specific brand name, generic drug, by a manufacturer, in a specific year is calculated to take into account variations in the spending, dosage, and number of claims based on variations in drug strength, the dosage form, and the route of administration for a drug (i.e. a oral pill vs. a vaccine administered by needle). </span>
+<span id="cb54-40"><a href="#cb54-40" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-41"><a href="#cb54-41" aria-hidden="true" tabindex="-1"></a> The strength, dosage, and route of brand name drugs is not included in the original Medicaid data set, and comes from administrative Medicaid data not available to the public (thus it can't be recreated)</span>
+<span id="cb54-42"><a href="#cb54-42" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-43"><a href="#cb54-43" aria-hidden="true" tabindex="-1"></a>More information on how average weighted cost per dosage unit was calculated information can  be found in **Appendix A**</span>
+<span id="cb54-44"><a href="#cb54-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-45"><a href="#cb54-45" aria-hidden="true" tabindex="-1"></a>The original data set contained outlier flags for years when the inclusion of potential incorrect data significantly impacted the average cost per drug dosage unit. An outlier was determined by being IQR +/- 1.5(IQR) of average cost per dosage unit. Overall weighted average cost per drug units were calculated with and without outliers, and if the inclusion of an outlier changed the weighted average cost per drug unit by more than 10% or $1, it is noted by a 1 in the outlier flag column. 30% of cases are flagged as having their average spending per dosage unit weighted in that year being impacted by outliers.</span>
+<span id="cb54-46"><a href="#cb54-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-47"><a href="#cb54-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-48"><a href="#cb54-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in Data</span></span>
+<span id="cb54-49"><a href="#cb54-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-50"><a href="#cb54-50" aria-hidden="true" tabindex="-1"></a>Columns containing the average spending per claim,  changes in average spending per claim over time, and the constant average change in spending per dosage unit over time (from compound annual growth return CAGR) were deleted on the read in, as they can be recreated.</span>
+<span id="cb54-51"><a href="#cb54-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-52"><a href="#cb54-52" aria-hidden="true" tabindex="-1"></a>The 36 remaining columns were renamed according to the convention Measurement_Year to facilitate future cleaning and tidying of the data.</span>
+<span id="cb54-53"><a href="#cb54-53" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-54"><a href="#cb54-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-55"><a href="#cb54-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-58"><a href="#cb54-58" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-59"><a href="#cb54-59" aria-hidden="true" tabindex="-1"></a><span class="co">#Read In the Data</span></span>
+<span id="cb54-60"><a href="#cb54-60" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_Data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"/Users/Emma/Desktop/Koding is Kewl/Medicaid_Spending_by_Drug_2020.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-61"><a href="#cb54-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Avg_Spnd_Per_Clm"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-62"><a href="#cb54-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"Chg"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb54-63"><a href="#cb54-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">contains</span>(<span class="st">"CAGR"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-64"><a href="#cb54-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Mftrs_Count"</span> <span class="ot">=</span> <span class="st">"Tot_Mftr"</span>, </span>
+<span id="cb54-65"><a href="#cb54-65" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2016"</span>, </span>
+<span id="cb54-66"><a href="#cb54-66" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2016"</span>, </span>
+<span id="cb54-67"><a href="#cb54-67" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2016"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2016"</span>,</span>
+<span id="cb54-68"><a href="#cb54-68" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2016"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2016"</span>,</span>
+<span id="cb54-69"><a href="#cb54-69" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2016"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2016"</span>, </span>
+<span id="cb54-70"><a href="#cb54-70" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2017"</span>,</span>
+<span id="cb54-71"><a href="#cb54-71" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2017"</span>, </span>
+<span id="cb54-72"><a href="#cb54-72" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2017"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2017"</span>, </span>
+<span id="cb54-73"><a href="#cb54-73" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2017"</span> <span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2017"</span>,</span>
+<span id="cb54-74"><a href="#cb54-74" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2017"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2017"</span>,</span>
+<span id="cb54-75"><a href="#cb54-75" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2018"</span>,</span>
+<span id="cb54-76"><a href="#cb54-76" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2018"</span>,</span>
+<span id="cb54-77"><a href="#cb54-77" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2018"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2018"</span>,</span>
+<span id="cb54-78"><a href="#cb54-78" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2018"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2018"</span>,</span>
+<span id="cb54-79"><a href="#cb54-79" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2018"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2018"</span>, </span>
+<span id="cb54-80"><a href="#cb54-80" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2019"</span>,</span>
+<span id="cb54-81"><a href="#cb54-81" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2019"</span>, </span>
+<span id="cb54-82"><a href="#cb54-82" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2019"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2019"</span>,</span>
+<span id="cb54-83"><a href="#cb54-83" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2019"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2019"</span>,</span>
+<span id="cb54-84"><a href="#cb54-84" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2019"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2019"</span>, </span>
+<span id="cb54-85"><a href="#cb54-85" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotSpndng_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Spndng_2020"</span>, </span>
+<span id="cb54-86"><a href="#cb54-86" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotDsgUnts_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Dsg_Unts_2020"</span>,</span>
+<span id="cb54-87"><a href="#cb54-87" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TotClms_2020"</span> <span class="ot">=</span> <span class="st">"Tot_Clms_2020"</span>, </span>
+<span id="cb54-88"><a href="#cb54-88" aria-hidden="true" tabindex="-1"></a>         <span class="st">"AvgSpndPerDsgUntWghtd_2020"</span><span class="ot">=</span> <span class="st">"Avg_Spnd_Per_Dsg_Unt_Wghtd_2020"</span>, </span>
+<span id="cb54-89"><a href="#cb54-89" aria-hidden="true" tabindex="-1"></a>         <span class="st">"OutlierFlag_2020"</span> <span class="ot">=</span>  <span class="st">"Outlier_Flag_2020"</span>)</span>
+<span id="cb54-90"><a href="#cb54-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-91"><a href="#cb54-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-92"><a href="#cb54-92" aria-hidden="true" tabindex="-1"></a>  Medicaid_Drug_Data</span>
+<span id="cb54-93"><a href="#cb54-93" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-94"><a href="#cb54-94" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-95"><a href="#cb54-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-96"><a href="#cb54-96" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean &amp; Tidy the Data Set</span></span>
+<span id="cb54-97"><a href="#cb54-97" aria-hidden="true" tabindex="-1"></a>Prior to cleaning the Medicaid data set has 29 columns and 15,972 rows. Currently some rows contain data for "Overall" Manufacturer Name, which has information about all 4395 unique combinations of Brand Names and Generic name. For brand name and generic name drugs with only 1 manufacturer, these rows contain duplicate information.  In the  "Mftrs_count" column, the total number of manufacturers for any given drug is only contained in the "Overall row", with a Mftrs_count of 1 for every individual manufacturer row.</span>
+<span id="cb54-98"><a href="#cb54-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-99"><a href="#cb54-99" aria-hidden="true" tabindex="-1"></a>Prior to pivoting the data, I want to replace the Manufacturers Count column with a column that actually contains the total number of manufacturers for a drug. I also want to remove all of the "Overall" rows from the data. </span>
+<span id="cb54-100"><a href="#cb54-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-101"><a href="#cb54-101" aria-hidden="true" tabindex="-1"></a>To accomplish this I created a new column called "Number_Mftrs" that contained manufacturer count whenever the manufacturer column contained "Overall". I then filled the number of manufacturers, so for every drug you can see the total number of manufacturers. I then removed the original Mftrs_Count column using select() and the Overall rows using filter().</span>
+<span id="cb54-102"><a href="#cb54-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-103"><a href="#cb54-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-106"><a href="#cb54-106" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-107"><a href="#cb54-107" aria-hidden="true" tabindex="-1"></a><span class="co">#Separate the Overall from Mftr to Its Own Column of Total Number of Manufacturers </span></span>
+<span id="cb54-108"><a href="#cb54-108" aria-hidden="true" tabindex="-1"></a>Medicaid_Data <span class="ot">&lt;-</span> Medicaid_Drug_Data<span class="sc">%&gt;%</span></span>
+<span id="cb54-109"><a href="#cb54-109" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Number_Mftrs =</span> <span class="fu">case_when</span>(</span>
+<span id="cb54-110"><a href="#cb54-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(Mftr_Name, <span class="st">"Overall"</span>) <span class="sc">~</span> Mftrs_Count)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-111"><a href="#cb54-111" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="st">`</span><span class="at">Number_Mftrs</span><span class="st">`</span>, <span class="at">.before=</span> Mftrs_Count)<span class="sc">%&gt;%</span></span>
+<span id="cb54-112"><a href="#cb54-112" aria-hidden="true" tabindex="-1"></a><span class="co">#Fill down total_mftrs</span></span>
+<span id="cb54-113"><a href="#cb54-113" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Number_Mftrs)<span class="sc">%&gt;%</span></span>
+<span id="cb54-114"><a href="#cb54-114" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Remove the Mftrs_Count Columns  </span></span>
+<span id="cb54-115"><a href="#cb54-115" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">ends_with</span>(<span class="st">"Count"</span>))</span>
+<span id="cb54-116"><a href="#cb54-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-117"><a href="#cb54-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-118"><a href="#cb54-118" aria-hidden="true" tabindex="-1"></a><span class="co">#Remove the overall rows </span></span>
+<span id="cb54-119"><a href="#cb54-119" aria-hidden="true" tabindex="-1"></a>Medicaid_Data <span class="ot">&lt;-</span> <span class="fu">filter</span>(Medicaid_Data, <span class="sc">!</span><span class="fu">str_detect</span>(<span class="st">`</span><span class="at">Mftr_Name</span><span class="st">`</span>,<span class="st">"Overall"</span>))</span>
+<span id="cb54-120"><a href="#cb54-120" aria-hidden="true" tabindex="-1"></a>Medicaid_Data</span>
+<span id="cb54-121"><a href="#cb54-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-122"><a href="#cb54-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-123"><a href="#cb54-123" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-124"><a href="#cb54-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-125"><a href="#cb54-125" aria-hidden="true" tabindex="-1"></a>There are now 25 columns that contain a Measurement_Year. I want there to be 5 unique columns for each of the measurements and the outlier column:</span>
+<span id="cb54-126"><a href="#cb54-126" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Total Spending</span>
+<span id="cb54-127"><a href="#cb54-127" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Total Dosage Units</span>
+<span id="cb54-128"><a href="#cb54-128" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Total Claims</span>
+<span id="cb54-129"><a href="#cb54-129" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Average Spending Per Dosage Unit Weighted</span>
+<span id="cb54-130"><a href="#cb54-130" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Outlier Flag</span>
+<span id="cb54-131"><a href="#cb54-131" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-132"><a href="#cb54-132" aria-hidden="true" tabindex="-1"></a>To compare the change in values over time graphically, I will  also want to create a column containing years. </span>
+<span id="cb54-133"><a href="#cb54-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-134"><a href="#cb54-134" aria-hidden="true" tabindex="-1"></a>To do this, I pivoted longer and combined the 25 columns containing total spending, total dosage units, total claims, average spending per dosage unit weighted, and outlier flags for the years 2016 - 2020 under a column named "Measurement_year" and the values under Value. I then separated out the year from the measurements to created a column of years. </span>
+<span id="cb54-135"><a href="#cb54-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-136"><a href="#cb54-136" aria-hidden="true" tabindex="-1"></a>This new "Year" column is categorical, but dates are ordinal variables. I used as.factor() to convert the years to a factor, and then recoded the years to an ordinal variable using recode_factor().</span>
+<span id="cb54-137"><a href="#cb54-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-140"><a href="#cb54-140" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-141"><a href="#cb54-141" aria-hidden="true" tabindex="-1"></a><span class="co">#Pivot longer to consolidate, Year, Values, and Manufacturing </span></span>
+<span id="cb54-142"><a href="#cb54-142" aria-hidden="true" tabindex="-1"></a>Medicaid_Data_Tidy<span class="ot">&lt;-</span> Medicaid_Data <span class="sc">%&gt;%</span></span>
+<span id="cb54-143"><a href="#cb54-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">contains</span>(<span class="st">"_20"</span>),</span>
+<span id="cb54-144"><a href="#cb54-144" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Measurement_Year"</span>,</span>
+<span id="cb54-145"><a href="#cb54-145" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Value"</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb54-146"><a href="#cb54-146" aria-hidden="true" tabindex="-1"></a><span class="co">#seperate out year</span></span>
+<span id="cb54-147"><a href="#cb54-147" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">"Measurement_Year"</span>, <span class="fu">c</span>(<span class="st">"Measurement"</span>, <span class="st">"Year"</span>), <span class="at">sep =</span> <span class="st">"_"</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb54-148"><a href="#cb54-148" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert Year from categorical to factor to ordinal</span></span>
+<span id="cb54-149"><a href="#cb54-149" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Year"</span> <span class="ot">=</span> <span class="fu">as.factor</span>(Year)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-150"><a href="#cb54-150" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Year"</span> <span class="ot">=</span> <span class="fu">recode_factor</span>(Year,</span>
+<span id="cb54-151"><a href="#cb54-151" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2016"</span> <span class="ot">=</span> <span class="st">"2016"</span>,</span>
+<span id="cb54-152"><a href="#cb54-152" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2017"</span> <span class="ot">=</span> <span class="st">"2017"</span>,</span>
+<span id="cb54-153"><a href="#cb54-153" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2018"</span> <span class="ot">=</span> <span class="st">"2018"</span>,</span>
+<span id="cb54-154"><a href="#cb54-154" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2019"</span> <span class="ot">=</span> <span class="st">"2019"</span>,</span>
+<span id="cb54-155"><a href="#cb54-155" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"2020"</span> <span class="ot">=</span> <span class="st">"2020"</span>,</span>
+<span id="cb54-156"><a href="#cb54-156" aria-hidden="true" tabindex="-1"></a>                                <span class="at">.ordered =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb54-157"><a href="#cb54-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-158"><a href="#cb54-158" aria-hidden="true" tabindex="-1"></a>Medicaid_Data_Tidy</span>
+<span id="cb54-159"><a href="#cb54-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-160"><a href="#cb54-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-161"><a href="#cb54-161" aria-hidden="true" tabindex="-1"></a>Pivoting longer allowed for the separation of measurements from year and re-coding of the years as a factor. However, having total spending, claims, and dosage units all in one Measurement column limited future analysis and graphing. By pivoting wider, each measurement is in its own column, while years remains in its own column from the original pivot_longer().</span>
+<span id="cb54-162"><a href="#cb54-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-163"><a href="#cb54-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-166"><a href="#cb54-166" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-167"><a href="#cb54-167" aria-hidden="true" tabindex="-1"></a><span class="co">#Pivot wider </span></span>
+<span id="cb54-168"><a href="#cb54-168" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_DF <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(Medicaid_Data_Tidy, <span class="at">names_from =</span> <span class="st">"Measurement"</span>, <span class="at">values_from =</span> <span class="st">"Value"</span>)</span>
+<span id="cb54-169"><a href="#cb54-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-170"><a href="#cb54-170" aria-hidden="true" tabindex="-1"></a>Medicaid_Drug_DF</span>
+<span id="cb54-171"><a href="#cb54-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-172"><a href="#cb54-172" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-173"><a href="#cb54-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-174"><a href="#cb54-174" aria-hidden="true" tabindex="-1"></a>##Research Questions</span>
+<span id="cb54-175"><a href="#cb54-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-176"><a href="#cb54-176" aria-hidden="true" tabindex="-1"></a>My revised research questions are:</span>
+<span id="cb54-177"><a href="#cb54-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-178"><a href="#cb54-178" aria-hidden="true" tabindex="-1"></a>1) How has Medicaid spending on drugs changed between 2016-2020?</span>
+<span id="cb54-179"><a href="#cb54-179" aria-hidden="true" tabindex="-1"></a>2) Does Medicaid drug spending vary by manufacturer? If so, how?</span>
+<span id="cb54-180"><a href="#cb54-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-181"><a href="#cb54-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-182"><a href="#cb54-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## Research Q1 How has Medicaid Spending on Drugs Changed from 2016-2020</span></span>
+<span id="cb54-183"><a href="#cb54-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-184"><a href="#cb54-184" aria-hidden="true" tabindex="-1"></a>No single brand name drug or generic name drug accounts for even 1% of all cases. The most common drug manufacturer in the data set is Mylan, which represents 2.8% of all cases. The number of manufacturers for a drug  ranges from 1 to 42, with a median of 7 manufacturers and a mode of 1 manufacturer.</span>
+<span id="cb54-185"><a href="#cb54-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-186"><a href="#cb54-186" aria-hidden="true" tabindex="-1"></a>To answer my research questions, I wanted to see descriptive statistics grouped by 1) Year &amp; 2) Manufacturers. </span>
+<span id="cb54-187"><a href="#cb54-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-188"><a href="#cb54-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-191"><a href="#cb54-191" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-192"><a href="#cb54-192" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median &amp; sd of Total Spending Grouped by Year</span></span>
+<span id="cb54-193"><a href="#cb54-193" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-194"><a href="#cb54-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb54-195"><a href="#cb54-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb54-196"><a href="#cb54-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_TotSpending=</span> <span class="fu">mean</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_TotSpending =</span> <span class="fu">median</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_TotSpending =</span> <span class="fu">sd</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb54-197"><a href="#cb54-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-198"><a href="#cb54-198" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Year</span>
+<span id="cb54-199"><a href="#cb54-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-200"><a href="#cb54-200" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-201"><a href="#cb54-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-202"><a href="#cb54-202" aria-hidden="true" tabindex="-1"></a>Looking at the mean and median total Medicaid spending on a drug by year, I was surprised to see that the mean and median of total Medicaid per drug spending consistently decreased from 2016 to 2020. In 2016 the mean total Medicaid spending on any drug was $9,131,003, and in 2020 this the mean total Medicaid spending for any drug fell to $6,315,899. Based on inflation, I would have expected mean total Medicaid spending per drug to increase over time not decrease. However, looking at mean and median total spending alone does not factor in changes in dosage units and number of claims between years, which might explain some of these differences.</span>
+<span id="cb54-203"><a href="#cb54-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-204"><a href="#cb54-204" aria-hidden="true" tabindex="-1"></a>To look at this, I will now look at the mean and median of average Medicaid spending per dosage unit weighted by number of claims for each year between 2016-2020.</span>
+<span id="cb54-205"><a href="#cb54-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-206"><a href="#cb54-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-209"><a href="#cb54-209" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-210"><a href="#cb54-210" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median of Average Spending per dosage unit by year</span></span>
+<span id="cb54-211"><a href="#cb54-211" aria-hidden="true" tabindex="-1"></a>AvgSpndingPerDsgUnitWghted_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-212"><a href="#cb54-212" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb54-213"><a href="#cb54-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, AvgSpndPerDsgUntWghtd) <span class="sc">%&gt;%</span></span>
+<span id="cb54-214"><a href="#cb54-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_AvgSpndPerDsgUntWghtd=</span> <span class="fu">mean</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_AvgSpndPerDsgUntWghtd =</span> <span class="fu">median</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_AvgSpndPerDsgUntWghtd =</span> <span class="fu">sd</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb54-215"><a href="#cb54-215" aria-hidden="true" tabindex="-1"></a>AvgSpndingPerDsgUnitWghted_by_Year</span>
+<span id="cb54-216"><a href="#cb54-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-217"><a href="#cb54-217" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-218"><a href="#cb54-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-219"><a href="#cb54-219" aria-hidden="true" tabindex="-1"></a>The mean average Medicaid spending per dosage unit weighted by number of claims for a drug steadily increased from $88 a dosage unit in 2016 to $262 in 2020. The median Medicaid average weighted Medicaid spending per dosage unit weight is vastly different from the mean, and are all around $1.5 per dosage unit. The mean average spending per dosage unit weighted by number of claims being so much lower than the median suggests that outliers in price for some drugs greatly impact the mean average spending per dosage unit weighted by claims.</span>
+<span id="cb54-220"><a href="#cb54-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-221"><a href="#cb54-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-222"><a href="#cb54-222" aria-hidden="true" tabindex="-1"></a>Looking at just the mean and median total spending and average spending per dosage unit weighted for any drug does not tell me what I want to know. So instead I will look at the sum of the total spending and average spending per dosage unit weighted by number of claims for each Brand name drug, of a generic, with a manufacturer for each year. The sum of all spending and weighted average spending for all drugs (Brand Name, Generic Name, Manufacturers Name) will let me compare the total spending &amp; average weighted spending per dosage unit between years without being as influenced by outliers as a mean or median.</span>
+<span id="cb54-223"><a href="#cb54-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-224"><a href="#cb54-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-227"><a href="#cb54-227" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-228"><a href="#cb54-228" aria-hidden="true" tabindex="-1"></a><span class="co">#Summing Total Spending</span></span>
+<span id="cb54-229"><a href="#cb54-229" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-230"><a href="#cb54-230" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb54-231"><a href="#cb54-231" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb54-232"><a href="#cb54-232" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_TotSpending=</span> <span class="fu">sum</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span>
+<span id="cb54-233"><a href="#cb54-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-234"><a href="#cb54-234" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Year</span>
+<span id="cb54-235"><a href="#cb54-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-236"><a href="#cb54-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-237"><a href="#cb54-237" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-238"><a href="#cb54-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-239"><a href="#cb54-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-242"><a href="#cb54-242" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-243"><a href="#cb54-243" aria-hidden="true" tabindex="-1"></a><span class="co">#summed Total Spending by Year per Unique Drug</span></span>
+<span id="cb54-244"><a href="#cb54-244" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Year, <span class="fu">aes</span>(<span class="at">x=</span>Year, <span class="at">y =</span> <span class="st">`</span><span class="at">Sum_TotSpending</span><span class="st">`</span>, <span class="at">fill =</span>Year)) <span class="sc">+</span> </span>
+<span id="cb54-245"><a href="#cb54-245" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 1: Sum of Annual Total Medicaid Spending For all Drugs for 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Year"</span>, <span class="at">y=</span><span class="st">"Sum of Total Medicaid Spending per Drug($)"</span>)</span>
+<span id="cb54-246"><a href="#cb54-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-247"><a href="#cb54-247" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-248"><a href="#cb54-248" aria-hidden="true" tabindex="-1"></a>Looking at the sum of all total Medicaid drug spending in the above Figure 1 for each year, one can see how the combined total Medicaid drug spending for all covered drugs steadily increased over time between 2016-2020.</span>
+<span id="cb54-249"><a href="#cb54-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-250"><a href="#cb54-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-253"><a href="#cb54-253" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-254"><a href="#cb54-254" aria-hidden="true" tabindex="-1"></a><span class="co">#summed  averaged weighted Medicaid spending per dosage unit </span></span>
+<span id="cb54-255"><a href="#cb54-255" aria-hidden="true" tabindex="-1"></a>SumAvgWghtedSpndingPerDsgUnt_Year <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-256"><a href="#cb54-256" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year)<span class="sc">%&gt;%</span></span>
+<span id="cb54-257"><a href="#cb54-257" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, AvgSpndPerDsgUntWghtd) <span class="sc">%&gt;%</span></span>
+<span id="cb54-258"><a href="#cb54-258" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_AvgSpndPerDsgUntWghtd=</span> <span class="fu">sum</span>(AvgSpndPerDsgUntWghtd, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span>
+<span id="cb54-259"><a href="#cb54-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-260"><a href="#cb54-260" aria-hidden="true" tabindex="-1"></a>SumAvgWghtedSpndingPerDsgUnt_Year</span>
+<span id="cb54-261"><a href="#cb54-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-262"><a href="#cb54-262" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-263"><a href="#cb54-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-264"><a href="#cb54-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-267"><a href="#cb54-267" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-268"><a href="#cb54-268" aria-hidden="true" tabindex="-1"></a><span class="co">#summed  averaged weighted Medicaid spending per dosage unit </span></span>
+<span id="cb54-269"><a href="#cb54-269" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumAvgWghtedSpndingPerDsgUnt_Year , <span class="fu">aes</span>(<span class="at">x=</span>Year, <span class="at">y =</span> Sum_AvgSpndPerDsgUntWghtd, <span class="at">fill =</span>Year)) <span class="sc">+</span> </span>
+<span id="cb54-270"><a href="#cb54-270" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 2: Sum of Annual Average Weighted Medicaid Spending Per Dosage Unit For all Drugs for 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Year"</span>, <span class="at">y=</span><span class="st">"Sum of Average Weighted Medicaid Spending per Dosage Unit($)"</span>)</span>
+<span id="cb54-271"><a href="#cb54-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-272"><a href="#cb54-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-273"><a href="#cb54-273" aria-hidden="true" tabindex="-1"></a>Figure 2 above shows the sum of the average weighted Medicaid spending by dosage unit graphed vs year. Compared to Figure 1, the increase in the sum of the weighted Medicaid spending per dosage unit increased by nearly 6x between 2016-2020, with a significant spike in average weighted Medicaid spending by dosage unit starting in 2019. Unlike the sum of the total Medicaid spending per drug, Figure 2 takes into account the number of Medicaid Claims, the total dosage units, and the form, strength, and route of all drugs. Taking these factors into account, relative Medicaid drug spending significantly increased between 2016-2020, answering RQ1.</span>
+<span id="cb54-274"><a href="#cb54-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-275"><a href="#cb54-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-276"><a href="#cb54-276" aria-hidden="true" tabindex="-1"></a><span class="fu">## Research Q2 Does Medicaid drug spending vary by manufacturer?</span></span>
+<span id="cb54-277"><a href="#cb54-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-278"><a href="#cb54-278" aria-hidden="true" tabindex="-1"></a>To answer the second research question, I calculated the mean, median, and standard deviation for the total spending and average weighted spending per dosage unit grouped by Manufacturer, descending by Mean Total Spending.</span>
+<span id="cb54-279"><a href="#cb54-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-282"><a href="#cb54-282" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-283"><a href="#cb54-283" aria-hidden="true" tabindex="-1"></a><span class="co">#Mean &amp; median &amp; sd of Total Spending by Manufacturer</span></span>
+<span id="cb54-284"><a href="#cb54-284" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Mfctr <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-285"><a href="#cb54-285" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Mftr_Name)<span class="sc">%&gt;%</span></span>
+<span id="cb54-286"><a href="#cb54-286" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Mftr_Name, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb54-287"><a href="#cb54-287" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_TotSpendingMfctr =</span> <span class="fu">mean</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="at">Median_TotSpendingMfctr =</span> <span class="fu">median</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd_TotSpendingMfctr =</span> <span class="fu">sd</span>(TotSpndng, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-288"><a href="#cb54-288" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(Mean_TotSpendingMfctr))</span>
+<span id="cb54-289"><a href="#cb54-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-290"><a href="#cb54-290" aria-hidden="true" tabindex="-1"></a>TotSpnding_by_Mfctr</span>
+<span id="cb54-291"><a href="#cb54-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-292"><a href="#cb54-292" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-293"><a href="#cb54-293" aria-hidden="true" tabindex="-1"></a>Based on this, the Manufacturer with the highest per drug mean Medicaid spending in 2016-2020 was Otsuka America, with an average per drug total spending  of  $470,559,700. This is based on the mean total spending per drug for any unique manufacturer. In descending order, the manufacturers with the next highest per drug mean Medicaid spending in 2016-2020 were:</span>
+<span id="cb54-294"><a href="#cb54-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-295"><a href="#cb54-295" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Janssen Biotech</span>
+<span id="cb54-296"><a href="#cb54-296" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Indivior Inc. </span>
+<span id="cb54-297"><a href="#cb54-297" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Medimmune</span>
+<span id="cb54-298"><a href="#cb54-298" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Gilead Sciences</span>
+<span id="cb54-299"><a href="#cb54-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-300"><a href="#cb54-300" aria-hidden="true" tabindex="-1"></a>The mean total spending per per drug for each manufacturer ranged from $14.1 - $470,559,672, with a median value of $934,886. </span>
+<span id="cb54-301"><a href="#cb54-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-304"><a href="#cb54-304" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-305"><a href="#cb54-305" aria-hidden="true" tabindex="-1"></a><span class="co">#remove scientific notation</span></span>
+<span id="cb54-306"><a href="#cb54-306" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb54-307"><a href="#cb54-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-308"><a href="#cb54-308" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Mean Total Spending Against Manufacturer</span></span>
+<span id="cb54-309"><a href="#cb54-309" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(TotSpnding_by_Mfctr, <span class="fu">aes</span>(Mean_TotSpendingMfctr))  <span class="sc">+</span> </span>
+<span id="cb54-310"><a href="#cb54-310" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 3: Mean Total Medicaid Per Drug Spending for a Manufacturer 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Mean Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>) </span>
+<span id="cb54-311"><a href="#cb54-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-312"><a href="#cb54-312" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-313"><a href="#cb54-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-314"><a href="#cb54-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-315"><a href="#cb54-315" aria-hidden="true" tabindex="-1"></a>Figure 3 above shows mean Medicaid per Drug spending from 2016-2020 for any manufacturer ($) and the count of manufacturers on the y. The graph shows while a handful of manufacturers have exceptionally Medicaid high spending in the order of hundreds of millions of dollars, the histogram is incredibly left skewed. Most manufacturers have mean Medicaid per drug spending of less than 5 million dollars. These could be outliers or a case of certain manufacturers only making a few, very expensive drugs, bringing up the mean. Therefor I looked at the sum of total spending by drug for each manufacturer.</span>
+<span id="cb54-316"><a href="#cb54-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-319"><a href="#cb54-319" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-320"><a href="#cb54-320" aria-hidden="true" tabindex="-1"></a><span class="co">#Summing Per Drug Total Spending by Manufacturer</span></span>
+<span id="cb54-321"><a href="#cb54-321" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Mftr <span class="ot">&lt;-</span> Medicaid_Drug_DF<span class="sc">%&gt;%</span></span>
+<span id="cb54-322"><a href="#cb54-322" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Mftr_Name)<span class="sc">%&gt;%</span></span>
+<span id="cb54-323"><a href="#cb54-323" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Mftr_Name, TotSpndng) <span class="sc">%&gt;%</span></span>
+<span id="cb54-324"><a href="#cb54-324" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Sum_TotSpendingbyMftr =</span> <span class="fu">sum</span>(TotSpndng, <span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-325"><a href="#cb54-325" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(Sum_TotSpendingbyMftr))</span>
+<span id="cb54-326"><a href="#cb54-326" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb54-327"><a href="#cb54-327" aria-hidden="true" tabindex="-1"></a>SumTotSpnding_by_Mftr </span>
+<span id="cb54-328"><a href="#cb54-328" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-329"><a href="#cb54-329" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-330"><a href="#cb54-330" aria-hidden="true" tabindex="-1"></a>While Otsuka America had the highest mean per drug Medicaid spending between 2016-2020 of any manufacturer, Gilead Sciences was the manufacturer that Medicaid spent the most cumulatively on between 2016-2020 on all drugs covered by Medicaid, at over $22 billion dollars. The other top 5 manufacturers with the most cumulative Medicaid drug spending were:</span>
+<span id="cb54-331"><a href="#cb54-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-332"><a href="#cb54-332" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Abbvie US LLC</span>
+<span id="cb54-333"><a href="#cb54-333" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Novo Nordisk</span>
+<span id="cb54-334"><a href="#cb54-334" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Eli Lilly &amp; Col.</span>
+<span id="cb54-335"><a href="#cb54-335" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Genentech Inc.</span>
+<span id="cb54-336"><a href="#cb54-336" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-337"><a href="#cb54-337" aria-hidden="true" tabindex="-1"></a> Gilead Sciences was the only manufacturer with in the top 5 of manufacturers both for mean average Medicaid spending per drug and cumulative Medicaid drug spending between 2016-2020.</span>
+<span id="cb54-338"><a href="#cb54-338" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-339"><a href="#cb54-339" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-342"><a href="#cb54-342" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-343"><a href="#cb54-343" aria-hidden="true" tabindex="-1"></a><span class="co">#remove scientific notation</span></span>
+<span id="cb54-344"><a href="#cb54-344" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb54-345"><a href="#cb54-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-346"><a href="#cb54-346" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Sum Total Spending per Drug by Manufacturer</span></span>
+<span id="cb54-347"><a href="#cb54-347" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Mftr, <span class="fu">aes</span>(Sum_TotSpendingbyMftr))  <span class="sc">+</span> </span>
+<span id="cb54-348"><a href="#cb54-348" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 4: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Sum Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>)</span>
+<span id="cb54-349"><a href="#cb54-349" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-350"><a href="#cb54-350" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-351"><a href="#cb54-351" aria-hidden="true" tabindex="-1"></a>Figure 4 above shows that the distribution of sums of total Medicaid per drug spending between 2016-2020 for each manufacturers closely resembles the heavily left skewed left distribution in Figure 3, with the majority of manufacturers having cumulative Medicaid drug spending under 2.5 billion dollars, with a few manufacturers with uniquely high cumulative Medicaid spending.</span>
+<span id="cb54-352"><a href="#cb54-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-353"><a href="#cb54-353" aria-hidden="true" tabindex="-1"></a>On the current histogram it is challenging to interpret what the cumulative Medicaid spending for each manufacturer, as it is somewhere between $0 &amp; $2.5 billion dollars. Therefore I created a final histogram with only a portion of the x-axis to better visualize the distribution of the cumulative Medicaid drug spending for manufacturers.</span>
+<span id="cb54-354"><a href="#cb54-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-357"><a href="#cb54-357" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb54-358"><a href="#cb54-358" aria-hidden="true" tabindex="-1"></a><span class="co">#Graphing Sum Total Spending per Drug by Manufacturer, Zoomed in X</span></span>
+<span id="cb54-359"><a href="#cb54-359" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(SumTotSpnding_by_Mftr, <span class="fu">aes</span>(Sum_TotSpendingbyMftr))  <span class="sc">+</span> </span>
+<span id="cb54-360"><a href="#cb54-360" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Figure 5: Sum Total Medicaid Per Drug Spending for a Manufacturer 2016-2020 (X Lim = 0-500000"</span>) <span class="sc">+</span> <span class="fu">labs</span> (<span class="at">x=</span><span class="st">"Sum Total Medicaid Per Drug Spending for a Manufacturer ($)"</span>, <span class="at">y=</span><span class="st">"Count"</span>) <span class="sc">+</span> <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">500000</span>)</span>
+<span id="cb54-361"><a href="#cb54-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-362"><a href="#cb54-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-363"><a href="#cb54-363" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb54-364"><a href="#cb54-364" aria-hidden="true" tabindex="-1"></a>Figure 5 shows the same information as Figure 4, except with the x-axis set to show only manufacturers with cumulative Medicaid drug spending between 2016-2020 between $0 - $500,000. In Figure 5 its easier to see the distribution of cumulative total Medicaid Per Drug Spending for a Manufacturer than in Figure 4. You can see the mode cumulative Medicaid per drug spending for a manufacturer is below $100,000, which is much more clear than in Figure 4 where the mode look likes somewhere between $0 &amp; $2.5 billion dollars. </span>
+<span id="cb54-365"><a href="#cb54-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-366"><a href="#cb54-366" aria-hidden="true" tabindex="-1"></a>Overall while some manufacturers made hundreds of billions of dollars off of Medicaid drug spending between 2016-2020, the majority of manufacturers made under $500,000 from cumulative Medicaid drug spending over the past 5 years. These visualizations suggest that for RQ2 Medicaid spending does vary by manufacturer, with a select number of manufacturers, such as Gilead Sciences and Otsuka America, making tens of billions of cumulative dollars on drugs purchased through Medicaid. </span>
+<span id="cb54-367"><a href="#cb54-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-368"><a href="#cb54-368" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations and Next Steps</span></span>
+<span id="cb54-369"><a href="#cb54-369" aria-hidden="true" tabindex="-1"></a>A key area for future research to expand upon is to re-run the visualizations with all drug values flagged as being outliers removed, to see if this impacted the distribution of the data as well as the answer to my research questions. Based on time limitations and the fact that this data set is not being used for my final project, examining outliers is not something I am going to attempt to do today.</span>
+<span id="cb54-370"><a href="#cb54-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-371"><a href="#cb54-371" aria-hidden="true" tabindex="-1"></a>Another interesting future step would be to look at the drugs that had the most Medicaid Spending, and see if there are any trends in terms of the types of drugs that are most commonly taken, such as pain killers, antibiotics, insulin etc.</span>
+<span id="cb54-372"><a href="#cb54-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-373"><a href="#cb54-373" aria-hidden="true" tabindex="-1"></a>An overall limitation of this analysis was my lack of familiarity with the data set. Even after reading the methods and data dictionary it was hard to conceptualize the averages, totals, and sums of averages and totals. My struggle with this data set pushed me to use a different data set for the final that I am familiar with using through my work. A key to a good analysis is truly understanding your data set and what you want to do with it, so I look forward to showcasing that in my final.</span>
+<span id="cb54-374"><a href="#cb54-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-375"><a href="#cb54-375" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-376"><a href="#cb54-376" aria-hidden="true" tabindex="-1"></a><span class="fu">## Appendix A Calculating Weighted Average Spending per Dosage Unit ##</span></span>
+<span id="cb54-377"><a href="#cb54-377" aria-hidden="true" tabindex="-1"></a>The average weighted cost per dosage unit incorporates 6 variables:</span>
+<span id="cb54-378"><a href="#cb54-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-379"><a href="#cb54-379" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The total spending on a brand name drug* </span>
+<span id="cb54-380"><a href="#cb54-380" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The total number Medicaid claims on a brand name drug*</span>
+<span id="cb54-381"><a href="#cb54-381" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The total dosage units of a brand name drug*</span>
+<span id="cb54-382"><a href="#cb54-382" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The specific strength of a brand name drug*</span>
+<span id="cb54-383"><a href="#cb54-383" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The dosage form of a brand name drug*</span>
+<span id="cb54-384"><a href="#cb54-384" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>The route of administration for a brand name drug*</span>
+<span id="cb54-385"><a href="#cb54-385" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-386"><a href="#cb54-386" aria-hidden="true" tabindex="-1"></a><span class="ss"> * </span>= of a specific generic name, by a specific manufacturer, in a specific year</span>
+<span id="cb54-387"><a href="#cb54-387" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-388"><a href="#cb54-388" aria-hidden="true" tabindex="-1"></a> The strength, dosage, and route of brand name drugs is not included in the original  data set, and comes from administrative Medicaid data.</span>
+<span id="cb54-389"><a href="#cb54-389" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-390"><a href="#cb54-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-391"><a href="#cb54-391" aria-hidden="true" tabindex="-1"></a>"Since drugs are available in multiple strengths and dosage forms, the average spending per dosage unit at the brand name and generic name level is weighted to account for variation in claims volume for specific brand name, generic name, strength, dosage form, routes of administration, and manufacturer levels.The overall brand name/generic name claim weighted spending per unit is calculated by first summarizing each drug to specific strength, form, route of administration, and manufacture levels. For each unique level, spending is divided by the number of units and multiplied by its proportion of total claims, so that claims volume becomes the weight.</span>
+<span id="cb54-392"><a href="#cb54-392" aria-hidden="true" tabindex="-1"></a>The claim-weighted average spending per dosage unit at the overall brand name/generic name level is then calculated by summarizing across the strength, form, route, and manufacturer levels. A similar approach was used to calculate average spending per unit for specific manufacturers" - CMS, 2022</span>
+<span id="cb54-393"><a href="#cb54-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-394"><a href="#cb54-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-395"><a href="#cb54-395" aria-hidden="true" tabindex="-1"></a>For example, a drug could be administered in the 2 following combinations of forms, strengths, and routes:</span>
+<span id="cb54-396"><a href="#cb54-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-397"><a href="#cb54-397" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Form = Vial, Strength = 80MG/4ML, Route = Intravenous</span>
+<span id="cb54-398"><a href="#cb54-398" aria-hidden="true" tabindex="-1"></a><span class="ss"> - </span>Form = Syringe, Strength = 162MG/0.9, Route = Subcutaneous</span>
+<span id="cb54-399"><a href="#cb54-399" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb54-400"><a href="#cb54-400" aria-hidden="true" tabindex="-1"></a>For each unique combination of drug form/strength/route, a weighted drug cost per unit was calculated by:</span>
+<span id="cb54-401"><a href="#cb54-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-402"><a href="#cb54-402" aria-hidden="true" tabindex="-1"></a>**(Cost of Drug/Units of Drug) * Number of Claims**</span>
+<span id="cb54-403"><a href="#cb54-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-404"><a href="#cb54-404" aria-hidden="true" tabindex="-1"></a>The total number of claims, total number of dosage units, the total cost of drugs, and the total weighted cost per unit were calculated by summing the information from each combination of of drug form/strength/route of administration.</span>
+<span id="cb54-405"><a href="#cb54-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-406"><a href="#cb54-406" aria-hidden="true" tabindex="-1"></a>The final drug weighted average cost per unit is calculated by:</span>
+<span id="cb54-407"><a href="#cb54-407" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-408"><a href="#cb54-408" aria-hidden="true" tabindex="-1"></a>**Total Weighted Cost Per Unit / Total Claims **</span>
+<span id="cb54-409"><a href="#cb54-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-410"><a href="#cb54-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-411"><a href="#cb54-411" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-412"><a href="#cb54-412" aria-hidden="true" tabindex="-1"></a><span class="fu">## Citations</span></span>
+<span id="cb54-413"><a href="#cb54-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-414"><a href="#cb54-414" aria-hidden="true" tabindex="-1"></a>Centers for Medicare and Medicaid Services. *Medicaid Spending By Drug*. (Data file and code book). Baltimore, MD: Data.CMS.gov, 2022. Web. 18 Oct 2022. https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-medicaid-spending-by-drug/medicaid-spending-by-drug</span>
+<span id="cb54-415"><a href="#cb54-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-416"><a href="#cb54-416" aria-hidden="true" tabindex="-1"></a>Grolemund, Garrett, and Hadley Wickham. R for Data Science. O’Reilly Media, 2017.</span>
+<span id="cb54-417"><a href="#cb54-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-418"><a href="#cb54-418" aria-hidden="true" tabindex="-1"></a>:::</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

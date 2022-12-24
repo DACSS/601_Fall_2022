@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aleacia Messiah">
+<meta name="dcterms.date" content="2022-12-06">
+<meta name="description" content="Visualizing Multiple Dimensions">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 7</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Challenge 7">
+<meta name="twitter:description" content="Visualizing Multiple Dimensions">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Challenge 7</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#read-in-data" id="toc-read-in-data" class="nav-link" data-scroll-target="#read-in-data">Read in data</a>
+  <ul class="collapse">
+  <li><a href="#briefly-describe-the-data" id="toc-briefly-describe-the-data" class="nav-link" data-scroll-target="#briefly-describe-the-data">Briefly describe the data</a></li>
+  </ul></li>
+  <li><a href="#tidy-data-as-needed" id="toc-tidy-data-as-needed" class="nav-link" data-scroll-target="#tidy-data-as-needed">Tidy Data (as needed)</a></li>
+  <li><a href="#visualization-with-multiple-dimensions" id="toc-visualization-with-multiple-dimensions" class="nav-link" data-scroll-target="#visualization-with-multiple-dimensions">Visualization with Multiple Dimensions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Challenge 7</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_7</div>
+    <div class="quarto-category">hotel_bookings</div>
+    <div class="quarto-category">Aleacia Messiah</div>
+    <div class="quarto-category">tidyverse</div>
+    <div class="quarto-category">ggplot2</div>
+    <div class="quarto-category">summarytools</div>
+    <div class="quarto-category">lubridate</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Visualizing Multiple Dimensions
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Aleacia Messiah </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 6, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(summarytools)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to:</p>
+<ol type="1">
+<li>read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</li>
+<li>tidy data (as needed, including sanity checks)</li>
+<li>mutate variables as needed (including sanity checks)</li>
+<li>Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded <a href="https://www.edwardtufte.com/tufte/">chart ink (Tufte)</a>, but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.</li>
+</ol>
+<ul>
+<li>Explain why you choose the specific graph type</li>
+</ul>
+<ol start="5" type="1">
+<li>If you haven’t tried in previous weeks, work this week to make your graphs “publication” ready with titles, captions, and pretty axis labels and other viewer-friendly features</li>
+</ol>
+<p><a href="https://r-graph-gallery.com/">R Graph Gallery</a> is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his <a href="https://www.edwardtufte.com/tufte/books_vdqi">fantastic books</a> and <a href="https://www.edwardtufte.com/tufte/courses">courses on data visualization.</a></p>
+<p>(be sure to only include the category tags for the data you use!)</p>
+</section>
+<section id="read-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data">Read in data</h2>
+<p>Read in one (or more) of the following datasets, using the correct R package and command.</p>
+<ul>
+<li><p>eggs ⭐</p></li>
+<li><p>abc_poll ⭐⭐</p></li>
+<li><p>australian_marriage ⭐⭐</p></li>
+<li><p>hotel_bookings ⭐⭐⭐</p></li>
+<li><p>air_bnb ⭐⭐⭐</p></li>
+<li><p>us_hh ⭐⭐⭐⭐</p></li>
+<li><p>faostat ⭐⭐⭐⭐⭐</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Please note that since this challenge is to recreate my graphs from previous challenges, I will be using the same dataset (hotel_bookings.csv) to recreate my graphs from Challenge 6, hence why my code for reading in, tidying, and mutating the dataset will also be the same.</p>
+</div>
+</div></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in hotel data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>hotel_orig <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/hotel_bookings.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># view hotel data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>hotel_orig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 119,390 × 32
+   hotel  is_ca…¹ lead_…² arriv…³ arriv…⁴ arriv…⁵ arriv…⁶ stays…⁷ stays…⁸ adults
+   &lt;chr&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+ 1 Resor…       0     342    2015 July         27       1       0       0      2
+ 2 Resor…       0     737    2015 July         27       1       0       0      2
+ 3 Resor…       0       7    2015 July         27       1       0       1      1
+ 4 Resor…       0      13    2015 July         27       1       0       1      1
+ 5 Resor…       0      14    2015 July         27       1       0       2      2
+ 6 Resor…       0      14    2015 July         27       1       0       2      2
+ 7 Resor…       0       0    2015 July         27       1       0       2      2
+ 8 Resor…       0       9    2015 July         27       1       0       2      2
+ 9 Resor…       1      85    2015 July         27       1       0       3      2
+10 Resor…       1      75    2015 July         27       1       0       3      2
+# … with 119,380 more rows, 22 more variables: children &lt;dbl&gt;, babies &lt;dbl&gt;,
+#   meal &lt;chr&gt;, country &lt;chr&gt;, market_segment &lt;chr&gt;,
+#   distribution_channel &lt;chr&gt;, is_repeated_guest &lt;dbl&gt;,
+#   previous_cancellations &lt;dbl&gt;, previous_bookings_not_canceled &lt;dbl&gt;,
+#   reserved_room_type &lt;chr&gt;, assigned_room_type &lt;chr&gt;, booking_changes &lt;dbl&gt;,
+#   deposit_type &lt;chr&gt;, agent &lt;chr&gt;, company &lt;chr&gt;, days_in_waiting_list &lt;dbl&gt;,
+#   customer_type &lt;chr&gt;, adr &lt;dbl&gt;, required_car_parking_spaces &lt;dbl&gt;, …</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># view summary of hotel data</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dfSummary</span>(hotel_orig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Data Frame Summary  
+hotel_orig  
+Dimensions: 119390 x 32  
+Duplicates: 31994  
+
+-----------------------------------------------------------------------------------------------------------------------------------
+No   Variable                         Stats / Values             Freqs (% of Valid)     Graph                  Valid      Missing  
+---- -------------------------------- -------------------------- ---------------------- ---------------------- ---------- ---------
+1    hotel                            1. City Hotel              79330 (66.4%)          IIIIIIIIIIIII          119390     0        
+     [character]                      2. Resort Hotel            40060 (33.6%)          IIIIII                 (100.0%)   (0.0%)   
+
+2    is_canceled                      Min  : 0                   0 : 75166 (63.0%)      IIIIIIIIIIII           119390     0        
+     [numeric]                        Mean : 0.4                 1 : 44224 (37.0%)      IIIIIII                (100.0%)   (0.0%)   
+                                      Max  : 1                                                                                     
+
+3    lead_time                        Mean (sd) : 104 (106.9)    479 distinct values    :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 69 &lt; 737                                      :                                          
+                                      IQR (CV) : 142 (1)                                : : .                                      
+                                                                                        : : : . .                                  
+
+4    arrival_date_year                Mean (sd) : 2016.2 (0.7)   2015 : 21996 (18.4%)   III                    119390     0        
+     [numeric]                        min &lt; med &lt; max:           2016 : 56707 (47.5%)   IIIIIIIII              (100.0%)   (0.0%)   
+                                      2015 &lt; 2016 &lt; 2017         2017 : 40687 (34.1%)   IIIIII                                     
+                                      IQR (CV) : 1 (0)                                                                             
+
+5    arrival_date_month               1. August                  13877 (11.6%)          II                     119390     0        
+     [character]                      2. July                    12661 (10.6%)          II                     (100.0%)   (0.0%)   
+                                      3. May                     11791 ( 9.9%)          I                                          
+                                      4. October                 11160 ( 9.3%)          I                                          
+                                      5. April                   11089 ( 9.3%)          I                                          
+                                      6. June                    10939 ( 9.2%)          I                                          
+                                      7. September               10508 ( 8.8%)          I                                          
+                                      8. March                    9794 ( 8.2%)          I                                          
+                                      9. February                 8068 ( 6.8%)          I                                          
+                                      10. November                6794 ( 5.7%)          I                                          
+                                      [ 2 others ]               12709 (10.6%)          II                                         
+
+6    arrival_date_week_number         Mean (sd) : 27.2 (13.6)    53 distinct values           . : . . .        119390     0        
+     [numeric]                        min &lt; med &lt; max:                                    . : : : : : :        (100.0%)   (0.0%)   
+                                      1 &lt; 28 &lt; 53                                       . : : : : : : : : :                        
+                                      IQR (CV) : 22 (0.5)                               : : : : : : : : : :                        
+                                                                                        : : : : : : : : : :                        
+
+7    arrival_date_day_of_month        Mean (sd) : 15.8 (8.8)     31 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  : : : . : : . : :      (100.0%)   (0.0%)   
+                                      1 &lt; 16 &lt; 31                                       : : : : : : : : : :                        
+                                      IQR (CV) : 15 (0.6)                               : : : : : : : : : :                        
+                                                                                        : : : : : : : : : :                        
+
+8    stays_in_weekend_nights          Mean (sd) : 0.9 (1)        17 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 1 &lt; 19                                        :                                          
+                                      IQR (CV) : 2 (1.1)                                : :                                        
+                                                                                        : :                                        
+
+9    stays_in_week_nights             Mean (sd) : 2.5 (1.9)      35 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 2 &lt; 50                                        :                                          
+                                      IQR (CV) : 2 (0.8)                                :                                          
+                                                                                        :                                          
+
+10   adults                           Mean (sd) : 1.9 (0.6)      14 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 2 &lt; 55                                        :                                          
+                                      IQR (CV) : 0 (0.3)                                :                                          
+                                                                                        :                                          
+
+11   children                         Mean (sd) : 0.1 (0.4)      0 : 110796 (92.8%)     IIIIIIIIIIIIIIIIII     119386     4        
+     [numeric]                        min &lt; med &lt; max:           1 :   4861 ( 4.1%)                            (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 10                 2 :   3652 ( 3.1%)                                                
+                                      IQR (CV) : 0 (3.8)         3 :     76 ( 0.1%)                                                
+                                                                 10 :      1 ( 0.0%)                                               
+
+12   babies                           Mean (sd) : 0 (0.1)        0 : 118473 (99.2%)     IIIIIIIIIIIIIIIIIII    119390     0        
+     [numeric]                        min &lt; med &lt; max:           1 :    900 ( 0.8%)                            (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 10                 2 :     15 ( 0.0%)                                                
+                                      IQR (CV) : 0 (12.3)        9 :      1 ( 0.0%)                                                
+                                                                 10 :      1 ( 0.0%)                                               
+
+13   meal                             1. BB                      92310 (77.3%)          IIIIIIIIIIIIIII        119390     0        
+     [character]                      2. FB                        798 ( 0.7%)                                 (100.0%)   (0.0%)   
+                                      3. HB                      14463 (12.1%)          II                                         
+                                      4. SC                      10650 ( 8.9%)          I                                          
+                                      5. Undefined                1169 ( 1.0%)                                                     
+
+14   country                          1. PRT                     48590 (40.7%)          IIIIIIII               119390     0        
+     [character]                      2. GBR                     12129 (10.2%)          II                     (100.0%)   (0.0%)   
+                                      3. FRA                     10415 ( 8.7%)          I                                          
+                                      4. ESP                      8568 ( 7.2%)          I                                          
+                                      5. DEU                      7287 ( 6.1%)          I                                          
+                                      6. ITA                      3766 ( 3.2%)                                                     
+                                      7. IRL                      3375 ( 2.8%)                                                     
+                                      8. BEL                      2342 ( 2.0%)                                                     
+                                      9. BRA                      2224 ( 1.9%)                                                     
+                                      10. NLD                     2104 ( 1.8%)                                                     
+                                      [ 168 others ]             18590 (15.6%)          III                                        
+
+15   market_segment                   1. Aviation                  237 ( 0.2%)                                 119390     0        
+     [character]                      2. Complementary             743 ( 0.6%)                                 (100.0%)   (0.0%)   
+                                      3. Corporate                5295 ( 4.4%)                                                     
+                                      4. Direct                  12606 (10.6%)          II                                         
+                                      5. Groups                  19811 (16.6%)          III                                        
+                                      6. Offline TA/TO           24219 (20.3%)          IIII                                       
+                                      7. Online TA               56477 (47.3%)          IIIIIIIII                                  
+                                      8. Undefined                   2 ( 0.0%)                                                     
+
+16   distribution_channel             1. Corporate                6677 ( 5.6%)          I                      119390     0        
+     [character]                      2. Direct                  14645 (12.3%)          II                     (100.0%)   (0.0%)   
+                                      3. GDS                       193 ( 0.2%)                                                     
+                                      4. TA/TO                   97870 (82.0%)          IIIIIIIIIIIIIIII                           
+                                      5. Undefined                   5 ( 0.0%)                                                     
+
+17   is_repeated_guest                Min  : 0                   0 : 115580 (96.8%)     IIIIIIIIIIIIIIIIIII    119390     0        
+     [numeric]                        Mean : 0                   1 :   3810 ( 3.2%)                            (100.0%)   (0.0%)   
+                                      Max  : 1                                                                                     
+
+18   previous_cancellations           Mean (sd) : 0.1 (0.8)      15 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 26                                        :                                          
+                                      IQR (CV) : 0 (9.7)                                :                                          
+                                                                                        :                                          
+
+19   previous_bookings_not_canceled   Mean (sd) : 0.1 (1.5)      73 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 72                                        :                                          
+                                      IQR (CV) : 0 (10.9)                               :                                          
+                                                                                        :                                          
+
+20   reserved_room_type               1. A                       85994 (72.0%)          IIIIIIIIIIIIII         119390     0        
+     [character]                      2. B                        1118 ( 0.9%)                                 (100.0%)   (0.0%)   
+                                      3. C                         932 ( 0.8%)                                                     
+                                      4. D                       19201 (16.1%)          III                                        
+                                      5. E                        6535 ( 5.5%)          I                                          
+                                      6. F                        2897 ( 2.4%)                                                     
+                                      7. G                        2094 ( 1.8%)                                                     
+                                      8. H                         601 ( 0.5%)                                                     
+                                      9. L                           6 ( 0.0%)                                                     
+                                      10. P                         12 ( 0.0%)                                                     
+
+21   assigned_room_type               1. A                       74053 (62.0%)          IIIIIIIIIIII           119390     0        
+     [character]                      2. D                       25322 (21.2%)          IIII                   (100.0%)   (0.0%)   
+                                      3. E                        7806 ( 6.5%)          I                                          
+                                      4. F                        3751 ( 3.1%)                                                     
+                                      5. G                        2553 ( 2.1%)                                                     
+                                      6. C                        2375 ( 2.0%)                                                     
+                                      7. B                        2163 ( 1.8%)                                                     
+                                      8. H                         712 ( 0.6%)                                                     
+                                      9. I                         363 ( 0.3%)                                                     
+                                      10. K                        279 ( 0.2%)                                                     
+                                      [ 2 others ]                  13 ( 0.0%)                                                     
+
+22   booking_changes                  Mean (sd) : 0.2 (0.7)      21 distinct values     :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 21                                        :                                          
+                                      IQR (CV) : 0 (2.9)                                :                                          
+                                                                                        :                                          
+
+23   deposit_type                     1. No Deposit              104641 (87.6%)         IIIIIIIIIIIIIIIII      119390     0        
+     [character]                      2. Non Refund               14587 (12.2%)         II                     (100.0%)   (0.0%)   
+                                      3. Refundable                 162 ( 0.1%)                                                    
+
+24   agent                            1. 9                       31961 (26.8%)          IIIII                  119390     0        
+     [character]                      2. NULL                    16340 (13.7%)          II                     (100.0%)   (0.0%)   
+                                      3. 240                     13922 (11.7%)          II                                         
+                                      4. 1                        7191 ( 6.0%)          I                                          
+                                      5. 14                       3640 ( 3.0%)                                                     
+                                      6. 7                        3539 ( 3.0%)                                                     
+                                      7. 6                        3290 ( 2.8%)                                                     
+                                      8. 250                      2870 ( 2.4%)                                                     
+                                      9. 241                      1721 ( 1.4%)                                                     
+                                      10. 28                      1666 ( 1.4%)                                                     
+                                      [ 324 others ]             33250 (27.8%)          IIIII                                      
+
+25   company                          1. NULL                    112593 (94.3%)         IIIIIIIIIIIIIIIIII     119390     0        
+     [character]                      2. 40                         927 ( 0.8%)                                (100.0%)   (0.0%)   
+                                      3. 223                        784 ( 0.7%)                                                    
+                                      4. 67                         267 ( 0.2%)                                                    
+                                      5. 45                         250 ( 0.2%)                                                    
+                                      6. 153                        215 ( 0.2%)                                                    
+                                      7. 174                        149 ( 0.1%)                                                    
+                                      8. 219                        141 ( 0.1%)                                                    
+                                      9. 281                        138 ( 0.1%)                                                    
+                                      10. 154                       133 ( 0.1%)                                                    
+                                      [ 343 others ]               3793 ( 3.2%)                                                    
+
+26   days_in_waiting_list             Mean (sd) : 2.3 (17.6)     128 distinct values    :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 391                                       :                                          
+                                      IQR (CV) : 0 (7.6)                                :                                          
+                                                                                        :                                          
+
+27   customer_type                    1. Contract                 4076 ( 3.4%)                                 119390     0        
+     [character]                      2. Group                     577 ( 0.5%)                                 (100.0%)   (0.0%)   
+                                      3. Transient               89613 (75.1%)          IIIIIIIIIIIIIII                            
+                                      4. Transient-Party         25124 (21.0%)          IIII                                       
+
+28   adr                              Mean (sd) : 101.8 (50.5)   8879 distinct values   :                      119390     0        
+     [numeric]                        min &lt; med &lt; max:                                  :                      (100.0%)   (0.0%)   
+                                      -6.4 &lt; 94.6 &lt; 5400                                :                                          
+                                      IQR (CV) : 56.7 (0.5)                             :                                          
+                                                                                        :                                          
+
+29   required_car_parking_spaces      Mean (sd) : 0.1 (0.2)      0 : 111974 (93.8%)     IIIIIIIIIIIIIIIIII     119390     0        
+     [numeric]                        min &lt; med &lt; max:           1 :   7383 ( 6.2%)     I                      (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 8                  2 :     28 ( 0.0%)                                                
+                                      IQR (CV) : 0 (3.9)         3 :      3 ( 0.0%)                                                
+                                                                 8 :      2 ( 0.0%)                                                
+
+30   total_of_special_requests        Mean (sd) : 0.6 (0.8)      0 : 70318 (58.9%)      IIIIIIIIIII            119390     0        
+     [numeric]                        min &lt; med &lt; max:           1 : 33226 (27.8%)      IIIII                  (100.0%)   (0.0%)   
+                                      0 &lt; 0 &lt; 5                  2 : 12969 (10.9%)      II                                         
+                                      IQR (CV) : 1 (1.4)         3 :  2497 ( 2.1%)                                                 
+                                                                 4 :   340 ( 0.3%)                                                 
+                                                                 5 :    40 ( 0.0%)                                                 
+
+31   reservation_status               1. Canceled                43017 (36.0%)          IIIIIII                119390     0        
+     [character]                      2. Check-Out               75166 (63.0%)          IIIIIIIIIIII           (100.0%)   (0.0%)   
+                                      3. No-Show                  1207 ( 1.0%)                                                     
+
+32   reservation_status_date          min : 2014-10-17           926 distinct values            . : : : :      119390     0        
+     [Date]                           med : 2016-08-07                                        : : : : : : .    (100.0%)   (0.0%)   
+                                      max : 2017-09-14                                      . : : : : : : :                        
+                                      range : 2y 10m 28d                                    : : : : : : : :                        
+                                                                                        .   : : : : : : : :                        
+-----------------------------------------------------------------------------------------------------------------------------------</code></pre>
+</div>
+</div>
+<section id="briefly-describe-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="briefly-describe-the-data">Briefly describe the data</h3>
+<p>This dataset is about the details of hotel bookings of a city hotel and resort hotel, consisting of 119,390 observations (customers/bookings) with 32 variables (<code>hotel</code>, <code>arrival_date_year</code>, <code>adults</code>, <code>children</code>, <code>babies</code>, <code>deposit_type</code>, <code>assigned_room_type</code>, etc). There are no missing values except four missing in the <code>children</code> column. This dataset also measures bookings for each day of the month, each week, and each month for years 2015 to 2017. Based on the summary output, the highest number of bookings occurs in August with 13,877 observations (11.6% of the data) with July (12,661 observations) and May (11,791 observations) following behind. This makes sense since May through August are summer months and most people are on vacation during this time.</p>
+</section>
+</section>
+<section id="tidy-data-as-needed" class="level2">
+<h2 class="anchored" data-anchor-id="tidy-data-as-needed">Tidy Data (as needed)</h2>
+<p>Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.</p>
+<p>This data is mostly tidy so the only thing that needs to be done is to combine the <code>arrival_date_year</code>, <code>arrival_date_month</code>, and <code>arrival_date_day_of_month</code> variables into one column as the <code>arrival_date</code>, similar to the date format of <code>reservation_status_date</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hotel <span class="ot">&lt;-</span> hotel_orig <span class="sc">%&gt;%</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine the date columns into one column</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(arrival_date_year, arrival_date_month, arrival_date_day_of_month,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> arrival_date, <span class="at">sep =</span> <span class="st">"-"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># view new hotel data</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>hotel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 119,390 × 30
+   hotel   is_ca…¹ lead_…² arriv…³ arriv…⁴ stays…⁵ stays…⁶ adults child…⁷ babies
+   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+ 1 Resort…       0     342 2015-J…      27       0       0      2       0      0
+ 2 Resort…       0     737 2015-J…      27       0       0      2       0      0
+ 3 Resort…       0       7 2015-J…      27       0       1      1       0      0
+ 4 Resort…       0      13 2015-J…      27       0       1      1       0      0
+ 5 Resort…       0      14 2015-J…      27       0       2      2       0      0
+ 6 Resort…       0      14 2015-J…      27       0       2      2       0      0
+ 7 Resort…       0       0 2015-J…      27       0       2      2       0      0
+ 8 Resort…       0       9 2015-J…      27       0       2      2       0      0
+ 9 Resort…       1      85 2015-J…      27       0       3      2       0      0
+10 Resort…       1      75 2015-J…      27       0       3      2       0      0
+# … with 119,380 more rows, 20 more variables: meal &lt;chr&gt;, country &lt;chr&gt;,
+#   market_segment &lt;chr&gt;, distribution_channel &lt;chr&gt;, is_repeated_guest &lt;dbl&gt;,
+#   previous_cancellations &lt;dbl&gt;, previous_bookings_not_canceled &lt;dbl&gt;,
+#   reserved_room_type &lt;chr&gt;, assigned_room_type &lt;chr&gt;, booking_changes &lt;dbl&gt;,
+#   deposit_type &lt;chr&gt;, agent &lt;chr&gt;, company &lt;chr&gt;, days_in_waiting_list &lt;dbl&gt;,
+#   customer_type &lt;chr&gt;, adr &lt;dbl&gt;, required_car_parking_spaces &lt;dbl&gt;,
+#   total_of_special_requests &lt;dbl&gt;, reservation_status &lt;chr&gt;, …</code></pre>
+</div>
+</div>
+<p>Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?</p>
+<p>Document your work here.</p>
+<p>There are several variables (<code>hotel</code>, <code>meal</code>, <code>reserved_room_type</code>, etc.) that need to be converted into factors and <code>arrival_date</code> needs to be converted into a date format.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hotel <span class="ot">&lt;-</span> hotel <span class="sc">%&gt;%</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert hotel, is_canceled, etc., columns to factors</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(hotel, is_canceled, meal<span class="sc">:</span>is_repeated_guest, reserved_room_type<span class="sc">:</span>assigned_room_type, deposit_type<span class="sc">:</span>company, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                  customer_type, reservation_status), factor)) </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># convert arrival_date into date format</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>hotel<span class="sc">$</span>arrival_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(hotel<span class="sc">$</span>arrival_date)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># view new hotel dataset</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>hotel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 119,390 × 30
+   hotel       is_ca…¹ lead_…² arrival_…³ arriv…⁴ stays…⁵ stays…⁶ adults child…⁷
+   &lt;fct&gt;       &lt;fct&gt;     &lt;dbl&gt; &lt;date&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Resort Hot… 0           342 2015-07-01      27       0       0      2       0
+ 2 Resort Hot… 0           737 2015-07-01      27       0       0      2       0
+ 3 Resort Hot… 0             7 2015-07-01      27       0       1      1       0
+ 4 Resort Hot… 0            13 2015-07-01      27       0       1      1       0
+ 5 Resort Hot… 0            14 2015-07-01      27       0       2      2       0
+ 6 Resort Hot… 0            14 2015-07-01      27       0       2      2       0
+ 7 Resort Hot… 0             0 2015-07-01      27       0       2      2       0
+ 8 Resort Hot… 0             9 2015-07-01      27       0       2      2       0
+ 9 Resort Hot… 1            85 2015-07-01      27       0       3      2       0
+10 Resort Hot… 1            75 2015-07-01      27       0       3      2       0
+# … with 119,380 more rows, 21 more variables: babies &lt;dbl&gt;, meal &lt;fct&gt;,
+#   country &lt;fct&gt;, market_segment &lt;fct&gt;, distribution_channel &lt;fct&gt;,
+#   is_repeated_guest &lt;fct&gt;, previous_cancellations &lt;dbl&gt;,
+#   previous_bookings_not_canceled &lt;dbl&gt;, reserved_room_type &lt;fct&gt;,
+#   assigned_room_type &lt;fct&gt;, booking_changes &lt;dbl&gt;, deposit_type &lt;fct&gt;,
+#   agent &lt;fct&gt;, company &lt;fct&gt;, days_in_waiting_list &lt;dbl&gt;,
+#   customer_type &lt;fct&gt;, adr &lt;dbl&gt;, required_car_parking_spaces &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="visualization-with-multiple-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-with-multiple-dimensions">Visualization with Multiple Dimensions</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a time series graph of adr vs. arrival_date in a facet grid with a least-squares fitted line and labels</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">arrival_date</span><span class="st">`</span>, <span class="st">`</span><span class="at">adr</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Arrival Date"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Daily Rate (ADR)"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Average Daily Rate vs. Arrival Date"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_Challenge7_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># zoom in on the time series graphs within the facet grid</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">arrival_date</span><span class="st">`</span>, <span class="st">`</span><span class="at">adr</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Arrival Date"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Daily Rate (ADR)"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Average Daily Rate vs. Arrival Date"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">600</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_Challenge7_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a bar graph based on number of bookings vs. deposit type faceted by is_repeated_guest</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">deposit_type</span><span class="st">`</span>, <span class="at">fill =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">is_repeated_guest</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Deposit Type"</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Bookings"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Number of Bookings vs. Deposit Type"</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Is the booking a repeated guest? </span><span class="sc">\n</span><span class="st">0 = No </span><span class="sc">\n</span><span class="st">1 = Yes"</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">x =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="AleaciaMessiah_Challenge7_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>I used the same graphs as I did in Challenge 6 but I added faceting to make each hotel’s data stand out more. For the time series graphs, with the outlier in the city hotel graph, it is difficult to tell how the average daily rate (ADR) varies over time, even with the least-squares fitted line. I decided to use zooming to get a closer look at the area below $600 ADR. It seems like the resort hotel ADR varies more over the span of two years compared to the city hotel ADR. There are also more peaks in ADR over the summer months for the resort hotel. In contrast, the city hotel ADR remains steady or slowly increasing over the years.</p>
+<p>For the bar graphs, I added the <code>is_repeated_guest</code> variable to determine whether there is a difference between the deposit type of a first-time guest or regular guest. For first-time guests, there are more bookings without deposits compared to regular guests, with the city hotel having a larger quantity than the resort hotel. This is also reflected with non-refundable deposits. However, there are more refundable deposits for first-time guests than regular guests, especially with the resort hotel. Overall, since there is a larger amount of first-time guests versus repeated guests, we can’t be absolutely certain that there is a difference in deposit type for different types of guests, but the graphs illustrate first-time guests are about as likely to not have to pay a deposit as repeated guests, so there is no special treatment or benefits for being a regular guest.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Challenge 7"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Aleacia Messiah"</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Visualizing Multiple Dimensions"</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "12/06/2022"</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_7</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - hotel_bookings</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - Aleacia Messiah</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - tidyverse</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - ggplot2</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - summarytools</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">  - lubridate</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(summarytools)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>Today's challenge is to:</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>2)  tidy data (as needed, including sanity checks)</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>3)  mutate variables as needed (including sanity checks)</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>4)  Recreate at least two graphs from previous exercises, but introduce at least one additional dimension that you omitted before using ggplot functionality (color, shape, line, facet, etc) The goal is not to create unneeded <span class="co">[</span><span class="ot">chart ink (Tufte)</span><span class="co">](https://www.edwardtufte.com/tufte/)</span>, but to concisely capture variation in additional dimensions that were collapsed in your earlier 2 or 3 dimensional graphs.</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Explain why you choose the specific graph type</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>5)  If you haven't tried in previous weeks, work this week to make your graphs "publication" ready with titles, captions, and pretty axis labels and other viewer-friendly features</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">R Graph Gallery</span><span class="co">](https://r-graph-gallery.com/)</span> is a good starting point for thinking about what information is conveyed in standard graph types, and includes example R code. And anyone not familiar with Edward Tufte should check out his <span class="co">[</span><span class="ot">fantastic books</span><span class="co">](https://www.edwardtufte.com/tufte/books_vdqi)</span> and <span class="co">[</span><span class="ot">courses on data visualization.</span><span class="co">](https://www.edwardtufte.com/tufte/courses)</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>(be sure to only include the category tags for the data you use!)</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in data</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>Read in one (or more) of the following datasets, using the correct R package and command.</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>eggs ⭐</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>abc_poll ⭐⭐</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>australian_marriage ⭐⭐</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>hotel_bookings ⭐⭐⭐</span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>air_bnb ⭐⭐⭐</span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>us_hh ⭐⭐⭐⭐</span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>faostat ⭐⭐⭐⭐⭐</span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>    ::: callout-note</span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a>    ## Note</span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a>    Please note that since this challenge is to recreate my graphs from previous challenges, I will be using the same dataset (hotel_bookings.csv) to recreate my graphs from Challenge 6, hence why my code for reading in, tidying, and mutating the dataset will also be the same.</span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a>    :::</span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a><span class="co"># read in hotel data</span></span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a>hotel_orig <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/hotel_bookings.csv"</span>)</span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a><span class="co"># view hotel data</span></span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>hotel_orig</span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a><span class="co"># view summary of hotel data</span></span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a><span class="fu">dfSummary</span>(hotel_orig)</span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a><span class="fu">### Briefly describe the data</span></span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>This dataset is about the details of hotel bookings of a city hotel and resort hotel, consisting of 119,390 observations (customers/bookings) with 32 variables (<span class="in">`hotel`</span>, <span class="in">`arrival_date_year`</span>, <span class="in">`adults`</span>, <span class="in">`children`</span>, <span class="in">`babies`</span>, <span class="in">`deposit_type`</span>, <span class="in">`assigned_room_type`</span>, etc). There are no missing values except four missing in the <span class="in">`children`</span> column. This dataset also measures bookings for each day of the month, each week, and each month for years 2015 to 2017. Based on the summary output, the highest number of bookings occurs in August with 13,877 observations (11.6% of the data) with July (12,661 observations) and May (11,791 observations) following behind. This makes sense since May through August are summer months and most people are on vacation during this time.</span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidy Data (as needed)</span></span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a>Is your data already tidy, or is there work to be done? Be sure to anticipate your end result to provide a sanity check, and document your work here.</span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a>This data is mostly tidy so the only thing that needs to be done is to combine the <span class="in">`arrival_date_year`</span>, <span class="in">`arrival_date_month`</span>, and <span class="in">`arrival_date_day_of_month`</span> variables into one column as the <span class="in">`arrival_date`</span>, similar to the date format of <span class="in">`reservation_status_date`</span>.</span>
+<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a>hotel <span class="ot">&lt;-</span> hotel_orig <span class="sc">%&gt;%</span> </span>
+<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine the date columns into one column</span></span>
+<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(arrival_date_year, arrival_date_month, arrival_date_day_of_month,</span>
+<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a>        <span class="at">col =</span> arrival_date, <span class="at">sep =</span> <span class="st">"-"</span>)</span>
+<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a><span class="co"># view new hotel data</span></span>
+<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>hotel</span>
+<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a>Are there any variables that require mutation to be usable in your analysis stream? For example, do you need to calculate new values in order to graph them? Can string values be represented numerically? Do you need to turn any variables into factors and reorder for ease of graphics and visualization?</span>
+<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a>Document your work here.</span>
+<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a>There are several variables (<span class="in">`hotel`</span>, <span class="in">`meal`</span>, <span class="in">`reserved_room_type`</span>, etc.) that need to be converted into factors and <span class="in">`arrival_date`</span> needs to be converted into a date format.</span>
+<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a>hotel <span class="ot">&lt;-</span> hotel <span class="sc">%&gt;%</span> </span>
+<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert hotel, is_canceled, etc., columns to factors</span></span>
+<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(hotel, is_canceled, meal<span class="sc">:</span>is_repeated_guest, reserved_room_type<span class="sc">:</span>assigned_room_type, deposit_type<span class="sc">:</span>company, </span>
+<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a>                  customer_type, reservation_status), factor)) </span>
+<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a><span class="co"># convert arrival_date into date format</span></span>
+<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a>hotel<span class="sc">$</span>arrival_date <span class="ot">&lt;-</span> <span class="fu">ymd</span>(hotel<span class="sc">$</span>arrival_date)</span>
+<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a><span class="co"># view new hotel dataset</span></span>
+<span id="cb13-125"><a href="#cb13-125" aria-hidden="true" tabindex="-1"></a>hotel</span>
+<span id="cb13-126"><a href="#cb13-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a><span class="fu">## Visualization with Multiple Dimensions</span></span>
+<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a><span class="co"># create a time series graph of adr vs. arrival_date in a facet grid with a least-squares fitted line and labels</span></span>
+<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">arrival_date</span><span class="st">`</span>, <span class="st">`</span><span class="at">adr</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Arrival Date"</span>,</span>
+<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Daily Rate (ADR)"</span>,</span>
+<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Average Daily Rate vs. Arrival Date"</span>,</span>
+<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span></span>
+<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a><span class="co"># zoom in on the time series graphs within the facet grid</span></span>
+<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">arrival_date</span><span class="st">`</span>, <span class="st">`</span><span class="at">adr</span><span class="st">`</span>, <span class="at">color =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Arrival Date"</span>,</span>
+<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Daily Rate (ADR)"</span>,</span>
+<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Average Daily Rate vs. Arrival Date"</span>,</span>
+<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span></span>
+<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">600</span>))</span>
+<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a><span class="co"># create a bar graph based on number of bookings vs. deposit type faceted by is_repeated_guest</span></span>
+<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hotel, <span class="fu">aes</span>(<span class="st">`</span><span class="at">deposit_type</span><span class="st">`</span>, <span class="at">fill =</span> <span class="st">`</span><span class="at">hotel</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-156"><a href="#cb13-156" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb13-157"><a href="#cb13-157" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(<span class="st">`</span><span class="at">is_repeated_guest</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Deposit Type"</span>,</span>
+<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Bookings"</span>,</span>
+<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Number of Bookings vs. Deposit Type"</span>,</span>
+<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Data: hotel_bookings.csv"</span>,</span>
+<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Is the booking a repeated guest? </span><span class="sc">\n</span><span class="st">0 = No </span><span class="sc">\n</span><span class="st">1 = Yes"</span></span>
+<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">x =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">2</span>))</span>
+<span id="cb13-165"><a href="#cb13-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-166"><a href="#cb13-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-167"><a href="#cb13-167" aria-hidden="true" tabindex="-1"></a>I used the same graphs as I did in Challenge 6 but I added faceting to make each hotel's data stand out more. For the time series graphs, with the outlier in the city hotel graph, it is difficult to tell how the average daily rate (ADR) varies over time, even with the least-squares fitted line. I decided to use zooming to get a closer look at the area below $600 ADR. It seems like the resort hotel ADR varies more over the span of two years compared to the city hotel ADR. There are also more peaks in ADR over the summer months for the resort hotel. In contrast, the city hotel ADR remains steady or slowly increasing over the years. </span>
+<span id="cb13-168"><a href="#cb13-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-169"><a href="#cb13-169" aria-hidden="true" tabindex="-1"></a>For the bar graphs, I added the <span class="in">`is_repeated_guest`</span> variable to determine whether there is a difference between the deposit type of a first-time guest or regular guest. For first-time guests, there are more bookings without deposits compared to regular guests, with the city hotel having a larger quantity than the resort hotel. This is also reflected with non-refundable deposits. However, there are more refundable deposits for first-time guests than regular guests, especially with the resort hotel. Overall, since there is a larger amount of first-time guests versus repeated guests, we can't be absolutely certain that there is a difference in deposit type for different types of guests, but the graphs illustrate first-time guests are about as likely to not have to pay a deposit as repeated guests, so there is no special treatment or benefits for being a regular guest. </span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

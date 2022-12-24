@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christa Bonney">
+<meta name="dcterms.date" content="2022-11-09">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Data Wrangling: Pivoting and Mutating</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Data Wrangling: Pivoting and Mutating">
+<meta name="twitter:description" content="Today’s challenge is to:">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Data Wrangling: Pivoting and Mutating</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#challenge-overview" id="toc-challenge-overview" class="nav-link active" data-scroll-target="#challenge-overview">Challenge Overview</a></li>
+  <li><a href="#read-in-data-and-observations" id="toc-read-in-data-and-observations" class="nav-link" data-scroll-target="#read-in-data-and-observations">Read in data and Observations</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title d-none d-lg-block">Data Wrangling: Pivoting and Mutating</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+  <div class="quarto-categories">
+    <div class="quarto-category">challenge_4</div>
+    <div class="quarto-category">abc_poll</div>
+    <div class="quarto-category">eggs</div>
+    <div class="quarto-category">fed_rates</div>
+    <div class="quarto-category">hotel_bookings</div>
+    <div class="quarto-category">debt</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christa Bonney </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 9, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="challenge-overview" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-overview">Challenge Overview</h2>
+<p>Today’s challenge is to:</p>
+<ol type="1">
+<li>read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</li>
+<li>tidy data (as needed, including sanity checks)</li>
+<li>identify variables that need to be mutated</li>
+<li>mutate variables and sanity check all mutations</li>
+</ol>
+</section>
+<section id="read-in-data-and-observations" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data-and-observations">Read in data and Observations</h2>
+<p>Read in one (or more) of the following datasets, using the correct R package and command.</p>
+<ul>
+<li>abc_poll.csv ⭐</li>
+<li>poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐</li>
+<li>FedFundsRate.csv⭐⭐⭐</li>
+<li>hotel_bookings.csv⭐⭐⭐⭐</li>
+<li>debt_in_trillions.xlsx ⭐⭐⭐⭐⭐</li>
+</ul>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read in organic_egg_poultry data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>poultry_data <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/poultry_tidy.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error: `path` does not exist: '~/GIT/601_Fall_2022/posts/_data/poultry_tidy.xlsx'</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(poultry_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in view(poultry_data): object 'poultry_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get poultry data dimensions</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(poultry_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'poultry_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#preview poultry data</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(poultry_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in is.data.frame(x): object 'poultry_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#preview poultry data</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(poultry_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in head(poultry_data): object 'poultry_data' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use tables to get summary of values for 'product' and 'year' columns to get range of values</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(poultry_data, <span class="st">"Product"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(poultry_data, "Product"): object 'poultry_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(poultry_data, <span class="st">"Year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in select(poultry_data, "Year"): object 'poultry_data' not found</code></pre>
+</div>
+</div>
+<p>The poultry_tidy data set consists of 4 variables with 600 rows of values. The variables are:</p>
+<p>“Product”: qualitative nominal variable consisting of a range of character values consisting of: ‘B/S Breast’, ‘Bone-in Breast’, ‘Thighs’, ‘Whole’, or ‘Whole Legs’.</p>
+<p>“Year”: this is a qualitative ordinal variable, with values ranging from 2004 - 2013.</p>
+<p>“Month”: this is a qualitative nominal variable, with values ranging from ‘January’ to ‘December’.</p>
+<p>“Price_Dollar”: This is a quantitative continuous variable, with values noted to be measured in dollar amounts.</p>
+<p>Looking at the variables it can be surmised that this data set is likely a log of total sales values, tallied each month, per year (2004 - 2013) of various cuts of meat. It is likely chicken, due to widespread availability.</p>
+<p>Will utilize newly learned functions to tidy and wrangle data to better perform analysis to the goal of observing how average annual sale prices per cut of chicken change over the observed period.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#pivot wider to get separate columns for each product category </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#new columns = (4-2) + 5  = 7</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># new rows = 600/5 = 120</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">#this will take it from 600 rows and 4 columns to </span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>cuts_price <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(poultry_data, <span class="at">names_from =</span> <span class="st">"Product"</span>, <span class="at">values_from =</span> <span class="st">"Price_Dollar"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in pivot_wider(poultry_data, names_from = "Product", values_from = "Price_Dollar"): object 'poultry_data' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#sanity check with dim()</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(cuts_price)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'cuts_price' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rearrange values in 'Year' column to re-order for 2004 to 2013 (currently 2013 - 2004)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a> cuts_price2 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(cuts_price, <span class="fu">select</span>(cuts_price, <span class="st">"Year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in arrange(cuts_price, select(cuts_price, "Year")): object 'cuts_price' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use view() to check changes were successful</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co">#view(cuts_price2)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#replace NA values to 0.00 for Bone-in Breast and Thighs columns</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>cuts_price3 <span class="ot">&lt;-</span> <span class="fu">replace_na</span>(cuts_price2, <span class="fu">list</span>(<span class="st">"Bone-in Breast"</span> <span class="ot">=</span> <span class="fl">0.00</span>, <span class="st">"Thighs"</span> <span class="ot">=</span> <span class="fl">0.00</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in replace_na(cuts_price2, list(`Bone-in Breast` = 0, Thighs = 0)): object 'cuts_price2' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename variables to be able to calculate the means</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>cuts_price3A <span class="ot">&lt;-</span> <span class="fu">rename</span>(cuts_price3, <span class="st">"B_S_Breast"</span> <span class="ot">=</span> <span class="st">'B/S Breast'</span>, <span class="st">"Bone_In_Breast"</span> <span class="ot">=</span> <span class="st">'Bone-in Breast'</span>, <span class="st">"Whole_Legs"</span> <span class="ot">=</span> <span class="st">'Whole Legs'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in rename(cuts_price3, B_S_Breast = "B/S Breast", Bone_In_Breast = "Bone-in Breast", : object 'cuts_price3' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#pivot wider 'Year' column against cuts columns to get cut values per year isolated</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">#new columns = (7 - 6) + (5x10) = 51</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co">#new rows = 120/10 = 12</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>cuts_price3B <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(cuts_price3A, <span class="at">names_from =</span> <span class="st">"Year"</span>, <span class="at">values_from =</span> <span class="fu">c</span>(<span class="st">"Whole"</span>, <span class="st">"B_S_Breast"</span>, <span class="st">"Bone_In_Breast"</span>, <span class="st">"Whole_Legs"</span>, <span class="st">"Thighs"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in pivot_wider(cuts_price3A, names_from = "Year", values_from = c("Whole", : object 'cuts_price3A' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use dim() function to perform sanity check on cuts_price3B data frame</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(cuts_price3B)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in eval(expr, envir, enclos): object 'cuts_price3B' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#use subset to get rid of 'Month' column</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>cuts_price4 <span class="ot">&lt;-</span> <span class="fu">subset</span>(cuts_price3B, <span class="at">select =</span> <span class="sc">-</span>Month)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in subset(cuts_price3B, select = -Month): object 'cuts_price3B' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#then mutate to get means per year generated into new columns per each cut</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Thought to see if I could mutate multiple columns with the annual means for each cut</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co">#this did not work, the row numbers would be offset by -2 in the generated columns (dataframe originally 12 rows)</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="co">#could try to replace existing columns, but seems more practical (cleaner) to construct a new dataframe from vectors of means</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="co">#this string is unedited from when a retro-active column name-change was initiated after the string was deemed unusable</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> <span class="fu">mutate</span>(cuts_price4, <span class="at">Average_Annual_Price_Whole =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>      Average_Annual_Price_B<span class="sc">/</span><span class="at">S_Breast =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a>      Average_Annual_Price_Bone<span class="sc">-</span><span class="at">in_Breast =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-35"><a href="#cb33-35" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-36"><a href="#cb33-36" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-37"><a href="#cb33-37" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-38"><a href="#cb33-38" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-39"><a href="#cb33-39" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-40"><a href="#cb33-40" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb33-41"><a href="#cb33-41" aria-hidden="true" tabindex="-1"></a>       <span class="at">Average_Annual_Price_Whole_Legs =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-42"><a href="#cb33-42" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-43"><a href="#cb33-43" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-44"><a href="#cb33-44" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-45"><a href="#cb33-45" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-46"><a href="#cb33-46" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-47"><a href="#cb33-47" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-48"><a href="#cb33-48" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-49"><a href="#cb33-49" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-50"><a href="#cb33-50" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb33-51"><a href="#cb33-51" aria-hidden="true" tabindex="-1"></a>       <span class="at">Average_Annual_Price_Thighs =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-52"><a href="#cb33-52" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-53"><a href="#cb33-53" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-54"><a href="#cb33-54" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-55"><a href="#cb33-55" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-56"><a href="#cb33-56" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-57"><a href="#cb33-57" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-58"><a href="#cb33-58" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-59"><a href="#cb33-59" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb33-60"><a href="#cb33-60" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error: &lt;text&gt;:21:39: unexpected '='
+20:                                                    mean(cuts_price4$Whole_2013, na.rm = TRUE)),
+21:       Average_Annual_Price_B/S_Breast =
+                                          ^</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#generate annual average price per cut columns by calculating means from monthly values</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a> Average_Annual_Price_Whole <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mean(cuts_price4$Whole_2004, na.rm = TRUE): object 'cuts_price4' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>Average_Annual_Price_BS_Breast <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mean(cuts_price4$B_S_Breast_2004, na.rm = TRUE): object 'cuts_price4' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a> Average_Annual_Price_Bone_In_Breast <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mean(cuts_price4$Bone_In_Breast_2004, na.rm = TRUE): object 'cuts_price4' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>  Average_Annual_Price_Whole_Legs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mean(cuts_price4$Whole_Legs_2004, na.rm = TRUE): object 'cuts_price4' not found</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>  Average_Annual_Price_Thighs <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in mean(cuts_price4$Thighs_2004, na.rm = TRUE): object 'cuts_price4' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create year vector</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2011'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co">#join vectors into a data frame</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>Average_Annual_Sale_Prices_per_Cut_of_Chicken <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(Year, Average_Annual_Price_Whole,</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_BS_Breast,</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Bone_In_Breast,</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Whole_Legs,</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Thighs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in data.frame(Year, Average_Annual_Price_Whole, Average_Annual_Price_BS_Breast, : object 'Average_Annual_Price_Whole' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># preview Average_Annual_Sale_Prices_per_Cut_of_Chicken data frame</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Average_Annual_Sale_Prices_per_Cut_of_Chicken)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in head(Average_Annual_Sale_Prices_per_Cut_of_Chicken): object 'Average_Annual_Sale_Prices_per_Cut_of_Chicken' not found</code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co">#change number of decimal places to just have 2 and print data frame</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Average_Annual_Sale_Prices_per_Cut_of_Chicken)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>Error in print(Average_Annual_Sale_Prices_per_Cut_of_Chicken): object 'Average_Annual_Sale_Prices_per_Cut_of_Chicken' not found</code></pre>
+</div>
+</div>
+<p>##Conclusions</p>
+<p>From the new Average_Annual_Sale_Prices_per_Cut_of_Chicken data set we see that all cuts of chicken rose in price over the 10year period from 2004 to 2013. It can be seen that 3 cuts saw a brief price decline in 2011 (Whole, B/S Breast, and Thighs) while the others remained same. 2 cuts, Bone-in Breast and Whole Legs, began at below $2.00 in 2004 and in 2005 increased over this once, to $3.90 and $2.04 respectively, and then remained the same price from 2005-2013. The greatest price increase happened with the Bone-in Breast cut, increasing for $1.95 in 2004 to $3.90 in 2005 (up to 2013).</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb52" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Data Wrangling: Pivoting and Mutating"</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Christa Bonney"</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="an">desription:</span><span class="co"> "More data wrangling: pivoting and mutating with poultry_tidy data set"</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "11/9/2022"</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-copy: true</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a><span class="an">categories:</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a><span class="co">  - challenge_4</span></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a><span class="co">  - abc_poll</span></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="co">  - eggs</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a><span class="co">  - fed_rates</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a><span class="co">  - hotel_bookings</span></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a><span class="co">  - debt</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Challenge Overview</span></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a>Today's challenge is to:</span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a>1)  read in a data set, and describe the data set using both words and any supporting information (e.g., tables, etc)</span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a>2)  tidy data (as needed, including sanity checks)</span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a>3)  identify variables that need to be mutated</span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a>4)  mutate variables and sanity check all mutations</span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a><span class="fu">## Read in data and Observations</span></span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a>Read in one (or more) of the following datasets, using the correct R package and command.</span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>abc_poll.csv ⭐</span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>poultry_tidy.xlsx or organiceggpoultry.xls⭐⭐</span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>FedFundsRate.csv⭐⭐⭐</span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>hotel_bookings.csv⭐⭐⭐⭐</span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>debt_in_trillions.xlsx ⭐⭐⭐⭐⭐</span>
+<span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a><span class="co">#read in organic_egg_poultry data</span></span>
+<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a>poultry_data <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/GIT/601_Fall_2022/posts/_data/poultry_tidy.xlsx"</span>)</span>
+<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(poultry_data)</span>
+<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a><span class="co">#get poultry data dimensions</span></span>
+<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(poultry_data)</span>
+<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a><span class="co">#preview poultry data</span></span>
+<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(poultry_data)</span>
+<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-77"><a href="#cb52-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a><span class="co">#preview poultry data</span></span>
+<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(poultry_data)</span>
+<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-89"><a href="#cb52-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-90"><a href="#cb52-90" aria-hidden="true" tabindex="-1"></a><span class="co">#use tables to get summary of values for 'product' and 'year' columns to get range of values</span></span>
+<span id="cb52-91"><a href="#cb52-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-92"><a href="#cb52-92" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(poultry_data, <span class="st">"Product"</span>))</span>
+<span id="cb52-93"><a href="#cb52-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-94"><a href="#cb52-94" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">select</span>(poultry_data, <span class="st">"Year"</span>))</span>
+<span id="cb52-95"><a href="#cb52-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-96"><a href="#cb52-96" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-97"><a href="#cb52-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-98"><a href="#cb52-98" aria-hidden="true" tabindex="-1"></a>The poultry_tidy data set consists of 4 variables with 600 rows of values. The variables are:</span>
+<span id="cb52-99"><a href="#cb52-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-100"><a href="#cb52-100" aria-hidden="true" tabindex="-1"></a>"Product": qualitative nominal variable consisting of a range of character values consisting of: 'B/S Breast', 'Bone-in Breast', 'Thighs', 'Whole', or 'Whole Legs'.</span>
+<span id="cb52-101"><a href="#cb52-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-102"><a href="#cb52-102" aria-hidden="true" tabindex="-1"></a>"Year": this is a qualitative ordinal variable, with values ranging from 2004 - 2013. </span>
+<span id="cb52-103"><a href="#cb52-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-104"><a href="#cb52-104" aria-hidden="true" tabindex="-1"></a>"Month": this is a qualitative nominal variable, with values ranging from 'January' to 'December'.</span>
+<span id="cb52-105"><a href="#cb52-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-106"><a href="#cb52-106" aria-hidden="true" tabindex="-1"></a>"Price_Dollar": This is a quantitative continuous variable, with values noted to be measured in dollar amounts.</span>
+<span id="cb52-107"><a href="#cb52-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-108"><a href="#cb52-108" aria-hidden="true" tabindex="-1"></a>Looking at the variables it can be surmised that this data set is likely a log of total sales values, tallied each month, per year (2004 - 2013) of various cuts of meat. It is likely chicken, due to widespread availability.</span>
+<span id="cb52-109"><a href="#cb52-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-110"><a href="#cb52-110" aria-hidden="true" tabindex="-1"></a>Will utilize newly learned functions to tidy and wrangle data to better perform analysis to the goal of observing how average annual sale prices per cut of chicken change over the observed period.</span>
+<span id="cb52-111"><a href="#cb52-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-112"><a href="#cb52-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-115"><a href="#cb52-115" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-116"><a href="#cb52-116" aria-hidden="true" tabindex="-1"></a><span class="co">#pivot wider to get separate columns for each product category </span></span>
+<span id="cb52-117"><a href="#cb52-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-118"><a href="#cb52-118" aria-hidden="true" tabindex="-1"></a><span class="co">#new columns = (4-2) + 5  = 7</span></span>
+<span id="cb52-119"><a href="#cb52-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-120"><a href="#cb52-120" aria-hidden="true" tabindex="-1"></a><span class="co"># new rows = 600/5 = 120</span></span>
+<span id="cb52-121"><a href="#cb52-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-122"><a href="#cb52-122" aria-hidden="true" tabindex="-1"></a><span class="co">#this will take it from 600 rows and 4 columns to </span></span>
+<span id="cb52-123"><a href="#cb52-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-124"><a href="#cb52-124" aria-hidden="true" tabindex="-1"></a>cuts_price <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(poultry_data, <span class="at">names_from =</span> <span class="st">"Product"</span>, <span class="at">values_from =</span> <span class="st">"Price_Dollar"</span>)</span>
+<span id="cb52-125"><a href="#cb52-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-126"><a href="#cb52-126" aria-hidden="true" tabindex="-1"></a><span class="co">#sanity check with dim()</span></span>
+<span id="cb52-127"><a href="#cb52-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-128"><a href="#cb52-128" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(cuts_price)</span>
+<span id="cb52-129"><a href="#cb52-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-130"><a href="#cb52-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-133"><a href="#cb52-133" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-134"><a href="#cb52-134" aria-hidden="true" tabindex="-1"></a><span class="co">#rearrange values in 'Year' column to re-order for 2004 to 2013 (currently 2013 - 2004)</span></span>
+<span id="cb52-135"><a href="#cb52-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-136"><a href="#cb52-136" aria-hidden="true" tabindex="-1"></a> cuts_price2 <span class="ot">&lt;-</span> <span class="fu">arrange</span>(cuts_price, <span class="fu">select</span>(cuts_price, <span class="st">"Year"</span>))</span>
+<span id="cb52-137"><a href="#cb52-137" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-138"><a href="#cb52-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-141"><a href="#cb52-141" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-142"><a href="#cb52-142" aria-hidden="true" tabindex="-1"></a><span class="co">#use view() to check changes were successful</span></span>
+<span id="cb52-143"><a href="#cb52-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-144"><a href="#cb52-144" aria-hidden="true" tabindex="-1"></a><span class="co">#view(cuts_price2)</span></span>
+<span id="cb52-145"><a href="#cb52-145" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-146"><a href="#cb52-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-149"><a href="#cb52-149" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-150"><a href="#cb52-150" aria-hidden="true" tabindex="-1"></a><span class="co">#replace NA values to 0.00 for Bone-in Breast and Thighs columns</span></span>
+<span id="cb52-151"><a href="#cb52-151" aria-hidden="true" tabindex="-1"></a>cuts_price3 <span class="ot">&lt;-</span> <span class="fu">replace_na</span>(cuts_price2, <span class="fu">list</span>(<span class="st">"Bone-in Breast"</span> <span class="ot">=</span> <span class="fl">0.00</span>, <span class="st">"Thighs"</span> <span class="ot">=</span> <span class="fl">0.00</span>))</span>
+<span id="cb52-152"><a href="#cb52-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-153"><a href="#cb52-153" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-154"><a href="#cb52-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-157"><a href="#cb52-157" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-158"><a href="#cb52-158" aria-hidden="true" tabindex="-1"></a><span class="co">#rename variables to be able to calculate the means</span></span>
+<span id="cb52-159"><a href="#cb52-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-160"><a href="#cb52-160" aria-hidden="true" tabindex="-1"></a>cuts_price3A <span class="ot">&lt;-</span> <span class="fu">rename</span>(cuts_price3, <span class="st">"B_S_Breast"</span> <span class="ot">=</span> <span class="st">'B/S Breast'</span>, <span class="st">"Bone_In_Breast"</span> <span class="ot">=</span> <span class="st">'Bone-in Breast'</span>, <span class="st">"Whole_Legs"</span> <span class="ot">=</span> <span class="st">'Whole Legs'</span>)</span>
+<span id="cb52-161"><a href="#cb52-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-162"><a href="#cb52-162" aria-hidden="true" tabindex="-1"></a><span class="co">#pivot wider 'Year' column against cuts columns to get cut values per year isolated</span></span>
+<span id="cb52-163"><a href="#cb52-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-164"><a href="#cb52-164" aria-hidden="true" tabindex="-1"></a><span class="co">#new columns = (7 - 6) + (5x10) = 51</span></span>
+<span id="cb52-165"><a href="#cb52-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-166"><a href="#cb52-166" aria-hidden="true" tabindex="-1"></a><span class="co">#new rows = 120/10 = 12</span></span>
+<span id="cb52-167"><a href="#cb52-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-168"><a href="#cb52-168" aria-hidden="true" tabindex="-1"></a>cuts_price3B <span class="ot">&lt;-</span> <span class="fu">pivot_wider</span>(cuts_price3A, <span class="at">names_from =</span> <span class="st">"Year"</span>, <span class="at">values_from =</span> <span class="fu">c</span>(<span class="st">"Whole"</span>, <span class="st">"B_S_Breast"</span>, <span class="st">"Bone_In_Breast"</span>, <span class="st">"Whole_Legs"</span>, <span class="st">"Thighs"</span>))</span>
+<span id="cb52-169"><a href="#cb52-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-170"><a href="#cb52-170" aria-hidden="true" tabindex="-1"></a><span class="co">#use dim() function to perform sanity check on cuts_price3B data frame</span></span>
+<span id="cb52-171"><a href="#cb52-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-172"><a href="#cb52-172" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(cuts_price3B)</span>
+<span id="cb52-173"><a href="#cb52-173" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-174"><a href="#cb52-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-177"><a href="#cb52-177" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-178"><a href="#cb52-178" aria-hidden="true" tabindex="-1"></a><span class="co">#use subset to get rid of 'Month' column</span></span>
+<span id="cb52-179"><a href="#cb52-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-180"><a href="#cb52-180" aria-hidden="true" tabindex="-1"></a>cuts_price4 <span class="ot">&lt;-</span> <span class="fu">subset</span>(cuts_price3B, <span class="at">select =</span> <span class="sc">-</span>Month)</span>
+<span id="cb52-181"><a href="#cb52-181" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-182"><a href="#cb52-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-185"><a href="#cb52-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-186"><a href="#cb52-186" aria-hidden="true" tabindex="-1"></a><span class="co">#then mutate to get means per year generated into new columns per each cut</span></span>
+<span id="cb52-187"><a href="#cb52-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-188"><a href="#cb52-188" aria-hidden="true" tabindex="-1"></a><span class="co">#Thought to see if I could mutate multiple columns with the annual means for each cut</span></span>
+<span id="cb52-189"><a href="#cb52-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-190"><a href="#cb52-190" aria-hidden="true" tabindex="-1"></a><span class="co">#this did not work, the row numbers would be offset by -2 in the generated columns (dataframe originally 12 rows)</span></span>
+<span id="cb52-191"><a href="#cb52-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-192"><a href="#cb52-192" aria-hidden="true" tabindex="-1"></a><span class="co">#could try to replace existing columns, but seems more practical (cleaner) to construct a new dataframe from vectors of means</span></span>
+<span id="cb52-193"><a href="#cb52-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-194"><a href="#cb52-194" aria-hidden="true" tabindex="-1"></a><span class="co">#this string is unedited from when a retro-active column name-change was initiated after the string was deemed unusable</span></span>
+<span id="cb52-195"><a href="#cb52-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-196"><a href="#cb52-196" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> <span class="fu">mutate</span>(cuts_price4, <span class="at">Average_Annual_Price_Whole =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-197"><a href="#cb52-197" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-198"><a href="#cb52-198" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-199"><a href="#cb52-199" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-200"><a href="#cb52-200" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-201"><a href="#cb52-201" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-202"><a href="#cb52-202" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-203"><a href="#cb52-203" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-204"><a href="#cb52-204" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-205"><a href="#cb52-205" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb52-206"><a href="#cb52-206" aria-hidden="true" tabindex="-1"></a>      Average_Annual_Price_B<span class="sc">/</span><span class="at">S_Breast =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-207"><a href="#cb52-207" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-208"><a href="#cb52-208" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-209"><a href="#cb52-209" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-210"><a href="#cb52-210" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-211"><a href="#cb52-211" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-212"><a href="#cb52-212" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-213"><a href="#cb52-213" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-214"><a href="#cb52-214" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-215"><a href="#cb52-215" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B<span class="sc">/</span>S Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb52-216"><a href="#cb52-216" aria-hidden="true" tabindex="-1"></a>      Average_Annual_Price_Bone<span class="sc">-</span><span class="at">in_Breast =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-217"><a href="#cb52-217" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-218"><a href="#cb52-218" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-219"><a href="#cb52-219" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-220"><a href="#cb52-220" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-221"><a href="#cb52-221" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-222"><a href="#cb52-222" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-223"><a href="#cb52-223" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-224"><a href="#cb52-224" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-225"><a href="#cb52-225" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone<span class="sc">-</span><span class="cf">in</span> Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb52-226"><a href="#cb52-226" aria-hidden="true" tabindex="-1"></a>       <span class="at">Average_Annual_Price_Whole_Legs =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-227"><a href="#cb52-227" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-228"><a href="#cb52-228" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-229"><a href="#cb52-229" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-230"><a href="#cb52-230" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-231"><a href="#cb52-231" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-232"><a href="#cb52-232" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-233"><a href="#cb52-233" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-234"><a href="#cb52-234" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-235"><a href="#cb52-235" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole Legs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb52-236"><a href="#cb52-236" aria-hidden="true" tabindex="-1"></a>       <span class="at">Average_Annual_Price_Thighs =</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-237"><a href="#cb52-237" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-238"><a href="#cb52-238" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-239"><a href="#cb52-239" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-240"><a href="#cb52-240" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-241"><a href="#cb52-241" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-242"><a href="#cb52-242" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-243"><a href="#cb52-243" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-244"><a href="#cb52-244" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-245"><a href="#cb52-245" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb52-246"><a href="#cb52-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-247"><a href="#cb52-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-248"><a href="#cb52-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-251"><a href="#cb52-251" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-252"><a href="#cb52-252" aria-hidden="true" tabindex="-1"></a><span class="co">#generate annual average price per cut columns by calculating means from monthly values</span></span>
+<span id="cb52-253"><a href="#cb52-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-254"><a href="#cb52-254" aria-hidden="true" tabindex="-1"></a> Average_Annual_Price_Whole <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-255"><a href="#cb52-255" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-256"><a href="#cb52-256" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-257"><a href="#cb52-257" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-258"><a href="#cb52-258" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-259"><a href="#cb52-259" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-260"><a href="#cb52-260" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-261"><a href="#cb52-261" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-262"><a href="#cb52-262" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-263"><a href="#cb52-263" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb52-264"><a href="#cb52-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-265"><a href="#cb52-265" aria-hidden="true" tabindex="-1"></a>Average_Annual_Price_BS_Breast <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-266"><a href="#cb52-266" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-267"><a href="#cb52-267" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-268"><a href="#cb52-268" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-269"><a href="#cb52-269" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-270"><a href="#cb52-270" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-271"><a href="#cb52-271" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-272"><a href="#cb52-272" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-273"><a href="#cb52-273" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-274"><a href="#cb52-274" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>B_S_Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb52-275"><a href="#cb52-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-276"><a href="#cb52-276" aria-hidden="true" tabindex="-1"></a> Average_Annual_Price_Bone_In_Breast <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-277"><a href="#cb52-277" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-278"><a href="#cb52-278" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-279"><a href="#cb52-279" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-280"><a href="#cb52-280" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-281"><a href="#cb52-281" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-282"><a href="#cb52-282" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-283"><a href="#cb52-283" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-284"><a href="#cb52-284" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-285"><a href="#cb52-285" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Bone_In_Breast_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb52-286"><a href="#cb52-286" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb52-287"><a href="#cb52-287" aria-hidden="true" tabindex="-1"></a>  Average_Annual_Price_Whole_Legs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-288"><a href="#cb52-288" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-289"><a href="#cb52-289" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-290"><a href="#cb52-290" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-291"><a href="#cb52-291" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-292"><a href="#cb52-292" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-293"><a href="#cb52-293" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-294"><a href="#cb52-294" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-295"><a href="#cb52-295" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-296"><a href="#cb52-296" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Whole_Legs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb52-297"><a href="#cb52-297" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-298"><a href="#cb52-298" aria-hidden="true" tabindex="-1"></a>  Average_Annual_Price_Thighs <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2004, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-299"><a href="#cb52-299" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2005, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-300"><a href="#cb52-300" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2006, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-301"><a href="#cb52-301" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2007, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-302"><a href="#cb52-302" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2008, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-303"><a href="#cb52-303" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2009, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-304"><a href="#cb52-304" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2010, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-305"><a href="#cb52-305" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2011, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-306"><a href="#cb52-306" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2012, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb52-307"><a href="#cb52-307" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">mean</span>(cuts_price4<span class="sc">$</span>Thighs_2013, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb52-308"><a href="#cb52-308" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb52-309"><a href="#cb52-309" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-310"><a href="#cb52-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-313"><a href="#cb52-313" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-314"><a href="#cb52-314" aria-hidden="true" tabindex="-1"></a><span class="co">#create year vector</span></span>
+<span id="cb52-315"><a href="#cb52-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-316"><a href="#cb52-316" aria-hidden="true" tabindex="-1"></a>Year <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'2004'</span>, <span class="st">'2005'</span>, <span class="st">'2006'</span>, <span class="st">'2007'</span>, <span class="st">'2008'</span>, <span class="st">'2009'</span>, <span class="st">'2010'</span>, <span class="st">'2011'</span>, <span class="st">'2012'</span>, <span class="st">'2013'</span>)</span>
+<span id="cb52-317"><a href="#cb52-317" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-318"><a href="#cb52-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-321"><a href="#cb52-321" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-322"><a href="#cb52-322" aria-hidden="true" tabindex="-1"></a><span class="co">#join vectors into a data frame</span></span>
+<span id="cb52-323"><a href="#cb52-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-324"><a href="#cb52-324" aria-hidden="true" tabindex="-1"></a>Average_Annual_Sale_Prices_per_Cut_of_Chicken <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(Year, Average_Annual_Price_Whole,</span>
+<span id="cb52-325"><a href="#cb52-325" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_BS_Breast,</span>
+<span id="cb52-326"><a href="#cb52-326" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Bone_In_Breast,</span>
+<span id="cb52-327"><a href="#cb52-327" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Whole_Legs,</span>
+<span id="cb52-328"><a href="#cb52-328" aria-hidden="true" tabindex="-1"></a>                                                            Average_Annual_Price_Thighs)</span>
+<span id="cb52-329"><a href="#cb52-329" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-330"><a href="#cb52-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-333"><a href="#cb52-333" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-334"><a href="#cb52-334" aria-hidden="true" tabindex="-1"></a><span class="co"># preview Average_Annual_Sale_Prices_per_Cut_of_Chicken data frame</span></span>
+<span id="cb52-335"><a href="#cb52-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-336"><a href="#cb52-336" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Average_Annual_Sale_Prices_per_Cut_of_Chicken)</span>
+<span id="cb52-337"><a href="#cb52-337" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-338"><a href="#cb52-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-341"><a href="#cb52-341" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb52-342"><a href="#cb52-342" aria-hidden="true" tabindex="-1"></a><span class="co">#change number of decimal places to just have 2 and print data frame</span></span>
+<span id="cb52-343"><a href="#cb52-343" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span>
+<span id="cb52-344"><a href="#cb52-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-345"><a href="#cb52-345" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(Average_Annual_Sale_Prices_per_Cut_of_Chicken)</span>
+<span id="cb52-346"><a href="#cb52-346" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb52-347"><a href="#cb52-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-348"><a href="#cb52-348" aria-hidden="true" tabindex="-1"></a>##Conclusions</span>
+<span id="cb52-349"><a href="#cb52-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-350"><a href="#cb52-350" aria-hidden="true" tabindex="-1"></a>From the new Average_Annual_Sale_Prices_per_Cut_of_Chicken data set we see that all cuts of chicken rose in price over the 10year period from 2004 to 2013. It can be seen that 3 cuts saw a brief price decline in 2011 (Whole, B/S Breast, and Thighs) while the others remained same. 2 cuts, Bone-in Breast and Whole Legs, began at below $2.00 in 2004 and in 2005 increased over this once, to $3.90 and $2.04 respectively, and then remained the same price from 2005-2013. The greatest price increase happened with the Bone-in Breast cut, increasing for $1.95 in 2004 to $3.90 in 2005 (up to 2013).</span>
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

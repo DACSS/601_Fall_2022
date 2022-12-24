@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Darron Bunt">
+<meta name="dcterms.date" content="2022-12-18">
+<meta name="description" content="Read In Dataset">
+
+<title>DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 2 - Darron Bunt</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/DACSS_Round_Network.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta name="twitter:title" content="DACSS 601: Data Science Fundamentals - FALL 2022 - Homework 2 - Darron Bunt">
+<meta name="twitter:description" content="Read In Dataset">
+<meta name="twitter:creator" content="@UMassDACSS">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <a class="navbar-brand" href="../index.html">
+    <img src="../images/UMass White Wordmark Horiz.png" alt="">
+    <span class="navbar-title">DACSS 601: Data Science Fundamentals - FALL 2022</span>
+  </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page">Fall 2022 Posts</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">Contributors</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://umass.edu/sbs/dacss">DACSS</a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/DACSS/601_Fall_2022"><i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+ </a>
+  </li>  
+</ul>
+              <div class="quarto-toggle-container">
+                  <a href="" class="quarto-color-scheme-toggle nav-link" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+              </div>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Homework 2 - Darron Bunt</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Course information</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../Syllabus.html" class="sidebar-item-text sidebar-link">Overview</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../instructional_team.html" class="sidebar-item-text sidebar-link">Instructional Team</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../course_schedule.html" class="sidebar-item-text sidebar-link">Course Schedule</a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Weekly materials</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Fall 2022 posts</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dacss.github.io/601_Fall_2022_final_posts/" class="sidebar-item-text sidebar-link">final posts</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#loading-packages-into-r-environment" id="toc-loading-packages-into-r-environment" class="nav-link active" data-scroll-target="#loading-packages-into-r-environment">Loading Packages into R Environment</a></li>
+  <li><a href="#loading-the-dataset" id="toc-loading-the-dataset" class="nav-link" data-scroll-target="#loading-the-dataset">Loading the Dataset</a></li>
+  <li><a href="#cleaning-the-dataset" id="toc-cleaning-the-dataset" class="nav-link" data-scroll-target="#cleaning-the-dataset">Cleaning the Dataset</a></li>
+  <li><a href="#narrative-about-the-dataset" id="toc-narrative-about-the-dataset" class="nav-link" data-scroll-target="#narrative-about-the-dataset">Narrative About the Dataset</a></li>
+  <li><a href="#research-questions-this-dataset-could-answer" id="toc-research-questions-this-dataset-could-answer" class="nav-link" data-scroll-target="#research-questions-this-dataset-could-answer">Research Questions This Dataset Could Answer</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-body" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Homework 2 - Darron Bunt</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">HW2</div>
+    <div class="quarto-category">darron_bunt</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Read In Dataset
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Darron Bunt </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 18, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="loading-packages-into-r-environment" class="level2">
+<h2 class="anchored" data-anchor-id="loading-packages-into-r-environment">Loading Packages into R Environment</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="loading-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-dataset">Loading the Dataset</h2>
+<p>I have chosen to use my own data. Specifically, the dataset that I have chosen is made up of all of the Twitter posts authored by all 50 state flagship universities during the month of November 2022. In addition to the posts themselves, this dataset also includes a variety of associated metrics (such date/time posted, post impressions and reach, number of likes/retweets/comments, total number of Twitter followers, sentiment as tagged by artificial intelligence).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"_data/FlagshipTwitterUpdated.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="cleaning-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="cleaning-the-dataset">Cleaning the Dataset</h2>
+<section id="cleaning-out-any-rows-that-are-not-twitter-data" class="level4">
+<h4 class="anchored" data-anchor-id="cleaning-out-any-rows-that-are-not-twitter-data">1. Cleaning out any rows that are not Twitter data</h4>
+<p>I realized that when I had run my query in Brandwatch, I had not specified that I only wanted to return authors from Twitter. Accordingly, I had pulled in some mentions from forums, blogs, YouTube (etc.) where the author name there matched the flagship institution’s Twitter author name.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#remove rows where the Page Type isn't twitter</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter2 <span class="ot">&lt;-</span> <span class="fu">subset</span>(FlagshipTwitter, PageType <span class="sc">==</span><span class="st">'twitter'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,658 × 37
+   Date     Url   Domain Senti…¹ PageT…² Langu…³ Count…⁴ Conti…⁵ Conti…⁶ Country
+   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+ 1 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 2 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 3 11/30/2… http… twitt… positi… twitter en      USA     NORTH … North … United…
+ 4 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 5 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 6 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 7 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 8 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+ 9 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+10 11/30/2… http… twitt… neutral twitter en      USA     NORTH … North … United…
+# … with 5,648 more rows, 27 more variables: `City Code` &lt;chr&gt;,
+#   `Account Type` &lt;chr&gt;, Author &lt;chr&gt;, City &lt;chr&gt;, `Expanded URLs` &lt;chr&gt;,
+#   `Full Text` &lt;chr&gt;, Gender &lt;chr&gt;, Hashtags &lt;chr&gt;, Impact &lt;dbl&gt;,
+#   Impressions &lt;dbl&gt;, `Location Name` &lt;chr&gt;, `Mentioned Authors` &lt;chr&gt;,
+#   `Twitter Followers` &lt;dbl&gt;, `Twitter Reply Count` &lt;dbl&gt;,
+#   `Twitter Reply to` &lt;chr&gt;, `Twitter Retweet of` &lt;chr&gt;,
+#   `Twitter Retweets` &lt;dbl&gt;, `Twitter Likes` &lt;dbl&gt;, `Twitter Tweets` &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>Ok, awesome. I’ve gotten rid of 865 mentions that I didn’t need/want.</p>
+</section>
+<section id="narrow-down-to-the-columns-i-actually-want-to-use-in-analysis-and-clean-up-their-names-as-necessary" class="level4">
+<h4 class="anchored" data-anchor-id="narrow-down-to-the-columns-i-actually-want-to-use-in-analysis-and-clean-up-their-names-as-necessary">3. Narrow down to the columns I actually want to use in analysis (and clean up their names, as necessary)</h4>
+<p>Though I had already deleted a few columns, I quickly realized I would probably not be using 32 different data points in this analysis and would be well served to re-order my columns such that the ones I intend to use the most are first, not interspersed randomly.</p>
+<p>I also wanted to give several columns clearer/more usable names.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename the columns I intend to use for analysis</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>FlagshipTwitter3 <span class="ot">&lt;-</span> <span class="fu">rename</span>(FlagshipTwitter2, <span class="fu">c</span>(<span class="at">Tweet =</span> <span class="st">'Full Text'</span>, <span class="at">MentionedAuthors =</span> <span class="st">'Mentioned Authors'</span>, <span class="at">TWFollowers =</span> <span class="st">'Twitter Followers'</span>, <span class="at">TWReply =</span> <span class="st">'Twitter Reply Count'</span>, <span class="at">TWRetweets =</span> <span class="st">'Twitter Retweets'</span>, <span class="at">TWLikes =</span> <span class="st">'Twitter Likes'</span>, <span class="at">Reach =</span> <span class="st">'Reach (new)'</span>, <span class="at">EngType =</span> <span class="st">'Engagement Type'</span>, <span class="at">URL =</span> Url))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#put columns I plan to use first </span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>FlagshipTwitterUse <span class="ot">&lt;-</span> <span class="fu">select</span>(FlagshipTwitter3, Author, Date, Impressions, Reach, TWLikes, TWRetweets, TWReply, EngType, Sentiment, Hashtags, MentionedAuthors, Tweet, TWFollowers, URL, <span class="fu">everything</span>())</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>FlagshipTwitterUse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,658 × 37
+   Author    Date  Impre…¹ Reach TWLikes TWRet…² TWReply EngType Senti…³ Hasht…⁴
+   &lt;chr&gt;     &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+ 1 UofAlaba… 11/3…  189187 24242       6       0       2 &lt;NA&gt;    neutral &lt;NA&gt;   
+ 2 uhmanoa   11/3…   33885  9715       0       0       0 RETWEET neutral &lt;NA&gt;   
+ 3 CUBoulder 11/3…   90003 15452       0       0       0 RETWEET positi… #skobus
+ 4 UNC       11/3…  143148 18997       0       0       0 RETWEET neutral #chtra…
+ 5 unevadar… 11/3…   33378 10932       5       3       0 &lt;NA&gt;    neutral #nvgra…
+ 6 uhmanoa   11/3…   33887  9716       1       0       0 &lt;NA&gt;    neutral #takem…
+ 7 uarizona  11/3…  233177 24770      12       4       0 &lt;NA&gt;    neutral &lt;NA&gt;   
+ 8 UArkansas 11/3…   72683 14013       0       0       0 RETWEET neutral &lt;NA&gt;   
+ 9 UArkansas 11/3…   72683 15413       1       0       1 REPLY   neutral &lt;NA&gt;   
+10 UUtah     11/3…  126437 17988       0       0       0 RETWEET neutral &lt;NA&gt;   
+# … with 5,648 more rows, 27 more variables: MentionedAuthors &lt;chr&gt;,
+#   Tweet &lt;chr&gt;, TWFollowers &lt;dbl&gt;, URL &lt;chr&gt;, Domain &lt;chr&gt;, PageType &lt;chr&gt;,
+#   Language &lt;chr&gt;, `Country Code` &lt;chr&gt;, `Continent Code` &lt;chr&gt;,
+#   Continent &lt;chr&gt;, Country &lt;chr&gt;, `City Code` &lt;chr&gt;, `Account Type` &lt;chr&gt;,
+#   City &lt;chr&gt;, `Expanded URLs` &lt;chr&gt;, Gender &lt;chr&gt;, Impact &lt;dbl&gt;,
+#   `Location Name` &lt;chr&gt;, `Twitter Reply to` &lt;chr&gt;,
+#   `Twitter Retweet of` &lt;chr&gt;, `Twitter Tweets` &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="sort-out-my-dates" class="level4">
+<h4 class="anchored" data-anchor-id="sort-out-my-dates">4. Sort out my dates</h4>
+<p>My dates are currently date + times that each tweet was posted. I want to separate this into a date column and a time column.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#separate dates into respective date and time column</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>TwitterUse2 <span class="ot">&lt;-</span> <span class="fu">separate</span>(FlagshipTwitterUse, Date, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"Date"</span>, <span class="st">"Time"</span>), <span class="at">sep =</span> <span class="st">" "</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>Date <span class="ot">&lt;-</span> <span class="fu">parse_date</span>(TwitterUse2<span class="sc">$</span>Date, <span class="at">format =</span> <span class="st">"%m/%d/%Y"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>TwitterUse2<span class="sc">$</span>Time <span class="ot">&lt;-</span> <span class="fu">parse_time</span>(TwitterUse2<span class="sc">$</span>Time, <span class="at">format =</span> <span class="st">"%H:%M"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>TwitterUse2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,658 × 38
+   Author Date       Time  Impre…¹ Reach TWLikes TWRet…² TWReply EngType Senti…³
+   &lt;chr&gt;  &lt;date&gt;     &lt;tim&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+ 1 UofAl… 2022-11-30 23:55  189187 24242       6       0       2 &lt;NA&gt;    neutral
+ 2 uhman… 2022-11-30 23:50   33885  9715       0       0       0 RETWEET neutral
+ 3 CUBou… 2022-11-30 23:47   90003 15452       0       0       0 RETWEET positi…
+ 4 UNC    2022-11-30 23:30  143148 18997       0       0       0 RETWEET neutral
+ 5 uneva… 2022-11-30 23:30   33378 10932       5       3       0 &lt;NA&gt;    neutral
+ 6 uhman… 2022-11-30 23:24   33887  9716       1       0       0 &lt;NA&gt;    neutral
+ 7 uariz… 2022-11-30 23:10  233177 24770      12       4       0 &lt;NA&gt;    neutral
+ 8 UArka… 2022-11-30 23:03   72683 14013       0       0       0 RETWEET neutral
+ 9 UArka… 2022-11-30 23:02   72683 15413       1       0       1 REPLY   neutral
+10 UUtah  2022-11-30 23:00  126437 17988       0       0       0 RETWEET neutral
+# … with 5,648 more rows, 28 more variables: Hashtags &lt;chr&gt;,
+#   MentionedAuthors &lt;chr&gt;, Tweet &lt;chr&gt;, TWFollowers &lt;dbl&gt;, URL &lt;chr&gt;,
+#   Domain &lt;chr&gt;, PageType &lt;chr&gt;, Language &lt;chr&gt;, `Country Code` &lt;chr&gt;,
+#   `Continent Code` &lt;chr&gt;, Continent &lt;chr&gt;, Country &lt;chr&gt;, `City Code` &lt;chr&gt;,
+#   `Account Type` &lt;chr&gt;, City &lt;chr&gt;, `Expanded URLs` &lt;chr&gt;, Gender &lt;chr&gt;,
+#   Impact &lt;dbl&gt;, `Location Name` &lt;chr&gt;, `Twitter Reply to` &lt;chr&gt;,
+#   `Twitter Retweet of` &lt;chr&gt;, `Twitter Tweets` &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>I suspect I will want to mutate the data and create new variables as I progress with my project, but I believe that this iteration of the dataset will provide the foundation I need to begin exploratory data analysis.</p>
+</section>
+</section>
+<section id="narrative-about-the-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="narrative-about-the-dataset">Narrative About the Dataset</h2>
+<p>The dataset is comprised of data relating to every tweet authored by one of the 50 US flagship colleges during the month of November, 2022.</p>
+<p>The dataset is comprised of the 5,658 posts that were made by the 50 US flagship colleges in November 2022. For each post, there are several associated variables that will be used for analysis. The 14 variables that are of particular interest for this project are:</p>
+<ul>
+<li><strong>School Name:</strong> Which school authored each post.</li>
+<li><strong>Twitter Followers:</strong> The number of Twitter followers the account had at the time of posting.</li>
+<li><strong>F20 Enrollment:</strong> The enrollment at each school in the Fall of 2020.</li>
+<li><strong>Size Setting:</strong> The size and setting designation for each school.</li>
+<li><strong>Date:</strong> The date each post was authored.</li>
+<li><strong>Time:</strong> The time each post was posted.</li>
+<li><strong>Weekday:</strong> The day of the week each post was made.</li>
+<li><strong>Engagement Type:</strong> A designation of whether the post was an original post (OG), a retweet of someone else’s post (RETWEET), a reply to another account’s post (REPLY), or quote tweet, a retweet of another account’s post with added commentary (QUOTE).</li>
+<li><strong>Impressions:</strong> The sum of the followers of a tweet’s author and the followers of any retweeting authors.</li>
+<li><strong>Reach:</strong> An estimate of how many people have actually seen/read a given post.</li>
+<li><strong>Twitter Likes:</strong> The number of times Twitter users “liked” a given post.</li>
+<li><strong>Twitter Retweets:</strong> The number of times Twitter users retweeted a given post on their own Twitter.</li>
+<li><strong>Twitter Replies:</strong> The number of times Twitter users left a comment on a given post.</li>
+<li><strong>Sentiment:</strong> An AI-driven interpretation of the content of each tweet that subsequently labels the post as either Positive, Negative, or Neutral.</li>
+<li><strong>Tweet:</strong> The content of the tweet authored.</li>
+</ul>
+</section>
+<section id="research-questions-this-dataset-could-answer" class="level2">
+<h2 class="anchored" data-anchor-id="research-questions-this-dataset-could-answer">Research Questions This Dataset Could Answer</h2>
+<p>There are three primary questions of interest that I think this dataset could help answer: * Are there consistencies in how colleges are using Twitter? * What makes some posts more successful than others? * Are there takeaways on how colleges can most effectively use Twitter?</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } 
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<script src="https://giscus.app/client.js" data-repo="DACSS/601_Fall_2022" data-repo-id="R_kgDOH564Gw" data-category="Announcements" data-category-id="DIC_kwDOH564G84CRdBB" data-mapping="title" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="light" data-lang="en" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
