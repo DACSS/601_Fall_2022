@@ -1,0 +1,264 @@
+---
+title: "HW 3"
+author: "Saisrinivas Ambatipudi"
+date: "2022-12-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quantmod) 
+library(gridExtra)
+library(ggplot2) 
+library(Hmisc) 
+library(plotly) 
+library(ggplotlyExtra)
+library(tidyverse)
+library(tidyquant)
+library(timetk)
+library(xts)
+library(reshape2)
+library(dplyr)
+library(tidyr)
+```
+
+## Visualizations on the dataset.
+
+First we need use the libraries to get the correct visualization
+
+
+## Now we define the data and get the plots:
+
+Extracting the dataset.
+```{r}
+crypto <- read_csv("D:/UMass/Sem 1/DACSS601/601_Fall_2022/posts/_data/crypto_maa2.csv")
+crypto
+```
+## Summary of the dataset.
+
+We need convert the dataset column formats to be appropriate for getting results.
+
+```{r}
+crypto$Date = as.Date(crypto$Date, format = "%d/%m/%Y")
+crypto$Open = as.numeric(gsub(pattern = ',','',crypto$Open))
+crypto$High = as.numeric(gsub(pattern = ',','',crypto$High))
+crypto$Low = as.numeric(gsub(pattern = ',','',crypto$Low))
+crypto$Close = as.numeric(gsub(pattern = ',','',crypto$Close))
+crypto$Volume = as.numeric(gsub(pattern = ',','',crypto$Volume))
+crypto$Marketcap = as.numeric(gsub(pattern = ',','',crypto$Marketcap))
+crypto$Year = as.numeric(format(crypto$Date,"%Y"))
+crypto$Currency = capitalize(crypto$Currency)
+summary(crypto)
+crypto
+
+```
+
+Now that we have done that we need to vizualize the cryptocurrencies.
+
+```{r}
+plot_ly(as.data.frame(crypto$Currency),labels = crypto$Currency,type = 'pie', hole = 0.3) %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+
+Now we need to convert the data into time series for plotting.
+
+```{r}
+Bitcoin = subset(crypto,crypto$Currency == 'Bitcoin')
+Bitcoin$Currency = NULL
+colnames(Bitcoin) = c('BitcoinDate','BitcoinOpen','BitcoinHigh','BitcoinLow','BitcoinClose','BitcoinVolume','BitcoinMarketcap', 'BitcoinYear')
+Bitcoin = xts(Bitcoin[,-1], order.by=as.Date(Bitcoin$BitcoinDate))
+
+Litecoin = subset(crypto,crypto$Currency == 'Litecoin')
+Litecoin$Currency = NULL
+colnames(Litecoin) = c('LitecoinDate','LitecoinOpen','LitecoinHigh','LitecoinLow','LitecoinClose','LitecoinVolume','LitecoinMarketcap', 'LitecoinYear')
+Litecoin = xts(Litecoin[,-1], order.by=as.Date(Litecoin$LitecoinDate))
+
+XRP = subset(crypto,crypto$Currency == 'XRP')
+XRP$Currency = NULL
+colnames(XRP) = c('XRPDate','XRPOpen','XRPHigh','XRPLow','XRPClose','XRPVolume','XRPMarketcap', 'XRPYear')
+XRP = xts(XRP[,-1], order.by=as.Date(XRP$XRPDate))
+
+Dogecoin = subset(crypto,crypto$Currency == 'Dogecoin')
+Dogecoin$Currency = NULL
+colnames(Dogecoin) = c('DogecoinDate','DogecoinOpen','DogecoinHigh','DogecoinLow','DogecoinClose','DogecoinVolume','DogecoinMarketcap', 'DogecoinYear')
+Dogecoin = xts(Dogecoin[,-1], order.by=as.Date(Dogecoin$DogecoinDate))
+
+Monero = subset(crypto,crypto$Currency == 'Monero')
+Monero$Currency = NULL
+colnames(Monero) = c('MoneroDate','MoneroOpen','MoneroHigh','MoneroLow','MoneroClose','MoneroVolume','MoneroMarketcap', 'MoneroYear')
+Monero = xts(Monero[,-1], order.by=as.Date(Monero$MoneroDate))
+
+Stellar = subset(crypto,crypto$Currency == 'Stellar')
+Stellar$Currency = NULL
+colnames(Stellar) = c('StellarDate','StellarOpen','StellarHigh','StellarLow','StellarClose','StellarVolume','StellarMarketcap', 'StellarYear')
+Stellar = xts(Stellar[,-1], order.by=as.Date(Stellar$StellarDate))
+
+Tether = subset(crypto,crypto$Currency == 'Tether')
+Tether$Currency = NULL
+colnames(Tether) = c('TetherDate','TetherOpen','TetherHigh','TetherLow','TetherClose','TetherVolume','TetherMarketcap', 'TetherYear')
+Tether = xts(Tether[,-1], order.by=as.Date(Tether$TetherDate))
+
+NEM = subset(crypto,crypto$Currency == 'NEM')
+NEM$Currency = NULL
+colnames(NEM) = c('NEMDate','NEMOpen','NEMHigh','NEMLow','NEMClose','NEMVolume','NEMMarketcap', 'NEMYear')
+NEM = xts(NEM[,-1], order.by=as.Date(NEM$NEMDate))
+
+Ethereum = subset(crypto,crypto$Currency == 'Ethereum')
+Ethereum$Currency = NULL
+colnames(Ethereum) = c('EthereumDate','EthereumOpen','EthereumHigh','EthereumLow','EthereumClose','EthereumVolume','EthereumMarketcap', 'EthereumYear')
+Ethereum = xts(Ethereum[,-1], order.by=as.Date(Ethereum$EthereumDate))
+
+IOTA = subset(crypto,crypto$Currency == 'IOTA')
+IOTA$Currency = NULL
+colnames(IOTA) = c('IOTADate','IOTAOpen','IOTAHigh','IOTALow','IOTAClose','IOTAVolume','IOTAMarketcap', 'IOTAYear')
+IOTA = xts(IOTA[,-1], order.by=as.Date(IOTA$IOTADate))
+
+EOS = subset(crypto,crypto$Currency == 'EOS')
+EOS$Currency = NULL
+colnames(EOS) = c('EOSDate','EOSOpen','EOSHigh','EOSLow','EOSClose','EOSVolume','EOSMarketcap', 'EOSYear')
+EOS = xts(EOS[,-1], order.by=as.Date(EOS$EOSDate))
+
+TRON = subset(crypto,crypto$Currency == 'TRON')
+TRON$Currency = NULL
+colnames(TRON) = c('TRONDate','TRONOpen','TRONHigh','TRONLow','TRONClose','TRONVolume','TRONMarketcap', 'TRONYear')
+TRON = xts(TRON[,-1], order.by=as.Date(TRON$TRONDate))
+
+Chainlink = subset(crypto,crypto$Currency == 'Chainlink')
+Chainlink$Currency = NULL
+colnames(Chainlink) = c('ChainlinkDate','ChainlinkOpen','ChainlinkHigh','ChainlinkLow','ChainlinkClose','ChainlinkVolume','ChainlinkMarketcap', 'ChainlinkYear')
+Chainlink = xts(Chainlink[,-1], order.by=as.Date(Chainlink$ChainlinkDate))
+
+Cardano = subset(crypto,crypto$Currency == 'Cardano')
+Cardano$Currency = NULL
+colnames(Cardano) = c('CardanoDate','CardanoOpen','CardanoHigh','CardanoLow','CardanoClose','CardanoVolume','CardanoMarketcap', 'CardanoYear')
+Cardano = xts(Cardano[,-1], order.by=as.Date(Cardano$CardanoDate))
+
+Cosmos = subset(crypto,crypto$Currency == 'Cosmos')
+Cosmos$Currency = NULL
+colnames(Cosmos) = c('CosmosDate','CosmosOpen','CosmosHigh','CosmosLow','CosmosClose','CosmosVolume','CosmosMarketcap', 'CosmosYear')
+Cosmos = xts(Cosmos[,-1], order.by=as.Date(Cosmos$CosmosDate))
+
+Solana = subset(crypto,crypto$Currency == 'Solana')
+Solana$Currency = NULL
+colnames(Solana) = c('SolanaDate','SolanaOpen','SolanaHigh','SolanaLow','SolanaClose','SolanaVolume','SolanaMarketcap', 'SolanaYear')
+Solana = xts(Solana[,-1], order.by=as.Date(Solana$SolanaDate))
+
+Polkadot = subset(crypto,crypto$Currency == 'Polkadot')
+Polkadot$Currency = NULL
+colnames(Polkadot) = c('PolkadotDate','PolkadotOpen','PolkadotHigh','PolkadotLow','PolkadotClose','PolkadotVolume','PolkadotMarketcap', 'PolkadotYear')
+Polkadot = xts(Polkadot[,-1], order.by=as.Date(Polkadot$PolkadotDate))
+
+Uniswap = subset(crypto,crypto$Currency == 'Uniswap')
+Uniswap$Currency = NULL
+colnames(Uniswap) = c('UniswapDate','UniswapOpen','UniswapHigh','UniswapLow','UniswapClose','UniswapVolume','UniswapMarketcap', 'UniswapYear')
+Uniswap = xts(Uniswap[,-1], order.by=as.Date(Uniswap$UniswapDate))
+
+Aave = subset(crypto,crypto$Currency == 'Aave')
+Aave$Currency = NULL
+colnames(Aave) = c('AaveDate','AaveOpen','AaveHigh','AaveLow','AaveClose','AaveVolume','AaveMarketcap', 'AaveYear')
+Aave = xts(Aave[,-1], order.by=as.Date(Aave$AaveDate))
+
+```
+
+And then we combine the time series data so that we can get a combined graph to visualize the opening prices of the cryptocurrencies in a graph.
+
+```{r}
+combined_df <- merge(Bitcoin, Ethereum, by = "Date")
+combined_df <- merge(combined_df, Aave, by = "Date")
+combined_df <- merge(combined_df, Cardano, by = "Date")
+combined_df <- merge(combined_df, Chainlink, by = "Date")
+combined_df <- merge(combined_df, Cosmos, by = "Date")
+combined_df <- merge(combined_df, Dogecoin, by = "Date")
+combined_df <- merge(combined_df, EOS, by = "Date")
+combined_df <- merge(combined_df, Ethereum, by = "Date")
+combined_df <- merge(combined_df, IOTA, by = "Date")
+combined_df <- merge(combined_df, Litecoin, by = "Date")
+combined_df <- merge(combined_df, Monero, by = "Date")
+combined_df <- merge(combined_df, NEM, by = "Date")
+combined_df <- merge(combined_df, XRP, by = "Date")
+combined_df <- merge(combined_df, Polkadot, by = "Date")
+combined_df <- merge(combined_df, Stellar, by = "Date")
+combined_df <- merge(combined_df, Tether, by = "Date")
+combined_df <- merge(combined_df, TRON, by = "Date")
+combined_df <- merge(combined_df, Uniswap, by = "Date")
+combined_df <- merge(combined_df, XRP, by = "Date")
+
+combined_df[is.na(combined_df)] <- 0
+
+ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinOpen/100, color = "Bitcoin")) +
+  geom_line() +
+  ggtitle("Crypto Opening price series") + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(
+  x = "Date",
+  y = "Opening Prices",
+  color = "Currencies",
+  caption = "Sai") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "6 months") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.key.width = unit(2,"cm"))+
+  geom_line(aes(y = EthereumOpen, color = "Ethereum"))+
+geom_line(aes(y = AaveOpen, color = "Aave"))+
+geom_line(aes(y = CardanoOpen, color = "Cardano"))+
+geom_line(aes(y = ChainlinkOpen, color = "Chainlink"))+
+geom_line(aes(y = CosmosOpen, color = "Cosmos"))+
+geom_line(aes(y = DogecoinOpen, color = "Dogecoin"))+
+geom_line(aes(y = EOSOpen, color = "EOS"))+
+geom_line(aes(y = IOTAOpen, color = "IOTA"))+
+geom_line(aes(y = LitecoinOpen, color = "Litecoin"))+
+geom_line(aes(y = MoneroOpen, color = "Monero"))+
+geom_line(aes(y = NEMOpen, color = "NEM"))+
+geom_line(aes(y = PolkadotOpen, color = "Polkadot"))+
+geom_line(aes(y = StellarOpen, color = "Stellar"))+
+geom_line(aes(y = TetherOpen, color = "Tether"))+
+geom_line(aes(y = TRONOpen, color = "TRON"))+
+geom_line(aes(y = UniswapOpen, color = "Uniswap"))+
+geom_line(aes(y = XRPOpen, color = "XRP"))
+```
+
+Now we can create a graph for market capitalization.
+
+```{r}
+ggplot(combined_df, aes(x = index(Bitcoin), y = BitcoinMarketcap/100000000, color = "Bitcoin")) +
+  geom_line() +
+  ggtitle("Crypto Market Cap") + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(
+  x = "Date",
+  y = "Total Mean Capital",
+  color = "Currencies",
+  title = "Crypto Market Capitalization",
+  subtitle = "in 100 millions", 
+  caption = "Sai") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "6 months") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  theme(legend.key.width = unit(2,"cm"))+
+  geom_line(aes(y = EthereumMarketcap/100000000, color = "Ethereum"))+
+geom_line(aes(y = AaveMarketcap/100000000, color = "Aave"))+
+geom_line(aes(y = CardanoMarketcap/100000000, color = "Cardano"))+
+geom_line(aes(y = ChainlinkMarketcap/100000000, color = "Chainlink"))+
+geom_line(aes(y = CosmosMarketcap/100000000, color = "Cosmos"))+
+geom_line(aes(y = DogecoinMarketcap/100000000, color = "Dogecoin"))+
+geom_line(aes(y = EOSMarketcap/100000000, color = "EOS"))+
+geom_line(aes(y = IOTAMarketcap/100000000, color = "IOTA"))+
+geom_line(aes(y = LitecoinMarketcap/100000000, color = "Litecoin"))+
+geom_line(aes(y = MoneroMarketcap/100000000, color = "Monero"))+
+geom_line(aes(y = NEMMarketcap/100000000, color = "NEM"))+
+geom_line(aes(y = PolkadotMarketcap/100000000, color = "Polkadot"))+
+geom_line(aes(y = StellarMarketcap/100000000, color = "Stellar"))+
+geom_line(aes(y = TetherMarketcap/100000000, color = "Tether"))+
+geom_line(aes(y = TRONMarketcap/100000000, color = "TRON"))+
+geom_line(aes(y = UniswapMarketcap/100000000, color = "Uniswap"))+
+geom_line(aes(y = XRPMarketcap/100000000, color = "XRP"))
+```
+
+These are just some of the visualizations that we need to work on find out more in-depth reasoning for a few of the research questions.
+
+One way we can further visualize is to get the prices of the cryptocurrencies for each year the open, close, high and low value alone with the volume and the market capitalization.
+
