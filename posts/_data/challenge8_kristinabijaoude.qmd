@@ -1,0 +1,127 @@
+---
+title: "Kristin Abijaoude Challenge 8"
+author: "Kristin Abijaoude"
+description: "Joining Data"
+date: "12/09/2022"
+format:
+  html:
+    toc: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+  - faostat
+  - kristin_abijaoude
+---
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(ggridges)
+library(ggplot2)
+library(dplyr)
+library(viridis)
+library(hrbrthemes)
+library(plotly)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in data
+
+For this challenge, I used the FAOSTAT Livestock dataset and the FAOSTAT country dataset for the purpose of joining the two together. I didn't really know where to start on this challenge, so I went through some solutions for inspiration, but eventually, I wanted to figure out how to combine the two datasets myself.
+
+Both of the datasets came from the Food and Agricultural Organization of the United Nations, which compiled data about food and food sources from 1961 to the present. Their mission is to end world hunger and food insecurity. 
+
+The livestock dataset consist of types of livestocks used as a source of food, such as cattles, pigs, and sheep. I opened that set first.
+
+```{r}
+# open livestock csv dataset
+FAO_livestock <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FAOSTAT_livestock.csv")
+FAO_livestock
+```
+
+The second dataset I opened was the country dataset, which included country groups, such as continents and socioeconomic organizations such as OECD. 
+
+```{r}
+# open country csv dataset
+FAO_country <- read_csv("~/Documents/GitHub/Github Help/601_Fall_2022/posts/_data/FAOSTAT_country_groups.csv")
+FAO_country
+```
+To start the joining process, I renamed a column in the livestock dataset from "Area" to "Country" because I needed a common variable to combine the two datasets together.
+
+```{r}
+FAO_livestock <- FAO_livestock %>% rename("Country" = "Area")
+FAO_livestock
+```
+After I renamed the variable, I combined the two dataset with `merge()` and created a new dataframe from it.
+
+```{r}
+livestock_merge <- merge(x = FAO_livestock, y = FAO_country, by = "Country", all = TRUE)
+livestock_merge
+```
+```{r}
+dim(livestock_merge)
+```
+
+The new datatset has `552,040` rows and `20` columns, which is a lot of data.
+
+With the new dataset, I could create visualizations and graphs by country groups, such as by continents or by socioeconomic groups. Even I could create a timeline of livestock distribution in any given country. 
+
+```{r}
+livestock_merge %>%
+  filter(str_detect(`Country Group`, "[Dd]evelop|OECD")) %>%
+  distinct()%>%
+  ggplot(aes(y =`Country Group`, x= Value, fill = `Country Group`)) +
+  geom_density_ridges() +
+  theme_ridges() + 
+  theme(legend.position = "none") +
+  scale_x_continuous(limits = c(1000, 500000)) +
+  xlab("Number of Livestocks") +
+  ggtitle("Number of Livestock by Socioeconomic Group")
+# I did have to scale down the graph for illustrative purposes
+```
+
+```{r}
+livestock_item <- livestock_merge %>%
+  count(Item) %>%
+  na.omit()
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+  
+ggplot(livestock_item, aes(x=Item, y=n, fill = Item)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = cbPalette) +
+  ggtitle("Number of Livestocks from 1961-Present day") +
+  xlab("Types of Livestock") +
+  ylab("Quantity of Livestocks")
+```
+
+```{r}
+# distribution of livestock by item in Afghanistan alone
+afghan <- livestock_merge %>%
+  select(c(Country,Value,Item,Year)) %>%
+  filter(str_detect(Country, "Afghanistan")) %>%
+  unique() %>%
+  arrange(desc(Year))
+
+afg <- afghan %>%
+  ggplot( aes(x=Year, y=Value, fill=Item, text=Item)) +
+  geom_area( ) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(legend.position="none") +
+  ggtitle("Livestock Distribution in Afghanistan from 1961 to 2018") +
+  xlab("Year") +
+  ylab("Number of Livestocks") +
+  theme_ipsum() +
+  theme(legend.position="none")
+
+# make it interactive
+afg <- ggplotly(afg, tooltip="text")
+afg
+```
+
