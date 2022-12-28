@@ -1,0 +1,490 @@
+---
+title: "Citizenship Laws by Country"
+description: "MY FINAL PROJECT"
+author: "KRISTIN ABIJAOUDE"
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggraph)
+library(igraph)
+library(collapsibleTree)
+library(treemap)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Asking the Research Question
+
+Eight billion humans. About 200 countries. Many laws with a million asterisks next to them.
+
+Each country handles citizenship and immigration differently. Some countries permit dual citizenship, while others restrict how many nationalities their citizens can have. Some countries give unconditional citizenship to any child born on their soil, while others do if their parents are citizens. Finally, there are countries that only restrict the path to citizenship to certain races, ethnic, or religious groups.
+
+A citizenship is a contract between the citizen and the country. The citizen pledges allegiance to the country (or countries); and in turn, the country (or countries) provide rights and protections for the citizen. For example, I am a dual American-Lebanese citizen; I was born in America, which provides unconditional birthright citizenship, and my parents passed the Lebanese nationality down to my sisters and me. The allegiance between the citizen and the country can break, just like a contract. In several cases, the citizenship can be revoked, from voluntary renunciation of a citizenship or involuntary renunciation due to disloyalty, criminal offenses, or even having dual citizenship. Note the word “several” since the situation like this is on a case-by-case analysis. Out of curiosity and interest, the purpose of this report is to analyze the bureaucratic nature of citizenship and immigration.
+
+Question: Which countries have more lax citizenship laws, and which countries have more restrictive citizenship laws?
+
+## Open Dataset
+
+The dataset, which is called GLOBALCIT Citizenship Law Dataset, originates from Italy-based European University Institute, specifically at the Cadmus EUI Research Repository. Maarten Peter Link et. al., from the Robert Schuman Centre for Advanced Studies collected data on different ways citizenship can be acquired or loss in each country as of 2020. 
+
+
+```{r}
+# citizenship laws by country
+citizenship <- read.csv("_data/GLOBALCIT Citizenship Law v1 EUI ResData/Data/data_v1.0_country-year.csv")
+
+citizenship
+```
+
+```{r}
+dim(citizenship)
+```
+
+There are three datasets; one dataset about citizenship acquisition, another dataset about loss of citizenship; and a mega dataset containing both laws. Trying to merge the two former datasets would be like reinventing the wheel, so I opted to analyze the mega dataset, which consisted of 104 columns and 190 rows. Each row lists the country in the order of their country code in the Italian language. 
+
+```{r}
+colnames(citizenship)
+```
+
+To make this report easier for the reader, as well as myself, I will be broadly focusing on whether the citizenship laws are enforced, regardless of the exceptions in place. For example, if a country allows parents to pass down citizenship to their children, I will classify that as “yes”, even if there’s an age limit to receiving citizenship, or if a country allows dual citizenship with certain countries, I will classify that as “Yes” as in they allow dual citizenship. However, I will keep the original dataset to manipulate more variables later.
+
+## Tidy and Manipulate Dataset
+
+This is an extremely messy dataset, so with `mutate()` and `case_when()`, I reorganize and recode the variables according to the code guide provided in the ZIP file. The A stands for "acquisition", as in "how citizenship is acquired", and L stands for "loss" as in "how citizenship is loss". The word bin, short for binary, means if the country has the citizenship law, and cat, short for category, means what the exceptions are in the citizenship law, but I will solely focus on the binary data for now.
+
+First, let's recode the acquisition variables.
+
+```{r}
+# recode laws on acquisition of citizenship
+citizen_tidy <- citizenship %>%
+  mutate("acq_descborn" = case_when(A01a_bin == 1 ~ "Yes",   # Person born to a citizen of a country (birth in that country)
+                                     A01a_bin == 0 ~ "No"),
+         "acq_descabroad" = case_when(A01b_bin == 1 ~ "Yes", # Person born to a citizen of a country (birth abroad)
+                                       A01b_bin == 0 ~ "No"),
+         "acq_birthright" = case_when(A02a_bin == 1 ~ "Yes", # Person born in a country regardless of parent's nationality
+                                      A02a_bin == 0 ~ "No"),
+         "acq_parents"  = case_when (A02b_bin == 1 ~ "Yes", # Person born to a parent who was also born in same country
+                                     A02b_bin == 0 ~ "No"), 
+         "acq_found" = case_when(A03a_bin == 1 ~ "Yes", # Child found in a country of unknown parentage
+                                 A03a_bin == 0 ~ "No"),
+         "acq_parent_est" = case_when(A04_bin == 1 ~ "Yes", # Establishment of parentage
+                                      A04_bin == 0 ~ "No"),
+         "acq_residency" = case_when(A06_bin == 1 ~ "Yes", # Residence-based acquisition
+                                     A06_bin == 0 ~ "No"),
+         "acq_renounce" = case_when(A06b_bin == 0 ~ "No", # Person must renounce old citizenship first
+                                    A06b_bin == 1 ~ "Yes",
+                                    TRUE ~ "No"),
+         "acq_lang" = case_when(A06c_bin == 0 ~ "No", # Person must know the language basics
+                                A06c_bin == 1 ~ "Yes",
+                                TRUE ~ "No"),
+         "acq_good_chara" = case_when(A06e_bin == 1 ~ "Yes", # Person must be of good character
+                                      A06e_bin == 0 ~ "No",
+                                      TRUE ~ "No"),
+         "acq_econ" = case_when(A06f_bin == 0 ~ "No", # Person must have sufficient income
+                                A06f_bin == 1 ~ "Yes",
+                                TRUE ~ "No"),
+         "acq_childhood" = case_when(A07_bin == 0 ~ "No", # Person with a certain period of residence or schooling as a minor
+                                     A07_bin == 1 ~ "Yes"),
+         "acq_marriage" = case_when(A08_bin == 0 ~ "No", # Person marries a citizen
+                                    A08_bin == 1 ~ "Yes"),
+         "acq_transfer" = case_when(A09_bin == 0 ~ "No", # Transfer to a child from a parent
+                                    A09_bin == 1 ~ "Yes"),
+         "acq_adopt" = case_when(A10_bin == 0 ~ "No", # Person who is adopted by a citizen
+                                 A10_bin == 1 ~ "Yes"),
+         "acq_relative" = case_when(A11_bin == 1 ~ "Yes", # Person who is another relative of a citizen
+                                    A11_bin == 0 ~ "No"),
+         "acq_rel_former" = case_when(A12a_bin == 1 ~ "Yes", # Person who is the relative of a former citizen
+                                      A12a_bin == 0 ~ "No"),
+         "acq_rel_dead" = case_when(A12b_bin == 1 ~ "Yes", # Person who is the relative of a deceased citizen
+                                    A12b_bin == 0 ~ "No"),
+         "acq_spouse" = case_when(A13_bin == 1 ~ "Yes", # Person who is the spouse or registered partner of citizen
+                                  A13_bin == 0 ~ "No"),
+         "acq_dep_citizen" = case_when(A14_bin == 0 ~ "No", # Person who is the dependent of the citizen
+                                       A14_bin == 1 ~ "Yes"),
+         "acq_regain" = case_when(A16_bin == 1 ~ "Yes", # Person who was once a former citizen and regains citizenship
+                                  A16_bin == 0 ~ "No"), 
+         "acq_specific" = case_when(A18_bin == 0 ~ "No", # Person who possesses the citizenship of a specific country
+                                    A18_bin == 1 ~ "Yes"),
+         "acq_cxn" = case_when(A19_bin == 0 ~ "No", # Person who has a cultural affinity
+                               A19_bin == 1 ~ "Yes"),
+         "acq_presume" = case_when(A20_bin == 0 ~ "No", # Person who is a presumed citizen acted in good faith
+                                   A20_bin == 1 ~ "Yes"),
+         "acq_longterm" = case_when(A21_bin == 0 ~ "No", # Person who has resided in a country for a very long time
+                                    A21_bin == 1 ~ "Yes"),
+         "acq_refugees" = case_when(A22_bin == 0 ~ "No", # Person who is a recognised refugee
+                                    A22_bin == 1 ~ "Yes"),
+         "acq_stateless" = case_when(A23_bin == 0 ~ "No", # Person who is stateless or of undetermined citizenship
+                                     A23_bin == 1 ~ "Yes"),
+         "acq_exceptional" = case_when(A24_bin == 1 ~ "Yes", # Person who has special achievements
+                                       A24_bin == 0 ~ "No"),
+         "acq_service" = case_when(A25_bin == 1 ~ "Yes", # Person who is in the public service
+                                   A25_bin == 0 ~ "No"),
+         "acq_invest" = case_when(A26_bin == 0 ~ "No", # Person who invests in the country
+                                  A26_bin == 1 ~ "Yes"))
+
+# remove unnecessary columns 
+citizen_tidy <- citizen_tidy[,-5:-73]
+
+# sanity check point
+citizen_tidy
+```
+Next, time to recode laws dealing with loss of citizenship. 
+
+```{r}
+# recode laws on loss of citizenship
+citizen_tidy <- citizen_tidy %>%
+  mutate("loss_volunteer" = case_when(L01_bin == 1 ~ "Yes", # Person who voluntarily renounces the citizenship of his/her country
+                                      L01_bin == 0 ~ "No"),
+         "loss_abroad" = case_when(L02_bin == 1 ~ "Yes", # Person who resides outside the country of which he/she is a citizen
+                                   L02_bin == 0 ~ "No"),
+         "loss_foreignarmy" = case_when(L03_bin == 1 ~ "Yes", # Person who renders military service to a foreign country
+                                        L03_bin == 0 ~ "No"),
+         "loss_foreignserv"  = case_when (L04_bin == 1 ~ "Yes", # Person who renders other services to a foreign country
+                                          L04_bin == 0 ~ "No"),
+         "loss_newcitizen" = case_when(L05_bin == 1 ~ "Yes", # Person who acquires a foreign citizenship
+                                       L05_bin == 0 ~ "No"),
+         "loss_mustchoose" = case_when(L06_bin == 1 ~ "Yes", # Non-renunciation of foreign citizenship (acquisition by birth)
+                                       L06_bin == 0 ~ "No"),
+         "loss_disloyal" = case_when(L07_bin == 1 ~ "Yes", # Loss of citizenship due to disloyalty or treason
+                                     L07_bin == 0 ~ "No"),
+         "loss_crime" = case_when(L08_bin == 1 ~ "Yes", # Loss of citizenship due to other criminal offenses
+                                  L08_bin == 0 ~ "No"),
+         "loss_fraud" = case_when(L09_bin == 1 ~ "Yes", # Person who has acquired citizenship by fraud
+                                  L09_bin == 0 ~ "No"),
+         "loss_birth_acq" = case_when(L10_bin == 1 ~ "Yes", # Person who retains a foreign citizenship other than birth
+                                      L10_bin == 0 ~ "No"),
+         "loss_byparent" = case_when(L11_bin == 1 ~ "Yes", # Person whose parent loses citizenship of a country
+                                     L11_bin == 0 ~ "No"),
+         "loss_byspouse" = case_when(L12_bin == 1 ~ "Yes", # Person whose partner loses citizenship of a country
+                                     L12_bin == 0 ~ "No"),
+         "loss_parent_annul" = case_when(L13a_bin == 1 ~ "Yes", # Person whose descent from a citizen is annulled
+                                         L13a_bin == 0 ~ "No"),
+         "loss_adopt_abroad" = case_when(L13b_bin == 1 ~ "Yes", # Loss through adoption or guardianship abroad
+                                         L13b_bin == 0 ~ "No"),
+         "loss_former_stateless" = case_when(L14_bin == 1 ~ "Yes", # Former stateless person who acquired foreigh citizenship
+                                             L14_bin == 0 ~ "No"))
+# remove unnecessary columns 
+citizen_tidy <- citizen_tidy[,-5:-34]
+
+# sanity check point
+citizen_tidy
+```
+I recoded countries that permit dual citizenship.
+
+```{r}
+# does the country allow dual citizenship?
+citizen_tidy <- citizen_tidy %>%
+  mutate("dual_permit" = case_when(dualcit_comb == 0 ~ "No",
+                                   dualcit_comb > 0 ~ "Yes")) %>%
+  select(-c(dualcit_comb)) %>%
+  relocate("dual_permit", .after = "year") %>%
+  relocate("country", .after = "year")
+
+# sanity check point
+citizen_tidy
+```
+# Visualizing the Dataset
+
+After all of the `mutate()` and `case_when()` coding, visualizing the data was the next step. To start the process, I grabbed the frequencies of the characters `yes` and `no` with `group_by()` and `summarise_by()`. 
+
+```{r}
+# get sum of each variable
+citizen_tidy %>% 
+  group_by(`dual_permit`) %>%
+  summarise(n_dual = sum(!is.na(`country`)))
+```
+Since I was dealing with 47 variables, I looked for codes to cut down time and space. Insetad of repeating the above codes, I used the following codes below:
+
+```{r}
+# now let's try to repeat that process across the board
+citizen_sum <- citizen_tidy %>%
+  select(5:50) %>%
+  as.tibble() 
+
+# compute unique levels in data frame
+lvls <- unique(unlist(citizen_sum))
+
+# apply the sum per value 
+citizen_sum <- sapply(citizen_sum, 
+                      function(x) table(factor(x, levels = lvls, 
+                                               ordered = TRUE)))
+
+# touch ups and add ons required
+citizen_sum <- as.data.frame(citizen_sum)
+citizen_sum$Law <- add_column("law")
+citizen_sum[1, 47] = "yes"
+citizen_sum[2,47] = "no"
+
+# sanity check point
+citizen_sum
+
+dim(citizen_sum)
+```
+
+After running the above codes, I collapsed the dataset into two rows with 47 variables. Since I was dealing with repetitive information, I used the `loop` function to generate my desired results. In other words, starting with `dual_permit` (countries that permit multiple nationalities), I generate 47 bar graphs for each variable.
+
+```{r}
+# time to graph
+# let's not repeat ourselves
+for(i in 1:ncol(citizen_sum)) {                                                                 
+  print(ggplot(citizen_sum, aes(y = Law, x = citizen_sum[ , i])) +  # ggplot within for-loop
+          geom_bar(stat = "identity", fill = "black")) +
+    ylab("Number of Countries") +
+    coord_flip()
+}
+# i can't add the labels for each chart, so i suggest that one follows the dataset from left to right, starting with dual_permit
+```
+
+Next, I condensed the 47 bar graphs into one stacked on one another. In order to execute this, I need to pivot my data from wide to long with `pivot_longer()`.
+
+```{r}
+# pivot time
+citizen_pivot <- citizen_sum %>% pivot_longer(cols=c(1:46),
+                                              names_to='law_type',
+                                              values_to='answers') 
+# sanity check point
+citizen_pivot
+```
+```{r}
+ggplot(citizen_pivot,
+       aes(x = law_type,
+           y = answers,
+           fill = Law)) +
+  geom_bar(stat = "identity",
+           position = "stack") +
+  xlab("Citizenship law") +
+  ylab("Number of countries") +
+  ggtitle("Citizenship Laws by Country") +
+  coord_flip()
+```
+From my results, virtually all of the countries permit citizenship based on one being born in the country to citizens of said country, but a smaller but significant portion of those countries allow birthright citizenship (one of which is the USA), or automatic citizenship to newborns regardless of their parents' nationalities. In addition, the majority of the countries permit citizenship based on marriage, certain years of residency, and permit dual citizenship.
+
+In regards to loss of citizenship, most countries let former citizen renounce their citizenship voluntary. In addition, there are laws in place that warrant a loss of citizenship for the person. For example, the majority of the countries have laws that strip people of their citizenship if they gained through fraudulent means or if they served in a foreign government or army (the foreign country would be the country restricting dual nationality in order to serve in their government or army).
+
+Unfortunately for stateless people, most countries have very few, if any, pathways for them to gain citizenship, leaving them in a legal and societal limbo. 
+
+As I mentioned before, I kept the original dataset so I could work on the exceptions for acquiring or losing citizenship. To save space and time, I selected a few provisions, as seen below.
+
+```{r}
+# dataset for exceptions 
+citizen_loss <- citizenship %>%
+  transmute("loss_newcitizen" = case_when(L05_bin == 1 ~ "Yes",
+                                          L05_bin == 0 ~ "No"),
+            "categoryloss1" = case_when(L05_cat == 1 ~ "automatic loss lapse",
+                                       L05_cat == 2 ~ "some exceptions lapse",
+                                       L05_cat == 3 ~ "lapse applicable only to naturalized citizens",
+                                       L05_cat == 4 ~ "automatic loss withdrawal",
+                                       L05_cat == 5 ~ "some exceptions withdrawal",
+                                       L05_cat == 6 ~ "withdrawal applicable only to naturalized citizens",
+                                       L05_cat == 0 ~ "no case"),
+            "loss_byparent" = case_when(L11_bin == 1 ~ "Yes",
+                                        L11_bin == 0 ~ "No"),
+            "categoryloss2" = case_when(L11_cat == 0 ~ "no case", 
+                                       L11_cat == 1 ~ "generally applicable",
+                                       L11_cat == 2 ~ "some exceptions",
+                                       L11_cat == 3 ~ "lost on particular grounds",
+                                       L11_cat == 4 ~ "loss on particular grounds with exceptions"),
+            "loss_foundling" = case_when(L14_bin == 1 ~ "Yes",
+                                         L14_bin == 0 ~ "No"),
+            "categoryloss3" = case_when(L14_cat == 1  ~ "loss applies with citizenship as foundling",
+                                        L14_cat == 2 ~ "loss applies with citizenship as stateless",
+                                        L14_cat == 3 ~ "generally applicable",
+                                        L14_cat == 0 ~ "no case"))
+# sanity checkpoint
+citizen_loss
+```
+I found this `ggplot` code really helpful: these interactive dendrograms branched off based on exceptions, as I coded and modeled below: 
+
+```{r}
+# interactive dendrogram
+
+# loss of citizenship from acquiring another citizenship since the new country restricts dual citizenship
+# create dataset
+loss_newcitizen <- select(citizen_loss, c(loss_newcitizen, categoryloss1)) 
+loss_newcitizen <- as.data.frame(loss_newcitizen)
+  
+
+collapsibleTree(loss_newcitizen, 
+                hierarchy = c("loss_newcitizen", "categoryloss1"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+# I'm not sure why the no node has multiple branches when it should have one
+
+# loss of citizenship from parents losing their citizenship
+loss_byparent <- select(citizen_loss, c(loss_byparent, categoryloss2)) 
+loss_byparent <- as.data.frame(loss_byparent)
+
+collapsibleTree(loss_byparent, 
+                hierarchy = c("loss_byparent", "categoryloss2"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+
+# when a former stateless person acquires citizenship from another country
+loss_founding <- select(citizen_loss, c(loss_foundling, categoryloss3)) 
+loss_founding <- as.data.frame(loss_founding)
+
+collapsibleTree(loss_founding, 
+                hierarchy = c("loss_foundling", "categoryloss3"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+
+```
+
+I repeated this process with the laws in regards to acquiring citizenship:
+
+```{r}
+citizen_acq <- citizenship %>%
+  transmute("acq_borndescent" = case_when(A01a_bin == 1 ~ "Yes",
+                                          A01a_bin == 0 ~ "No"),
+            "categoryacq1" = case_when(A01a_cat == 1 ~ "generally applicable provision",
+                                       A01a_cat == 2 ~ "dual citizenship restrictions",
+                                       A01a_cat == 3 ~ "wedlock restriction",
+                                       A01a_cat == 4 ~ "only if father is a citizen",
+                                       A01a_cat == 5 ~ "only if citizen is part of a particular group",
+                                       A01a_cat == 0 ~ "no provision"),
+            "acq_bornabroad" = case_when(A01b_bin == 1 ~ "Yes",
+                                         A01b_bin == 0 ~ "No"),
+            "categoryacq2" = case_when(A01b_cat == 1 ~ "generally applicable provision",
+                                       A01b_cat == 2 ~ "dual citizenship restrictions",
+                                       A01b_cat == 3 ~ "wedlock restriction",
+                                       A01b_cat == 4 ~ "only if father is a citizen",
+                                       A01b_cat == 5 ~ "only if citizen is part of a particular group",
+                                       A01b_cat == 6 ~ "generational restrictions",
+                                       A01b_cat == 0 ~ "no provision"),
+            "acq_marriage" = case_when(A08_bin == 1 ~ "Yes",
+                                       A08_bin == 0 ~ "No"),
+            "categoryacq3" = case_when(A08_cat == 1 ~ "generally applicable provision",
+                                       A08_cat == 2 ~ "residence required",
+                                       A08_cat == 3 ~ "only for female spouse of male citizen (no residence required)",
+                                       A08_cat == 4 ~ "only for female spouse of male citizen (residence required)",
+                                       A08_cat == 5 ~ "only for male spouse of female citizen",
+                                       A08_cat == 6 ~ "provisions differ by gender",
+                                       A08_cat == 7 ~ "only if spouse is a member of a particular group",
+                                       A08_cat == 0 ~ "no provision"))
+citizen_acq
+```
+
+```{r}
+# interactive dendrogram
+# gain citizenship by being born in the country to a citizen
+# create dataset
+acq_borndescent <- select(citizen_acq, c(acq_borndescent, categoryacq1)) 
+acq_borndescent <- as.data.frame(acq_borndescent)
+
+collapsibleTree(acq_borndescent, 
+                hierarchy = c("acq_borndescent", "categoryacq1"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+
+# gain citizenship by being born abroad to a citizen
+acq_bornabroad <- select(citizen_acq, c(acq_bornabroad, categoryacq2)) 
+acq_bornabroad <- as.data.frame(acq_bornabroad)
+
+collapsibleTree(acq_bornabroad, 
+                hierarchy = c("acq_bornabroad", "categoryacq2"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+
+# gain citizenship through marriage
+acq_marriage <- select(citizen_acq, c(acq_marriage, categoryacq3)) 
+acq_marriage <- as.data.frame(acq_marriage)
+
+collapsibleTree(acq_marriage, 
+                hierarchy = c("acq_marriage", "categoryacq3"),
+                nodeSize = "leafCount",
+                width = 500,
+                zoomable = TRUE)
+```
+
+To answer my research question, I condensed the columns by the frequencies of values `yes` and `no`, and merged them into one dataset.
+
+```{r}
+# what countries have more lax citizenship laws and what countries have more restrictive citizenship laws
+citizen_yes <- rowSums(citizen_tidy == "Yes") %>%
+  as.data.frame()
+
+citizen_no <-rowSums(citizen_tidy == "No") %>%
+  as.data.frame()
+
+citizen_yes$country <- add_column(citizen_tidy$country)
+citizen_no$country <- add_column(citizen_tidy$country)
+
+# joint together
+lax_or_restrict <- merge(citizen_yes,citizen_no,by=c("country"))
+lax_or_restrict <- rename(lax_or_restrict, "Lax_Provisions" = "..x")
+lax_or_restrict <- rename(lax_or_restrict, "Restrictive_Provisions" = "..y")
+
+# sanity check point
+lax_or_restrict
+
+# most lax laws
+lax_or_restrict %>%
+  arrange(desc(`Lax_Provisions`))
+
+# most restrictive laws
+lax_or_restrict %>%
+  arrange(desc(`Restrictive_Provisions`))
+
+# tree maps
+lax <- lax_or_restrict %>%
+  arrange(desc(`Lax_Provisions`))
+lax <- lax[1:10,]
+
+treemap(lax,
+            index="country",
+            vSize="Lax_Provisions",
+            type = "index",
+            title= "Top 10 Countries of with Lax Citizenship Laws")
+
+restrict <- lax_or_restrict %>%
+  arrange(desc(`Restrictive_Provisions`))
+restrict <- restrict[1:10,]
+
+treemap(restrict,
+            index="country",
+            vSize="Restrictive_Provisions",
+            type = "index",
+            title= "Top 10 Countries of with Restrictive Citizenship Laws")
+```
+
+The countries with the most lax citizenship laws are Germany, Greece, Austria, the Netherlands, and Finland, all in the European Union. The countires with the most restrictive citizenship laws are Uruguay, Palau, North Korea, China, and Cuba. 
+
+From all of these visualizations I coded, one could see stark differences between countries, even those neighboring each other. One country can be relatively open, while its neighbor is closed off to the world. 
+
+## Reflection and Conclusion
+
+I had no prior experience with R before starting my masters in data analytics, and after many classes, resources, and Google searches, I must say that I did a great job on this project. Let me explain:
+
+Choosing a topic that interested me made the project more manageable. I was always interested in learning about other countries, such as cultures, laws, and societies in each country. This dataset of citizenship laws by each country is no different. I have visited 10 countries, and continue to visit more in the foreseeable future.
+
+I felt like I hit the jackpot when I stumbled upon this dataset on the database archival website Data is Plural. It was messy, tedious, and confusing to read: it was the perfect dataset to clean, manipulate, and visualize. The handy guide attached in the ZIP file was the cherry on the top. 
+
+The most challenging part of data analytics as a whole is trying to figure out which codes to use for my desired results. A map? Try a bunch of these codes (we won''t guarantee your map would look funky). Forgot to capitalize a letter? Your data doesn't exist. I have the basic idea on what I want my end results to be, but I have to spend hours looking for the right code and find the tiny problem I have been overlooking for those past hours. I give up, until I don't: the feeling of finding that one line of code is the feeling of success. 
+
+However, I wish I learned to code earlier in my childhood. I would have caught up with the rest of the class if I had a basic idea of coding, but it's better to learn now than never. I'm in the middle of my career change from marketing to data analytics, which permits me to work behind the scene. 
+
+Overall, the world is not our oyster and we must follow the laws wherever we go. It is always ideal to do research beforehand or hire an immigration lawyer. 
+
+## Resources
+
+Cookbook for R, http://www.cookbook-r.com/. 
+
+Grolemund, Hadley Wickham and Garrett. R For Data Science. https://r4ds.had.co.nz/introduction.html. 
+
+Hoare, Jake. “How to Aggregate Data in R: R-Bloggers.” R, 12 July 2018, https://www.r-bloggers.com/2018/07/how-to-aggregate-data-in-r/. 
+
+Holtz, Yan. “Help and Inspiration for R Charts.” The R Graph Gallery, https://r-graph-gallery.com/. 
+
+“How to Count Number of Times a Character Appears in a Row.” Stack Overflow, 23 Nov. 2013, https://stackoverflow.com/questions/20100298/how-to-count-number-of-times-a-character-appears-in-a-row. 
+
+VINK, Maarten Peter, et al. “Globalcit Citizenship Law Dataset.” Cadmus Home, European University Institute, 1 Jan. 2020, https://cadmus.eui.eu/handle/1814/73190. 
