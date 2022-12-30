@@ -1,0 +1,215 @@
+---
+title: "Final Project"
+author: "Lai Wei"
+desription: "Final Project about female life expectancy and possible influence factors "
+date: "12/18/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - Final Project
+  - dataset
+  - ggplot2
+---
+
+```{r}
+#| label: setup
+#| warning: false
+
+library(tidyverse)
+library(gapminder)
+library(readxl)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducation
+
+This project is mean to investigate how life expectancy is different based on gender factor. Life expectancy is a statistical measure of the average time an organism is expected to live, based on the year of its birth, current age, and other demographic factors like sex. It is one of the important reference indexes used to evaluate the quality of life of a country's population and the health level of its citizens. At the same time, it can also reflect many aspects such as the survival pressure and gender difference. 
+
+In this project, I want to focus on female life expectancy in East Asian countries, and compare it with the average life expectancy of those countries in same years. It is higher, or lower? Additionally, what kind of possible factors may impact life expectancy of the female group, which will be expanded in reflection section. 
+
+The purpose of choosing East Asian is because it is the area I am from, I have more interests in this particular place. And I want to build a clearer perceive of female survival condition in these countries, and expect to explore more about female’s survival challenges or hidden danger. 
+
+## Data Import
+
+There are 4 data sets for this project in total. Two for comparing life expectancy in gender bias, and two for exploring possible factors to impact female survival conditions. They are from gapminder organization and United nations data. I am going to introduce them in this section. 
+
+-Life Expectancy
+
+The first dataset I chose is from gapminder package. It covers 142 countries from 1952 to 2007 in every five years. Variables in this dataset includes life expectancy, population and GDP/capita. Based on it, I use filter() function to select Asian countries only, and made a new set for next content.
+
+```{r}
+#First data set: Life expectancy in the world
+dat_asia <- filter(gapminder, continent == "Asia" )
+dat_asia
+```
+
+-Life Expectancy: Female
+
+My second data set is the life expectancy of only females from 1953 to 2022. Then I use filter() function to get the Eastern Asia countries only.
+
+```{r}
+dat_fem_1 <- read_csv("_data/life_expectancy_female.csv") %>% 
+  filter(country == "China"| country =="Japan"| country == "Taiwan"| country == "Mongolia"| country == "South Korea" | country == "North Korea" )
+dat_fem_1
+```
+
+However, its structure is a bit different from the first one. For the better comparison later, I need to tidy data in the first place.
+
+```{r}
+dat_fem_2 <- dat_fem_1 %>%  
+  pivot_longer(!country, names_to = "year", values_to = "fem_lif") 
+  
+dat_fem_2 <- dat_fem_2 %>% 
+  mutate(country = str_replace(country, "South Korea",  "Korea, Rep.")) %>% 
+  mutate(country = str_replace(country, "North Korea",  "Korea, Dem. Rep."))
+
+dat_fem_2
+```
+
+Now, the second data set uses the similar format with dat_asia with only country, year and life expectancy variables.
+
+The following two data are for reflection section.
+
+-Average Fertility
+
+My third data set is from UN World Population Prospects, Total fertility rate(TFR) form, which informally refers to the average number of children per woman. The official interpretation is as follows "The average number of live births a hypothetical cohort of women would have at the end of their reproductive period if they were subject during their whole lives to the fertility rates of a given period and if they were not subject to mortality. It is expressed as live births per woman.'
+
+```{r}
+dat <- read_excel("_data/WPP2019_FERT_F04_TOTAL_FERTILITY.xlsx",
+                   skip = 16, sheet = "ESTIMATES", na = "...")
+glimpse(dat)
+```
+In this data set, the rows refer to countries as well as other geographical regions, and I am going to focus on countries only, which are defined as rows with the column Type being Country/Area. In addition, Parent code indicates the geographical region that the country belongs too.
+
+-Maternal Mortality Ratio (MMR)
+
+MMR is defined as the number of maternal deaths/100,000 lives births. The UN maternal mortality estimation group produces estimates of the MMR for all countries in the world. In this data set, mmr_2015, which is a data set that contains a subset of the (real) data that were used to generate the United Nations Maternal mortality estimates, as published in the year 2015, which is also imported for reflection section.
+```{r}
+dat_mmr <- read_csv("_data/mmr_2015.csv")
+
+dat_mmr
+```
+
+## Data Description
+
+By understanding the distribution of our discrete variable in continent of gapminder package, by using geom_bar(), I can get a bar plot counting the observation in each continent in different colors. And by using ...count.../12, the plot can represent the number of countries in each continent.
+
+```{r}
+ggplot(gapminder, aes(x = continent, fill = continent)) + 
+    geom_bar(aes(y = ..count../12)) + labs(y = "Number of countries") +
+    guides(fill = "none") 
+```
+As displaying, Africa has the largest number of countries in this data, and Asia has more than 30 countries data.
+
+For looking for the chosen countries in the second data, run the code below. 
+```{r}
+select(dat_fem_1, "country") 
+```
+There are 6 countries in total. For more clear and scientific, South Korea will be set as Korea.Rep., and North Korea as Korea,Dem.Rep. for my report. 
+
+For comparing with life expectancy of nations and females only, I made a final vision of data by merge().
+```{r}
+dat_final <- merge(dat_asia, dat_fem_2, by = c("country","year"))
+
+dat_final
+```
+So the information of dat_aisa and dat_fem_2 can be put together, and be a new data.
+
+Then I find some basic description of the dataset: dimensions and column names of my final vision data. 
+```{r}
+dim(dat_final)
+
+colnames(dat_final)
+```
+It provides 7 column in total, and shows values for countries , continent, year, life expectancy for the whole nations, population, GDP/capita, and life expectancy for only female. 
+
+## Visualization
+
+Before plotting any relationship between gender with life expectancy, I created a simple base R plot of life expectancy against log(GDP) in Asia countries:
+
+```{r}
+asia_plot <- plot(lifeExp ~ log10(gdpPercap), data = dat_asia)
+```
+From image above, we can see the tendency of Asian life expectancy roughly increases as GDP/capita increases from 1952 to 2007.
+
+For answering my question, I will plot life expectancy over time and connect country data points such that the plot shows one line for each country. The result plot is displayed below.
+
+```{r}
+dat_asia %>% 
+  filter(country == "China"| country =="Japan"| country == "Taiwan"| country == "Mongolia"| country == "Korea, Rep."| country == "Korea, Dem. Rep.") %>% 
+  ggplot(aes(x=year,y=lifeExp,color=country, shape = country)) + 
+  geom_point() + geom_line() 
+```
+From the result, we can see Eastern Asian life expectancy keeps going up from 1952 to 2007 as a whole. Among this countries, the highest life expectancy belongs to Japan, and the lowest is Mongolia. 
+
+```{r}
+dat_gra <- dat_final %>%
+  select(country, year, lifeExp,fem_lif) %>% 
+  pivot_longer(-c(country, year), names_to = "type", values_to = "life expectancy")
+
+  ggplot(data = dat_gra, aes(x = country, y = dat_gra$`life expectancy`, fill = type)) + 
+    geom_boxplot() + ylab("life expectancy") + 
+    scale_x_discrete(guide = guide_axis(n.dodge=3))
+```
+From above comparison, the result shows that as in general, female has a longer life expectancy than the whole country. The average distinct is usually not exceed for 5 years.Since the life expectancy of nations composed of both male and female, the difference between male and female will be larger after excluding female. 
+
+## Reflection
+
+In Reflection section, I want to make a step forward in my topic in the first place, which is about fertility and mortality ratio. Can they be possible factors to impact female life expectancy? I need to start with fertility ratio in the first place.
+
+```{r}
+dat_coun <- filter(dat, `Parent code` == 906) %>% 
+  pivot_longer("1950-1955":"2015-2020",  
+  names_to = "period", values_to = "tfr")
+
+colnames(dat_coun)[3] = "Country"
+
+dat_coun <- dat_coun %>% 
+  group_by(Country)%>%
+  mutate(Category = ifelse(tfr[period =="2015-2020"]>5, "high fertility", "low fertility") ) %>%
+  mutate(year = str_sub(period, start = 1, end = 4)) %>%
+  mutate(year = as.numeric(year) + 2.5)
+
+ggplot(dat = dat_coun, aes(x = year,y = tfr))+
+  geom_point(aes(x = year,y = tfr,shape = Category, color = Country))+
+  geom_line(aes(group = Country, color = Country)) +
+  xlab("year") + ylab("tfr") +
+  guides(shape = guide_legend(order = 1))
+```
+It shows that Mongolia holds the highest fertility rate in Eastern Asia, and other countries are all less than 2 tfr at the end of the point. In addition, the whole Eastern Asia are facing the problem of low fertility after at least 2015, which is lower than 5 tfr. The concept of fewer children and aging has also been put forward by many countries such as Japan, which is a great challenge for East Asian countries in the future. 
+
+Then I use mmr data to compare and see whether fertility ratio leads a relative higher maternal mortality ratio. 
+```{r}
+dat_mmr %>%
+  filter(country %in% c("China", "Mongolia")) %>%
+  filter(year >= 2000) %>%
+  ggplot() + geom_point(mapping = aes(x = year, y = mmr, col = country))
+```
+So, as we can see, Mongolia has a higher maternal mortality ratio, at the same time the fertility ratio is the highest in Eastern Asia. 
+
+Finally, I want to describe the process of making this whole project. Because recently I am studying public health and biostatistics fields, I chose the life expectancy as my topic. In DACSS 601, I learnt how to deal with raw data and clean it until in tidy. And using data visualization can help people to explain the results. The most challenging part is merge two data sets into one. Even though they are from the same organization, many variables such as year and covered countries are different. Luckily, I eventually found the correct functions which can allow for maximum consolidation. This is the first time for me to complete a research report independently. For me it is a improvement comparing with the summer session, but there are still many details that could be improved next time. 
+
+## Conclusion
+
+From boxpolt, in general female life expectancy is longer than the average life expectancy of the same nations. So, there is a bigger difference between female and male on life expectancy in the same countries. In addition, life expectancy have a positive correlation with GDP, which makes sense because a higher GDP means this country has a higher possibility to hold better living environments and advanced medical facilities. 
+
+However, in the line graph, there is a obvious downward line of China happened in 1960s. From what I can find, it is very likely due to the Great Chinese Famine from 1959 to 1961.It is widely regarded as the deadliest famine in human history. Although there is a huge amount of political uncertainty in all estimates of the death toll during the difficult three-year period, based on the official statistics, on in 1960, there were 10 million people less than the last year. 
+
+Korea,Dem.Rep.(North Korea) also displays the decrease from 1980s to 1990s. For figuring it out, I think a fact that should not be overlooked is the Cold War in 20 century. In history, it usually refers to the geopolitical tension between the United States and the Soviet Union and their respective allies. And As an ally, North Korea had been receiving economic aid from the Soviet Union until Soviet dissolution in 1991. So without outside help, there is a significant decline in life expectancy. 
+
+It can be seen that life expectancy is influenced by many factors, not only the economic development and medical level of the country, but even the changes in the international political situation, which will have a profound impact on the people of a country. 
+
+From the reflection section, a reasonable conclusion can be made is that the country with higher fertility ratio can also have higher maternal mortality ratio, which can decrease the female life expectancy of this country.
+
+## Bibliography
+
+life_expectancy_female, gapminder, download the data, https://www.gapminder.org/data/
+
+WPP2019_FERT_F04_TOTAL_FERTILITY, United Nations, UNdata, https://data.un.org/
+
+mmr_2015, United Nations, UNdata, https://data.un.org/
