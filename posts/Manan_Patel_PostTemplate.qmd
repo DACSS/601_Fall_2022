@@ -32,43 +32,41 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Introduction**-
+# **Introduction**
 
 Layoffs or the termination of employment for a large number of workers and have become increasingly common in recent years especially since the COVID-19 pandemic started. Layoffs are typically counted when more than 50 employees are let go from a company for a period of at least 31 days. The occurrence of layoffs can cause anxiety and paranoia among remaining employees, especially if they are struggling to meet their performance goals or arrive to work on time. According to recent statistics, a total of 17 million layoffs have been reported in the United States. Many data has been collected and analyzed on layoffs in the US, including trends, demographics, and industry-specific information. We will examined the details of these statistics in order to provide a thorough understanding of the layoff situation in USA and rest of the world.
 
 Nevertheless, tech companies around the world are struggling to deal with the economic downturn. A combination of factors such as reduced consumer spending, increased interest rates from central banks, and a strong US dollar has raised concerns about the possibility of a recession. In response to these challenges, some tech firms have started laying off employees. For example, Meta recently laid off 13% of its workforce, which is over 11,000 people. This data set was created in an effort to allow the Kaggle community to analyze the current challenges facing the tech industry and potentially uncover useful insights.
 
-## Research Questions-
+## Research Questions
 
-1.  A list of the top 10 companies that have laid off employees.
+-   Where did the most layoffs occur?
 
-2.  The top 3 companies that have laid off employees on a yearly basis.
+    -   Which countries where the most layoffs have occurred?
 
-3.  The top 3 locations where the most layoffs have occurred on a yearly basis.
+    -   Which cities where the most layoffs have occurred?
 
-4.  A list of the top 20 companies that have laid off a specific percentage of their employees.
+-   What kind of companies have the most layoffs?
 
-5.  The top 10 countries where the most layoffs have occurred.
+    -   Which industry that has experienced the most layoffs?
 
-6.  The top 10 locations in the United States where the most layoffs have occurred.
+    -   What all companies that had laid off employees?
 
-7.  The locations in India where the most layoffs have occurred.
+    -   What was the stage of a company's development at which the most layoffs have occurred?
 
-8.  The relationship between funds received and layoffs.
+-   What was the relationship between funds received and layoffs?
 
-9.  The stage of a company's development at which the most layoffs have occurred.
+-   What are the the total number of layoffs on a yearly basis?
 
-10. The industry that has experienced the most layoffs.
+-   Which companies that had laid off employees on a yearly basis?
 
-11. The total number of layoffs on a yearly basis.
-
-12. The number of layoffs that have occurred on a yearly basis according to country.
+-   What are the top companies that have laid off a specific percentage of their employees?
 
 We will try our best to answer each on of the questions mentioned above, let's get started-
 
-# **Data-**
+# **Data**
 
-## **Reading the dataset-**
+## **Reading the Dataset**
 
 ```{r}
 # data frame
@@ -76,25 +74,27 @@ df <- read.csv("_data/layoffs.csv")
 head(df)
 ```
 
-## **Data Description-**
+## **Data Description**
 
-1.  company - This column refers to the name of the company that has experienced a layoff.
+-   company - This column refers to the name of the company that has experienced a layoff.
 
-2.  location - This column refers to the location of the layoff, which could be a city, state, or region.
+-   location - This column refers to the location of the layoff, which could be a city, state, or region.
 
-3.  industry - This column refers to the industry in which the company operates, such as tech, healthcare, or finance.
+-   industry - This column refers to the industry in which the company operates, such as tech, healthcare, or finance.
 
-4.  total_laid_off - This column refers to the total number of employees who were laid off by the company.
+-   total_laid_off - This column refers to the total number of employees who were laid off by the company.
 
-5.  percentage_laid_off - This column refers to the percentage of the company's workforce that was laid off.
+-   percentage_laid_off - This column refers to the percentage of the company's workforce that was laid off.
 
-6.  date - This column refers to the date on which the layoff occurred.
+-   date - This column refers to the date on which the layoff occurred.
 
-7.  stage - This column refers to the stage of funding that the company was in at the time of the layoff. This could be early-stage, late-stage, or publicly traded.
+-   stage - This column refers to the stage of funding that the company was in at the time of the layoff. This could be early-stage, late-stage, or publicly traded.
 
-8.  country - This column refers to the name of the country in which the company is located.
+-   country - This column refers to the name of the country in which the company is located.
 
-9.  funds_raised - This column refers to the amount of funds that the company had raised, in millions of dollars, prior to the layoff. This information could be relevant in understanding the financial situation of the company at the time of the layoff.
+-   funds_raised - This column refers to the amount of funds that the company had raised, in millions of dollars, prior to the layoff. This information could be relevant in understanding the financial situation of the company at the time of the layoff.
+
+-   The dataset includes information about 32 different countries, 99 different cities, 762 different companies, and 28 different industry from around the world. The data in the dataset pertains specifically to the years 2020, 2021, and 2022.
 
 Let's have a look on the last few rows-
 
@@ -110,9 +110,10 @@ Get the class of each column in df-
 sapply(df, class)
 ```
 
-## **Checking for all possible NA and cleaning up the datasets-**
+## **Cleaning up the dataset**
 
 ```{r}
+# checkin all the possible NA and cleaning up the dataset
 # Use sapply to apply a lambda function to each column in the df data frame
 missing_counts <- sapply(df, function(x) {
   # Within the lambda function, we will use the sum and is.na functions to count the number of missing values in x
@@ -123,11 +124,26 @@ missing_counts
 ```
 
 ```{r}
-# Use the drop_na function to remove rows with missing values from the df
-df <- df %>% drop_na()
-# Using sapply to apply a lambda function to each column in the df
+# create a function to calculate the average of a vector
+calculate_average <- function(vec) {
+  return(mean(vec, na.rm = TRUE))
+}
+# loop through each unique industry
+for (industry in unique(df$industry)) {
+  # subset the df to only include rows for the current industry
+  df_industry <- df[df$industry == industry,]
+  avg <- calculate_average(df_industry$total_laid_off)
+  # replacing "NA" with average
+  df_industry$total_laid_off[is.na(df_industry$total_laid_off)] <- avg
+  # update the original df with new
+  df[df$industry == industry,] <- df_industry
+}
+df
+```
+
+```{r}
 missing_counts <- sapply(df, function(x) {
-# Within the lambda function, use the sum and is.na functions to count the number of missing values in x
+  # Within the lambda function, we will use the sum and is.na functions to count the number of missing values in x
   sum(is.na(x))
 })
 # then finally we will print the resulting vector of missing value counts
@@ -183,7 +199,6 @@ print(length(unique(df$location)))
 
 # Get the unique values in the location
 unique(df$location)
-
 ```
 
 ```{r}
@@ -192,6 +207,14 @@ print(length(unique(df$industry)))
 
 # Get the unique values in the industry
 unique(df$industry)
+```
+
+```{r}
+# Get the number of unique values in the industry
+print(length(unique(df$country)))
+
+# Get the unique values in the industry
+unique(df$country)
 ```
 
 ```{r}
@@ -278,7 +301,15 @@ glimpse(df)
 table(df$year)
 ```
 
-# Visualization-
+# Visualization
+
+## Where did the most layoffs occur?
+
+In order to better understand the data, we will write a code to analyze and visualize the locations where the highest number of layoffs occurred. Specifically, we will identify the countries and cities where the most layoff events took place. This will allow us to gain a clearer understanding of the impact of layoffs on different regions.
+
+### Countries where the most layoffs have occurred
+
+To begin, we will examine the countries that experienced the highest number of layoffs. We will focus on these specific countries in order to gain a better understanding of the impact of layoffs in these regions. By studying the top countries with the highest number of layoffs, we will be able to identify patterns and trends that may not be evident when looking at the data as a whole.
 
 ```{r}
 par(bg = "lightgray")
@@ -296,6 +327,10 @@ barplot(layoff_by_country$no_of_companies, main = "Number of companies did layof
 This code first groups the data by country and counts the number of unique companies in each group. It then arranges the resulting data frame in descending order based on the number of companies and selects the top 10 rows. Finally, it creates a bar plot using the barplot function, with the number of companies on the y-axis and the country on the x-axis. The plot is titled Number of Companies Undertook Lay Offs by Country.
 
 In the dataset, there is a company based in the United States that laid off 11,000 employees, which is the highest number of layoffs for any company in the dataset. The size of layoffs is very high in both the United States and India, but surprisingly, it is very low in China which is not even in top 10 compared to the United States and India.
+
+### Cities where the most layoffs have occurred
+
+Next, we will turn our attention to the cities that had the highest number of layoffs. By analyzing the top cities with the highest number of layoffs, we can gain a more detailed understanding of the impact of layoffs in specific urban areas. This will allow us to identify any patterns or trends that may be specific to certain cities, and to understand how the impact of layoffs varies across different urban locations.
 
 ```{r}
 par(bg = "lightgray")
@@ -317,6 +352,14 @@ text(x = 1:length(layoff_by_city$no_of_companies), y = layoff_by_city$no_of_comp
 This code first groups the data by location and counts the number of unique companies in each group. It then arranges the resulting data frame in descending order based on the number of companies and selects the top 20 rows. Finally, it creates a bar plot using the barplot function, with the number of companies on the y-axis and the location (city) on the x-axis. The plot is titled Number of Companies Undertook Lay Offs in the big Cities.
 
 The San Francisco Bay Area (also known as Silicon Valley), New York City, and Bengalore are all renowned tech hubs that have seen significant numbers of layoffs in recent times. These cities are known for their high concentration of technology companies and are often considered the centers of innovation and growth in the tech industry. However, economic downturns and other factors can lead to layoffs in these areas, resulting in a reduction of the tech workforce in these cities. Now, If we closely observe then we won't see any small cities in this list which says that all the big city area has high layoffs than smaller cities.
+
+## What kind of companies have the most layoffs?
+
+To further analyze the companies that had the most layoffs, we will write a code and create visualizations of the data. We will examine which companies had the most layoffs. We will also look at the industries in which these companies operate, as well as the top 10 companies that had the highest number of layoffs. By understanding which companies were most affected by layoffs, we will be able to identify any patterns or trends that may be specific to certain industries or types of businesses. This will help us to gain a more comprehensive understanding of the impact of layoffs on different sectors of the economy.
+
+### Industry which had highest number of layoffs
+
+In this analysis, we will investigate which industries had the highest and lowest number of layoffs. By examining the industries that were most affected by layoffs, we can gain a better understanding of the impact of these events on different sectors of the economy. We will also look at the industries with the lowest number of layoffs to see if there are any trends or patterns that may be contributing to their relative resilience in the face of layoffs. By studying both the highest and lowest impacted industries, we can gain a more comprehensive understanding of the overall impact of layoffs on different sectors of the economy.
 
 ```{r}
 top_industry <- df %>%
@@ -356,6 +399,10 @@ ggplot(data = df_industries, aes(x = industry)) +
 
 On average 25,000 employees from the Transportation industry were laid off from their respective companies. This was followed by the retail, consumer, finance, and real estate industries in this order.
 
+### Top companies that had laid off employees
+
+Since 2020, the following are the top 10 companies that have experienced the highest number of layoffs. By studying the top 10 companies with the highest number of layoffs, we can identify any patterns or trends that may be contributing to the impact of these events on different sectors of the economy.
+
 ```{r}
 # create a vector of the top 10 companies with the most layoffs, based on the total_laid_off column
 top10_idx <- order(df$total_laid_off, decreasing = TRUE)[1:10]
@@ -372,100 +419,9 @@ after doing some research, from [source](https://community.powerbi.com/t5/Data-S
 
 It seems that the Recruiting and Engineering departments at a company were particularly affected by recent layoffs. These two departments made up around 50% of the total number of self-reported layoffs. The Engineering department appears to have primarily laid off junior employees, while the Product, Marketing, and Sales departments seem to have mostly laid off senior employees. Of the laid-off engineers, it was stated that 46% will require visa support, which may refer to employees who are not citizens or permanent residents of the country in which the company is located and who are working there on a temporary visa. On the other hand, only 8% of laid-off employees from the Recruiting department are expected to require visa support. It is not clear from the information provided the context or circumstances of the layoffs or the specific reasons for the departmental and job level differences.
 
-## **Total layoffs year wise-**
+### Stage of a company's development when most layoff occurred
 
-```{r}
-total_laid_year <- df %>%
-  group_by(year) %>%
-  summarize(total_laid_off = sum(total_laid_off))
-total_laid_year
-```
-
-```{r}
-ggplot(data = total_laid_year, aes(x = year, y = total_laid_off)) +
-  geom_bar(stat = "identity", color = "red") +
-  labs(x = "year", y = "Layoffs") +
-  ggtitle("layoffs year wise") +
-  theme(plot.background = element_rect(fill = "yellow"))
-
-
-
-```
-
-```{r}
-df %>%
-  group_by(location) %>%
-  summarise(total_laid_off = n_distinct(company)) %>%
-  arrange(location)
-
-df %>%
-  # Group the data by year and stage
-  group_by(year, stage) %>%
-  # Summarize the data by counting the number of distinct funds raised within each group
-  summarise(n = n_distinct(company), .groups = "keep") %>%
-  ggplot(mapping = aes(x = year, y = n, color = stage)) +
-  geom_point() + 
-  geom_line() +
-  labs(y = "Total laid off", title = "Total laid off in stages-wise over years")
-
-
-```
-
-```{r}
-df %>%
-  group_by(year, stage) %>%
-  summarise(n = n_distinct(funds_raised), .groups = "keep") %>%
-  ggplot(mapping = aes(x = year, y = n, color = stage)) +
-  geom_point() + 
-  geom_line() +
-  labs(y = "Funds Raised", title = "Funds raised included in the stage over the years")
-```
-
-```{r}
-df %>% count(company) %>% arrange(desc(n))
-```
-
-```{r}
-cor(df$funds_raised, df$total_laid_off)
-```
-
-```{r}
-# Using the total_laid_off column as the x-axis and the funds_raised column as the y-axis
-# Group the data by the company column and color the lines red
-ggplot(df, aes(x = total_laid_off, y = funds_raised, group = company, color = "red")) +
-  geom_line() +
-  labs(x = "Total Laid Off", y = "Funds Raised", title = "Funds Raised vs. Total Laid Off") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-```{r}
-# Use the total_laid_off column as the x-axis and the funds_raised column as the y-axis
-# Group the data by the company column and color the lines red
-ggplot(df, aes(x = funds_raised, y = total_laid_off, group = company, color = "red")) +
-  geom_line() +
-  labs(x = "Funds Raised", y = "Total Laid Off", title = "Total Laid Off vs. Funds Raised") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-```{r}
-library(plotly)
-
-# Creating a scatterplot
-plot_ly(data = df, x = ~funds_raised, y = ~total_laid_off, type = "scatter", mode = "markers", text = ~company)
-# x-axis represents the amount of funds raised by each company
-# y-axis represents the total number of employees laid off by each company
-```
-
-```{r}
-library(plotly)
-
-# Creating a scatterplot
-plot_ly(data = df, x = ~total_laid_off, y = ~funds_raised, type = "scatter", mode = "markers", text = ~company)
-# x-axis represents the total number of employees laid off by each company
-# y-axis represents the amount of funds raised by each company
-```
-
-The above plot shows that there is no relationship or dependence between the funds raised and the number of layoffs.
+In this analysis, we will explore the stages that companies were in when layoffs occurred. By understanding the stage of a company when layoffs took place, we can gain a better understanding of the factors that may have contributed to these events and how they may have impacted the company and its employees.
 
 ```{r}
 unique(df$stage)
@@ -492,6 +448,96 @@ plot_ly(data = df_stage, x = ~total_laid_off, y = ~stage, type = "bar", orientat
 ```
 
 The companies that were in the initial public offering (IPO) stage had the highest number of layoffs, followed by start-up companies whose stage was unknown. On the other hand, the least amount of layoffs occurred in seed stage companies. This pattern suggests that the companies that were further along in their development and had already gone public were more likely to experience layoffs, while the newer, smaller companies that were still in the early stages of development were less likely to do so.
+
+## **Total Number of layoffs year wise**
+
+Now by this analysis, we will examine the number of layoffs that have occurred on a year-by-year basis. This will allow us to see how the impact of layoffs has changed over time and to identify any trends or patterns that may be related to specific years. We will also look at which year had the highest number of layoffs in order to understand if there were any particular events or factors that may have contributed to this high level of impact.
+
+```{r}
+total_laid_year <- df %>%
+  group_by(year) %>%
+  summarize(total_laid_off = sum(total_laid_off))
+total_laid_year
+```
+
+```{r}
+ggplot(data = total_laid_year, aes(x = year, y = total_laid_off)) +
+  geom_bar(stat = "identity", color = "red") +
+  labs(x = "year", y = "Layoffs") +
+  ggtitle("layoffs year wise") +
+  theme(plot.background = element_rect(fill = "yellow"))
+```
+
+As we can see 2022 has the highest layoffs.
+
+## Different stages over the years
+
+Now we will look at the different stages of companies over a three-year period from 2020 to 2022. Specifically, we will examine both the total number of layoffs that have occurred and the amount of funding that has been raised by these companies. By studying the stages of these companies over this time period, we can gain a better understanding of how layoffs and funding have changed over time and how they may be related.
+
+### Total layoffs on different stages over the years
+
+We will examine the total number of layoffs that have occurred at different stages of a company's development over the years. By studying the changes in the number of layoffs at different stages over time, we can gain a better understanding of how these events have impacted different industries.
+
+```{r}
+df %>%
+  group_by(location) %>%
+  summarise(total_laid_off = n_distinct(company)) %>%
+  arrange(location)
+
+df %>%
+  # Group the data by year and stage
+  group_by(year, stage) %>%
+  # Summarize the data by counting the number of distinct funds raised within each group
+  summarise(n = n_distinct(company), .groups = "keep") %>%
+  ggplot(mapping = aes(x = year, y = n, color = stage)) +
+  geom_point() + 
+  geom_line() +
+  labs(y = "Total laid off", title = "Total laid off in stages-wise over years")
+
+
+```
+
+### Fund raised on different stages over the years
+
+We will investigate the changes in the amount of funding that has been raised by companies at different stages of their development over the years. By examining the trends in funding at different stages over time, we can gain a better understanding of how these events have impacted different industries.
+
+```{r}
+df %>%
+  group_by(year, stage) %>%
+  summarise(n = n_distinct(funds_raised), .groups = "keep") %>%
+  ggplot(mapping = aes(x = year, y = n, color = stage)) +
+  geom_point() + 
+  geom_line() +
+  labs(y = "Funds Raised", title = "Funds raised included in the stage over the years")
+```
+
+## Relationship between funds raised and layoffs
+
+First, let's see the correlation between funds raised and layoffs-
+
+```{r}
+cor(df$funds_raised, df$total_laid_off)
+```
+
+```{r}
+# Using the total_laid_off column as the x-axis and the funds_raised column as the y-axis
+# Group the data by the company column and color the lines red
+ggplot(df, aes(x = total_laid_off, y = funds_raised, group = company, color = "red")) +
+  geom_line() +
+  labs(x = "Total Laid Off", y = "Funds Raised", title = "Funds Raised vs. Total Laid Off") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+library(plotly)
+
+# Creating a scatterplot
+plot_ly(data = df, x = ~total_laid_off, y = ~funds_raised, type = "scatter", mode = "markers", text = ~company)
+# x-axis represents the total number of employees laid off by each company
+# y-axis represents the amount of funds raised by each company
+```
+
+The above plot shows that there is no relationship or dependence between the funds raised and the number of layoffs.
 
 # **Reflection**
 
@@ -522,3 +568,9 @@ Kaggle. (n.d.). Layoffs 2022 \[Data set\]. Retrieved from https://www.kaggle.com
 Smith, J. (2022, November 5). Meta layoffs analysis. Retrieved from [**https://community.powerbi.com/t5/Data-Stories-Gallery/Meta-layoffs-analysis-November-2022/m-p/2951409**](https://community.powerbi.com/t5/Data-Stories-Gallery/Meta-layoffs-analysis-November-2022/m-p/2951409)
 
 Demand Sage. (n.d.). Layoff statistics. Retrieved from [**https://www.demandsage.com/layoff-statistics/**](https://www.demandsage.com/layoff-statistics/)
+
+# **Appendix**
+
+```{r}
+df %>% count(company) %>% arrange(desc(n))
+```
