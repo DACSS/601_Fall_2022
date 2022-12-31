@@ -128,15 +128,12 @@ missing_counts
 calculate_average <- function(vec) {
   return(mean(vec, na.rm = TRUE))
 }
-# loop through each unique industry
-for (industry in unique(df$industry)) {
-  # subset the df to only include rows for the current industry
-  df_industry <- df[df$industry == industry,]
-  avg <- calculate_average(df_industry$total_laid_off)
+# loop through each column
+for (col in names(df)) {
+  # calculating the average
+  avg <- calculate_average(df[[col]])
   # replacing "NA" with average
-  df_industry$total_laid_off[is.na(df_industry$total_laid_off)] <- avg
-  # update the original df with new
-  df[df$industry == industry,] <- df_industry
+  df[[col]][is.na(df[[col]])] <- avg
 }
 df
 ```
