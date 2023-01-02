@@ -1,0 +1,379 @@
+---
+title: "Final Project/Paper"
+description: "Final project topic covers academic factors that increase student GPA using a dataset developed by Yılmaz and Sekeroglu (2019)"
+author: "Emily Duryea"
+date: "2022-12-20"
+output: distill::distill_article
+---
+
+# Academic Factors that Increase Student GPA
+
+## Introduction
+
+There are numerous factors documented in research literature that have correlated with students' cumulative GPA. For example, classroom engagement, time management, motivation, class attendance, time spent studying, and group study sessions, to name a few (Fokkens-Bruinsma, et al., 2021; Büchele, 2021; Nelson, 2003; Thibodeaux, et al., 2017; Vargas, et al., 2018). The purpose of this research project was to further investigate these findings using a dataset collected by Yılmaz and Sekeroglu (2019). The dataset was originally used to classify student performance using artificial intelligence. For the purposes of this study, I used the dataset to examine what factors correlated with students' cumulative GPA. 
+
+This research project examined the following three research questions: 1) Does classroom engagement (i.e., taking notes, attending class, listening) result in a higher GPA in university students?; 2) Does reported studying (i.e., weekly study hours) result in a higher GPA in university students?; and 3) Does collaboration between students (i.e., studying together, positive class discussions) result in a higher GPA in university students?
+
+For the first research question, it is reasonable to hypothesize that classroom engagement will have a positive effect on students' academic achievement. Previous research supports this hypothesis. For example, one study found that classroom engagement, as well as other related factors such as time management and autonomous motivation, are predictors of academic achievement (Fokkens-Bruinsma, et al., 2021). Another study found that attendance in higher education is a small, but still statistically significant, predictor of academic performance (Büchele, 2021). In this study, classroom engagement will be defined as "taking notes, attendance, and frequency of listening." These measures will be reported by university students via survey.
+
+In regards to the second research question, it is hypothesized that students who study more will have a higher GPA. There are many previous studies that support this claim. For instance, one study found that university freshmen who studied more than eight hours a week saw an average increase in GPA of 0.580 (Nelson, 2003). Research has also found that increasing study time leads to an increased GPA (Thibodeaux, et al., 2017). In this study, hours spent studying will be measured through students' estimated range of hours studied, reported via survey.
+
+In response to the third research question, it is hypothesized that student collaboration will have a positive effect on student GPA. There is some research literature that supports this statement. One study found that students who study with their peers achieve significantly higher homework scores (Vargas, et al., 2018). Another study found that university students who had a strong social network and exhibited collaborative behaviors tended to achieve higher grades (Ellis & Han, 2021). Effective student collaboration can also occur during class time, such as through small group discussions. Research has found that students who participate in small group discussions demonstrate an increase in resilience, which has shown to improve academic performance (Torrento-estimo, et al, 2012). In this study, student collaboration will be measured through students' reported time spent studying with peers, and impact that their class discussions have.
+
+## Data
+
+### The Dataset
+
+The dataset that I used is a data set I found on the website Kaggle (link can be found here: https://www.kaggle.com/datasets/csafrit2/higher-education-students-performance-evaluation?resource=download). The dataset is a survey given to university students that collects demographic variables (e.g., age, job status, family background) and variables pertaining to their academic performance (e.g., time spent studying, class attendance, GPA). Below is the R code I used to read in the data set, as well as a summary of the data.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+studentsurvey <- read.csv("_data/student_prediction.csv")
+summary(studentsurvey)
+```
+
+As this dataset was used in a previous research study (Yılmaz & Sekeroglu, 2019), the data has already been de-identified participants using a number code to represent responses in order to keep subjects' identities private. What I did want to change was the labeling of certain variables where it was unnecessary. For example, to represent gender, the researchers used the code "1" to represent "female" and "2" to represent "male." To make it less confusing when using the dataset, I chose to rename these terms. However, some I chose not to rename - if the variable involved a range, the number placeholder was kept (e.g., for ages, the ranges were 1 = 18-21, 2 = 22-25, 3 = 26 or above).
+
+```{r}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+
+studentsurvey$GENDER <- factor(studentsurvey$GENDER, 
+                 levels=c(1,2), 
+                 labels=c("female","male"))
+
+studentsurvey$HS_TYPE <- factor(studentsurvey$HS_TYPE, 
+                 levels=c(1,2,3), 
+                 labels=c("private","state", "other"))
+
+studentsurvey$SCHOLARSHIP <- factor(studentsurvey$SCHOLARSHIP, 
+                 levels=c(1,2,3,4,5), 
+                 labels=c("None","25%", "50%", "75%", "Full"))
+
+studentsurvey$WORK <- factor(studentsurvey$WORK, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$ACTIVITY <- factor(studentsurvey$ACTIVITY, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$PARTNER <- factor(studentsurvey$PARTNER, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$TRANSPORT <- factor(studentsurvey$TRANSPORT, 
+                 levels=c(1,2,3,4), 
+                 labels=c("Bus","Car/Taxi", "Bicycle", "Other"))
+
+studentsurvey$LIVING <- factor(studentsurvey$LIVING, 
+                 levels=c(1,2,3,4), 
+                 labels=c("Rental","Dorm", "With Family", "Other"))
+
+studentsurvey$MOTHER_EDU <- factor(studentsurvey$MOTHER_EDU, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("primary school","secondary school", "high school", "university", "Masters", "Doctorate"))
+
+studentsurvey$FATHER_EDU <- factor(studentsurvey$FATHER_EDU, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("primary school","secondary school", "high school", "university", "Masters", "Doctorate"))
+
+studentsurvey$KIDS <- factor(studentsurvey$KIDS, 
+                 levels=c(1,2,3), 
+                 labels=c("Married","Divorced", "Died"))
+
+studentsurvey$MOTHER_JOB <- factor(studentsurvey$MOTHER_JOB, 
+                 levels=c(1,2,3,4,5,6), 
+                 labels=c("retired","housewife", "government officer", "private sector employee", "self-employment", "other"))
+
+studentsurvey$FATHER_JOB <- factor(studentsurvey$FATHER_JOB, 
+                 levels=c(1,2,3,4,5), 
+                 labels=c("retired", "government officer", "private sector employee", "self-employment", "other"))
+
+studentsurvey$READ_FREQ <- factor(studentsurvey$READ_FREQ, 
+                 levels=c(1,2,3), 
+                 labels=c("None","Sometimes", "Often"))
+
+studentsurvey$READ_FREQ_SCI <- factor(studentsurvey$READ_FREQ_SCI, 
+                 levels=c(1,2,3), 
+                 labels=c("None","Sometimes", "Often"))
+
+studentsurvey$ATTEND_DEPT <- factor(studentsurvey$ATTEND_DEPT, 
+                 levels=c(1,2), 
+                 labels=c("Yes","No"))
+
+studentsurvey$IMPACT <- factor(studentsurvey$IMPACT, 
+                 levels=c(1,2,3), 
+                 labels=c("Positive","Negative","Neutral"))
+
+studentsurvey$ATTEND <- factor(studentsurvey$ATTEND, 
+                 levels=c(1,2,3), 
+                 labels=c("always","sometimes","never"))
+
+studentsurvey$PREP_STUDY <- factor(studentsurvey$PREP_STUDY, 
+                 levels=c(1,2,3), 
+                 labels=c("alone","with friends","not applicable"))
+
+studentsurvey$PREP_EXAM <- factor(studentsurvey$PREP_EXAM, 
+                 levels=c(1,2,3), 
+                 labels=c("close to exam date","regularly throughout semester","never"))
+
+studentsurvey$NOTES <- factor(studentsurvey$NOTES, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$LISTENS <- factor(studentsurvey$LISTENS, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$LIKES_DISCUSS <- factor(studentsurvey$LIKES_DISCUSS, 
+                 levels=c(1,2,3), 
+                 labels=c("never","sometimes","always"))
+
+studentsurvey$CLASSROOM <- factor(studentsurvey$CLASSROOM, 
+                 levels=c(1,2,3), 
+                 labels=c("not useful","useful","not applicable"))
+```
+
+### Demographic Variables
+
+In order to gain information about the participant sample, I began by running some descriptive statistics with the sample's demographic variable. Below are some bar graphs (with the code needed to generate the graphs) pertaining to the demographics of the sample.
+
+```{r}
+# Bar graph of sample gender
+ggplot(studentsurvey, aes(x = GENDER)) + ggtitle("Sample Gender") + geom_bar()
+
+# Bar graph of sample high school type
+ggplot(studentsurvey, aes(x = HS_TYPE)) + ggtitle("High School Type Sample Graduated From") + geom_bar()
+
+# Bar graph of sample scholarship received
+ggplot(studentsurvey, aes(x = SCHOLARSHIP)) + ggtitle("Percentage of Scholarship Received") + geom_bar()
+
+# Bar graph of sample work status
+ggplot(studentsurvey, aes(x = WORK)) + ggtitle("Sample Work Status") + geom_bar()
+```
+
+In this particular study, there were more male than female participants. Most students attended a state/public high school. Additionally, most students have received at least 50% scholarship at this university, indicating that many students at this particular university have received scholarships. Furthermore, most students do not have a job while they are studying at university in this sample. As the vast majority of students have scholarships, working a job during university may not be necessary.
+
+This sample may not be representative of the U.S. student population. There are more male than female students, which is not the case at most schools: there is about a 1:2 male to female ratio at U.S. colleges (Leukhina & Smaldone, 2022). Additionally, like in the sample, the vast majority of students attended public schools (Riser-Kositsky, 2022). In regards to scholarships, the students at this particular university receive scholarships at significantly higher rates than the rest of the U.S. Only about one in eight students receive a scholarship, and only 5% receive a full scholarship (Scholarship Statistics, 2021). While the enrollment statuses of the students were not given, if all students were full-time students, it would align with research that shows that less than half of full-time students (40%) in U.S. universities work while in school. While this sample may not be entirely representative of the U.S. college student population, analyses of this dataset conducted may provide some insight on factors that improve university students GPA.
+
+## Visualization
+
+### Analysis
+
+For research question 1 -- the influence of classroom engagement on student GPA -- I chose to run a simple linear regression and a correlation test. I did also conduct a multiple regression analysis, but I preferred to separate the three variables within my definition of "classroom engagement" so I could analyze them individually. For research question 2, like with my previous research question, I chose to run a simple linear regression and a correlation test to analyze the data, but due to the number of variables, a multiple regression analysis was not conducted. The same method of analysis for research question 1 was applied to research question 3 as well.
+
+### Research Question 1
+
+#### Statistical Analyses
+
+```{r}
+# In order to conduct proper analysis, the numeric values are needed, thus the dataset was reimported.
+studentsurvey <- read.csv("_data/student_prediction.csv")
+
+### Factor 1: Taking Notes and GPA ###
+
+# Simple linear regression
+nfit <- lm(NOTES ~ CUML_GPA, data = studentsurvey)
+summary(nfit)
+
+# Correlation test
+cor.test(studentsurvey$NOTES, studentsurvey$CUML_GPA)
+
+### Factor 2: Class Attendance and GPA ###
+
+# Simple linear regression
+afit <- lm(ATTEND ~ CUML_GPA, data = studentsurvey)
+summary(afit)
+
+# Correlation test
+cor.test(studentsurvey$ATTEND, studentsurvey$CUML_GPA)
+
+### Factor 3: Reported Listening and GPA ###
+
+# Simple linear regression
+lfit <- lm(LISTENS ~ CUML_GPA, data = studentsurvey)
+summary(lfit)
+
+# correlation test
+cor.test(studentsurvey$LISTENS, studentsurvey$CUML_GPA)
+
+### Multiple Regression: All Factors Combined and GPA ###
+summary(lm(CUML_GPA ~ NOTES + ATTEND + LISTENS, data = studentsurvey))
+```
+
+Three variables were classified as \"classroom engagement\": 1) taking notes, 2) class attendance, and 3) reported listening in class. The first variable, taking notes, did not appear to have a significant impact on cumulative GPA. The p-value (0.08499) was greater than 0.05, indicating the result was not statistically significant. Additionally, the correlation coefficient was positive, but only slightly (0.1435413). The adjusted r squared also indicated a low correlation (0.01376).
+
+The second variable, class attendance was found to be statistically significant, as the p-value was less than 0.05 (0.0319). Students who always attended class had higher GPAs than those who never attended class. This correlation is also slight, as indicated by the correlation coefficient (-0.1783047) and the adjusted r squared (0.02502).
+
+Students' reported listening during class was not statistically significant on GPA, with a p-value higher than 0.05 (0.5079). The correlation was also extremely slight, with a positive correlation coefficient of 0.05542742 and an adjusted r squared value of -0.003899.
+
+Finally, the multiple linear regression of all factors combined was again not statistically significant (p = 0.07402). Thus, my hypothesis that classroom engagement would have a positive influence on GPA would be rejected.
+
+#### Data Visualization
+
+```{r}
+### Factor 1: Taking Notes and GPA ###
+# Numeric key: 1 = never takes notes, 2 = sometimes takes notes, and 3 = always takes notes
+ggplot(data = studentsurvey, aes(x = NOTES, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+### Factor 2: Class Attendance and GPA ###
+# Numeric key: 1 = always attends class, 2 = sometimes attends class, 3 = never attends class)
+ggplot(data = studentsurvey, aes(x = ATTEND, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+### Factor 3: Reported Listening and GPA ###
+# Numeric key: 1 = never listens to class lectures, 2 = sometimes listens to class lectures, 3 = always listens to class lectures
+ggplot(data = studentsurvey, aes(x = LISTENS, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+### Research Question 2
+
+#### Statistical Analyses
+
+```{r}
+# Simple linear regression
+shfit <- lm(STUDY_HRS ~ CUML_GPA, data = studentsurvey)
+summary(shfit)
+
+# Correlation test
+cor.test(studentsurvey$STUDY_HRS, studentsurvey$CUML_GPA)
+```
+
+Like with my previous research question, I chose to run a simple linear regression and a correlation test to analyze the data. The results indicated that hours spent studying had very little impact on cumulative GPA. The p-value was greater than 0.05 (0.9225), and both the correlation coefficient, although positive, and the adjusted r r squared values were extremely small (0.008144991 and -0.006926). Thus, my hypothesis would be refuted.
+
+#### Data Visualization
+
+```{r}
+# Numeric key: 1 = 0 hours per week, 2 = <5 hours, 3 = 6-10 hours, 4 = 11-20 hours, 5 = more than 20 hours)
+ggplot(data = studentsurvey, aes(x = STUDY_HRS, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+### Research Question 3
+
+#### Statistical Analyses
+
+```{r}
+### Factor 1: Peer Study Groups and GPA ###
+
+# Dividing into whether or not students study with peers
+studentsurvey$PREP_STUDY <- ifelse(studentsurvey$PREP_STUDY==2, 2, 1)
+
+# Simple linear regression
+spfit <- lm(PREP_STUDY ~ CUML_GPA, data = studentsurvey)
+summary(spfit)
+
+# Correlation test
+cor.test(studentsurvey$PREP_STUDY, studentsurvey$CUML_GPA)
+
+### Factor 2: Positive Class Discussions and GPA ###
+
+# Dividing into whether or not students enjoy class discussions
+studentsurvey$PREP_STUDY <- ifelse(studentsurvey$LIKES_DISCUSS==1, 1, 2)
+
+ldfit <- lm(LIKES_DISCUSS ~ CUML_GPA, data = studentsurvey)
+summary(ldfit)
+
+cor.test(studentsurvey$LIKES_DISCUSS, studentsurvey$CUML_GPA)
+
+### Multiple Regression: Both Factors and GPA ###
+summary(lm(CUML_GPA ~ PREP_STUDY + LIKES_DISCUSS, data = studentsurvey))
+```
+
+Students who study with their peers are more likely to have higher GPAs, according to the simple linear regression and correlation test. The p-value was less than 0.05 (0.01535). However, the correlation was not extremely high (0.2009882) and neither was the adjusted r-squared value (0.03369). That being said, the results were statistically significant.
+
+Additionally, students who found class discussions to be helpful (always or some of the time, compared to those who did not find class discussions to be a positive experience) to their education and learning were significantly more likely to have higher GPAs. The p-value was less than 0.01 (0.007804). Again the correlation was not extreme (0.2201251) as well as the adjusted r-squared (0.0418).
+
+The multiple regression analysis also found the combined two variables to be statistically significant (0.01666). Thus, it could be concluded that collaboration has a positive impact on GPA, supporting my hypothesis.
+
+#### Data Visualization
+
+```{r}
+### Factor 1: Peer Study Groups and GPA ###
+# Numeric key: 1 = does not study with peers, 2 = studies with peers
+ggplot(data = studentsurvey, aes(x = PREP_STUDY, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+### Factor 2: Positive Class Discussions and GPA ###
+# Numeric key: 1 = does not enjoy class discussions, 2 = enjoys class discussions
+ggplot(data = studentsurvey, aes(x = LIKES_DISCUSS, y = CUML_GPA)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+## Reflection
+
+To be honest, this project was a huge challenge for me. Although the dataset I chose seems relatively simple, it was certainly a challenge for me. As someone who is interested in education (I used to be in school to become a school psychologist), I decided to conduct a research project relating to education. I searched for datasets relating to education on numerous sites, but the one that stood out to me was the one I found on Kaggle. It was so well-organized with an outstanding key, it was possible for me to wrap my head around it.
+
+The next part was cleaning it. I wanted to have the variables be in word format rather than assigned numbers so it was easier to read. It took a lot of research to figure out how to do it with ease, but once I got it, it was simple. Unfortunately, when it came to data analysis, numeric values were needed to conduct proper analyses, so I had to convert it back when I went to analyze the data. I must admit that I was pretty disappointed that my work seemed pointless, but running tests with the code I learned from classes was pretty easy. It was interesting to combine different factors to see how they affected my dependent variable (student cumulative GPA).
+
+If I were to continue with the project, I'd like to conduct my own study to see if my hypothesis that student collaboration does indeed improve student GPA with other samples. A potential study could be comparing the academic performance of students in a class that is primarily discussion-based vs. a class that is lecture-based. I would like to get survey data from students, too, asking about their experiences in the classes. My hypothesis would be that students in discussion-based classes perform better than those in lecture-based classes, and those students enjoy their discussion-based classes more.
+
+## Conclusion
+
+The hypothesis that classroom engagement would have a positive influence on GPA would be rejected. It may be because of the quality of students' time spent in and outside the classroom. However, it appears that attending class is very important for students' GPA. Additionally, the quality of notes and active listening may be more important that the quantity. Further research is needed with students' classroom habits to confirm. The hypothesis that more hours studying would have a positive influence on GPA would be rejected. Again, it may be an issue with quality rather than the quantity. Perhaps overstudying is a problem, or students spend a lot of that time actually distracted. More research into students' study habits would be needed. It could be concluded that collaboration has a positive impact on GPA, supporting the hypothesis. As university classes move to a more collaborative format, encouraging peer study groups and ensuring that classroom discussions are a positive experience for students may help with both their social and academic skills.
+
+## References
+
+Büchele, S. (2021). Evaluating the link between attendance and performance in higher education: 
+
+the role of classroom engagement dimensions. Assessment & Evaluation in Higher Education, 46(1), 132-150.
+
+Ellis, R., & Han, F. (2021). Assessing university student collaboration in new ways. Assessment 
+
+& Evaluation in Higher Education, 46(4), 509-524.
+
+Fokkens-Bruinsma, M., Vermue, C., Deinumdataset, J. F., & van Rooij, E. (2021). First-year 
+
+academic achievement: the role of academic self-efficacy, self-regulated learning and beyond classroom engagement. Assessment & Evaluation in Higher Education, 46(7), 1115-1126.
+
+Hanson, M. (2022, July 26). College Enrollment & Student Demographic Statistics. 
+
+EducationData.org. Retrieved from <https://educationdata.org/college-enrollment-statistics>.
+
+Leukhina, O., & Smaldone, A. (2022, March 14). Why do women outnumber men in college 
+
+enrollment? Saint Louis Fed Eagle. Retrieved from <https://www.stlouisfed.org/on-the-economy/2022/mar/why-women-outnumber-men-college-enrollment#:~:text=When%20the%20fall%20college%20enrollment,seen%20in%20U.S.%20college%20enrollment>.
+
+National Center for Education Statistics. (2022, May). College Student Employment. Coe - 
+
+college student employment. Retrieved from <https://nces.ed.gov/programs/coe/indicator/ssa/college-student-employment>.
+
+Nelson, R. (2003). Student Efficiency: A study on the behavior and productive efficiency of 
+
+college students and the determinants of GPA. Issues in Political Economy, 12, 32-43.
+
+Riser-Kositsky, M. (2022, August 2). Education statistics: Facts about American Schools. 
+
+Education Week. Retrieved from <https://www.edweek.org/leadership/education-statistics-facts-about-american-schools/2019/01>.
+
+Scholarship statistics. ThinkImpact.com. (2021, November 10). Retrieved from 
+
+<https://www.thinkimpact.com/scholarship-statistics/>.
+
+Thibodeaux, J., Deutsch, A., Kitsantas, A., & Winsler, A. (2017). First-year college students\' 
+
+time use: Relations with self-regulation and GPA. Journal of Advanced Academics, 28(1), 5-27.
+
+Torrento-estimo, E., Lourdes, C., & Evidente, L. G. (2012). Collaborative Learning in Small 
+
+Group Discussions and Its Impact on Resilience Quotient and Academic Performance. JPAIR Multidisciplinary Research Journal, 7(1), 1-1.
+
+Vargas, D. L., Bridgeman, A. M., Schmidt, D. R., Kohl, P. B., Wilcox, B. R., & Carr, L. D. 
+
+(2018). Correlation between student collaboration network centrality and academic performance. Physical Review Physics Education Research, 14(2), 020112.
+
+Yılmaz, N., & Sekeroglu, B. (2019, August). Student Performance Classification Using Artificial 
+
+Intelligence Techniques. In International Conference on Theory and Application of Soft Computing, Computing with Words and Perceptions (pp. 596-603). Springer, Cham.
+
+\

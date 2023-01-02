@@ -1,0 +1,101 @@
+---
+title: "Challenge 7"
+author: "Emily Duryea"
+desription: "Challenge 7"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_7
+---
+
+# Challenge 7
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in Data
+
+```{r}
+egg <- read.csv("_data/eggs_tidy.csv")
+egg
+```
+
+This dataset shows egg sales by month/year, as well as the size (half dozen large, dozen large, half dozen extra large, dozen extra large).
+
+## Tidying & Mutating the Data
+
+```{r}
+# Making a column to combine months and years
+column = names(egg)
+column <- column[!column %in% c("year","month")]
+column
+
+# Pivoting the data
+egg <- egg %>%
+     pivot_longer(egg, cols=column, names_to = "carton_type", values_to = "sales")
+newegg
+```
+
+## Visualization with Multiple Dimensions
+
+```{r}
+# Grouping by sales and year
+egggroup <- egg %>%
+  group_by(year) %>%
+  summarise(
+    total_sales = sum(sales)
+  )
+egggroup
+
+# Creating a line plot of total sales and year
+ggplot(egggroup, aes(x = year, y = total_sales)) +
+  geom_line(color = "black") +
+  theme_minimal() +  
+  theme(
+    plot.background = element_rect(fill = "lightyellow"),
+    panel.grid = element_line(color = "grey") 
+  )
+
+
+egggroup2 <- egg %>%
+  group_by(year, carton_type) %>%
+  summarise(
+    total = sum(sales)
+  )
+egggroup2
+
+ggplot(egggroup2, aes(x=year, y=total, fill=carton_type)) +
+  geom_col(color="black", size=0.5) +
+  theme(text = element_text(family="Times")) +
+  geom_vline(xintercept=c(2010, 2015, 2020), color="blue", linetype="dashed", size=1) +
+  scale_fill_brewer(type="seq", palette="Reds")
+
+ggplot(data=egggroup2, aes(x=year, y=total, color= carton_type)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Year",
+    y = "Total Sales",
+    color = "Carton Type",
+    title = "Total Sales of Egg Carton Types Over the Years"
+  ) +
+  guides(color = guide_legend(title="Carton Type")) +
+  theme_minimal() +
+  theme(
+    text = element_text(family="Times", size=12, color="black"),
+    panel.background = element_rect(fill="lightyellow")
+  )
+```

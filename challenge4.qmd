@@ -1,0 +1,68 @@
+---
+title: "Challenge 4"
+author: "Emily Duryea"
+desription: "Challenge 4"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_4
+---
+
+# Challenge 4
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in Data
+
+```{r}
+abc <- read.csv("_data/abc_poll_2021.csv")
+abc
+
+# summary of data
+summary(abc)
+
+```
+
+This dataset appears to be an ABC Poll, a survey conducted with 527 respondents (the number of rows). This survey contains 15 demographic variables, 10 political attitudes questions, and 5 survey administration variables.
+
+## Cleaning the Data
+
+```{r}
+# Renaming variables
+abc <-rename(abc, language = xspanish, age =  ppage, education5 = ppeduc5, education = ppeducat, gender = ppgender, ethnicity = ppethm, household_size = pphhsize, income = ppinc7, marital_status = ppmarit5, region = ppreg4, rent = pprent, state = ppstaten, work = PPWORKA, employment = ppemploy)
+abc <- abc%>%
+  mutate(ethnicity = str_remove (ethnicity, ", Non-Hispanic"))
+
+# Removing values where respondents skipped
+abc<-abc %>%
+  mutate(across(starts_with("Q"), ~ na_if(.x, "Skipped")))
+```
+
+## Mutating Variables
+
+```{r}
+# Mutating Party ID 
+abc <-abc %>%
+  mutate(QPID = fct_recode(QPID, "dem" = "A Democrat",
+                                "rep" = "A Republican",
+                                "ind" = "An Independent",
+                                "na" = "Skipped",
+                              "other" = "Something else")) %>%
+  mutate(QPID = fct_relevel(QPID, "dem", "ind", "rep","other", "na"))
+
+ggplot(abc, aes(QPID)) + geom_bar()
+
+```

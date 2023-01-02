@@ -1,0 +1,96 @@
+---
+title: "Challenge 6"
+author: "Emily Duryea"
+desription: "Challenge 6"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_6
+---
+
+# Challenge 6
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(viridis)
+library(hrbrthemes)
+library(plotly)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Reading in Data
+
+```{r}
+# Reading in dataset
+debt <-read_excel("debt_in_trillions.xlsx", skip= 1, col_names = c("Year_Quarter", "Mortgage", "HE_Revolving", "Auto_Loan", "Credit_Card", "Student_Loan", "Other", "Total")) 
+debt
+```
+
+This dataset contains debt (in the trillions) from 2003 to 2021 (in yearly quarters) for six different categories: 1) mortgage, 2) home equity revolving debt, 3) auto loan, 4) credit card, 5) student loan, and 6) miscellanious debts.
+
+## Tidying the Data
+
+```{r}
+# Separating year and quarters
+debt_new<- debt %>%
+  separate("Year_Quarter",c("Year","Quarter"),sep = ":")
+view(debt_new)
+```
+
+To tidy the data, I separated the yearly quarters into "years" and "quarters."
+
+## Time Dependent Visualization
+
+```{r}
+debt_plot <- debt_new %>%
+  ggplot(mapping=aes(x = Year, y = "Student_Loan"))+ 
+  geom_point(aes(color=Quarter))
+debt_plot
+```
+
+## Pivoting the Data
+
+```{r}
+debt_new1<- debt_new %>%
+  pivot_longer(!c(Year,Quarter), names_to = "DebtType",values_to = "DebtPercent" )
+
+debt_new1
+```
+
+## **Part-Whole Relationships Visualization**
+
+```{r}
+debt_new1_plot <- debt_new %>%
+  ggplot(mapping=aes(x = Year, y = "DebtPercent"))
+
+debt_new1_plot +
+  facet_wrap(~"DebtType", scales = "free")
+
+debt_new1_plot + 
+  geom_point(aes(color = "DebtType"))
+
+debt_new1_plot+
+  geom_point() +
+  facet_wrap(~"DebtType") +
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+
+debt_new1_plot +
+  geom_point(aes(color = "Quarter",alpha=0.9,)) +
+  facet_wrap(~"DebtType", scales = "free_y") + 
+  guides(alpha="none") +
+  labs(title="Debt by type from '03 - '21")+
+  scale_x_discrete(breaks = c('03','06','09',12,15,18,21))
+```

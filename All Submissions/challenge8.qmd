@@ -1,0 +1,63 @@
+---
+title: "Challenge 8"
+author: "Emily Duryea"
+desription: "Challenge 8"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_8
+---
+
+# Challenge 8
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Reading in Data
+
+```{r}
+cgroups <- read.csv("_data.FAOSTAT_country_groups.csv")
+dcattle <- read.csv("_data/FAOSTAT_cattle_dairy.csv")
+```
+
+The dataset that I will be primarily working with is the FAO Stat Cattle dataset. I will combine the dataset with another dataset which groups countries into region so that the countries in the FAO Stat Cattle dataset won't be on an individual level. This FAO Stat Cattle dataset contains data on cow milk and sales in countries all over the world, a total of 245. The data dates back to 1961 and goes to 2018. There are 14 columns, and 36,449 rows.
+
+## Tidying & Combining the Data
+
+```{r}
+# Changing "Area.Code" to "Country.Code" to match the other dataset
+dcattle2 <- rename(dcattle, "Country.Code"= "Area.Code" )
+dcattle2
+
+# Joining the two datasets together
+newcattle <- left_join(dcattle2, cgroups, by = "Country.Code" )
+newcattle
+
+# Grouping by value of cow milk and country group
+newcattle1 <- newcattle %>%
+  group_by(Country.Group) %>%
+  summarise(Value)
+newcattle1
+
+# Creating plot of value of cow milk and country group
+ggplot(newcattle1, aes(x = Country.Group, y = Value)) +
+  geom_line(color = "black") +
+  theme_minimal() +  
+  theme(
+    plot.background = element_rect(fill = "lightyellow"),
+    panel.grid = element_line(color = "grey") 
+  )
+```

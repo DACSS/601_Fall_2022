@@ -1,0 +1,63 @@
+---
+title: "Challenge 3"
+author: "Emily Duryea"
+desription: "Challenge 3"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_3
+---
+
+# Challenge 3
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in Data
+
+```{r}
+aw <- read.csv("_data/animal_weight.csv")
+aw
+```
+
+The dataset, which I chose to label as "aw" as short for "animal weights," contains data on different animal weights from different regions of the world. The animals include: 1) both dairy, and 2) non dairy cattle, 3) buffaloes, 4) market swine, 5) breeding swine, 6) chickens (broilers), 7) chickens (layers), 8) ducks, 9) turkeys, 10) sheep, 11) goats, 12) horses, 13) asses, 14) mules, 15) camel, and 16) llamas. The animals are listed in columns. The regions of the animals are in rows, and are as follows: 1) Indian subcontinent, 2) Eastern Europe, 3) Africa, 4) Oceania, 5) Western Europe, 6) Latin America, 7) Asia, 8) Middle East, and 9) North America. The values in the rows and columns are the animal weights by region.
+
+## Finding the Dimensions
+
+```{r}
+# Getting the number of rows
+nrow(aw)
+
+# Getting the number of columns
+ncol(aw)
+
+# Calculating the expected number of total cases (rows times columns)
+nrow(aw) * (ncol(aw)-1)
+
+# Calculating the expected number of columns 
+1+1+1
+```
+
+The dimensions of the current dataset are 16 columns with 9 rows, and it is anticipated to have 144 cases.
+
+## Pivot the Data
+
+```{r}
+pivot_longer(aw, "Cattle...dairy":"Llamas",
+                 names_to="animal",
+                 values_to = "weights")
+```
+
+After the pivoting the data, there are are 3 columns with 144 rows, as anticipated by the calculations.
