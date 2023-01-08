@@ -18,6 +18,8 @@ Early mechanization came in 1936, when the University of Texas began using a pun
 
 This system is perfect for all educational institutions that wish to maintain minimum operational costs. The system helps with better management, lesser wastage of time and improves engagement and productivity. With this data, we can analyze the trends about different patrons based on their age, based on the registered year, their renewals and checkouts, and see the circulation trend.
 
+Research Question : How does Age, Patron type, Branch and Residency affect the patrons, their checkouts and their renewals?
+
 Installing and importing necessary packages
 ```{r}
 #install.packages("hrbrthemes")
@@ -135,7 +137,7 @@ library_data
 
 ### Data Exploration
 
-Now, we will look at the different groups present within the dataset based on the categories/columns.
+As mentioned in my research question, we will look at the number of records based on the categories/columns.
 ```{r}
 library_data%>%
   filter(age!='NA')%>%
@@ -168,6 +170,16 @@ ggplot(data = library_data, aes(x = branch)) +
 ```
 The maximum patrons where registered at the MAIN Library, which makes sense, as the main branch generally has most books and is most accessible to the people.
 
+```{r}
+ggplot(data = library_data, aes(x = outside_of_county)) +
+    theme(axis.text.x = element_text(angle = 90))+
+  geom_bar(stat = "count",fill='orange') +
+  labs(title = "Number of records by Residency",
+       x = "Outside of County",
+       y = "Number for Records")
+```
+Most patrons are residing in the San Franciso County itself, while very less patrons are present outside.
+
 ### Data Statistics
 The two main continuous columns of this dataset are : Total Renewals and Total Checkouts made by the patrons. The statistics for which are present below:
 
@@ -181,8 +193,8 @@ summary(library_data$total_renewals)
 
 ## VISUALIZATIONS 
 
-### Year of Registration by Age Range
-Firstly, we will analyze the trend of "year when patrons registered" with the "Age Range".
+### Patron Registeration by Age Range
+Firstly, we will analyze the trend of "year when patrons registered" with the "Age Range". This will give us an idea of when patrons registered according to the age groups.
 ```{r}
 library_data%>%
   filter(age!='NA')%>%
@@ -195,7 +207,7 @@ library_data%>%
 As expected patrons with ages 60 and higher have been registered since 2003. We can see that the young children from the age of 0-9 years have started registering since 2012, which shows they are curious readers or their parents would've enrolled them to read books and gain information.  
 
 ### Total Checkouts and Renewals by Age Range
-Now, we will look into the two important columns total_checkouts and total_renewals for each category of patrons and different age groups to get an idea of the circulation of the books.
+Now, we will look into the two important columns total checkouts and total renewals for each category of patrons and different age groups to get an idea of the circulation of the books.
 
 ```{r}
 library_data%>%
@@ -217,6 +229,18 @@ ggplot(data = library_data, aes(x = age,y=total_renewals)) +
        y = "Total number of Renewals") +coord_flip()+theme(legend.position="none")
 ```
 The majority of renewals on the other hand were made by 45-54 years followed by 65-74 years. We can observe using the above two trends that 45-54 and 65-74 years age gaps show maximum engagement and have issued and renewed majority of books as compared to others.
+
+
+Now, we will move towards next category of interest - Patron Type. Looking into the registration year, total checkouts and total renewals made my patrons according to Patron Type.
+
+### Patron registration by Patron Types
+```{r}
+# Bottom Left
+ggplot(library_data, aes(x=patron_type, y=year_registered, fill=patron_type)) + 
+    geom_boxplot(alpha=0.3)+ coord_flip()  +  theme(axis.text.x = element_text(angle = 90),legend.position="none") +
+   labs(title='Year of Patron Registration by Patron Type',x='Year Registered',y='Patron type')
+```
+As seen from the plot, STAFF, SPECIAL, SENIOR, BOOKS BY MAIL started registration early in 2003, DIGITAL ACCESS CARD type of patrons registered in around 2014.
 
 ### Total Checkouts and Renewals by Patron Types
 ```{r}
@@ -242,8 +266,68 @@ library_data %>%
 ```
 The renewals here show that even though ADULTS and SENIORS had maximum renewals, there were significant renewals by YOUNG ADULTS, JUVENILE and STAFF members as well.
 
+There is also an important column "outside_of_county" which shows the patrons outside of San Franciso. Let us analyze some trends related to the column.
+
+### Patron Registration by Residency
+```{r}
+library_data%>%
+  filter(age!='NA')%>%
+  ggplot( aes(x=year_registered, group=outside_of_county, fill=outside_of_county)) +
+    geom_density(adjust=1.5, alpha=.4) +
+    labs(title = "Year of Registration by Residency",
+       x = "Year of Registry",
+       y = "Number of patrons registered")
+```
+We can observe, that residents had higher registrations starting 2003, which took a dip in between, and in the recent years from 2012 to 2016, non-residents had higher registrations. It is interesting to see that the awareness has increased amongst people outside SF county as well.
+
+### Total Checkouts and Total Renewals by Residency
+Looking into total checkouts and total renewals based on residency of patrons.
+```{r}
+library_data %>%ggplot(aes(total_checkouts , outside_of_county)) +geom_boxplot(aes(color=outside_of_county))+labs(title="Total Checkouts by Patrons Outside and In County", x='Outside of County',y='Total Checkouts')
+
+```
+The plot suggests, most of the patrons are present in SF itself. Also, total checkouts for a few patrons in SF cross over 20k as well.
+
+```{r}
+library_data %>%ggplot(aes(total_renewals , outside_of_county)) +geom_boxplot(aes(color=outside_of_county))+labs(title="Total Renewals by Patrons Outside and In County", x='Outside of County',y='Total Renewals')
+
+```
+The plot suggests, most of the patrons are present in SF itself. Also, total renewals for a few patrons in SF are more than 10k.
+
+Now, moving to branches information, and checking the patron registration, total checkouts and total renewals for the same.
+
+### Patrons Registeration by Branches
+The plots show how many patrons registered in each year for each branch location.
+```{r}
+# Bottom Left
+ggplot(library_data, aes(x=branch, y=year_registered, fill=branch)) + 
+    geom_boxplot(alpha=0.3)+ coord_flip()  +  theme(axis.text.x = element_text(angle = 90),legend.position="none") +
+   labs(title='Year of Patron Registration by Branches',x='Year Registered',y='Branch')
+```
+There is an interesting observation in Children's Bookmobile Branch, while most registries of patrons were towards 2012, there was one registry in 2003 (which can be seen as an outlier). We can also observe, West Portal branch and all the Branch bookmobiles had registrations starting in 2003 itself.
+
+### Total Checkouts and Total Renewals by Branches
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+ggplot(data = library_data, aes(x = branch,y=total_checkouts)) +
+  geom_bar(stat = "sum",fill='lightblue') +
+  labs(title = "Total Checkouts by Branch",
+       x = "Age Range",
+       y = "Total number of Checkouts") +coord_flip()+theme(legend.position="none")
+```
+We can observe most checkouts were made by patrons in Main Library, which makes sense as Main branch generally has maximum accessibility.
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+ggplot(data = library_data, aes(x = branch,y=total_renewals)) +
+  geom_bar(stat = "sum",fill='lightpink') +
+  labs(title = "Total Renewals by Branch",
+       x = "Age Range",
+       y = "Total number of Renewals") +coord_flip()+theme(legend.position="none")
+```
+Similarly, Main Library has maximum renewals as compared to other branches, which makes sense as Main branch generally has maximum accessibility.
+
 ### Checkouts and Renewals - A trend
-As, seen the "Total Checkouts" and "Total Renewals" follow a similar trend, let us analyze them in with the year of registry.
+As, seen the "Total Checkouts" and "Total Renewals" follow a similar trend for all categories, let us analyze them in with the year of registry.
 ```{r}
 filtered <- library_data %>%
   group_by(year_registered) %>%                    # group by
@@ -320,8 +404,11 @@ text(paste("Correlation:", round(cor(library_data$total_checkouts,  library_data
 ```
 The plot suggests a strong correlation between total checkouts and total renewals with a pearson coefficient of 0.59 ~ 0.6.
 
-### Total Checkouts by Month for year 2016
-As, this dataset provides information about monthly checkouts and renewals, we will look at monthly charts for last year in the records i.e. 2016, to understand what trends have been lately.
+### Diving Deeper into Monthly data
+Now, we will take a deeper look into the total checkouts/renewals trend by analyzing the monthly data for all patrons.
+
+### Total Checkouts by months for year 2016
+As, this dataset provides information about monthly checkouts and renewals, we will look at monthly charts for latest year in the records i.e. 2016, to understand what trends have been lately.
 ```{r}
 library_data %>%
     filter(active_year=='2016')%>%
@@ -329,8 +416,9 @@ library_data %>%
     geom_histogram( fill="#404080", alpha=0.6, stat = "count") + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")+ labs(title="Total Checkouts by Month for year 2016", y="Total Checkouts",x="month")+coord_flip()
 
 ```
+The histogram suggests the majority of checkouts occurred in month of July followed by June. To understand the trends better we will dive deep into July 2016 patron records.
+
 ### Trends of Age Range and Patron Type for July 2016
-The histogram suggests the majority of checkouts occurred in month of July followed by June.
 Looking closely into July data, to understand the distribution of Total Checkouts by Age and Patron type:
 ```{r}
 filter_data <- library_data %>%
@@ -373,49 +461,19 @@ ggplot(data = filter_data, aes(x = "", y = x, fill = Patron_Types)) +
 ```
 The pie chart suggests major contributions in July 2016 for checkout were made by Retired Staff and Staff members.
 
-### Notice preference by location(pincode)
-```{r}
-library_data %>% filter(pincode!='NA')%>%
-  select(notice_preference,pincode) %>% 
-                group_by(notice_preference,pincode) %>% 
-                summarise(n = n()) %>% 
-                ggplot(aes(reorder(pincode, n), n, fill = notice_preference)) + 
-                geom_bar(stat = "identity", position = position_dodge()) + 
-                theme(axis.text.x = element_text(angle = 90))+
-                scale_fill_brewer(palette = "Set2")+
-                labs(title="Notification preference by Pincode", fill = "Notice Prefernce",x='pincodes',y='Number of records') 
-```
-This plot suggests, most patrons prefer emails as the notice preference, and most of the patrons are registered in pincode 94102.
-Examining the data based on the most popular pincode - "924102", which will give us trends about area nearby.
+Lastly, let us analyze total checkouts/renewals (As they follow similar trend) and patron registration using two categories at the same time for better view.
 
-### Checkouts for prominent pincode by Patron Types and Age Ranges
+### Total Checkouts by Patron Types and Age Ranges
 ```{r}
 library_data %>%
-  filter(pincode =='94102' & age!='NA')%>%
+  filter(age!='NA')%>%
 ggplot( aes(x=age, y=patron_type, size = total_checkouts)) +
     geom_point(alpha=0.7) +
   theme(axis.text.x = element_text(angle = 90))+
-  labs(title="Checkouts by Patron Types and Age Ranges",x='Age Range',y='Patron Type') 
+  labs(title="Total checkouts by Patron Types and Age Ranges",x='Age Range',y='Patron Type') 
 ```
-We can observe major activity for pincode 94102, were made by ADULTS of age 45-54 years and 54-59 years,SENIORS of 64-74 years. There are also a few checkouts by STAFF members with ages 0-9 years, which looks suspicious.
+We can observe major activity were made by ADULTS of age 35-44 years and 45-54 years,SENIORS of 65-74 years. There are also a few checkouts by STAFF members with ages 0-9 years, which looks suspicious.
 
-### Year of Patron Registration by Branches
-The plots show how many patrons registered in each year for each branch location.
-```{r}
-# Bottom Left
-ggplot(library_data, aes(x=branch, y=year_registered, fill=branch)) + 
-    geom_boxplot(alpha=0.3)+ coord_flip()  +  theme(axis.text.x = element_text(angle = 90),legend.position="none") +
-   labs(title='Year of Patron Registration by Branches',x='Year Registered',y='Branch')
-```
-There is an interesting observation in Children's Bookmobile Branch, while most registries of patrons were towards 2012, there was one registry in 2003 (which can be seen as an outlier).
-
-### Analysis for Residents and Non-Residents
-There is also an important column "outside_of_county" which shows the patrons outside of San Franciso. Let us analyze some trends related to the column.
-```{r}
-library_data %>%ggplot(aes(total_checkouts , outside_of_county)) +geom_boxplot(aes(color=outside_of_county))+labs(title="Total Checkouts by Patrongs Outside and In County", x='Outside of County',y='Total Checkouts')
-
-```
-The plot suggests, most of the patrons are present in SF itself. Also, total checkouts for a few patrons in SF cross over 20k as well.
 
 ### Different Patron types by year of registery and their residence.
 This shows density of patrons based on the year of registration of different types of patrons residing in and out of San Franciso.
@@ -432,6 +490,8 @@ ggplot(data=library_data, aes(x=year_registered, group=outside_of_county, fill=o
     )+
   labs(title="Patron density based on year of registration, patron type and residency")
 ```
+We can observe, patrons of Digital Access Card type have most registrations for both residents and non-residents. We can also see that Retired Staff had most registrations in 2003, with residents having double registrations than non-residents.
+
 ### Different Age Range by year of registery and their residence.
 This shows density of patrons based on the year of registration for different age groups residing in and out of San Franciso.
 ```{r}
@@ -449,7 +509,7 @@ library_data%>%
     )+
   labs(title="Patron density based on year of registration, age range and residency")
 ```
-
+We can observe, most patrons of ages 65-74 years registered in 2003, which makes sense as they are old and would have registered earlier, also residents have almost 1.5 times more registrations than non-residents in this age range in year 2003. Also, for age range 10-19 years and 20-24 years, there are mostly non-residents who have registered after 2012, while residents are very less.
 
 ## REFLECTION
 This project and working with R has been a learning experience for me as I am a Computer Science student. While starting this project, I thought maybe the San Franciso Library Usage dataset would be very concise, but as I kept diving into the dataset, I realized it has so much information about patrons, the library branches, the age groups and their contributions to checkouts and renewals of books. The Integrated library management dataset gave me some interesting findings.
@@ -462,15 +522,13 @@ I tried to learn, have fun with it, and incorporate all types of plots, speciall
 
 ## CONCLUSION
 
-Starting from the basics, there were 10 Age ranges varying over 17 Patron Types, 34 branches and over 4 lakh records. The dataset gave me insights about which Age Range is making the most checkouts and renewals - and it was inspiring to figure out that 10-19, 45-54 and 65-74 age ranges had the maximum checkouts, this implies all generations are interested in issuing books and reading them, which is a great habit. I also noticed that ADULTS and SENIORS had the highest checkouts and renewals, which means they take some time reading it or re-read it, by renewing the books. Comparatively, there are also high renewals for YOUNG ADULTS, students generally tend to issue some books for studying and end up renewing them.
+Starting from the basics, there were 10 Age ranges varying over 17 Patron Types, 34 branches and over 4 lakh records. The visualizations gave us insights about which Age Range is making the most checkouts and renewals - and it was inspiring to figure out that 10-19, 45-54 and 65-74 age ranges had the maximum checkouts, this implies all generations are interested in issuing books and reading them, which is a great habit. It was also seen that ADULTS and SENIORS had the highest checkouts and renewals, which means they take some time reading it or re-read it, by renewing the books. Comparatively, there are also high renewals for YOUNG ADULTS, students generally tend to issue some books for studying and end up renewing them. Looking at residency, I observed that residents have higher checkouts and renewals than non-residents, but it was interesting to observe that the non-residents patron registration has increased over the coming years, which suggests that the awareness among the people outside the SF county has increased and they are also issuing books now. Lastly, looking at the branches, it was observed that the most checkouts and renewals were made at the Main Library branch, which made sense as Main branch is generally most accessible to patrons.
 
 It was very clear, that checkouts and renewals were strong correlated, which does make sense intuitively. I showed it using the pearson coefficient in our code above. The plots also reflected that the checkouts and renewals have increased over time, that means people are getting more and more interested in issuing and reading books. Another trend, I noted was related to "Year of Registry" and "Average Checkouts/Average Renewals", which should intuitively follow a decreasing trend (as people who registered earlier will definitely have more checkouts due to more time), but there was a slight increase in 2007, so that was definitely an anomaly.
 
-For finding a general trend, I looked into 2016's data per month (as it was the last recorded year in the dataset) and found that July had the most checkouts. I dived into the July 2016 data and figured they were majorly made by patrons of age 45 and above, and most of them were Staff members or Retired staff. One reason for this could be the holiday season for students, as they do not contribute much towards the checkouts.
+For having a better look into the data, I looked into the latest year's data per month and found that July had the most checkouts. I dived into the July 2016 data and figured they were majorly made by patrons of age 45 and above, and most of them were Staff members or Retired staff. One reason for this could be the holiday season for students, as they do not contribute much towards the checkouts. 
 
-I also figured that, most patrons prefer EMAIL as their preference of notice and based on the pincodes of branches, "94102" is the most popular pincode for checkouts and renewals. On looking in more detail about the pincode "94102", I figured most checkouts in that area were made by ADULTS of age 45-54 years and 54-59 years and SENIORS of 64-74 years. There are also a few checkouts by STAFF members with ages 0-9 years, which is weird. 
-
-There are some patrons who reside outside the SF county, but they are lesser in numbers than the ones in SF. The registry with SF Public library over the years for people residing in and out of the county can be seen the graphs above, they have been grouped by Age Range and Patron Types. 
+Using the three dimensional plots, we observed that patrons of Digital Access Card type have most registrations for both residents and non-residents, while Retired Staff had most registrations in 2003, with residents having double registrations than non-residents. Also, most patrons of ages 65-74 years registered in 2003, which makes sense as they are old and would have registered earlier. For age range 10-19 years and 20-24 years, there are mostly non-residents who have registered after 2012, while residents are very less. This seems very interesting, and shows people outside SF are also coming to issue books.
 
 After so many observations, we still do not know how Age Ranges and Patron Types are related, and will need some more information about them. Also, how are different branches related to each other? Do they share some books? Some more information can lead to better observations and analysis, but all these visualizations on our dataset, were definitely insightful and enlightened me about the SF Integrated Library System.
 
