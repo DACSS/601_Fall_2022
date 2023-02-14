@@ -1,0 +1,119 @@
+---
+title: "Challenge 5"
+author: "Emily Duryea"
+desription: "Challenge 5"
+date: "12/20/2022"
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+categories:
+  - challenge_5
+---
+
+# Challenge 5
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(ggplot2)
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Read in Data
+
+```{r}
+# Reading in the data
+cereal <- read.csv("_data/cereal.csv")
+cereal
+```
+
+The dataset contains four columns: cereal (name), amount of sodium per serving of cereal (in mg), amount of sugar (in g), and the type of cereal ("A" for adult cereal and "C" for children cereal). There are twenty types of cereal which make up the rows.
+
+## Tidying the Data
+
+```{r}
+# Renaming columns
+cereal_tidy <- cereal %>%
+  rename(cereal_name = Cereal, sugar=Sugar, sodium=Sodium, type=Type)
+cereal_tidy
+```
+
+## Mutating Variables
+
+```{r}
+# Making it so cereal sodium is in grams instead of mg to match measurement of sugar (in grams)
+cereal_sodium <- cereal_tidy %>%
+mutate(sodium = sodium/1000)
+  cereal_sodium
+```
+
+## Pivoting the Data
+
+```{r}
+# Pivoting it so that the data is grouped by sodium and sugar
+cerealg <- cereal_sodium %>%
+  pivot_longer(col =c("sodium", "sugar"),
+               names_to="Sodium_Sugar",
+               values_to="Amount")
+cerealg
+```
+
+## Univariate Visualization
+
+```{r}
+# The visualization shows which cereal has the most about of sodium to least
+cereal_sodium %>%
+  arrange(sodium) %>%
+mutate(cereal_name=factor(cereal_name, levels=cereal_name)) %>%
+    ggplot(aes(x=cereal_name, y=sodium)) +
+  geom_segment(aes(xend=cereal_name, yend=0), color="green") +
+  geom_point(colour="orange", size=2, alpha=0.5)+
+  coord_flip()
+```
+
+The visualization shows that Raisin Bran has the most amount of sodium in the twenty cereals in the dataset, with Frosted Mini Wheats having the least.
+
+```{r}
+# The visualization shows which cereal has the most about of sugar to least
+cereal_sodium %>%
+  arrange(sugar) %>%
+mutate(cereal_name=factor(cereal_name, levels=cereal_name)) %>%
+    ggplot(aes(x=cereal_name, y=sugar)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+The visualization demonstrates that, once again, Raisin Bran has the most amount of sugar, whereas Fiber One has the least.
+
+## Bivariate Visualization
+
+For this visualization, I am looking at if the amount of sodium/sugar plays a role in whether the cereal is classified as an adult or children's cereal. I hypothesize that cereals with more sugar/sodium will be classified as children's cereal, as children tend to have strong sugar/sodium cravings, and adult cereal tends to be marketed as "healthier," and as adults try to be more health conscious, the sugar/sodium content is monitored.
+
+```{r}
+# Looking at if the amount of sodium/sugar plays a role in whether a cereal is classified as an adult or children's cereal
+
+# Cereal sugar content & type of cereal
+cereal_sodium %>%
+  arrange(sugar) %>%
+mutate(cereal_name=factor(cereal_name, levels=cereal_name)) %>%
+    ggplot(aes(x=cereal_name, y=sugar, fill=type)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+
+# Cereal sodium content & type of cereal
+cereal_sodium %>%
+  arrange(sodium) %>%
+mutate(cereal_name=factor(cereal_name, levels=cereal_name)) %>%
+    ggplot(aes(x=cereal_name, y=sodium, fill=type)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+Based on these visualizations, it would seem that adult cereals actually have higher sugar content than children's cereal. The cereals with the highest sugar content are all classified as adult cereals (Raisin Bran, Crackling Oat Bran, and Honey Smacks). Sodium appears to be a toss-up between adult and children, with highest sodium contents flipping between adult and children cereal. Thus, my hypothesis that adult cereal would have less sugar and sodium would be refuted.
