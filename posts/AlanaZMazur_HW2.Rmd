@@ -1,0 +1,121 @@
+---
+title: "Homework 2: Reading in Data"
+author: "Alana Mazur"
+date: "2023-04-07"
+description: "Read in the public school dataset"
+---
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library('dplyr')
+```
+
+
+## Introduction
+
+In this homework I will work on the "Public_School_Characteristics_2017-18.csv" file.
+
+## Read the data
+
+The data is contained in a CSV file. I read it into a dataframe as follows. 
+
+```{r}
+ps <- read.csv('_data/Public_School_Characteristics_2017-18.csv')
+head(ps)
+```
+
+There are many columns, so let's list the column names.
+
+```{r}
+colnames(ps)
+
+```
+
+Without referring to the original data source, it's hard to understand some of the column names. We can guess STABR is the school state.
+
+```{r}
+table(ps$LSTATE)
+```
+
+We observe this file contains information about public schools nationwide.
+
+```{r}
+nrow(ps)
+```
+
+We have a bit over 100 thousand schools.
+
+
+
+## Clean the data
+
+Let's check which columns have NA entries, and how many:
+
+```{r}
+colSums(is.na(ps))
+```
+
+It seems that at least the basic information (location, name, etc.) is complete.
+
+Let's see if some columns without NA values contain some clearly invalid content.
+
+```{r}
+table(ps$SCHOOL_LEVEL)
+```
+
+So we see that some schools have "Not Reported" level. As an exercise let's assume we want to exclude such schools from our analysis. So we drop the rows in question.
+
+
+```{r}
+ps <- filter(ps, SCHOOL_LEVEL != "Not Reported")
+```
+
+
+Also, we noticed that the `STABR` and `LSTATE` columns are equal for most schools. I believe the latter is the state of the actual street address of the school. Let's assume that this is the only information that matters to us, so we want to drop the (mostly) redundant `STABR` column.
+
+```{r}
+ps <- select(ps, !STABR)
+```
+
+Let's also rename some columns to more user-friendly names (although we should refer to the data originator to be confident about the meaning and content of each column).
+
+```{r}
+ps <- rename(ps, SCHOOL_NAME=SCH_NAME, SURVEY_YEAR=SURVYEAR, STUDENT_TEACHER_RATIO=STUTERATIO)
+```
+
+Lastly, let's convert some Yes/No columns to boolean type.
+
+```{r}
+ps$IS_CHARTER_SCHOOL <- ps$CHARTER_TEXT == "Yes"
+head(ps)
+```
+
+
+
+
+
+
+## Narrative about the data
+
+The file "Public_School_Characteristics_2017-18.csv" contains a comprehensive listing of public schools in the US. It provides the address and geolocation of over 100 thousand schools of various levels of education, from Prekindergarten to Adult Education.  Most schools are in the Elementary, Middle or High School category.
+
+There is also information about member counts, funding scheme (for instance as charter status), and availability of a "magnet" curriculum.
+
+
+
+## Potential research questions
+
+
+We can ask many question about this dataset:
+
+* How many schools are there in each state, county and city.
+* The average and median sizes of the schools.
+* How the above numbers correlate to the school being located in an urban or rural region
+* The number of schools per 100000 inhabitants for each state or county.
+* It is also interesting to refine all above questions by school type. For instance, of the 1430 "Prekindergarten" schools, how many are in rural areas? (I would expect that unfortunately very few are.)
+Also: are magnet schools a luxury of big cities?
+* Is the student-teacher ratio related to school size, rural/urban status, or income level of the county/ZIP code?
+
+
+
+
+
