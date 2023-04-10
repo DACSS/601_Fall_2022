@@ -1,0 +1,144 @@
+---
+title: "Homework 3: Exploratory Data Analysis"
+author: "Alana Mazur"
+date: "2023-04-07"
+description: "Analysis of the public school dataset"
+---
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library('dplyr')
+```
+
+
+## Introduction
+
+In this homework I will work on the "Public_School_Characteristics_2017-18.csv" file.
+
+## Read the data
+
+The data is contained in a CSV file. I read it into a dataframe as follows. 
+
+```{r}
+ps <- read.csv('_data/Public_School_Characteristics_2017-18.csv')
+head(ps)
+```
+
+There are many columns, so let's list the column names.
+
+```{r}
+colnames(ps)
+
+```
+
+```{r}
+nrow(ps)
+```
+
+We have a bit over 100 thousand schools.
+
+
+## Potential research questions
+
+
+I recap here the questions I posed about this dataset in Homework 2:
+
+* How many schools are there in each state, county and city.
+* The average and median sizes of the schools.
+* How the above numbers correlate to the school being located in an urban or rural region
+* The number of schools per 100000 inhabitants for each state or county.
+* It is also interesting to refine all above questions by school type. For instance, of the 1430 "Prekindergarten" schools, how many are in rural areas? (I would expect that unfortunately very few are.)
+Also: are magnet schools a luxury of big cities?
+* Is the student-teacher ratio related to school size, rural/urban status, or income level of the county/ZIP code?
+
+Some of these questions would require to cross-reference this file with some external data (population by state/county etc.). This is a bit too ambitious for this homework so I will focus on simpler aspects.
+
+
+## Descriptive statistics
+
+Count the number of schools by state:
+
+```{r}
+sort(table(ps$LSTATE))
+```
+
+We see, as expected, that the largest states California and Texas have by far the most schools. After displaying this sorted listing I realize that if also contains data for US territories like Puerto Rico and (I had to look up the abbreviations online) American Samoa, Guam and so on.
+
+Let's have a look at school sizes:
+
+```{r}
+summary(ps$TOTAL)
+```
+
+This means we have some schools listed as having 0 students (probably a mistake) up to 14286 students.  The median is 434 and mean is 515.
+
+My intuition would say that elementary schools are smaller than the typical middle and high schools. Let's try to confirm this.
+
+```{r}
+elementary <- filter(ps, SCHOOL_LEVEL == "Elementary")
+middle <- filter(ps, SCHOOL_LEVEL == "Middle")
+high  <- filter(ps, SCHOOL_LEVEL == "High")
+```
+
+```{r}
+summary(elementary$TOTAL)
+```
+
+```{r}
+summary(middle$TOTAL)
+```
+
+```{r}
+summary(high$TOTAL)
+```
+
+We see that the median size of a high school (392) is actually smaller than the medium size of an elementary school (439) or middle school (547), which I find highly surprising. But the mean size of a high school (665) is indeed larger than for elementary schools (456.8).
+
+Maybe my hunch above is due to my going to school in a mid-sized city. So let's calculate again those statistics restricting to those types of school.
+
+```{r}
+summary(filter(elementary, ULOCALE=="12-City: Mid-size")$TOTAL)
+```
+
+```{r}
+summary(filter(middle, ULOCALE=="12-City: Mid-size")$TOTAL)
+```
+
+```{r}
+summary(filter(high, ULOCALE=="12-City: Mid-size")$TOTAL)
+```
+
+In the context of mid-sized cities we see that indeed high and middle schools tend to be larger than elementary schools, but by a relatively small margin.
+
+Going a bit further, we compute the mean school size by location type more easily with "group by":
+
+```{r}
+ps_by_loc <- group_by(ps, ULOCALE)
+summarize(ps_by_loc, total=mean(TOTAL, na.rm = TRUE))
+```
+
+We see that in general remote areas tend to have small schools but the difference between cities and suburbs, small or large, is not very significant.
+
+## Visualizations
+
+I will continue exploring the question of school sizes. Now instead of looking at quartiles and mean, let's see if the histogram provides some extra insights. There are very few schools with more than 3000 students, so I drop these from the data to get a more legible histogram.
+
+```{r}
+ps_withouth_huge <- filter(ps, `TOTAL` <= 3000)
+hist(ps_withouth_huge$TOTAL)
+```
+
+We can also make the histograms by school type, color-coded as follows: elementary -> green, middle -> orange and high -> purple.
+
+```{r}
+hist(filter(elementary, `TOTAL` <= 3000)$TOTAL, col="green", density=10)
+hist(filter(middle, `TOTAL` <= 3000)$TOTAL, add=TRUE, col="orange", density=10)
+hist(filter(high, `TOTAL` <= 3000)$TOTAL, add=TRUE, col="purple", density=10)
+```
+
+We see here that both elementary and middle school size peaks at around 500, but for high schools we see no peak, and instead the highest group is the first bin. Moreover, if we regard as "large" those schools that have more than 1000 students, then we can say that most large schools are high schools. Above 1600 hundred students, elementary and middle schools are very rare, while we still see a reasonable amount of high schools.
+
+## Conclusion
+
+In this homework we analyzed the distribution of school sizes in the US. We found some differences between urban and more distant towns and rural areas. We also found, through the visualization, a qualitative difference in the size distribution of elementary and middle schools versus high schools. Those differences cannot be seen by just looking at the average sizes.
+
+An interesting research question would be to understand the reason for the unexpected distribution of high school sizes. It might well be that the data mixes together "regular" schools with some kind of "special" school that tends to be much smaller. But it would require some research (or knowledge of the US schooling system) to determine what caused this.
